@@ -22,6 +22,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
+import javax.management.Notification;
 import javax.swing.JApplet;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -132,11 +133,14 @@ public class Monitor extends JFrame {
 			_gameMode = "Ranked";
 		}
 	}
+	
+	protected NotificationQueue _notificationQueue = new NotificationQueue();
 	protected void _notify(String header) {
-		new Notification(header, "");
+		_notify(header, "");
 	}
 	protected void _notify(String header, String message) {
-		new Notification(header, message);
+		_notificationQueue.add(new net.hearthstats.Notification(header, message));
+		
 	}
 	protected void _testFoorCasualMode() {
 		
