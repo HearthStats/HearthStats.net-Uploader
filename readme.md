@@ -17,7 +17,7 @@ to see how things are progressing.
 * Make sure you have Java installed - install the [windows 32 bit version](http://java.com/en/download/manual.jsp)
 * Download the [latest build](https://github.com/JeromeDane/HearthStats.net-Uploader/raw/master/hss-uploader.0.1.20130122.2.jar)
 * Start your Hearthstone client and make sure it is running in 1024x768 windowed mode - see [issue #13](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/13)
-* Look at the files you extracted for the file with a name like *hs-updater...jar* and run it
+* Run the .jar file you downloaded above
 * You should see a window open up called "HearthStats.net Uploader", and it should mirror your game
 * Return to Hearthstone and play as normal
 * Look for notifications in the bottom right of your screen that indicate event detection
