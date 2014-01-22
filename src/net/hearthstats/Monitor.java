@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.management.Notification;
+import javax.swing.ImageIcon;
 import javax.swing.JApplet;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -48,9 +50,11 @@ public class Monitor extends JFrame {
 
 	public Monitor() throws JnaUtilException, IOException {
 
-		
 		_updateImage();
 
+		Image image = new ImageIcon("images/icon.png").getImage();
+
+        f.setIconImage(image);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setLocation(0, 0);
 		f.setVisible(true);
