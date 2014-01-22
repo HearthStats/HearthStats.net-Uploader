@@ -183,23 +183,29 @@ public class Monitor extends JFrame {
 		Rectangle rect = JnaUtil.getWindowRect(hWnd);
 		f.setSize(rect.width, rect.height);
 		image = capture(User32.INSTANCE.FindWindow(null, "Hearthstone"));
-		
-		if(_testForMainMenuScreen()) {
-			
-		} else {
-			_testForPlayModeScreen();
-		}
-		_testForRankedMode();
-		_testFoorCasualMode();
-		
 		_drawImageFrame();
 	}
 
+	protected void _detectStates() {
+
+		if(_testForMainMenuScreen()) {
+			
+		} else {
+			if(_testForPlayModeScreen()) {
+				
+			}
+		}
+		if(_currentScreen == "Play") {
+			_testForRankedMode();
+			_testFoorCasualMode();
+		}
+	}
 	protected void _poll() {
 		ScheduledFuture scheduledFuture = scheduledExecutorService.schedule(
 				new Callable() {
 					public Object call() throws Exception {
 						_updateImage();
+						_detectStates();
 						_updateTitle();
 						_poll();
 						return "Called!";
