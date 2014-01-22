@@ -47,6 +47,7 @@ public class Monitor extends JFrame {
 
 	public Monitor() throws JnaUtilException, IOException {
 
+		
 		_updateImage();
 
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -93,7 +94,7 @@ public class Monitor extends JFrame {
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
 			if(_currentScreen != "Play") {
-				System.out.println("Entering Play Screen");
+				_notify("Play mode detected");
 				passed = true;
 			}
 			_currentScreen = "Play";
@@ -110,7 +111,7 @@ public class Monitor extends JFrame {
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
 			if(_currentScreen != "Main Menu") {
-				System.out.println("Entering Main Menu Screen");
+				_notify("Main menu detected");
 				passed = true;
 			}
 			_currentScreen = "Main Menu";
@@ -126,10 +127,16 @@ public class Monitor extends JFrame {
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
 			if(_gameMode != "Ranked") {
-				System.out.println("Entering Ranked Mode");
+				_notify("Rank mode detected");
 			}
 			_gameMode = "Ranked";
 		}
+	}
+	protected void _notify(String header) {
+		new Notification(header, "");
+	}
+	protected void _notify(String header, String message) {
+		new Notification(header, message);
 	}
 	protected void _testFoorCasualMode() {
 		
@@ -141,7 +148,7 @@ public class Monitor extends JFrame {
 		
 		if(pxTest.passed()) {
 			if(_gameMode != "Casual") {
-				System.out.println("Entering Casual Mode");
+				_notify("Casual mode detected");
 			}
 			_gameMode = "Casual";
 		}
