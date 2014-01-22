@@ -45,6 +45,19 @@ public class PixelGroup {
 	}
 	
 	/**
+	 * Are the red, blue, and green values within a given range
+	 * 
+	 * @param redTest
+	 * @param blueTest
+	 * @param greenTest
+	 * @return
+	 */
+	public boolean rbgInRange(int[] redTest, int[] blueTest, int[] greenTest) {
+		return red >= redTest[0] && blue >= blueTest[0] && green >= greenTest[0] &&
+			   red <= redTest[1] && blue <= blueTest[1] && green <= greenTest[1];
+	}
+	
+	/**
 	 * Are the red, blue, and green values greater than or equal to values provided?
 	 * 
 	 * @param redTest

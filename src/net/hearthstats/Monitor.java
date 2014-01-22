@@ -47,20 +47,20 @@ public class Monitor extends JFrame {
 
 	public Monitor() throws JnaUtilException, IOException {
 
-		updateImage();
+		_updateImage();
 
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setLocation(0, 0);
 		f.setVisible(true);
-		f.setTitle("HearthStats.net Monitor");
 
-		poll();
+		_poll();
 
 	}
 	
 	protected int _xOffset = 0;
 	protected int _yOffset = 0;
 	protected String _gameMode;
+	protected String _currentScreen;
 
 	protected ScheduledExecutorService scheduledExecutorService = Executors
 			.newScheduledThreadPool(5);
@@ -83,11 +83,48 @@ public class Monitor extends JFrame {
 		return new PixelGroup(image, x + _xOffset, y + _yOffset, 3, 3);
 	}
 
-	protected void _testFoorRankedMode() {
-		PixelGroup rankedPixels = _getPixelGroup(833, 88);
-		PixelGroup casualPixels = _getPixelGroup(698, 118);
+	protected boolean _testForPlayModeScreen() {
 		
-		if(rankedPixels.rbgGtEq(120, 240, 210) && casualPixels.rbgLtEq(200, 170, 190)) {
+		boolean passed = false;
+		int[][] tests = {
+				{543, 130, 121, 22, 32},	// play mode red background
+				{24, 33, 75, 33, 56}		// mode title light brown background
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		if(pxTest.passed()) {
+			if(_currentScreen != "Play") {
+				System.out.println("Entering Play Screen");
+				passed = true;
+			}
+			_currentScreen = "Play";
+		}
+		return passed;
+	}
+	protected boolean _testForMainMenuScreen() {
+		
+		boolean passed = false;
+		int[][] tests = {
+				{338, 453, 159, 42, 96},	// box top
+				{211, 658, 228, 116, 211}	// quest button exclamation mark
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		if(pxTest.passed()) {
+			if(_currentScreen != "Main Menu") {
+				System.out.println("Entering Main Menu Screen");
+				passed = true;
+			}
+			_currentScreen = "Main Menu";
+		}
+		return passed;
+	}
+	protected void _testForRankedMode() {
+		
+		int[][] tests = {
+			{833, 88, 220, 255, 255},	// ranked blue
+			{698, 120, 56, 8, 16}	// casual off
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		if(pxTest.passed()) {
 			if(_gameMode != "Ranked") {
 				System.out.println("Entering Ranked Mode");
 			}
@@ -95,15 +132,30 @@ public class Monitor extends JFrame {
 		}
 	}
 	protected void _testFoorCasualMode() {
-		PixelGroup rankedPixels = _getPixelGroup(833, 88);
-		PixelGroup casualPixels = _getPixelGroup(698, 118);
 		
-		if(casualPixels.rbgGtEq(120, 240, 210) && rankedPixels.rbgLtEq(200, 170, 190)) {
+		int[][] tests = {
+			{833, 88, 74, 16, 22},	// ranked off
+			{698, 120, 200, 255, 255}	// casual blue
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		
+		if(pxTest.passed()) {
 			if(_gameMode != "Casual") {
 				System.out.println("Entering Casual Mode");
 			}
 			_gameMode = "Casual";
 		}
+	}
+	
+	protected void _updateTitle() {
+		String title = "HearthStats.net Uploader - ";
+		if(_currentScreen != null) {
+			title += _currentScreen + ' ';
+			if(_currentScreen == "Play" && _gameMode != null) {
+				title += _gameMode;
+			}
+		}
+		f.setTitle(title);
 	}
 	
 	protected void _drawImageFrame() {
@@ -115,24 +167,30 @@ public class Monitor extends JFrame {
 		f.validate();
 		f.repaint();
 	}
-	protected void updateImage() throws JnaUtilException, IOException {
+	protected void _updateImage() throws JnaUtilException, IOException {
 		Pointer hWnd = JnaUtil.getWinHwnd("Hearthstone");
 		Rectangle rect = JnaUtil.getWindowRect(hWnd);
 		f.setSize(rect.width, rect.height);
 		image = capture(User32.INSTANCE.FindWindow(null, "Hearthstone"));
 		
-		_testFoorRankedMode();
+		if(_testForMainMenuScreen()) {
+			
+		} else {
+			_testForPlayModeScreen();
+		}
+		_testForRankedMode();
 		_testFoorCasualMode();
 		
 		_drawImageFrame();
 	}
 
-	protected void poll() {
+	protected void _poll() {
 		ScheduledFuture scheduledFuture = scheduledExecutorService.schedule(
 				new Callable() {
 					public Object call() throws Exception {
-						updateImage();
-						poll();
+						_updateImage();
+						_updateTitle();
+						_poll();
 						return "Called!";
 					}
 				}, 100, TimeUnit.MILLISECONDS);
