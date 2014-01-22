@@ -4,7 +4,12 @@ HearthStats.net Uploader
 This is a Java based utility designed to run in the background and automatically
 upload your win ratios and other statistics to [HearthStats.net](http://HearthStats.net)
 while you play Hearthstone. This program uses screen grab analysis of your Hearthstone window
-and does not do any packet sniffing, monitoring, or modifica
+and does not do any packet sniffing, monitoring, or network modification of any kind.
+
+This project is and will always remain open source so that you can do your own builds if you want
+and see exactly what's happening within the program. Feel free to fork this repo if you can hack.
+Create a pull request if you make any modifications and they will be merged back into this official
+release.
 
 Running Alpha Builds
 --------------------
