@@ -116,7 +116,8 @@ public class Monitor extends JFrame {
 		if(pxTest.passed()) {
 			if(_currentScreen != "Finding Opponent") {
 				_coin = false;
-				_notify("Finding Opponent detected");
+				String message = "Finding opponent for " + _gameMode + " game";
+				_notify("Finding Opponent detected", message);
 				passed = true;
 			}
 			_currentScreen = "Finding Opponent";
@@ -427,9 +428,9 @@ public class Monitor extends JFrame {
 		
 		// Warlock Test
 		int[][] warlockTests = {
-				{828, 64, 107, 135, 3},	
-				{749, 124, 223, 46, 28},
-				{835, 266, 247, 251, 255}	
+				{711, 203, 127, 142, 36},	
+				{832, 264, 240, 244, 252},
+				{832, 65, 98, 129, 0}	
 		};
 		_testForClass("Warlock", warlockTests, false);
 		
