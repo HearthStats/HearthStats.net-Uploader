@@ -127,6 +127,19 @@ public class Monitor extends JFrame {
 		}
 		return passed;
 	}
+	protected void _testForPlayingScreen() {
+		int[][] tests = {
+			{336, 203, 231, 198, 124},		
+			{763, 440, 234, 198, 124}		
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		if(pxTest.passed()) {
+			if(_currentScreen != "Playing") {
+				_notify("Playing detected");
+			}
+			_currentScreen = "Playing";
+		}
+	}
 	protected boolean _testForPlayModeScreen() {
 		
 		boolean passed = false;
@@ -137,7 +150,6 @@ public class Monitor extends JFrame {
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
 			if(_currentScreen != "Play") {
-				_coin = false;
 				_notify("Play mode detected");
 				passed = true;
 			}
@@ -287,7 +299,7 @@ public class Monitor extends JFrame {
 		if(_currentScreen == "Finding Opponent") {
 			_testForMatchStart();
 			_coin = false;			// reset to no coin
-			_yourClass = null; 	// reset your class
+			_yourClass = null; 		// reset your class to unknown
 		}
 		if(_currentScreen == "Match Start") {
 			if(!_coin) {
@@ -296,6 +308,10 @@ public class Monitor extends JFrame {
 			if(_yourClass == null) {
 				_testForYourClass();
 			}
+			_testForPlayingScreen();
+		}
+		if(_currentScreen == "Playing") {
+			// listen for victory or defeat
 		}
 	}
 	protected void _poll() {
