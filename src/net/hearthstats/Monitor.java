@@ -361,6 +361,14 @@ public class Monitor extends JFrame {
 				{733, 206, 186, 255, 255}	
 		};
 		_testForClass("Shaman", shamanTests, false);
+		
+		// Warlock Test
+		int[][] warlockTests = {
+				{828, 64, 107, 135, 3},	
+				{749, 124, 223, 46, 28},
+				{835, 266, 247, 251, 255}	
+		};
+		_testForClass("Warlock", warlockTests, false);
 	}
 	
 	protected static void _updateTitle() {
