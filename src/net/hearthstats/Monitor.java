@@ -330,6 +330,14 @@ public class Monitor extends JFrame {
 		};
 		_testForClass("Mage", mageTests, false);
 		
+		// Paladin Test
+		int[][] paladinTests = {
+				{895, 213, 255, 247, 147},	
+				{816, 301, 125, 237, 255},
+				{767, 82, 133, 107, 168}	
+		};
+		_testForClass("Paladin", paladinTests, false);
+		
 		// Priest Test
 		int[][] priestTests = {
 				{724, 189, 255, 236, 101},	
