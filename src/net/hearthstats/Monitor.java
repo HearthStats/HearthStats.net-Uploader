@@ -248,6 +248,14 @@ public class Monitor extends JFrame {
 	}
 	
 	protected static void _testForYourClass() {
+		// Druid Test
+		int[][] druidTests = {
+				{225, 480, 210, 255, 246},	
+				{348, 510, 234, 255, 251},
+				{237, 607, 193, 155, 195}	
+		};
+		_testForClass("Druid", druidTests, true);
+		
 		// Hunter Test
 		int[][] hunterTests = {
 				{289, 438, 173, 161, 147},	
@@ -346,7 +354,8 @@ public class Monitor extends JFrame {
 
 	protected static void _submitMatchResult() {
 		String header = "Submitting match result";
-		String message = _gameMode + " game " + (_coin ? "" : "no ") + "coin " + _yourClass + " VS. " + _opponentClass;
+		String message = _gameMode + " game " + (_coin ? "" : "no ") + "coin " +
+						_yourClass + " VS. " + _opponentClass + " " + _result;
 		_notify(header, message);
 	}
 	
