@@ -242,6 +242,34 @@ public class Monitor extends JFrame {
 			_result = "Defeat";
 		}
 	}
+	protected static void _testForVictory() {
+		
+		int[][] tests = {
+				{334, 504, 88, 101, 192},	
+				{683, 510, 74, 88, 173},	
+				{549, 162, 255, 224, 119}	
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		
+		int[][] testsTwo = {
+				{347, 469, 85, 102, 203},	
+				{737, 339, 63, 76, 148},	
+				{774, 214, 253, 243, 185}	
+		};
+		PixelGroupTest pxTestTwo = new PixelGroupTest(image, testsTwo);
+		
+		int[][] testsThree = {
+				{370, 528, 66, 81, 165},	
+				{690, 553, 63, 76, 162},	
+				{761, 228, 249, 234, 163}	
+		};
+		PixelGroupTest pxTestThree = new PixelGroupTest(image, testsThree);
+		
+		if(pxTest.passed() || pxTestTwo.passed() || pxTestThree.passed()) {
+			_notify("Victory detected");
+			_result = "Victory";
+		}
+	}
 	protected static void _testForCasualMode() {
 		
 		int[][] tests = {
@@ -526,6 +554,7 @@ public class Monitor extends JFrame {
 			// listen for victory or defeat
 			if(_result == null) {
 				_testForDefeat();
+				_testForVictory();
 			} else {
 				// submit game once result is found
 				_currentScreen = "Result";
