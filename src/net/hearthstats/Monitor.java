@@ -205,7 +205,7 @@ public class Monitor extends JFrame {
 	protected static void _testForCoin() {
 		
 		int[][] tests = {
-				{869, 389, 155, 250, 103}	// fourth card left edge
+				{869, 389, 155, 250, 103}	// fourth card right edge
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		
@@ -321,6 +321,14 @@ public class Monitor extends JFrame {
 				{766, 215, 203, 160, 198}	
 		};
 		_testForClass("Druid", druidTests, false);
+		
+		// Mage Test
+		int[][] mageTests = {
+				{790, 68, 88, 23, 99},	
+				{788, 312, 215, 188, 177},
+				{820, 247, 53, 64, 82}	
+		};
+		_testForClass("Mage", mageTests, false);
 		
 		// Priest Test
 		int[][] priestTests = {
