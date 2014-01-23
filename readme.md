@@ -20,7 +20,7 @@ to help test things out or just see how things are going. Check out the project'
 to see how things are progressing.
 
 * Make sure you have Java installed (use the [windows 32 bit version](http://java.com/en/download/manual.jsp) builds)
-* __[Download latest build](https://github.com/JeromeDane/HearthStats.net-Uploader/raw/master/hss-uploader.0.1.20130122.2.jar)__ of the HearthStats.net Uploader
+* __[Download latest build](https://github.com/JeromeDane/HearthStats.net-Uploader/raw/master/hss-uploader.0.1.20130122.3.jar)__ of the HearthStats.net Uploader
 * Start your Hearthstone client and put it in __windowed mode__ (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
 * Run the .jar file you downloaded above
 * A window should open called "HearthStats.net Uploader"
