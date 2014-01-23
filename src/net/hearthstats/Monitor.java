@@ -230,7 +230,14 @@ public class Monitor extends JFrame {
 		};
 		PixelGroupTest pxTestTwo = new PixelGroupTest(image, testsTwo);
 		
-		if(pxTest.passed() || pxTestTwo.passed()) {
+		int[][] testsThree = {
+				{347, 382, 129, 148, 236},	
+				{275, 345, 137, 138, 134},	
+				{537, 155, 235, 226, 67}	
+		};
+		PixelGroupTest pxTestThree = new PixelGroupTest(image, testsThree);
+		
+		if(pxTest.passed() || pxTestTwo.passed() || pxTestThree) {
 			_notify("Defeat detected");
 			_result = "Defeat";
 		}
