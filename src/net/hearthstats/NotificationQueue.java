@@ -13,7 +13,7 @@ public class NotificationQueue {
 	}
 
 	public void add(Notification notification) {
-		_notifications.add(notification);
+		_notifications.add(0, notification);
 		_process();
 	}
 
