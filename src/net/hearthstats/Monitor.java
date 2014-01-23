@@ -303,6 +303,14 @@ public class Monitor extends JFrame {
 				{362, 623, 122, 186, 67}	
 		};
 		_testForClass("Rogue", rogueTests, true);
+		
+		// Warlock Test
+		int[][] warlockTests = {
+				{301, 435, 104, 138, 8},	
+				{265, 493, 221, 51, 32},
+				{294, 680, 60, 75, 182}	
+		};
+		_testForClass("Warlock", warlockTests, true);
 	}
 	
 	protected static void _testForOpponentClass() {
