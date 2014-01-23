@@ -61,6 +61,7 @@ public class Monitor extends JFrame {
 
 	}
 	
+	protected static int _pollingIntervalInMs = 100;
 	protected static String _gameMode;
 	protected static String _currentScreen;
 	protected static String _yourClass;
@@ -449,7 +450,7 @@ public class Monitor extends JFrame {
 				}
 				if(_currentScreen == "Finding Opponent") {
 					if(_gameMode != null) {
-						title += " for " + _gameMode + " game";
+						title += " for " + _gameMode + " Game";
 					}
 				}
 				if(_currentScreen == "Match Start" || _currentScreen == "Playing") {
@@ -565,37 +566,29 @@ public class Monitor extends JFrame {
 	}
 	@SuppressWarnings("unchecked")
 	protected static void _poll() {
-		try {
-			scheduledExecutorService.schedule(
-				new Callable() {
-					public Object call() throws Exception {
-						if(_updateImage()) {
-							if(_hearthstoneDetected != true) {
-								_hearthstoneDetected = true;
-								_notify("Hearthstone found");
-							}
-							_detectStates();
-							_drawImageFrame();
-						} else {
-							if(_hearthstoneDetected) {
-								_hearthstoneDetected = false;
-								_notify("Hearthstone closed");
-								f.getContentPane().removeAll();
-								_drawPaneAdded = false;
-							}
+		scheduledExecutorService.schedule(
+			new Callable() {
+				public Object call() throws Exception {
+					if(_updateImage()) {
+						if(_hearthstoneDetected != true) {
+							_hearthstoneDetected = true;
+							_notify("Hearthstone found");
 						}
-						_updateTitle();
-						try {
-							_poll();
-						} catch(Exception e) {
-							boolean foo = true;
+						_detectStates();
+						_drawImageFrame();
+					} else {
+						if(_hearthstoneDetected) {
+							_hearthstoneDetected = false;
+							_notify("Hearthstone closed");
+							f.getContentPane().removeAll();
+							_drawPaneAdded = false;
 						}
-						return "Called!";
 					}
-				}, 200, TimeUnit.MILLISECONDS);
-		} catch(Exception e) {
-			boolean foo = true;
-		}
+					_updateTitle();
+					_poll();
+					return "Called!";
+				}
+			}, _pollingIntervalInMs, TimeUnit.MILLISECONDS);
 	}
 
 	protected static BufferedImage capture(HWND hWnd) {
