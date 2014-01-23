@@ -27,7 +27,7 @@ public class NotificationQueue {
 					@Override
 					public void run() {
 						try {
-							Thread.sleep(4000); // time after which pop up will
+							Thread.sleep(5000); // time after which pop up will
 												// be disappeared.
 							
 							for (int x = 0; x < _notifications.size(); x++) {

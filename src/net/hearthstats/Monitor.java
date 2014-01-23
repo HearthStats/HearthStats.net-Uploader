@@ -344,6 +344,12 @@ public class Monitor extends JFrame {
 		return false;
 	}
 
+	protected static void _submitMatchResult() {
+		String header = "Submitting match result";
+		String message = _gameMode + " game " + (_coin ? "" : "no ") + "coin " + _yourClass + " VS. " + _opponentClass;
+		_notify(header, message);
+	}
+	
 	protected static void _detectStates() {
 			
 		// main menu
@@ -390,7 +396,12 @@ public class Monitor extends JFrame {
 			// listen for victory or defeat
 			if(_result == null) {
 				_testForDefeat();
+			} else {
+				// submit game once result is found
+				_currentScreen = "Result";
+				_submitMatchResult();
 			}
+			
 		}
 	}
 	@SuppressWarnings("unchecked")
