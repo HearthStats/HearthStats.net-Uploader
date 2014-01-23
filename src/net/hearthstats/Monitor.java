@@ -266,7 +266,9 @@ public class Monitor extends JFrame {
 			_coin = false;	// reset to no coin
 		}
 		if(_currentScreen == "Match Start") {
-			_testForCoin();
+			if(!_coin) {
+				_testForCoin();
+			}
 		}
 	}
 	protected void _poll() {
