@@ -288,6 +288,14 @@ public class Monitor extends JFrame {
 			{216, 591, 0, 0, 56}	
 		};
 		_testForClass("Mage", mageTests, true);
+		
+		// Rogue Test
+		int[][] rogueTests = {
+				{309, 446, 91, 107, 175},	
+				{291, 468, 187, 37, 25},
+				{362, 623, 122, 186, 67}	
+		};
+		_testForClass("Rogue", rogueTests, true);
 	}
 	
 	protected static void _testForOpponentClass() {
