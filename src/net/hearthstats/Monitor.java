@@ -205,7 +205,7 @@ public class Monitor extends JFrame {
 	protected static void _testForCoin() {
 		
 		int[][] tests = {
-				{709, 317, 110, 254, 70}	// fourth card left edge
+				{869, 389, 155, 250, 103}	// fourth card left edge
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		
