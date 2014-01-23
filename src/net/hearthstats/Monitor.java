@@ -113,7 +113,15 @@ public class Monitor extends JFrame {
 			{765, 583, 121, 72, 100}	// bottom bar
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
-		if(pxTest.passed()) {
+		
+		int[][] arenaTests = {
+				{393, 145, 205, 166, 135},	// title bar
+				{819, 235, 109, 87, 79},
+				{839, 585, 139, 113, 77}
+		};
+		PixelGroupTest arenaPxTest = new PixelGroupTest(image, arenaTests);
+		
+		if(pxTest.passed() || arenaPxTest.passed()) {
 			if(_currentScreen != "Finding Opponent") {
 				_coin = false;
 				String message = "Finding opponent for " + _gameMode + " game";
@@ -142,9 +150,28 @@ public class Monitor extends JFrame {
 		
 		if(normalPxTest.passed() || orcPxTest.passed()) {
 			if(_currentScreen != "Playing") {
-				_notify("Playing detected");
+				String message = "Playing " + _gameMode + " game " + (_coin ? "" : "no ") + "coin " + 
+									_yourClass + " vs. " + _opponentClass;
+				_notify("Playing detected", message);
 			}
 			_currentScreen = "Playing";
+		}
+	}
+	protected static void _testForArenaModeScreen() {
+		
+		int[][] tests = {
+				{807, 707, 95, 84, 111},
+				{324, 665, 77, 114, 169},
+				{120, 685, 255, 215, 115},
+				{697, 504, 78, 62, 56}
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		if(pxTest.passed()) {
+			if(_currentScreen != "Arena") {
+				_notify("Arena mode detected");
+			}
+			_gameMode = "Arena"; 
+			_currentScreen = "Arena";
 		}
 	}
 	protected static boolean _testForPlayModeScreen() {
@@ -520,14 +547,21 @@ public class Monitor extends JFrame {
 		}
 		
 		// play mode screen
-		if(_currentScreen == "Play") {
+		if(_currentScreen == "Play" || _currentScreen == "Arena") {
 			if(_currentScreen != "Finding Opponent") {
+				if(_currentScreen == "Play") {
+					_testForRankedMode();
+					_testForCasualMode();
+				}
 				_testForFindingOpponent();
-				_testForRankedMode();
-				_testForCasualMode();
 			}
-		} else {
+		}
+		if(_currentScreen != "Play") {
 			_testForPlayModeScreen();	
+		}
+		
+		if(_currentScreen != "Arena") {
+			_testForArenaModeScreen();
 		}
 		
 		// finding opponent window
