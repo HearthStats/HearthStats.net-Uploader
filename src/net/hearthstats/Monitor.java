@@ -237,7 +237,7 @@ public class Monitor extends JFrame {
 		};
 		PixelGroupTest pxTestThree = new PixelGroupTest(image, testsThree);
 		
-		if(pxTest.passed() || pxTestTwo.passed() || pxTestThree) {
+		if(pxTest.passed() || pxTestTwo.passed() || pxTestThree.passed()) {
 			_notify("Defeat detected");
 			_result = "Defeat";
 		}
