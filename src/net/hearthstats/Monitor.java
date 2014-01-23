@@ -284,6 +284,14 @@ public class Monitor extends JFrame {
 	}
 	
 	protected static void _testForOpponentClass() {
+		// Druid Test
+		int[][] druidTests = {
+				{743, 118, 205, 255, 242},	
+				{882, 141, 231, 255, 252},
+				{766, 215, 203, 160, 198}	
+		};
+		_testForClass("Druid", druidTests, false);
+		
 		// Priest Test
 		int[][] priestTests = {
 				{724, 189, 255, 236, 101},	
