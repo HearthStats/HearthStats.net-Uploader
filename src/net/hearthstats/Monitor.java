@@ -187,7 +187,7 @@ public class Monitor extends JFrame {
 	protected void _testForCoin() {
 		
 		int[][] tests = {
-				{709, 317, 245, 254, 182}	// fourth card left edge
+				{709, 317, 110, 70, 254}	// fourth card left edge
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		
@@ -218,13 +218,13 @@ public class Monitor extends JFrame {
 			title += _currentScreen + ' ';
 			if(_currentScreen == "Play" && _gameMode != null) {
 				title += _gameMode;
-				/*
+			}
+			if(_currentScreen == "Match Start") {
 				if(_coin) {
 					title += " Coin";
 				} else {
 					title += " No Coin";
 				}
-				*/
 			}
 		}
 		f.setTitle(title);
@@ -251,11 +251,6 @@ public class Monitor extends JFrame {
 		if(_currentScreen != "Main Menu") {
 			_testForMainMenuScreen();
 		}
-		
-		if(_currentScreen == "Finding Opponent") {
-			_testForMatchStart();
-			_coin = false;	// reset to no coin
-		}
 		if(_currentScreen == "Play") {
 			if(_currentScreen != "Finding Opponent") {
 				_testForFindingOpponent();
@@ -264,6 +259,14 @@ public class Monitor extends JFrame {
 			}
 		} else {
 			_testForPlayModeScreen();	
+		}
+		
+		if(_currentScreen == "Finding Opponent") {
+			_testForMatchStart();
+			_coin = false;	// reset to no coin
+		}
+		if(_currentScreen == "Match Start") {
+			_testForCoin();
 		}
 	}
 	protected void _poll() {
