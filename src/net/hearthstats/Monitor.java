@@ -67,6 +67,7 @@ public class Monitor extends JFrame {
 	protected int _yOffset = 0;
 	protected String _gameMode;
 	protected String _currentScreen;
+	protected String _yourClass;
 	protected boolean _coin = false;
 
 	protected ScheduledExecutorService scheduledExecutorService = Executors
@@ -212,6 +213,25 @@ public class Monitor extends JFrame {
 		}
 	}
 	
+	protected void _testForClass(String className, int[][] pixelTests, boolean isYours) {
+		PixelGroupTest pxTest = new PixelGroupTest(image, pixelTests);
+		if(pxTest.passed()) {
+			if(isYours) {
+				_yourClass = className;
+				_notify("Playing as " + _yourClass);
+			}
+		}
+	}
+	
+	protected void _testForYourClass() {
+		int[][] mageTests = {
+			{259, 439, 96, 31, 102},	
+			{294, 677, 219, 210, 193},
+			{216, 591, 0, 0, 56}	
+		};
+		_testForClass("Mage", mageTests, true);
+	}
+	
 	protected void _updateTitle() {
 		String title = "HearthStats.net Uploader - ";
 		if(_currentScreen != null) {
@@ -224,6 +244,9 @@ public class Monitor extends JFrame {
 					title += " Coin";
 				} else {
 					title += " No Coin";
+				}
+				if(_yourClass != null) {
+					title += " " + _yourClass;
 				}
 			}
 		}
@@ -263,11 +286,15 @@ public class Monitor extends JFrame {
 		
 		if(_currentScreen == "Finding Opponent") {
 			_testForMatchStart();
-			_coin = false;	// reset to no coin
+			_coin = false;			// reset to no coin
+			_yourClass = null; 	// reset your class
 		}
 		if(_currentScreen == "Match Start") {
 			if(!_coin) {
 				_testForCoin();
+			}
+			if(_yourClass == null) {
+				_testForYourClass();
 			}
 		}
 	}
