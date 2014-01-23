@@ -64,6 +64,7 @@ public class Monitor extends JFrame {
 	protected static String _gameMode;
 	protected static String _currentScreen;
 	protected static String _yourClass;
+	protected static String _opponentClass;
 	protected static boolean _coin = false;
 	protected static boolean _hearthstoneDetected;
 
@@ -224,6 +225,9 @@ public class Monitor extends JFrame {
 			if(isYours) {
 				_yourClass = className;
 				_notify("Playing as " + _yourClass);
+			} else {
+				_opponentClass = className;
+				_notify("Playing VS. " + _opponentClass);
 			}
 		}
 	}
@@ -244,6 +248,16 @@ public class Monitor extends JFrame {
 			{216, 591, 0, 0, 56}	
 		};
 		_testForClass("Mage", mageTests, true);
+	}
+	
+	protected static void _testForOpponentClass() {
+		// Priest Test
+		int[][] priestTests = {
+				{724, 189, 255, 236, 101},	
+				{796, 243, 58, 72, 138},
+				{882, 148, 27, 20, 38}	
+		};
+		_testForClass("Priest", priestTests, false);
 	}
 	
 	protected static void _updateTitle() {
@@ -338,6 +352,9 @@ public class Monitor extends JFrame {
 			}
 			if(_yourClass == null) {
 				_testForYourClass();
+			}
+			if(_opponentClass == null) {
+				_testForOpponentClass();
 			}
 			_testForPlayingScreen();
 		}
