@@ -292,6 +292,9 @@ public class Monitor extends JFrame {
 					if(_yourClass != null) {
 						title += _yourClass;
 					}
+					if(_opponentClass != null) {
+						title += " VS. " + _opponentClass;
+					}
 				}
 			}
 		} else {
