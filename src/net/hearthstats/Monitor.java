@@ -151,7 +151,9 @@ public class Monitor extends JFrame {
 		boolean passed = false;
 		int[][] tests = {
 			{543, 130, 121, 32, 22},	// play mode red background
-			{254, 33, 197, 173, 132}		// mode title light brown background
+			{254, 33, 197, 173, 132},	// mode title light brown background
+			{956, 553, 24, 8, 8},
+			{489, 688, 68, 65, 63}
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
