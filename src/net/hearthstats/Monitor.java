@@ -65,6 +65,7 @@ public class Monitor extends JFrame {
 	protected static String _currentScreen;
 	protected static String _yourClass;
 	protected static String _opponentClass;
+	protected static String _result;
 	protected static boolean _coin = false;
 	protected static boolean _hearthstoneDetected;
 
@@ -203,6 +204,20 @@ public class Monitor extends JFrame {
 			_coin = true;
 		}
 	}
+	protected static void _testForDefeat() {
+		
+		int[][] tests = {
+				{745, 219, 164, 162, 155},	
+				{344, 383, 134, 153, 239},	
+				{696, 357, 201, 197, 188}	
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		
+		if(pxTest.passed()) {
+			_notify("Defeat detected");
+			_result = "Defeat";
+		}
+	}
 	protected static void _testForCasualMode() {
 		
 		int[][] tests = {
@@ -330,10 +345,13 @@ public class Monitor extends JFrame {
 	}
 
 	protected static void _detectStates() {
-
+			
+		// main menu
 		if(_currentScreen != "Main Menu") {
 			_testForMainMenuScreen();
 		}
+		
+		// play mode screen
 		if(_currentScreen == "Play") {
 			if(_currentScreen != "Finding Opponent") {
 				_testForFindingOpponent();
@@ -344,11 +362,16 @@ public class Monitor extends JFrame {
 			_testForPlayModeScreen();	
 		}
 		
+		// finding opponent window
 		if(_currentScreen == "Finding Opponent") {
 			_testForMatchStart();
 			_coin = false;			// reset to no coin
 			_yourClass = null; 		// reset your class to unknown
+			_opponentClass = null; 	// reset opponent class to unknown
+			_result = null;			// reset result to unknown
 		}
+		
+		// match start and setup (mulligan phase)
 		if(_currentScreen == "Match Start") {
 			if(!_coin) {
 				_testForCoin();
@@ -361,8 +384,13 @@ public class Monitor extends JFrame {
 			}
 			_testForPlayingScreen();
 		}
+		
+		// playing a game
 		if(_currentScreen == "Playing") {
 			// listen for victory or defeat
+			if(_result == null) {
+				_testForDefeat();
+			}
 		}
 	}
 	@SuppressWarnings("unchecked")
