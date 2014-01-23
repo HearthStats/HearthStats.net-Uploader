@@ -10,7 +10,7 @@ public class PixelGroupTest {
 	protected int _pixelGroupSize = 2;
 	protected int _pixelRgbTolerence = 30;
 	protected boolean _passed = true;
-	protected boolean _colorPixels = true;
+	protected boolean _colorPixels = false;
 	
 	public PixelGroupTest(BufferedImage image, int[][] testParams) {
 		this(image, testParams, false);
@@ -29,7 +29,6 @@ public class PixelGroupTest {
 			xOffset = 107;
 			xOffset = (int) (((float) width - (ratio * 1024)) / 2);
 		}
-		//System.out.println(screenRatio);
 		
 		String debugStr = "";
 		// loop through test parameters

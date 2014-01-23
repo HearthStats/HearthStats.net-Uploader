@@ -67,6 +67,7 @@ public class Monitor extends JFrame {
 	protected int _yOffset = 0;
 	protected String _gameMode;
 	protected String _currentScreen;
+	protected boolean _coin = false;
 
 	protected ScheduledExecutorService scheduledExecutorService = Executors
 			.newScheduledThreadPool(5);
@@ -89,16 +90,35 @@ public class Monitor extends JFrame {
 		return new PixelGroup(image, x + _xOffset, y + _yOffset, 3, 3);
 	}
 
+	protected boolean _testForFindingOpponent() {
+		
+		boolean passed = false;
+		int[][] tests = {
+			{401, 143, 180, 145, 122},	// title bar
+			{765, 583, 121, 100, 72}	// bottom bar
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		if(pxTest.passed()) {
+			if(_currentScreen != "Finding Opponent") {
+				_coin = false;
+				_notify("Finding Opponent detected");
+				passed = true;
+			}
+			_currentScreen = "Finding Opponent";
+		}
+		return passed;
+	}
 	protected boolean _testForPlayModeScreen() {
 		
 		boolean passed = false;
 		int[][] tests = {
-				{543, 130, 121, 22, 32},	// play mode red background
-				{254, 33, 197, 132, 173}		// mode title light brown background
+			{543, 130, 121, 22, 32},	// play mode red background
+			{254, 33, 197, 132, 173}		// mode title light brown background
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
 			if(_currentScreen != "Play") {
+				_coin = false;
 				_notify("Play mode detected");
 				passed = true;
 			}
@@ -146,6 +166,18 @@ public class Monitor extends JFrame {
 		_notificationQueue.add(new net.hearthstats.Notification(header, message));
 		
 	}
+	protected void _testForCoin() {
+		
+		int[][] tests = {
+				{709, 317, 245, 254, 182}	// fourth card left edge
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		
+		if(pxTest.passed()) {
+			_notify("Coin detected");
+			_coin = true;
+		}
+	}
 	protected void _testForCasualMode() {
 		
 		int[][] tests = {
@@ -168,6 +200,13 @@ public class Monitor extends JFrame {
 			title += _currentScreen + ' ';
 			if(_currentScreen == "Play" && _gameMode != null) {
 				title += _gameMode;
+				/*
+				if(_coin) {
+					title += " Coin";
+				} else {
+					title += " No Coin";
+				}
+				*/
 			}
 		}
 		f.setTitle(title);
@@ -194,9 +233,15 @@ public class Monitor extends JFrame {
 		if(_currentScreen != "Main Menu") {
 			_testForMainMenuScreen();
 		}
+		
 		if(_currentScreen == "Play") {
-			_testForRankedMode();
-			_testForCasualMode();
+			if(_currentScreen != "Finding Opponent") {
+				_testForFindingOpponent();
+				_testForRankedMode();
+				_testForCasualMode();
+			} else {
+				_coin = false;
+			}
 		} else {
 			_testForPlayModeScreen();	
 		}
