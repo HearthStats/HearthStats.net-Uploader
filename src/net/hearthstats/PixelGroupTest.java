@@ -40,9 +40,9 @@ public class PixelGroupTest {
 			PixelGroup pxGroup = new PixelGroup(image, x, y, size, size);
 			debugStr += "[" + x + "," + y +"] {" + pxGroup.red + "," + pxGroup.blue + "," + pxGroup.green + "} ";
 			int[] redRange = {testParam[2] - _pixelRgbTolerence, testParam[2] + _pixelRgbTolerence};
-			int[] blueRange = {testParam[3] - _pixelRgbTolerence, testParam[3] + _pixelRgbTolerence};
-			int[] greenRange = {testParam[4] - _pixelRgbTolerence, testParam[4] + _pixelRgbTolerence};
-			if(!pxGroup.rbgInRange(redRange, blueRange, greenRange)) {
+			int[] greenRange = {testParam[3] - _pixelRgbTolerence, testParam[3] + _pixelRgbTolerence};
+			int[] blueRange = {testParam[4] - _pixelRgbTolerence, testParam[4] + _pixelRgbTolerence};
+			if(!pxGroup.rgbInRange(redRange, greenRange, blueRange)) {
 				_passed = false;
 			}
 			if(_colorPixels || showDebug) {

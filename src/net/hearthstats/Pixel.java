@@ -32,9 +32,9 @@ public class Pixel {
 	
 	public void mark() {
 		int red = (int) Math.round(Math.random() * 255);
-		int blue = (int) Math.round(Math.random() * 255);
 		int green = (int) Math.round(Math.random() * 255);
-		int color = new Color(red, blue, green).getRGB();
+		int blue = (int) Math.round(Math.random() * 255);
+		int color = new Color(red, green, blue).getRGB();
 		_image.setRGB(_x, _y, color);
 	}
 	
@@ -42,9 +42,9 @@ public class Pixel {
 		StringBuilder sb = new StringBuilder();
 		sb.append(red);
 		sb.append(',');
-		sb.append(blue);
-		sb.append(',');
 		sb.append(green);
+		sb.append(',');
+		sb.append(blue);
 		return sb.toString();
 	}
 }

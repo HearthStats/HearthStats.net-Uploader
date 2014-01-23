@@ -94,8 +94,8 @@ public class Monitor extends JFrame {
 		
 		boolean passed = false;
 		int[][] tests = {
-				{403, 487, 201, 94, 173},	// title bar
-				{946, 149, 203, 96, 174}	// bottom bar
+				{403, 487, 201, 173, 94},	// title bar
+				{946, 149, 203, 174, 96}	// bottom bar
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
@@ -112,8 +112,8 @@ public class Monitor extends JFrame {
 		
 		boolean passed = false;
 		int[][] tests = {
-			{401, 143, 180, 145, 122},	// title bar
-			{765, 583, 121, 100, 72}	// bottom bar
+			{401, 143, 180, 122, 145},	// title bar
+			{765, 583, 121, 72, 100}	// bottom bar
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
@@ -130,8 +130,8 @@ public class Monitor extends JFrame {
 		
 		boolean passed = false;
 		int[][] tests = {
-			{543, 130, 121, 22, 32},	// play mode red background
-			{254, 33, 197, 132, 173}		// mode title light brown background
+			{543, 130, 121, 32, 22},	// play mode red background
+			{254, 33, 197, 173, 132}		// mode title light brown background
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
@@ -148,8 +148,8 @@ public class Monitor extends JFrame {
 		
 		boolean passed = false;
 		int[][] tests = {
-				{338, 453, 159, 42, 96},	// box top
-				{211, 658, 228, 116, 211}	// quest button exclamation mark
+				{338, 453, 159, 96, 42},	// box top
+				{211, 658, 228, 211, 116}	// quest button exclamation mark
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
@@ -165,7 +165,7 @@ public class Monitor extends JFrame {
 		
 		int[][] tests = {
 			{833, 88, 220, 255, 255},	// ranked blue
-			{698, 120, 56, 8, 16}	// casual off
+			{698, 120, 56, 16, 8}	// casual off
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
@@ -187,7 +187,7 @@ public class Monitor extends JFrame {
 	protected void _testForCoin() {
 		
 		int[][] tests = {
-				{709, 317, 110, 70, 254}	// fourth card left edge
+				{709, 317, 110, 254, 70}	// fourth card left edge
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		
@@ -199,7 +199,7 @@ public class Monitor extends JFrame {
 	protected void _testForCasualMode() {
 		
 		int[][] tests = {
-			{833, 94, 100, 16, 22},	// ranked off
+			{833, 94, 100, 22, 16},	// ranked off
 			{698, 128, 200, 255, 255}	// casual blue
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);

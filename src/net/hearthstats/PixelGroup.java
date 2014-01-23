@@ -52,49 +52,49 @@ public class PixelGroup {
 	}
 	
 	/**
-	 * Are the red, blue, and green values within a given range
+	 * Are the red, green, and blue values within a given range
 	 * 
 	 * @param redTest
-	 * @param blueTest
 	 * @param greenTest
+	 * @param blueTest
 	 * @return
 	 */
-	public boolean rbgInRange(int[] redTest, int[] blueTest, int[] greenTest) {
-		return red >= redTest[0] && blue >= blueTest[0] && green >= greenTest[0] &&
-			   red <= redTest[1] && blue <= blueTest[1] && green <= greenTest[1];
+	public boolean rgbInRange(int[] redTest, int[] greenTest, int[] blueTest) {
+		return red >= redTest[0] && green >= greenTest[0] && blue >= blueTest[0] &&
+			   red <= redTest[1] && green <= greenTest[1] && blue <= blueTest[1];
 	}
 	
 	/**
-	 * Are the red, blue, and green values greater than or equal to values provided?
+	 * Are the red, green, and blue values greater than or equal to values provided?
 	 * 
 	 * @param redTest
-	 * @param blueTest
 	 * @param greenTest
+	 * @param blueTest
 	 * @return
 	 */
-	public boolean rbgGtEq(int redTest, int blueTest, int greenTest) {
-		return red >= redTest && blue >= blueTest && green >= greenTest;
+	public boolean rgbGtEq(int redTest, int greenTest, int blueTest) {
+		return red >= redTest && green >= greenTest && blue >= blueTest;
 	}
 	
 	/**
-	 * Are the red, blue, and green values less than or equal to values provided?
+	 * Are the red, green, green, and blue less than or equal to values provided?
 	 * 
 	 * @param redTest
-	 * @param blueTest
 	 * @param greenTest
+	 * @param blueTest
 	 * @return
 	 */
-	public boolean rbgLtEq(int redTest, int blueTest, int greenTest) {
-		return red <= redTest && blue <= blueTest && green <= greenTest;
+	public boolean rgbLtEq(int redTest, int greenTest, int blueTest) {
+		return red <= redTest && green <= greenTest && blue <= blueTest;
 	}
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(red);
 		sb.append(',');
-		sb.append(blue);
-		sb.append(',');
 		sb.append(green);
+		sb.append(',');
+		sb.append(blue);
 		return sb.toString();
 	}
 	
