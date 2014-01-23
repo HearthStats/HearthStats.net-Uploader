@@ -229,6 +229,15 @@ public class Monitor extends JFrame {
 	}
 	
 	protected static void _testForYourClass() {
+		// Hunter Test
+		int[][] hunterTests = {
+				{289, 438, 173, 161, 147},	
+				{366, 554, 250, 200, 81},
+				{210, 675, 209, 209, 211}	
+		};
+		_testForClass("Hunter", hunterTests, true);
+		
+		// Mage Test
 		int[][] mageTests = {
 			{259, 439, 96, 31, 102},	
 			{294, 677, 219, 210, 193},
