@@ -48,13 +48,11 @@ import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 
 public class Monitor extends JFrame {
 
-	public Monitor() throws JnaUtilException, IOException {
+	public static void start() throws JnaUtilException, IOException {
 
-		_updateImage();
+		Image icon = new ImageIcon("images/icon.png").getImage();
 
-		Image image = new ImageIcon("images/icon.png").getImage();
-
-        f.setIconImage(image);
+        f.setIconImage(icon);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setLocation(0, 0);
 		f.setVisible(true);
@@ -63,35 +61,30 @@ public class Monitor extends JFrame {
 
 	}
 	
-	protected int _xOffset = 0;
-	protected int _yOffset = 0;
-	protected String _gameMode;
-	protected String _currentScreen;
-	protected String _yourClass;
-	protected boolean _coin = false;
+	protected static String _gameMode;
+	protected static String _currentScreen;
+	protected static String _yourClass;
+	protected static boolean _coin = false;
+	protected static boolean _hearthstoneDetected;
 
-	protected ScheduledExecutorService scheduledExecutorService = Executors
+	protected static ScheduledExecutorService scheduledExecutorService = Executors
 			.newScheduledThreadPool(5);
 
-	protected JFrame f = new JFrame();
+	protected static JFrame f = new JFrame();
 
-	protected boolean added = false;
+	protected static boolean _drawPaneAdded = false;
 
-	protected BufferedImage image;
+	protected static BufferedImage image;
 
-	protected JPanel pane = new JPanel() {
+	protected static JPanel _drawPane = new JPanel() {
 		@Override
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			g.drawImage(image, 0, 0, null);
 		}
 	};
-	
-	protected PixelGroup _getPixelGroup(int x, int y) {
-		return new PixelGroup(image, x + _xOffset, y + _yOffset, 3, 3);
-	}
 
-	protected boolean _testForMatchStart() {
+	protected static boolean _testForMatchStart() {
 		
 		boolean passed = false;
 		int[][] tests = {
@@ -109,7 +102,7 @@ public class Monitor extends JFrame {
 		}
 		return passed;
 	}
-	protected boolean _testForFindingOpponent() {
+	protected static boolean _testForFindingOpponent() {
 		
 		boolean passed = false;
 		int[][] tests = {
@@ -127,7 +120,7 @@ public class Monitor extends JFrame {
 		}
 		return passed;
 	}
-	protected void _testForPlayingScreen() {
+	protected static void _testForPlayingScreen() {
 		int[][] tests = {
 			{336, 203, 231, 198, 124},		
 			{763, 440, 234, 198, 124}		
@@ -140,7 +133,7 @@ public class Monitor extends JFrame {
 			_currentScreen = "Playing";
 		}
 	}
-	protected boolean _testForPlayModeScreen() {
+	protected static boolean _testForPlayModeScreen() {
 		
 		boolean passed = false;
 		int[][] tests = {
@@ -157,7 +150,7 @@ public class Monitor extends JFrame {
 		}
 		return passed;
 	}
-	protected boolean _testForMainMenuScreen() {
+	protected static boolean _testForMainMenuScreen() {
 		
 		boolean passed = false;
 		int[][] tests = {
@@ -174,7 +167,7 @@ public class Monitor extends JFrame {
 		}
 		return passed;
 	}
-	protected void _testForRankedMode() {
+	protected static void _testForRankedMode() {
 		
 		int[][] tests = {
 			{833, 88, 220, 255, 255},	// ranked blue
@@ -189,15 +182,15 @@ public class Monitor extends JFrame {
 		}
 	}
 	
-	protected NotificationQueue _notificationQueue = new NotificationQueue();
-	protected void _notify(String header) {
+	protected static NotificationQueue _notificationQueue = new NotificationQueue();
+	protected static void _notify(String header) {
 		_notify(header, "");
 	}
-	protected void _notify(String header, String message) {
+	protected static void _notify(String header, String message) {
 		_notificationQueue.add(new net.hearthstats.Notification(header, message));
 		
 	}
-	protected void _testForCoin() {
+	protected static void _testForCoin() {
 		
 		int[][] tests = {
 				{709, 317, 110, 254, 70}	// fourth card left edge
@@ -209,7 +202,7 @@ public class Monitor extends JFrame {
 			_coin = true;
 		}
 	}
-	protected void _testForCasualMode() {
+	protected static void _testForCasualMode() {
 		
 		int[][] tests = {
 			{833, 94, 100, 22, 16},	// ranked off
@@ -225,7 +218,7 @@ public class Monitor extends JFrame {
 		}
 	}
 	
-	protected void _testForClass(String className, int[][] pixelTests, boolean isYours) {
+	protected static void _testForClass(String className, int[][] pixelTests, boolean isYours) {
 		PixelGroupTest pxTest = new PixelGroupTest(image, pixelTests);
 		if(pxTest.passed()) {
 			if(isYours) {
@@ -235,7 +228,7 @@ public class Monitor extends JFrame {
 		}
 	}
 	
-	protected void _testForYourClass() {
+	protected static void _testForYourClass() {
 		int[][] mageTests = {
 			{259, 439, 96, 31, 102},	
 			{294, 677, 219, 210, 193},
@@ -244,44 +237,58 @@ public class Monitor extends JFrame {
 		_testForClass("Mage", mageTests, true);
 	}
 	
-	protected void _updateTitle() {
-		String title = "HearthStats.net Uploader - ";
-		if(_currentScreen != null) {
-			title += _currentScreen + ' ';
-			if(_currentScreen == "Play" && _gameMode != null) {
-				title += _gameMode;
-			}
-			if(_currentScreen == "Match Start") {
-				if(_coin) {
-					title += " Coin";
-				} else {
-					title += " No Coin";
+	protected static void _updateTitle() {
+		String title = "HearthStats.net Uploader";
+		if(_hearthstoneDetected) {
+			if(_currentScreen != null) {
+				title += " - " + _currentScreen + ' ';
+				if(_currentScreen == "Play" && _gameMode != null) {
+					title += _gameMode;
 				}
-				if(_yourClass != null) {
-					title += " " + _yourClass;
+				if(_currentScreen == "Match Start") {
+					if(_coin) {
+						title += " Coin";
+					} else {
+						title += " No Coin";
+					}
+					if(_yourClass != null) {
+						title += " " + _yourClass;
+					}
 				}
 			}
+		} else {
+			title += " - Waiting for Hearthstone ";
+			title += Math.random() > 0.33 ? ".." : "...";
+			f.setSize(600, 200);
 		}
 		f.setTitle(title);
 	}
 	
-	protected void _drawImageFrame() {
-		if (!added) {
-			f.add(pane);
+	protected static void _drawImageFrame() {
+		if (!_drawPaneAdded) {
+			f.add(_drawPane);
 		}
-		pane.repaint();
+		_drawPane.repaint();
 		f.invalidate();
 		f.validate();
 		f.repaint();
 	}
-	protected void _updateImage() throws JnaUtilException, IOException {
+	protected static boolean _updateImage() throws JnaUtilException, IOException {
 		Pointer hWnd = JnaUtil.getWinHwnd("Hearthstone");
-		Rectangle rect = JnaUtil.getWindowRect(hWnd);
-		f.setSize(rect.width, rect.height);
-		image = capture(User32.INSTANCE.FindWindow(null, "Hearthstone"));
+		String windowText = JnaUtil.getWindowText(hWnd).toString();
+		if(windowText.matches("Hearthstone")) {
+			Rectangle rect = JnaUtil.getWindowRect(hWnd);
+			// make sure the window is completely open before trying to capture the image
+			if(rect.width >= 1024) {
+				f.setSize(rect.width, rect.height);
+				image = capture(User32.INSTANCE.FindWindow(null, "Hearthstone"));
+				return true;
+			}
+		}
+		return false;
 	}
 
-	protected void _detectStates() {
+	protected static void _detectStates() {
 
 		if(_currentScreen != "Main Menu") {
 			_testForMainMenuScreen();
@@ -314,21 +321,42 @@ public class Monitor extends JFrame {
 			// listen for victory or defeat
 		}
 	}
-	protected void _poll() {
-		ScheduledFuture scheduledFuture = scheduledExecutorService.schedule(
+	@SuppressWarnings("unchecked")
+	protected static void _poll() {
+		try {
+			scheduledExecutorService.schedule(
 				new Callable() {
 					public Object call() throws Exception {
-						_updateImage();
-						_detectStates();
-						_drawImageFrame();
+						if(_updateImage()) {
+							if(_hearthstoneDetected != true) {
+								_hearthstoneDetected = true;
+								_notify("Hearthstone found");
+							}
+							_detectStates();
+							_drawImageFrame();
+						} else {
+							if(_hearthstoneDetected) {
+								_hearthstoneDetected = false;
+								_notify("Hearthstone closed");
+								f.getContentPane().removeAll();
+								_drawPaneAdded = false;
+							}
+						}
 						_updateTitle();
-						_poll();
+						try {
+							_poll();
+						} catch(Exception e) {
+							boolean foo = true;
+						}
 						return "Called!";
 					}
 				}, 200, TimeUnit.MILLISECONDS);
+		} catch(Exception e) {
+			boolean foo = true;
+		}
 	}
 
-	protected BufferedImage capture(HWND hWnd) {
+	protected static BufferedImage capture(HWND hWnd) {
 
 		HDC hdcWindow = User32.INSTANCE.GetDC(hWnd);
 		HDC hdcMemDC = GDI32.INSTANCE.CreateCompatibleDC(hdcWindow);
