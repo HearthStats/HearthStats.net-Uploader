@@ -123,12 +123,22 @@ public class Monitor extends JFrame {
 		return passed;
 	}
 	protected static void _testForPlayingScreen() {
+		
+		// check for normal play boards
 		int[][] tests = {
 			{336, 203, 231, 198, 124},		
-			{763, 440, 234, 198, 124}		
+			{763, 440, 234, 198, 124}
 		};
-		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
-		if(pxTest.passed()) {
+		PixelGroupTest normalPxTest = new PixelGroupTest(image, tests);
+		
+		// check for lighter orc board
+		int[][] orcBoardTests = {
+			{906, 283, 222, 158, 94},		
+			{120, 468, 195, 134, 78}		
+		};
+		PixelGroupTest orcPxTest = new PixelGroupTest(image, orcBoardTests);
+		
+		if(normalPxTest.passed() || orcPxTest.passed()) {
 			if(_currentScreen != "Playing") {
 				_notify("Playing detected");
 			}
