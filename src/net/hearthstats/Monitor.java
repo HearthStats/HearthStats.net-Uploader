@@ -345,6 +345,14 @@ public class Monitor extends JFrame {
 				{882, 148, 27, 20, 38}	
 		};
 		_testForClass("Priest", priestTests, false);
+		
+		// Rogue Test
+		int[][] rogueTests = {
+				{889, 254, 132, 196, 72},	
+				{790, 273, 88, 21, 34},
+				{841, 73, 100, 109, 183}	
+		};
+		_testForClass("Rogue", rogueTests, false);
 	}
 	
 	protected static void _updateTitle() {
