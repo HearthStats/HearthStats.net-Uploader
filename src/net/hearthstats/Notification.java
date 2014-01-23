@@ -26,7 +26,7 @@ public class Notification {
 	public JFrame frame = new JFrame();
 	public Notification(String header, String message) {
 		
-		frame.setSize(200, 50);
+		frame.setSize(200, 75);
 		frame.setLayout(new GridBagLayout());
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridx = 0;
