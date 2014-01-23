@@ -94,7 +94,7 @@ public class Monitor extends JFrame {
 		boolean passed = false;
 		int[][] tests = {
 				{543, 130, 121, 22, 32},	// play mode red background
-				{24, 33, 75, 33, 56}		// mode title light brown background
+				{254, 33, 197, 132, 173}		// mode title light brown background
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		if(pxTest.passed()) {
@@ -146,11 +146,11 @@ public class Monitor extends JFrame {
 		_notificationQueue.add(new net.hearthstats.Notification(header, message));
 		
 	}
-	protected void _testFoorCasualMode() {
+	protected void _testForCasualMode() {
 		
 		int[][] tests = {
-			{833, 88, 74, 16, 22},	// ranked off
-			{698, 120, 200, 255, 255}	// casual blue
+			{833, 94, 100, 16, 22},	// ranked off
+			{698, 128, 200, 255, 255}	// casual blue
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
 		
@@ -187,21 +187,18 @@ public class Monitor extends JFrame {
 		Rectangle rect = JnaUtil.getWindowRect(hWnd);
 		f.setSize(rect.width, rect.height);
 		image = capture(User32.INSTANCE.FindWindow(null, "Hearthstone"));
-		_drawImageFrame();
 	}
 
 	protected void _detectStates() {
 
-		if(_testForMainMenuScreen()) {
-			
-		} else {
-			if(_testForPlayModeScreen()) {
-				
-			}
+		if(_currentScreen != "Main Menu") {
+			_testForMainMenuScreen();
 		}
 		if(_currentScreen == "Play") {
 			_testForRankedMode();
-			_testFoorCasualMode();
+			_testForCasualMode();
+		} else {
+			_testForPlayModeScreen();	
 		}
 	}
 	protected void _poll() {
@@ -210,11 +207,12 @@ public class Monitor extends JFrame {
 					public Object call() throws Exception {
 						_updateImage();
 						_detectStates();
+						_drawImageFrame();
 						_updateTitle();
 						_poll();
 						return "Called!";
 					}
-				}, 100, TimeUnit.MILLISECONDS);
+				}, 200, TimeUnit.MILLISECONDS);
 	}
 
 	protected BufferedImage capture(HWND hWnd) {

@@ -44,6 +44,13 @@ public class PixelGroup {
 		
 	}
 	
+	public void markPixels() {
+		for(int i = 0; i < _pixels.length; i++) {
+			Pixel px = _pixels[i];
+			px.mark();
+		}
+	}
+	
 	/**
 	 * Are the red, blue, and green values within a given range
 	 * 

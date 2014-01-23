@@ -21,7 +21,7 @@ to see how things are progressing.
 
 * Make sure you have Java installed (use the [windows 32 bit version](http://java.com/en/download/manual.jsp) builds)
 * __[Download latest build](https://github.com/JeromeDane/HearthStats.net-Uploader/raw/master/hss-uploader.0.1.20130122.2.jar)__ of the HearthStats.net Uploader
-* Start your Hearthstone client and put it in 1024x768 windowed mode - see [issue #13](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/13)
+* Start your Hearthstone client and put it in __windowed mode__ (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
 * Run the .jar file you downloaded above
 * A window should open called "HearthStats.net Uploader"
 * Return to Hearthstone and play as normal
@@ -32,7 +32,7 @@ Known Issues
 -------------
 
 * Only supports Windows at the moment
-* Game must be running in 1024x768 windowed mode at the moment - see [issue #13](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/13)
+* Game must be running in __windowed mode__ at the moment (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
 * Fails to correctly grab screenshot on some windows systems - see [issue #12](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/12)
  
 Please see the full [list of known issues](https://github.com/JeromeDane/HearthStats.net-Uploader/issues)
