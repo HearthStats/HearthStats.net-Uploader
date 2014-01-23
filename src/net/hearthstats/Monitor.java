@@ -90,6 +90,24 @@ public class Monitor extends JFrame {
 		return new PixelGroup(image, x + _xOffset, y + _yOffset, 3, 3);
 	}
 
+	protected boolean _testForMatchStart() {
+		
+		boolean passed = false;
+		int[][] tests = {
+				{403, 487, 201, 94, 173},	// title bar
+				{946, 149, 203, 96, 174}	// bottom bar
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(image, tests);
+		if(pxTest.passed()) {
+			if(_currentScreen != "Match Start") {
+				_coin = false;
+				_notify("Match Start detected");
+				passed = true;
+			}
+			_currentScreen = "Match Start";
+		}
+		return passed;
+	}
 	protected boolean _testForFindingOpponent() {
 		
 		boolean passed = false;
@@ -234,13 +252,15 @@ public class Monitor extends JFrame {
 			_testForMainMenuScreen();
 		}
 		
+		if(_currentScreen == "Finding Opponent") {
+			_testForMatchStart();
+			_coin = false;	// reset to no coin
+		}
 		if(_currentScreen == "Play") {
 			if(_currentScreen != "Finding Opponent") {
 				_testForFindingOpponent();
 				_testForRankedMode();
 				_testForCasualMode();
-			} else {
-				_coin = false;
 			}
 		} else {
 			_testForPlayModeScreen();	
