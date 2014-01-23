@@ -250,9 +250,9 @@ public class Monitor extends JFrame {
 		String title = "HearthStats.net Uploader";
 		if(_hearthstoneDetected) {
 			if(_currentScreen != null) {
-				title += " - " + _currentScreen + ' ';
-				if(_currentScreen == "Play" && _gameMode != null) {
-					title += _gameMode;
+				title += " - " + _currentScreen;
+				if((_currentScreen == "Play" || _currentScreen == "Playing")&& _gameMode != null) {
+					title += " " + _gameMode;
 				}
 				if(_currentScreen == "Match Start") {
 					if(_coin) {
@@ -262,6 +262,21 @@ public class Monitor extends JFrame {
 					}
 					if(_yourClass != null) {
 						title += " " + _yourClass;
+					}
+				}
+				if(_currentScreen == "Finding Opponent") {
+					if(_gameMode != null) {
+						title += " for " + _gameMode + " game";
+					}
+				}
+				if(_currentScreen == "Playing") {
+					if(_coin) {
+						title += " Coin";
+					} else {
+						title += " No Coin";
+					}
+					if(_yourClass != null) {
+						title += _yourClass;
 					}
 				}
 			}
