@@ -33,7 +33,7 @@ Known Issues
 
 * Only supports Windows at the moment
 * Game must be running in __windowed mode__ at the moment (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
-* Fails to correctly grab screenshot on some windows systems - see [issue #12](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/12)
+* If you don't see the image in the uploader window update to match your game, make sure you have the latest drivers installed for your graphics card.
  
 Please see the full [list of known issues](https://github.com/JeromeDane/HearthStats.net-Uploader/issues)
 as well.
