@@ -67,6 +67,7 @@ public class Monitor extends JFrame {
 	protected static String _yourClass;
 	protected static String _opponentClass;
 	protected static String _result;
+	protected static int _deckSlot = 0;
 	protected static boolean _coin = false;
 	protected static boolean _hearthstoneDetected;
 
@@ -104,6 +105,32 @@ public class Monitor extends JFrame {
 			_currentScreen = "Match Start";
 		}
 		return passed;
+	}
+	
+	protected static void _testForDeckSlot() {
+		
+		if(_deckSlot != 1) {
+			int[][] slotOnePixels = {
+					{146, 161, 45, 150, 247}	// bottom bar
+			};
+			PixelGroupTest slotOneTest = new PixelGroupTest(image, slotOnePixels);
+			if(slotOneTest.passed()) {
+				_notify("Deck slot 1 selected");
+				_deckSlot = 1;
+			}
+		}
+		
+		if(_deckSlot != 2) {
+			int[][] slotTwoPixels = {
+					{348, 160, 44, 142, 247}	// bottom bar
+			};
+			PixelGroupTest slotTwoTest = new PixelGroupTest(image, slotTwoPixels);
+			if(slotTwoTest.passed()) {
+				_notify("Deck slot 2 selected");
+				_deckSlot = 2;
+			}
+		}
+		
 	}
 	protected static boolean _testForFindingOpponent() {
 		
@@ -552,6 +579,7 @@ public class Monitor extends JFrame {
 				if(_currentScreen == "Play") {
 					_testForRankedMode();
 					_testForCasualMode();
+					_testForDeckSlot();
 				}
 				_testForFindingOpponent();
 			}
