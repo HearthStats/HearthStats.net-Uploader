@@ -22,7 +22,7 @@ to see how things are progressing.
 * Make sure you have Java installed (use windows (http://java.com/en/download/manual.jsp) builds)
 * Download the __[latest release](https://github.com/JeromeDane/HearthStats.net-Uploader/releases)__ of the HearthStats.net Uploader
 * Extract the downloaded zip file to any directory
-* Find your __userkey__ from your [HearthStats.net profile page](http://hearthstats.net/profiles)
+* Find your __userkey__ from your [HearthStats.net profile page](http://hearthstats.net/profiles) (not currently implemented)
 * Edit __config.ini__, replace **your_userkey_here** with the string you found in the previous step, and save the file   
 * Run the HearthStatsUploader.jar
 * A window should open called "HearthStats.net Uploader"
