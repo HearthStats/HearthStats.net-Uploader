@@ -172,20 +172,85 @@ public class HearthstoneAnalyzer extends Observable {
 
 		if(getDeckSlot() != 1) {
 			int[][] slotOnePixels = { 
-				{ 146, 161, 45, 150, 247 } // bottom bar
+				{ 163, 178, 33, 129, 242},
+				{ 183, 178, 33, 129, 242}
 			};
-			if((new PixelGroupTest(_image, slotOnePixels)).passed())
+			if((new PixelGroupTest(_image, slotOnePixels)).passedOr())
 				_setDeckSlot(1);
 		}
 
 		if(getDeckSlot() != 2) {
 			int[][] slotTwoPixels = { 
-				{ 348, 160, 44, 142, 247 } // bottom bar
+				{ 348, 178, 36, 144, 247 },
+				{ 368, 178, 36, 144, 247 }
 			};
-			if((new PixelGroupTest(_image, slotTwoPixels)).passed())
+			if((new PixelGroupTest(_image, slotTwoPixels)).passedOr())
 				_setDeckSlot(2);
 		}
+		
+		if(getDeckSlot() != 3) {
+			int[][] slotTwoPixels = { 
+					{ 506, 178, 36, 144, 247 },
+					{ 526, 178, 36, 144, 247 }
+			};
+			if((new PixelGroupTest(_image, slotTwoPixels)).passedOr())
+				_setDeckSlot(3);
+		}
+		
+		if(getDeckSlot() != 4) {
+			int[][] slotOnePixels = { 
+					{ 163, 339, 33, 129, 242},
+					{ 183, 339, 33, 129, 242}
+			};
+			if((new PixelGroupTest(_image, slotOnePixels)).passedOr())
+				_setDeckSlot(4);
+		}
+		
+		if(getDeckSlot() != 5) {
+			int[][] slotTwoPixels = { 
+					{ 348, 339, 36, 144, 247 },
+					{ 368, 339, 36, 144, 247 }
+			};
+			if((new PixelGroupTest(_image, slotTwoPixels)).passedOr())
+				_setDeckSlot(5);
+		}
+		
+		if(getDeckSlot() != 6) {
+			int[][] slotTwoPixels = { 
+					{ 506, 339, 36, 144, 247 },
+					{ 526, 339, 36, 144, 247 }
+			};
+			if((new PixelGroupTest(_image, slotTwoPixels)).passedOr())
+				_setDeckSlot(6);
+		}
 
+		if(getDeckSlot() != 7) {
+			int[][] slotOnePixels = { 
+					{ 163, 497, 33, 129, 242},
+					{ 183, 497, 33, 129, 242}
+			};
+			if((new PixelGroupTest(_image, slotOnePixels)).passedOr())
+				_setDeckSlot(7);
+		}
+		
+		if(getDeckSlot() != 8) {
+			int[][] slotTwoPixels = { 
+					{ 348, 497, 36, 144, 247 },
+					{ 368, 497, 36, 144, 247 }
+			};
+			if((new PixelGroupTest(_image, slotTwoPixels)).passedOr())
+				_setDeckSlot(8);
+		}
+		
+		if(getDeckSlot() != 9) {
+			int[][] slotTwoPixels = { 
+					{ 506, 497, 36, 144, 247 },
+					{ 526, 497, 36, 144, 247 }
+			};
+			if((new PixelGroupTest(_image, slotTwoPixels)).passedOr())
+				_setDeckSlot(9);
+		}
+		
 	}
 	
 	private void _testForDefeat() {
