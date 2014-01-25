@@ -43,6 +43,22 @@ public class API extends Observable {
 		
 		return resultingArenaRun;
 	}
+	
+	public ArenaRun createMatch(HearthstoneMatch hsMatch) throws IOException {
+		
+		JSONObject result = null;
+		
+		if(hsMatch.getMode() == "Arena")
+			result = _post("arenas/new", hsMatch.toJsonObject());
+		
+		ArenaRun resultingArenaRun = null;
+		if(result != null) {
+			resultingArenaRun = new ArenaRun(result);
+			_dispatchResultMessage("Match created: " + hsMatch.toString());
+		}
+		
+		return resultingArenaRun;
+	}
 	public ArenaRun getLastArenaRun() throws IOException {
 		
 		JSONObject resultObj = _get("arena_runs/show");
