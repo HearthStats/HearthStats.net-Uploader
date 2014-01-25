@@ -42,7 +42,7 @@ public class API extends Observable {
 		JSONObject resultObj = _get("arena_runs/show");
 		ArenaRun arenaRun =  resultObj == null ? null : new ArenaRun(resultObj);
 		if(arenaRun != null) {
-			_dispatchResultMessage("Fetched current " + arenaRun._userclass + " arena run");
+			_dispatchResultMessage("Fetched current " + arenaRun.getUserClass() + " arena run");
 		}
 		return arenaRun;
 	}
