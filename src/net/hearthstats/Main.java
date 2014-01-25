@@ -49,7 +49,7 @@ public class Main extends JFrame {
 	
 	public static void main(String[] args) throws JnaUtilException, IOException {
 
-		Monitor.start();
+		(new Monitor()).start();
 
 	}
 	
