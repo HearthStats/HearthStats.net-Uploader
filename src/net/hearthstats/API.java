@@ -33,9 +33,15 @@ public class API extends Observable {
 	
 	public ArenaRun createArenaRun(ArenaRun arenaRun) throws IOException {
 		
-		_post("arena_runs/new", arenaRun.toJsonObject());
+		JSONObject result = _post("arena_runs/new", arenaRun.toJsonObject());
 		
-		return arenaRun;
+		ArenaRun resultingArenaRun = null;
+		if(result != null) {
+			resultingArenaRun = new ArenaRun(result);
+			_dispatchResultMessage(resultingArenaRun.getUserClass() + " run created");
+		}
+		
+		return resultingArenaRun;
 	}
 	public ArenaRun getLastArenaRun() throws IOException {
 		
@@ -48,7 +54,7 @@ public class API extends Observable {
 	}
 	
 	private JSONObject _get(String method) throws MalformedURLException, IOException {
-		URL url = new URL(_baseURL + method + "?key=" + _getKey());
+		URL url = new URL(_baseURL + method + "?userkey=" + _getKey());
 		BufferedReader reader = null;
 		String resultString = "";
 		try {
@@ -82,7 +88,7 @@ public class API extends Observable {
 	
 	private JSONObject _post(String method, JSONObject jsonData) throws MalformedURLException, IOException {
 		
-		URL url = new URL(_baseURL + method + "?key=" + _getKey());
+		URL url = new URL(_baseURL + method + "?userkey=" + _getKey());
 		
 		HttpURLConnection httpcon = (HttpURLConnection) (url.openConnection());
 		httpcon.setDoOutput(true);
@@ -100,27 +106,14 @@ public class API extends Observable {
 		// get response
 		InputStream instr = httpcon.getInputStream();
 		BufferedReader br = new BufferedReader(new InputStreamReader(instr));
+		String resultString = "";
 		String lin;
 		while((lin = br.readLine())!=null){
-		    System.out.println("[Debug]"+lin);
+			resultString += lin;
 		}
 		
-		return jsonData;
-		
-		/*
-		BufferedReader reader = null;
-		String resultString = "";
-		try {
-		    reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
-		    
-		    for (String line; (line = reader.readLine()) != null;) {
-		    	resultString += line;
-		    }
-		} finally {
-		    if (reader != null) try { reader.close(); } catch (IOException ignore) {}
-		}
 		return _parseResult(resultString);	
-		*/	
+		
 	}
 	
 	public String getMessage() {

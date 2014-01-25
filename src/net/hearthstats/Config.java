@@ -11,7 +11,7 @@ public class Config {
 	private static Wini _ini = null;
 	
 	public static String getUserKey() {
-		return  _getIni().get("api", "userkey", String.class);
+		return  _getIni().get("API", "userkey", String.class);
 	}
 
 	private static Wini _getIni() {
