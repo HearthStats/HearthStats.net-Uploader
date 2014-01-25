@@ -1,5 +1,5 @@
 HearthStats.net Uploader
-==========================
+========================
 
 This is a Java based utility designed to run in the background and automatically
 upload your win ratios and other statistics to [HearthStats.net](http://HearthStats.net)
@@ -19,18 +19,21 @@ to help test things out or just see how things are going. Check out the project'
 [milestones](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/milestones) 
 to see how things are progressing.
 
-* Make sure you have Java installed (use the [windows 32 bit version](http://java.com/en/download/manual.jsp) builds)
-* __[Download latest build](https://github.com/JeromeDane/HearthStats.net-Uploader/raw/master/hss-uploader.0.2.20130123.1.jar)__ of the HearthStats.net Uploader
-* Start your Hearthstone client and put it in __windowed mode__ (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
-* Run the .jar file you downloaded above
+* Make sure you have Java installed (use windows (http://java.com/en/download/manual.jsp) builds)
+* Download the __[latest release](https://github.com/JeromeDane/HearthStats.net-Uploader/releases)__ of the HearthStats.net Uploader
+* Extract the downloaded zip file to any directory
+* Find your __userkey__ from your [HearthStats.net profile page](http://hearthstats.net/profiles)
+* Edit __config.ini__, replace **your_userkey_here** with the string you found in the previous step, and save the file   
+* Run the HearthStatsUploader.jar
 * A window should open called "HearthStats.net Uploader"
-* Return to Hearthstone and play as normal
+* Start your Hearthstone client and put it in __windowed mode__ (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
 * Look for notifications in the bottom right of your screen that indicate event detection
 * [Report any issues you find](https://github.com/JeromeDane/HearthStats.net-Uploader/issues)
 
 Known Issues
 -------------
 
+* This alpha build does not yet submit data to HearthStats.net
 * Only supports Windows at the moment
 * Game must be running in __windowed mode__ at the moment (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
 * If you don't see the image in the uploader window update to match your game, make sure you have the latest drivers installed for your graphics card.

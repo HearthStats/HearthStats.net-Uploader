@@ -37,6 +37,8 @@ public class Monitor extends JFrame implements Observer {
 		f.setLocation(0, 0);
 		f.setVisible(true);
 
+		Config.getUserKey();
+		
 		_api.addObserver(this);
 		
 		_analyzer.addObserver(this);

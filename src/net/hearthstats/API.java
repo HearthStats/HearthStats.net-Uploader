@@ -130,11 +130,7 @@ public class API extends Observable {
 	private String _getKey() throws IOException {
 		if(_key != null)
 			return _key;
-		try {
-			_key = Files.readAllLines(Paths.get("appkey.txt"), Charset.defaultCharset()).get(0);
-		} catch(IOException e) {
-			_throwError("File " + e.getMessage() + " not found");
-		}
+		_key = Config.getUserKey();
 		return _key;
 	}
 	
