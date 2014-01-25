@@ -4,14 +4,23 @@ import org.json.simple.JSONObject;
 
 public class ArenaRun {
 	
-	public String userclass;
+	private String _userclass;
 	
 	public ArenaRun() {
 	}
 	
 	public ArenaRun(JSONObject jsonObj) {
-		userclass = (String) jsonObj.get("userclass");
+		_userclass = (String) jsonObj.get("userclass");
 	}
 	
+	public void setUserClass(String userclass) {
+		_userclass = userclass;
+	}
+	
+	public JSONObject toJsonObject() {
+		JSONObject obj = new JSONObject();
+		obj.put("userclass", _userclass);
+		return obj;
+	}
 
 }

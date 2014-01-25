@@ -15,6 +15,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import com.sun.org.apache.bcel.internal.generic.NEWARRAY;
+
 import jna.JnaUtilException;
 
 @SuppressWarnings("serial")
@@ -36,7 +38,6 @@ public class Monitor extends JFrame implements Observer {
 		f.setVisible(true);
 
 		_api.addObserver(this);
-		ArenaRun run = _api.getCurrentArenaRun();
 		
 		_analyzer.addObserver(this);
 		
