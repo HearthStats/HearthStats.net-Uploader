@@ -25,10 +25,18 @@ public class API extends Observable {
 
 	private String _key;
 	private String _message;
-	private String _baseURL = "http://192.168.1.114:3000/api/v1/";
+	private String _baseURL = "http://beta.hearthstats.net/api/v1/";
 	
 	public API() {
 		 
+	}
+	
+	public void endCurrentArenaRun() throws IOException {
+		
+		JSONObject resultObj = _get("arena_runs/end");
+		ArenaRun arenaRun = resultObj == null ? null : new ArenaRun(resultObj);
+		if(arenaRun != null)
+			_dispatchResultMessage("Ended " + arenaRun.getUserClass() + " arena run");
 	}
 	
 	public ArenaRun createArenaRun(ArenaRun arenaRun) throws IOException {

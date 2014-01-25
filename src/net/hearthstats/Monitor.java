@@ -123,14 +123,28 @@ public class Monitor extends JFrame implements Observer {
 		f.repaint();
 	}
 
-	protected void _submitMatchResult() {
+	protected void _submitMatchResult() throws IOException {
+		HearthstoneMatch hsMatch = new HearthstoneMatch();
+		hsMatch.setMode(_analyzer.getMode());
+		hsMatch.setUserClass(_analyzer.getYourClass());
+		hsMatch.setOpponentClass(_analyzer.getOpponentClass());
+		hsMatch.setCoin(_analyzer.getCoin());
+		hsMatch.setResult(_analyzer.getResult());
+		
+		// check for new arena run
+		if(hsMatch.getMode() == "Arena" && _analyzer.isNewArena()) {
+			ArenaRun run = new ArenaRun();
+			run.setUserClass(hsMatch.getUserClass());
+			_notify("Creating new arena run");
+			_api.createArenaRun(run);
+			_analyzer.setIsNewArena(false);
+		}
+		
 		String header = "Submitting match result";
-		String message = _analyzer.getMode() + " game " + 
-						(_analyzer.getCoin() ? "" : "no ") + "coin " + 
-						_analyzer.getYourClass() + " VS. " + 
-						_analyzer.getOpponentClass() + " " + 
-						_analyzer.getResult();
+		String message = hsMatch.toString(); 
 		_notify(header, message);
+		
+		_api.createMatch(hsMatch);
 	}
 	
 	protected void _handleHearthstoneFound() throws JnaUtilException {
@@ -181,7 +195,7 @@ public class Monitor extends JFrame implements Observer {
 		}, _pollingIntervalInMs, TimeUnit.MILLISECONDS);
 	}
 
-	protected void _handleAnalyzerEvent(Object changed) {
+	protected void _handleAnalyzerEvent(Object changed) throws IOException {
 		switch(changed.toString()) {
 			case "coin":
 				_notify("Coin Detected");
@@ -191,6 +205,10 @@ public class Monitor extends JFrame implements Observer {
 				break;
 			case "mode":
 				_notify(_analyzer.getMode() + " Mode Detected");
+				break;
+			case "newArena":
+				if(_analyzer.isNewArena())
+					_notify("New Arena Run Detected");
 				break;
 			case "opponentClass":
 				_notify("Playing vs " + _analyzer.getOpponentClass());
@@ -225,7 +243,12 @@ public class Monitor extends JFrame implements Observer {
 	public void update(Observable dispatcher, Object changed) {
 		Object v = dispatcher.getClass().toString();
 		if(dispatcher.getClass().toString().matches(".*HearthstoneAnalyzer"))
-			_handleAnalyzerEvent(changed);
+			try {
+				_handleAnalyzerEvent(changed);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		if(dispatcher.getClass().toString().matches(".*API"))
 			_handleApiEvent(changed);
 	}

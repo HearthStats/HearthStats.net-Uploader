@@ -13,6 +13,7 @@ public class HearthstoneAnalyzer extends Observable {
 	private String _screen;
 	private String _yourClass;
 	private int _deckSlot;
+	private boolean _isNewArena = false;
 
 	public HearthstoneAnalyzer() {
 
@@ -64,6 +65,10 @@ public class HearthstoneAnalyzer extends Observable {
 			_testForVictory();
 			_testForDefeat();
 		}
+		
+		if(getScreen() == "Arena" && !isNewArena()) {
+			_testForNewArenaRun();
+		}
 	}
 
 	public boolean getCoin() {
@@ -93,10 +98,19 @@ public class HearthstoneAnalyzer extends Observable {
 	public String getYourClass() {
 		return _yourClass;
 	}
+	
+	public boolean isNewArena() {
+		return _isNewArena;
+	}
 
 	private void _notifyObserversOfChangeTo(String property) {
 		setChanged();
 	    notifyObservers(property);
+	}
+	
+	public void setIsNewArena(boolean isNew) {
+		_isNewArena = isNew;
+		_notifyObserversOfChangeTo("newArena");
 	}
 	
 	private void _setDeckSlot(int deckSlot) {
@@ -335,6 +349,19 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 	}
 	
+	private void _testForNewArenaRun() {
+		int[][] tests = { 
+				{ 298, 170, 255, 239, 148 },	// key
+				//{ 492, 204, 128, 79, 47 }, 		// key stem
+				{ 382, 294, 255, 255, 255 }, 	// zero
+				{ 393, 281, 255, 255, 255 }, 	// zero
+				{ 321, 399, 209, 179, 127 }, 	// no red x
+		};
+		
+		if ((new PixelGroupTest(_image, tests)).passed())  {
+			setIsNewArena(true);
+		}
+	}
 	private void _testForOpponentClass() {
 		
 		// Druid Test
