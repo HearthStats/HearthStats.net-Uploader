@@ -40,6 +40,7 @@ import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 
+@SuppressWarnings("serial")
 public class Main extends JFrame {
 
 	protected static ScheduledExecutorService scheduledExecutorService = Executors

@@ -20,7 +20,11 @@ import jna.JnaUtilException;
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer {
 
+	protected API _api = new API();
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
+	protected ProgramHelper _hsHelper = new ProgramHelper("Hearthstone");
+	protected int _pollingIntervalInMs = 100;
+	protected boolean _hearthstoneDetected;
 	
 	public void start() throws JnaUtilException, IOException {
 
@@ -31,15 +35,14 @@ public class Monitor extends JFrame implements Observer {
 		f.setLocation(0, 0);
 		f.setVisible(true);
 
+		_api.addObserver(this);
+		ArenaRun run = _api.getCurrentArenaRun();
+		
 		_analyzer.addObserver(this);
+		
 		_pollHearthstone();
 
 	}
-
-	protected ProgramHelper _hsHelper = new ProgramHelper("Hearthstone");
-	protected int _pollingIntervalInMs = 100;
-	protected boolean _hearthstoneDetected;
-	
 
 	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
 
@@ -177,8 +180,7 @@ public class Monitor extends JFrame implements Observer {
 		}, _pollingIntervalInMs, TimeUnit.MILLISECONDS);
 	}
 
-	@Override
-	public void update(Observable analyzer, Object changed) {
+	protected void _handleAnalyzerEvent(Object changed) {
 		switch(changed.toString()) {
 			case "coin":
 				_notify("Coin Detected");
@@ -204,6 +206,27 @@ public class Monitor extends JFrame implements Observer {
 				_notify("Playing as " + _analyzer.getYourClass());
 				break;
 		}
+	}
+	
+	
+	protected void _handleApiEvent(Object changed) {
+		switch(changed.toString()) {
+			case "error":
+				_notify("API Error", _api.getMessage());
+				break;
+			case "result":
+				_notify("API Result", _api.getMessage());
+				break;
+		}
+	}
+	
+	@Override
+	public void update(Observable dispatcher, Object changed) {
+		Object v = dispatcher.getClass().toString();
+		if(dispatcher.getClass().toString().matches(".*HearthstoneAnalyzer"))
+			_handleAnalyzerEvent(changed);
+		if(dispatcher.getClass().toString().matches(".*API"))
+			_handleApiEvent(changed);
 	}
 
 
