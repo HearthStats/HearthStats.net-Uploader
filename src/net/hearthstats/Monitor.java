@@ -197,6 +197,10 @@ public class Monitor extends JFrame implements Observer {
 
 	protected void _handleAnalyzerEvent(Object changed) throws IOException {
 		switch(changed.toString()) {
+			case "arenaEnd":
+				_notify("End of Arena Run Detected");
+				_api.endCurrentArenaRun();
+				break;
 			case "coin":
 				_notify("Coin Detected");
 				break;

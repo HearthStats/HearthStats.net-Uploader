@@ -148,6 +148,18 @@ public class HearthstoneAnalyzer extends Observable {
 		_notifyObserversOfChangeTo("yourClass");
 	}
 	
+	private void _testForArenaEnd() {
+		
+		int[][] tests = { 
+				{ 315, 387, 239, 32, 39 }, 
+				{ 399, 404, 237, 41, 33 }, 
+				{ 448, 408, 223, 8, 16 }
+		};
+		if((new PixelGroupTest(_image, tests)).passed()) {
+			_notifyObserversOfChangeTo("arenaEnd");
+		}
+	}
+	
 	private void _testForArenaModeScreen() {
 
 		int[][] tests = { 
