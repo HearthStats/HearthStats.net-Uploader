@@ -25,7 +25,7 @@ public class Monitor extends JFrame implements Observer {
 	protected API _api = new API();
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
 	protected ProgramHelper _hsHelper = new ProgramHelper("Hearthstone");
-	protected int _pollingIntervalInMs = 100;
+	protected int _pollingIntervalInMs = 500;
 	protected boolean _hearthstoneDetected;
 	
 	public void start() throws JnaUtilException, IOException {

@@ -61,6 +61,10 @@ public class HearthstoneAnalyzer extends Observable {
 			_testForPlayingScreen();
 		}
 		
+		if(getScreen() == "Result") {
+			_testForArenaEnd();
+		}
+		
 		if(getScreen() == "Playing") {
 			_testForVictory();
 			_testForDefeat();
@@ -69,6 +73,8 @@ public class HearthstoneAnalyzer extends Observable {
 		if(getScreen() == "Arena" && !isNewArena()) {
 			_testForNewArenaRun();
 		}
+		
+		_image.flush();
 	}
 
 	public boolean getCoin() {
@@ -156,6 +162,7 @@ public class HearthstoneAnalyzer extends Observable {
 				{ 448, 408, 223, 8, 16 }
 		};
 		if((new PixelGroupTest(_image, tests)).passed()) {
+			_screen = "Arena";
 			_notifyObserversOfChangeTo("arenaEnd");
 		}
 	}
