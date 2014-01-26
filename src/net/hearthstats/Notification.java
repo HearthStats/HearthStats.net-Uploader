@@ -6,9 +6,11 @@ package net.hearthstats;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
@@ -66,15 +68,13 @@ public class Notification {
 	}
 	protected int _offset = 0;
 	public void offset(int offset) {
-		_offset = offset;
-		Dimension scrSize = Toolkit.getDefaultToolkit().getScreenSize();// size of the screen
-		Insets toolHeight = Toolkit.getDefaultToolkit().getScreenInsets(frame.getGraphicsConfiguration());// height of the task bar
-		int x = scrSize.width - frame.getWidth() - 100;
-		int y = scrSize.height - toolHeight.bottom - frame.getHeight() - 75 - (frame.getHeight() + 5) * offset;
+		
+		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Rectangle bounds = env.getMaximumWindowBounds();
+		
+		int x = bounds.width - frame.getWidth() - 5;
+		int y = bounds.height - frame.getHeight() - 5 - (frame.getHeight() + 5) * offset;
 		frame.setLocation(x, y);
-	}
-	public int getOffset() {
-		return _offset;
 	}
 	public void show() {
 		frame.setVisible(true);
