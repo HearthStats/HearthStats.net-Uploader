@@ -597,6 +597,14 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 294, 680, 60, 75, 182 } 
 		};
 		_testForClass("Warlock", warlockTests, true);
+		
+		// Warrior Test
+		int[][] warriorTests = { 
+				{ 252, 452, 163, 10, 0 }, 
+				{ 291, 579, 234, 192, 53 }, 
+				{ 280, 461, 255, 245, 225 } 
+		};
+		_testForClass("Warior", warriorTests, true);
 	}
 
 }
