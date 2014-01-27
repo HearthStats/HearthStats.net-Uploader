@@ -1,12 +1,18 @@
 package net.hearthstats;
 
+import java.net.URI;
 import java.awt.AWTException;
+import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Callable;
@@ -38,9 +44,12 @@ public class Monitor extends JFrame implements Observer {
 	public void start() throws JnaUtilException, IOException {
 		
 		if(Config.analyticsEnabled()) {
-			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader","0.4.201301271","UA-45442103-3");
+			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("AppStart"));
 		}
+		
+		_checkForUpdates();
+		
 		Image icon = new ImageIcon("images/icon.png").getImage();
 
 		f.setIconImage(icon);
@@ -60,6 +69,41 @@ public class Monitor extends JFrame implements Observer {
 		
 		_pollHearthstone();
 
+	}
+
+	private void _checkForUpdates() {
+		if(Config.checkForUpdates()) {
+			try {
+				URL url = new URL("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/version");
+				BufferedReader reader = null;
+				String availableVersion = "";
+				try {
+				    reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
+				    
+				    for (String line; (line = reader.readLine()) != null;) {
+				    	availableVersion += line;
+				    }
+				} finally {
+				    if (reader != null) try { reader.close(); } catch (IOException ignore) {}
+				}
+				if(!availableVersion.matches(Config.getVersion())) {
+					if(Config.alertUpdates()) {
+						JOptionPane.showMessageDialog(null, "HearthStats.net Uploader Update Available: v" + availableVersion + "\n\n" +
+								"A new version of HearthStats.net is available.\n" +
+								"You are currently using v" + Config.getVersion() + ".\n\n" +
+								"You will now be taken to the download page.\n\n" +
+								"Edit config.ini to disable future update checks.");				
+					}
+					// Create Desktop object
+					 Desktop d = Desktop.getDesktop();
+
+					 // Browse a URL, say google.com
+					 d.browse(new URI("https://github.com/JeromeDane/HearthStats.net-Uploader/releases"));
+				}
+			} catch(Exception e) {
+				_notify("Update Checking Error", "Unable to determine the latest available version");
+			}
+		}
 	}
 
 	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
