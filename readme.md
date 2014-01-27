@@ -14,6 +14,7 @@ Contributing to this Project
 
 There are several things you can do to help this project out:
 
+* Check out and participate in [the reddit thread](http://www.reddit.com/r/hearthstone/comments/1wa4rc/auto_uploader_for_hearthstatsnet_need_help_testing/)
 * Download and test early builds, making sure to [report any issues you find](https://github.com/JeromeDane/HearthStats.net-Uploader/issues)
 * Fork this repository if you can hack, and create a pull request if you come up with things to contribute.
 * [Buy Jerome a cup of coffee via PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=F9XNSXLZNP9QQ) for his work on this uploader
