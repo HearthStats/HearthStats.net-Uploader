@@ -23,7 +23,7 @@ public class HearthstoneAnalyzer extends Observable {
 		
 		_image = image;
 
-		if(getScreen() != "Main Menu") {
+		if(getScreen() != "Main Menu" && getScreen() != "Playing") {
 			_testForMainMenuScreen();
 		}
 
@@ -350,8 +350,9 @@ public class HearthstoneAnalyzer extends Observable {
 	private void _testForMainMenuScreen() {
 
 		int[][] tests = { 
-			{ 338, 453, 159, 96, 42 }, // box top
-			{ 211, 658, 228, 211, 116 } // quest button exclamation mark
+			{ 338, 453, 159, 96, 42 }, 		// box top
+			{ 211, 658, 228, 211, 116 }, 	// quest button exclamation mark
+			{ 513, 148, 36, 23, 24 } 		// dark vertical line in top center
 		};
 		if((new PixelGroupTest(_image, tests)).passed())
 			_setScreen("Main Menu");
