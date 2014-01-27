@@ -195,9 +195,12 @@ public class HearthstoneAnalyzer extends Observable {
 	private void _testForCoin() {
 
 		int[][] tests = { 
-			{ 869, 389, 155, 250, 103 } // fourth card right edge
+			// fourth card right edge
+			{ 869, 389, 155, 250, 103 }, 
+			{ 864, 328, 130, 255, 85 }, 
+			{ 864, 379, 126, 255, 82 }
 		};
-		if((new PixelGroupTest(_image, tests)).passed())
+		if((new PixelGroupTest(_image, tests)).passedOr())
 			_setCoin(true);
 	}
 	
