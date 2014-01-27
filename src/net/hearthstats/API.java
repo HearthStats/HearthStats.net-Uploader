@@ -58,7 +58,9 @@ public class API extends Observable {
 		
 		if(hsMatch.getMode() == "Arena")
 			result = _post("arenas/new", hsMatch.toJsonObject());
-		
+		else
+			result = _post("constructeds/new", hsMatch.toJsonObject());
+			
 		ArenaRun resultingArenaRun = null;
 		if(result != null) {
 			resultingArenaRun = new ArenaRun(result);

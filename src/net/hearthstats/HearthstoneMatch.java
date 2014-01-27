@@ -9,11 +9,16 @@ public class HearthstoneMatch {
 	private String _opponentClass;
 	private boolean _coin = false;
 	private String _result;
+	private int _deckSlot;
 	
 	public HearthstoneMatch() {
 		
 	}
 
+	public int getDeckSlot() {
+		return _deckSlot;
+	}
+	
 	public String getMode() {
 		return _mode;
 	}
@@ -45,6 +50,10 @@ public class HearthstoneMatch {
 	public void setCoin(boolean _coin) {
 		this._coin = _coin;
 	}
+	
+	public void setDeckSlot(int deckSlot) {
+		_deckSlot = deckSlot;
+	}
 
 	public String getResult() {
 		return _result;
@@ -64,10 +73,15 @@ public class HearthstoneMatch {
 
 	public JSONObject toJsonObject() {
 		JSONObject obj = new JSONObject();
+		obj.put("mode", getUserClass());
+		obj.put("userclass", getUserClass());
 		obj.put("oppclass", getOpponentClass());
 		obj.put("win", getResult() == "Victory" ? "true" : "false");
 		obj.put("gofirst", hasCoin() ? "false" : "true");
+		obj.put("slot", getDeckSlot());
+		obj.put("rank", getMode());
 		
 		return obj;
 	}
+
 }
