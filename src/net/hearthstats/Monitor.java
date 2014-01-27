@@ -33,16 +33,14 @@ public class Monitor extends JFrame implements Observer {
 	protected ProgramHelper _hsHelper = new ProgramHelper("Hearthstone");
 	protected int _pollingIntervalInMs = 100;
 	protected boolean _hearthstoneDetected;
+	protected JGoogleAnalyticsTracker _analytics;
 	
 	public void start() throws JnaUtilException, IOException {
 		
-		//Google analytics tracking code for Library Finder
-		/*
-		JGoogleAnalyticsTracker tracker = new JGoogleAnalyticsTracker("Library Finder","1.3.2","UA-47436749-1");
-		FocusPoint focusPoint = new FocusPoint("PluginLoad");
-		tracker.trackAsynchronously(focusPoint);
-		*/
-		
+		if(Config.analyticsEnabled()) {
+			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader","0.4.201301271","UA-45442103-3");
+			_analytics.trackAsynchronously(new FocusPoint("AppStart"));
+		}
 		Image icon = new ImageIcon("images/icon.png").getImage();
 
 		f.setIconImage(icon);
@@ -163,6 +161,10 @@ public class Monitor extends JFrame implements Observer {
 		String header = "Submitting match result";
 		String message = hsMatch.toString(); 
 		_notify(header, message);
+
+		if(Config.analyticsEnabled()) {
+			_analytics.trackAsynchronously(new FocusPoint("Submit" + hsMatch.getMode() + "Match"));
+		}
 		
 		_api.createMatch(hsMatch);
 	}

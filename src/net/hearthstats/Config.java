@@ -28,4 +28,8 @@ public class Config {
 		}
 		return _ini;
 	}
+
+	public static boolean analyticsEnabled() {
+		return _getIni().get("analytics", "enabled").toString().matches("1");
+	}
 }
