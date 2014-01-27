@@ -147,20 +147,10 @@ public class Monitor extends JFrame implements Observer {
 					}
 				}
 				if (_analyzer.getScreen() == "Match Start" || _analyzer.getScreen() == "Playing") {
-					if (_analyzer.getMode() != null) {
-						title += " " + _analyzer.getMode();
-					}
-					if (_analyzer.getCoin()) {
-						title += " Coin";
-					} else {
-						title += " No Coin";
-					}
-					if (_analyzer.getYourClass() != null) {
-						title += " " + _analyzer.getYourClass();
-					}
-					if (_analyzer.getOpponentClass() != null) {
-						title += " VS. " + _analyzer.getOpponentClass();
-					}
+					title += " " + (_analyzer.getMode() != null ? "[undetected]" : _analyzer.getMode());
+					title += " " + (_analyzer.getCoin() ? "" : "No ") + "Coin";
+					title += " " + (_analyzer.getYourClass() != null ? "[undetected]" : _analyzer.getYourClass());
+					title += " VS. " + (_analyzer.getOpponentClass() != null ? "[undetected]" : _analyzer.getOpponentClass());
 				}
 			}
 		} else {

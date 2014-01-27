@@ -64,10 +64,10 @@ public class HearthstoneMatch {
 	}
 	
 	public String toString() {
-		return getMode() + " " +
+		return (getMode() == null ? "[undetected]" : getMode()) + " " +
 				(hasCoin() ? "" : "no ") + "coin " + 
-				getUserClass() + " vs. " +
-				getOpponentClass() + " " +
+				(getUserClass() == null ? "[undetected]" : getUserClass()) + " vs. " +
+				(getOpponentClass() == null ? "[undetected]" : getOpponentClass()) + " " +
 				getResult();
 	}
 
