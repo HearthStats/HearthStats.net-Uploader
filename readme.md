@@ -22,7 +22,9 @@ to see how things are progressing.
 * Make sure you have Java installed (use windows (http://java.com/en/download/manual.jsp) builds)
 * Download the __[latest release](https://github.com/JeromeDane/HearthStats.net-Uploader/releases)__ of the HearthStats.net Uploader
 * Extract the downloaded zip file to any directory
-* Find your __userkey__ from your [HearthStats.net profile page](http://hearthstats.net/profiles) (not currently implemented)
+* Log into the [HearthStats.net Beta Site](http://beta.hearthstats.net/)
+* If you play constructed, go to Decks > [Active Decks](http://beta.hearthstats.net/decks/active_decks) and set your decks there to match the layout you have in game
+* Find your __userkey__ on [your profile page](http://beta.hearthstats.net/profile)
 * Edit __config.ini__, replace **your_userkey_here** with the string you found in the previous step, and save the file   
 * Run the HearthStatsUploader.jar
 * A window should open called "HearthStats.net Uploader"
@@ -33,10 +35,10 @@ to see how things are progressing.
 Known Issues
 -------------
 
-* This alpha build does not yet submit data to HearthStats.net
+* The monitor window does not display much at the moment. The title changes, but nothing is displayed within the window itself yet
+* There is currently no configuration interface
 * Only supports Windows at the moment
-* Game must be running in __windowed mode__ at the moment (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
-* If you don't see the image in the uploader window update to match your game, make sure you have the latest drivers installed for your graphics card.
+* Game must be running in __windowed mode__ for now (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
  
 Please see the full [list of known issues](https://github.com/JeromeDane/HearthStats.net-Uploader/issues)
 as well.

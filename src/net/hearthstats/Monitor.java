@@ -1,7 +1,10 @@
 package net.hearthstats;
 
+import java.awt.AWTException;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Observable;
@@ -15,6 +18,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import com.boxysystems.jgoogleanalytics.FocusPoint;
+import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
 import com.sun.org.apache.bcel.internal.generic.NEWARRAY;
 
 import jna.JnaUtilException;
@@ -25,18 +30,26 @@ public class Monitor extends JFrame implements Observer {
 	protected API _api = new API();
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
 	protected ProgramHelper _hsHelper = new ProgramHelper("Hearthstone");
-	protected int _pollingIntervalInMs = 500;
+	protected int _pollingIntervalInMs = 100;
 	protected boolean _hearthstoneDetected;
 	
 	public void start() throws JnaUtilException, IOException {
-
+		
+		//Google analytics tracking code for Library Finder
+		/*
+		JGoogleAnalyticsTracker tracker = new JGoogleAnalyticsTracker("Library Finder","1.3.2","UA-47436749-1");
+		FocusPoint focusPoint = new FocusPoint("PluginLoad");
+		tracker.trackAsynchronously(focusPoint);
+		*/
+		
 		Image icon = new ImageIcon("images/icon.png").getImage();
 
 		f.setIconImage(icon);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.setLocation(0, 0);
+		f.setLocation(20, 20);
+		f.setSize(600, 700);
 		f.setVisible(true);
-
+		
 		_api.addObserver(this);
 		
 		_analyzer.addObserver(this);
@@ -127,6 +140,7 @@ public class Monitor extends JFrame implements Observer {
 		HearthstoneMatch hsMatch = new HearthstoneMatch();
 		hsMatch.setMode(_analyzer.getMode());
 		hsMatch.setUserClass(_analyzer.getYourClass());
+		hsMatch.setDeckSlot(_analyzer.getDeckSlot());
 		hsMatch.setOpponentClass(_analyzer.getOpponentClass());
 		hsMatch.setCoin(_analyzer.getCoin());
 		hsMatch.setResult(_analyzer.getResult());
@@ -147,7 +161,7 @@ public class Monitor extends JFrame implements Observer {
 		_api.createMatch(hsMatch);
 	}
 	
-	protected void _handleHearthstoneFound() throws JnaUtilException {
+	protected void _handleHearthstoneFound() throws JnaUtilException, AWTException {
 		
 		// mark hearthstone found if necessary
 		if (_hearthstoneDetected != true) {
@@ -245,7 +259,6 @@ public class Monitor extends JFrame implements Observer {
 	
 	@Override
 	public void update(Observable dispatcher, Object changed) {
-		Object v = dispatcher.getClass().toString();
 		if(dispatcher.getClass().toString().matches(".*HearthstoneAnalyzer"))
 			try {
 				_handleAnalyzerEvent(changed);
