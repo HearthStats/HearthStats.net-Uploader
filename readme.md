@@ -7,9 +7,17 @@ while you play Hearthstone. This program uses screen grab analysis of your Heart
 and does not do any packet sniffing, monitoring, or network modification of any kind.
 
 This project is and always will be open source so that you can do your own builds 
-and see exactly what's happening within the program. Feel free to fork this repo if you can hack.
-Create a pull request if you make any modifications and they will be merged back into this official
-release.
+and see exactly what's happening within the program. 
+
+Contributing to this Project
+----------------------------
+
+There are several things you can do to help this project out:
+
+* Download and test early builds, making sure to [report any issues you find](https://github.com/JeromeDane/HearthStats.net-Uploader/issues)
+* Fork this repository if you can hack, and create a pull request if you come up with things to contribute.
+* [Buy Jerome a cup of coffee via PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=F9XNSXLZNP9QQ) for his work on this uploader
+* Donate to HearthStats.net's founder Jeff through the site's [about us page](http://hearthstats.net/aboutus) 
 
 Running Alpha Builds
 --------------------
