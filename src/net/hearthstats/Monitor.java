@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
@@ -49,10 +50,15 @@ public class Monitor extends JFrame implements Observer {
 		f.setLocation(20, 20);
 		f.setSize(600, 700);
 		f.setVisible(true);
+		f.setTitle("HearthStats.net Uploader");
 		
 		_api.addObserver(this);
 		
 		_analyzer.addObserver(this);
+		
+		// prompt user to change userkey
+		if(Config.getUserKey().matches("your_userkey_here"))
+			JOptionPane.showMessageDialog(null, "HearthStats.net Uploader Error:\n\nYou need to change [userkey] in config.ini\n\nSee readme.md for instructions");
 		
 		_pollHearthstone();
 
