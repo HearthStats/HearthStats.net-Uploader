@@ -65,6 +65,7 @@ public class Monitor extends JFrame implements Observer {
 		}
 		
 		_createAndShowGui();
+		_log("Starting HearthStats.net Uploader v" + Config.getVersion());
 		_checkForUpdates();
 
 		
@@ -196,12 +197,6 @@ public class Monitor extends JFrame implements Observer {
 
 	protected void _updateTitle() {
 		String title = "HearthStats.net Uploader";
-		try {
-			title += " v" + Config.getVersion();
-		} catch(Exception e) {
-			_log("Exception: " + e.getMessage());
-			_notify("Exception", e.getMessage());
-		}
 		if (_hearthstoneDetected) {
 			if (_analyzer.getScreen() != null) {
 				title += " - " + _analyzer.getScreen();
