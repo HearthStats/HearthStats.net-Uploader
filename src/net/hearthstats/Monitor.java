@@ -206,7 +206,8 @@ public class Monitor extends JFrame implements Observer {
 		// mark hearthstone found if necessary
 		if (_hearthstoneDetected != true) {
 			_hearthstoneDetected = true;
-			_notify("Hearthstone found");
+			if(Config.showHsFoundNotification())
+				_notify("Hearthstone found");
 		}
 		
 		// grab the image from Hearthstone
@@ -224,7 +225,8 @@ public class Monitor extends JFrame implements Observer {
 		// mark hearthstone not found if necessary
 		if (_hearthstoneDetected) {
 			_hearthstoneDetected = false;
-			_notify("Hearthstone closed");
+			if(Config.showHsClosedNotification())
+				_notify("Hearthstone closed");
 			
 			f.getContentPane().removeAll();	// empty out the content pane
 			_drawPaneAdded = false;
@@ -262,7 +264,8 @@ public class Monitor extends JFrame implements Observer {
 				_notify("Deck Slot " + _analyzer.getDeckSlot() + " Detected");
 				break;
 			case "mode":
-				_notify(_analyzer.getMode() + " Mode Detected");
+				if(Config.showModeNotification())
+					_notify(_analyzer.getMode() + " Mode Detected");
 				break;
 			case "newArena":
 				if(_analyzer.isNewArena())
@@ -276,7 +279,7 @@ public class Monitor extends JFrame implements Observer {
 				_submitMatchResult();
 				break;
 			case "screen":
-				if(_analyzer.getScreen() != "Result")
+				if(_analyzer.getScreen() != "Result" && Config.showScreenNotification())
 					_notify(_analyzer.getScreen() + " Screen Detected");
 				break;
 			case "yourClass":

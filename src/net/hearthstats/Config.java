@@ -41,15 +41,35 @@ public class Config {
 	}
 
 	public static boolean analyticsEnabled() {
-		return _getIni().get("analytics", "enabled").toString().matches("1");
+		return _getIni().get("analytics", "enabled").toString().matches("true");
 	}
 	
 	public static boolean checkForUpdates() {
-		return _getIni().get("updates", "check").toString().matches("1");
+		return _getIni().get("updates", "check").toString().matches("true");
 	}
 	
 	public static boolean alertUpdates() {
-		return _getIni().get("updates", "alert").toString().matches("1");
+		return _getIni().get("updates", "alert").toString().matches("true");
+	}
+	
+	public static boolean showDeckNotification() {
+		return _getIni().get("notifications", "deck").toString().matches("true");
+	}
+	
+	public static boolean showScreenNotification() {
+		return _getIni().get("notifications", "screen").toString().matches("true");
+	}
+	
+	public static boolean showHsFoundNotification() {
+		return _getIni().get("notifications", "hsfound").toString().matches("true");
+	}
+	
+	public static boolean showModeNotification() {
+		return _getIni().get("notifications", "mode").toString().matches("true");
+	}
+	
+	public static boolean showHsClosedNotification() {
+		return _getIni().get("notifications", "hsclosed").toString().matches("true");
 	}
 	
 	public static String getVersion() throws IOException {

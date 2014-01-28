@@ -39,6 +39,8 @@ public class ProgramHelper {
 			// only supports windows at the moment
 			image = _getScreenCaptureWindows(_windowHandle);
 
+			// TODO: implement OSX version
+			
 			return image;
 		}
 		return null;
@@ -47,29 +49,29 @@ public class ProgramHelper {
 	private HWND _getWindowHandle() {
 		_windowHandle = null;
 		User32.INSTANCE.EnumWindows(new WNDENUMPROC() {
-        @Override
-        public boolean callback(HWND hWnd, Pointer arg1) {
-            
-            int titleLength = User32.INSTANCE.GetWindowTextLength(hWnd) + 1;
-            char[] title = new char[titleLength];
-            User32.INSTANCE.GetWindowText(hWnd, title, titleLength);
-            String wText = Native.toString(title);
-            
-            if (wText.isEmpty()) {
-               return true;
-            }
-
-            if(wText.matches(".*" + _programName + ".*")) {
-            	
-	      	 	PointerByReference pointer = new PointerByReference();
-	      	    User32DLL.GetWindowThreadProcessId(hWnd, pointer);
-	      	    Pointer process = Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION | Kernel32.PROCESS_VM_READ, false, pointer.getValue());
-	      	    Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
-	      	    if(Native.toString(buffer).matches(_processName)) {
-	      	    	_windowHandle = hWnd;
-	      	    }
-            }
-            return true;
+	        @Override
+	        public boolean callback(HWND hWnd, Pointer arg1) {
+	            
+	            int titleLength = User32.INSTANCE.GetWindowTextLength(hWnd) + 1;
+	            char[] title = new char[titleLength];
+	            User32.INSTANCE.GetWindowText(hWnd, title, titleLength);
+	            String wText = Native.toString(title);
+	            
+	            if (wText.isEmpty()) {
+	               return true;
+	            }
+	
+	            if(wText.matches(".*" + _programName + ".*")) {
+	            	
+		      	 	PointerByReference pointer = new PointerByReference();
+		      	    User32DLL.GetWindowThreadProcessId(hWnd, pointer);
+		      	    Pointer process = Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION | Kernel32.PROCESS_VM_READ, false, pointer.getValue());
+		      	    Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
+		      	    if(Native.toString(buffer).matches(_processName)) {
+		      	    	_windowHandle = hWnd;
+		      	    }
+	            }
+	            return true;
          	}
 		}, null);
 		return _windowHandle;
@@ -82,7 +84,10 @@ public class ProgramHelper {
 	 */
 	public boolean foundProgram() {
 		
+		// windows version
 		return _getWindowHandle() != null;
+		
+		// TODO: implement OSX version
 	}
 	
 	protected static BufferedImage _getScreenCaptureWindows(HWND hWnd) {
