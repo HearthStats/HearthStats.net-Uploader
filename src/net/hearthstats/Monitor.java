@@ -29,19 +29,17 @@ import com.boxysystems.jgoogleanalytics.FocusPoint;
 import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
 import com.sun.org.apache.bcel.internal.generic.NEWARRAY;
 
-import jna.JnaUtilException;
-
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer {
 
 	protected API _api = new API();
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
-	protected ProgramHelper _hsHelper = new ProgramHelper("Hearthstone");
+	protected ProgramHelper _hsHelper = new ProgramHelper("Hearthstone", "Hearthstone.exe");
 	protected int _pollingIntervalInMs = 100;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
 	
-	public void start() throws JnaUtilException, IOException {
+	public void start() throws IOException {
 		
 		if(Config.analyticsEnabled()) {
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
@@ -203,7 +201,7 @@ public class Monitor extends JFrame implements Observer {
 		_api.createMatch(hsMatch);
 	}
 	
-	protected void _handleHearthstoneFound() throws JnaUtilException, AWTException {
+	protected void _handleHearthstoneFound() throws AWTException {
 		
 		// mark hearthstone found if necessary
 		if (_hearthstoneDetected != true) {

@@ -48,7 +48,7 @@ public class Main extends JFrame {
 	
 	protected static JFrame f = new JFrame();
 	
-	public static void main(String[] args) throws JnaUtilException, IOException {
+	public static void main(String[] args) throws IOException {
 
 		Monitor monitor = new Monitor();
 		monitor.start();

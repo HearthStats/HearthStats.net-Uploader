@@ -44,7 +44,7 @@ public class JnaUtil {
 		return user32.IsWindow(hWnd);
 	}
 
-	public static Pointer getWinHwnd(final String startOfWindowName) {
+	public static Pointer getWinHwnd(final String nameOfWindow) {
 		callBackHwnd = null;
 
 		user32.EnumWindows(new User32.WNDENUMPROC() {
@@ -53,8 +53,7 @@ public class JnaUtil {
 				byte[] windowText = new byte[512];
 				user32.GetWindowTextA(hWnd, windowText, 512);
 				String wText = Native.toString(windowText).trim();
-
-				if (!wText.isEmpty() && wText.startsWith(startOfWindowName)) {
+				if (!wText.isEmpty() && wText.matches(nameOfWindow)) {
 					callBackHwnd = hWnd;
 					return false;
 				}

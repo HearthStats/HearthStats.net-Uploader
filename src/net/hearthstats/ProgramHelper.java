@@ -1,18 +1,12 @@
 package net.hearthstats;
 
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.concurrent.Callable;
-
-import jna.JnaUtil;
-import jna.JnaUtilException;
 import jna.extra.GDI32Extra;
 import jna.extra.User32Extra;
 import jna.extra.WinGDIExtra;
 
 import com.sun.jna.Memory;
+import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.GDI32;
 import com.sun.jna.platform.win32.User32;
@@ -23,28 +17,64 @@ import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinDef.RECT;
 import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
-
-import sun.java2d.pipe.BufferedBufImgOps;
+import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
+import com.sun.jna.ptr.PointerByReference;
 
 public class ProgramHelper {
 
 	protected String _programName;
+	private String _processName;
+	private HWND _windowHandle = null;
 	
-	public ProgramHelper(String programName) {
+	public ProgramHelper(String programName, String processName) {
 		_programName = programName;
+		_processName = processName;
 	}
 
-	public BufferedImage getScreenCapture() throws JnaUtilException {
+	public BufferedImage getScreenCapture() {
 		if (foundProgram()) {
 
 			BufferedImage image;
 			
 			// only supports windows at the moment
-			image = _getScreenCaptureWindows(User32.INSTANCE.FindWindow(null, _programName));
+			image = _getScreenCaptureWindows(_windowHandle);
 
 			return image;
 		}
 		return null;
+	}
+	
+	private HWND _getWindowHandle() {
+		_windowHandle = null;
+		User32.INSTANCE.EnumWindows(new WNDENUMPROC() {
+        int count = 0;
+        @Override
+        public boolean callback(HWND hWnd, Pointer arg1) {
+            byte[] windowText = new byte[512];
+            
+            int titleLength = User32.INSTANCE.GetWindowTextLength(hWnd) + 1;
+            char[] title = new char[titleLength];
+            User32.INSTANCE.GetWindowText(hWnd, title, titleLength);
+            String wText = Native.toString(title);
+            
+            if (wText.isEmpty()) {
+               return true;
+            }
+
+            if(wText.matches(".*" + _programName + ".*")) {
+            	
+	      	 	PointerByReference pointer = new PointerByReference();
+	      	    User32DLL.GetWindowThreadProcessId(hWnd, pointer);
+	      	    Pointer process = Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION | Kernel32.PROCESS_VM_READ, false, pointer.getValue());
+	      	    Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
+	      	    if(Native.toString(buffer).matches(_processName)) {
+	      	    	_windowHandle = hWnd;
+	      	    }
+            }
+            return true;
+         	}
+		}, null);
+		return _windowHandle;
 	}
 	
 	/**
@@ -53,12 +83,8 @@ public class ProgramHelper {
 	 * @return Whether or not the program is found
 	 */
 	public boolean foundProgram() {
-		Pointer hWnd = JnaUtil.getWinHwnd(_programName);
-		String windowText = JnaUtil.getWindowText(hWnd).toString();
-		if (windowText.matches(_programName)) {
-			return true;
-		}
-		return false;
+		
+		return _getWindowHandle() != null;
 	}
 	
 	protected static BufferedImage _getScreenCaptureWindows(HWND hWnd) {
@@ -99,5 +125,26 @@ public class ProgramHelper {
 		return image;
 
 	}
+	protected char[] buffer = new char[MAX_TITLE_LENGTH * 2];
+	private static final int MAX_TITLE_LENGTH = 1024;
+	
+	static class Psapi {
+	    static { Native.register("psapi"); }
+	    public static native int GetModuleBaseNameW(Pointer hProcess, Pointer hmodule, char[] lpBaseName, int size);
+	}
 
+	static class Kernel32 {
+	    static { Native.register("kernel32"); }
+	    public static int PROCESS_QUERY_INFORMATION = 0x0400;
+	    public static int PROCESS_VM_READ = 0x0010;
+	    public static native int GetLastError();
+	    public static native Pointer OpenProcess(int dwDesiredAccess, boolean bInheritHandle, Pointer pointer);
+	}
+
+	static class User32DLL {
+	    static { Native.register("user32"); }
+	    public static native int GetWindowThreadProcessId(HWND hWnd, PointerByReference pref);
+	    public static native HWND GetForegroundWindow();
+	    public static native int GetWindowTextW(HWND hWnd, char[] lpString, int nMaxCount);
+	}
 }
