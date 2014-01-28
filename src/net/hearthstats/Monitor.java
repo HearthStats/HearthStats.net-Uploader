@@ -232,7 +232,8 @@ public class Monitor extends JFrame implements Observer {
 		if(hsMatch.getMode() == "Arena" && _analyzer.isNewArena()) {
 			ArenaRun run = new ArenaRun();
 			run.setUserClass(hsMatch.getUserClass());
-			_notify("Creating new arena run");
+			_log("Creating new " + run.getUserClass() + "arena run");
+			_notify("Creating new " + run.getUserClass() + "arena run");
 			_api.createArenaRun(run);
 			_analyzer.setIsNewArena(false);
 		}
@@ -240,6 +241,7 @@ public class Monitor extends JFrame implements Observer {
 		String header = "Submitting match result";
 		String message = hsMatch.toString(); 
 		_notify(header, message);
+		_log(header + ": " + message);
 
 		if(Config.analyticsEnabled()) {
 			_analytics.trackAsynchronously(new FocusPoint("Submit" + hsMatch.getMode() + "Match"));
