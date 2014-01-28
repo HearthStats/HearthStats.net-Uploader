@@ -322,9 +322,11 @@ public class Monitor extends JFrame implements Observer {
 		switch(changed.toString()) {
 			case "error":
 				_notify("API Error", _api.getMessage());
+				_log("API Error: " + _api.getMessage());
 				break;
 			case "result":
 				_notify("API Result", _api.getMessage());
+				_log("API Result: " + _api.getMessage());
 				break;
 		}
 	}
