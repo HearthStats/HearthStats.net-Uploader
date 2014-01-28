@@ -82,7 +82,9 @@ public class Monitor extends JFrame implements Observer {
 				    	availableVersion += line;
 				    }
 				} finally {
-				    if (reader != null) try { reader.close(); } catch (IOException ignore) {}
+				    if (reader != null) try { reader.close(); } catch (IOException e) {
+				    	_notify("Exception", e.getMessage());
+				    }
 				}
 				if(!availableVersion.matches(Config.getVersion())) {
 					if(Config.alertUpdates()) {
@@ -309,6 +311,7 @@ public class Monitor extends JFrame implements Observer {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				_notify("Exception", e.getMessage());
 			}
 		if(dispatcher.getClass().toString().matches(".*API"))
 			_handleApiEvent(changed);
