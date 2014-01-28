@@ -47,10 +47,8 @@ public class ProgramHelper {
 	private HWND _getWindowHandle() {
 		_windowHandle = null;
 		User32.INSTANCE.EnumWindows(new WNDENUMPROC() {
-        int count = 0;
         @Override
         public boolean callback(HWND hWnd, Pointer arg1) {
-            byte[] windowText = new byte[512];
             
             int titleLength = User32.INSTANCE.GetWindowTextLength(hWnd) + 1;
             char[] title = new char[titleLength];
