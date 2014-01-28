@@ -50,10 +50,6 @@ public class HearthstoneAnalyzer extends Observable {
 			}
 		}
 		
-		if(getScreen() == "Finding Opponent") {
-			_testForMatchStartScreen();
-		}
-		
 		if(getScreen() == "Match Start") {
 			if(getYourClass() == null)
 				_testForYourClass();
@@ -61,17 +57,19 @@ public class HearthstoneAnalyzer extends Observable {
 				_testForOpponentClass();
 			if(!getCoin())
 				_testForCoin();
-			
-			_testForPlayingScreen();
+		} else {
+			_testForMatchStartScreen();
 		}
 		
-		if(getScreen() == "Result") {
+		if(getScreen() == "Result" || getScreen() == "Arena") {
 			_testForArenaEnd();
 		}
 		
 		if(getScreen() == "Playing") {
 			_testForVictory();
 			_testForDefeat();
+		} else {
+			_testForPlayingScreen();
 		}
 		
 		if(getScreen() == "Arena" && !isNewArena()) {
