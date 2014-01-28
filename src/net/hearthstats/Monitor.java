@@ -217,7 +217,8 @@ public class Monitor extends JFrame implements Observer {
 		if (image.getWidth() >= 1024)
 			_analyzer.analyze(image);
 		
-		//_updateImageFrame();
+		if(Config.mirrorGameImage())
+			_updateImageFrame();
 	}
 	
 	protected void _handleHearthstoneNotFound() {
