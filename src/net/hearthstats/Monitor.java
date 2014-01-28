@@ -74,7 +74,9 @@ public class Monitor extends JFrame implements Observer {
 		_analyzer.addObserver(this);
 		_hsHelper.addObserver(this);
 		
-		_checkForUserKey();
+		if(_checkForUserKey()) {
+			_pollHearthstone();
+		}
 
 	}
 	
