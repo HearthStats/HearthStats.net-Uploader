@@ -1,6 +1,7 @@
 package net.hearthstats;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.awt.AWTException;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
@@ -73,15 +74,54 @@ public class Monitor extends JFrame implements Observer {
 		_analyzer.addObserver(this);
 		_hsHelper.addObserver(this);
 		
-		// prompt user to change userkey
-		if(Config.getUserKey().matches("your_userkey_here")) {
-			_log("Config Error: your_userkey_here in config.ini must be replaced");
-			JOptionPane.showMessageDialog(null, "HearthStats.net Uploader Error:\n\nYou need to change [userkey] in config.ini\n\nSee readme.md for instructions");
-			System.exit(0);
-		}
-		
-		_pollHearthstone();
+		_checkForUserKey();
 
+	}
+	
+	private boolean _checkForUserKey() {
+		if(Config.getUserKey().equals("your_userkey_here")) {
+			_log("Userkey yet not entered");
+			
+			JOptionPane.showMessageDialog(null, 
+					"HearthStats.net Uploader Error:\n\n" +
+					"You need to enter your User Key\n\n" +
+					"Get it at http://beta.hearthstats.net/profiles");
+			
+			// Create Desktop object
+			Desktop d = Desktop.getDesktop();
+			// Browse a URL, say google.com
+			try {
+				d.browse(new URI("http://beta.hearthstats.net/profiles"));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			String[] options = {"OK", "Cancel"};
+			JPanel panel = new JPanel();
+			JLabel lbl = new JLabel("User Key");
+			JTextField txt = new JTextField(10);
+			panel.add(lbl);
+			panel.add(txt);
+			int selectedOption = JOptionPane.showOptionDialog(null, panel, "Enter your user key", JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
+			if(selectedOption == 0) {
+			    String userkey = txt.getText();
+			    if(userkey.isEmpty()) {
+			    	_checkForUserKey();
+			    } else {
+			    	Config.setUserKey(userkey);
+			    	_log("Userkey stored");
+			    	_pollHearthstone();
+			    }
+			} else {
+				System.exit(0);
+			}
+			return false;
+		}
+		return true;
 	}
 	
 	private void _getFileContents(String path) {

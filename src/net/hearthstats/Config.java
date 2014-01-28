@@ -106,4 +106,15 @@ public class Config {
 			e.printStackTrace();
 		}
 	}
+
+	public static void setUserKey(String userkey) {
+		// TODO Auto-generated method stub
+		_getIni().put("API", "userkey", userkey);
+		try {
+			_getIni().store();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
