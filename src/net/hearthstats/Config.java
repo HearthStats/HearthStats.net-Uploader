@@ -44,6 +44,10 @@ public class Config {
 		return _getIni().get("analytics", "enabled").toString().matches("true");
 	}
 	
+	public static boolean showEventLog() {
+		return _getIni().get("ui", "eventlog").toString().matches("true");
+	}
+	
 	public static boolean mirrorGameImage() {
 		return _getIni().get("ui", "mirrorgame").toString().matches("true");
 	}

@@ -24,6 +24,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
 import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
@@ -38,6 +41,7 @@ public class Monitor extends JFrame implements Observer {
 	protected int _pollingIntervalInMs = 100;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
+	protected JTextPane _logText;
 	
 	public void start() throws IOException {
 		
@@ -54,6 +58,12 @@ public class Monitor extends JFrame implements Observer {
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setLocation(20, 20);
 		f.setSize(600, 700);
+		_logText = new JTextPane ();
+		_logText.setText("Event Log:\n");
+		_logText.setEditable(false);
+		JScrollPane scroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		f.getContentPane().add(scroll);
+		
 		f.setVisible(true);
 		f.setTitle("HearthStats.net Uploader");
 		
@@ -62,8 +72,10 @@ public class Monitor extends JFrame implements Observer {
 		_analyzer.addObserver(this);
 		
 		// prompt user to change userkey
-		if(Config.getUserKey().matches("your_userkey_here"))
+		if(Config.getUserKey().matches("your_userkey_here")) {
+			_log("Error: your_userkey_here in config.ini must be replaced");
 			JOptionPane.showMessageDialog(null, "HearthStats.net Uploader Error:\n\nYou need to change [userkey] in config.ini\n\nSee readme.md for instructions");
+		}
 		
 		_pollHearthstone();
 
@@ -210,6 +222,7 @@ public class Monitor extends JFrame implements Observer {
 			_hearthstoneDetected = true;
 			if(Config.showHsFoundNotification())
 				_notify("Hearthstone found");
+			_log("Hearthstone found");
 		}
 		
 		// grab the image from Hearthstone
@@ -230,6 +243,7 @@ public class Monitor extends JFrame implements Observer {
 			_hearthstoneDetected = false;
 			if(Config.showHsClosedNotification())
 				_notify("Hearthstone closed");
+			_log("Hearthstone closed");
 			
 			f.getContentPane().removeAll();	// empty out the content pane
 			_drawPaneAdded = false;
@@ -258,39 +272,51 @@ public class Monitor extends JFrame implements Observer {
 		switch(changed.toString()) {
 			case "arenaEnd":
 				_notify("End of Arena Run Detected");
+				_log("End of Arena Run Detected");
 				_api.endCurrentArenaRun();
 				break;
 			case "coin":
 				_notify("Coin Detected");
+				_log("Coin Detected");
 				break;
 			case "deckSlot":
 				_notify("Deck Slot " + _analyzer.getDeckSlot() + " Detected");
+				_log("Deck Slot " + _analyzer.getDeckSlot() + " Detected");
 				break;
 			case "mode":
 				if(Config.showModeNotification())
 					_notify(_analyzer.getMode() + " Mode Detected");
+				_log(_analyzer.getMode() + " Mode Detected");
 				break;
 			case "newArena":
 				if(_analyzer.isNewArena())
 					_notify("New Arena Run Detected");
+				_log("New Arena Run Detected");
 				break;
 			case "opponentClass":
 				_notify("Playing vs " + _analyzer.getOpponentClass());
+				_log("Playing vs " + _analyzer.getOpponentClass());
 				break;
 			case "result":
 				_notify(_analyzer.getResult() + " Detected");
+				_log(_analyzer.getResult() + " Detected");
 				_submitMatchResult();
 				break;
 			case "screen":
 				if(_analyzer.getScreen() != "Result" && Config.showScreenNotification())
 					_notify(_analyzer.getScreen() + " Screen Detected");
+				_log(_analyzer.getScreen() + " Screen Detected");
 				break;
 			case "yourClass":
 				_notify("Playing as " + _analyzer.getYourClass());
+				_log("Playing as " + _analyzer.getYourClass());
 				break;
 		}
 	}
 	
+	protected void _log(String str) {
+		_logText.setText(_logText.getText() + "\n" + str);
+	}
 	
 	protected void _handleApiEvent(Object changed) {
 		switch(changed.toString()) {
