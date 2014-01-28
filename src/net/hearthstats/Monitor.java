@@ -77,6 +77,7 @@ public class Monitor extends JFrame implements Observer {
 		if(Config.getUserKey().matches("your_userkey_here")) {
 			_log("Config Error: your_userkey_here in config.ini must be replaced");
 			JOptionPane.showMessageDialog(null, "HearthStats.net Uploader Error:\n\nYou need to change [userkey] in config.ini\n\nSee readme.md for instructions");
+			System.exit(0);
 		}
 		
 		_pollHearthstone();
