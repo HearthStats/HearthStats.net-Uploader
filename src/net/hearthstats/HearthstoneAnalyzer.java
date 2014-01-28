@@ -1,7 +1,11 @@
 package net.hearthstats;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.Observable;
+
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
 
 public class HearthstoneAnalyzer extends Observable {
 
@@ -16,7 +20,7 @@ public class HearthstoneAnalyzer extends Observable {
 	private boolean _isNewArena = false;
 
 	public HearthstoneAnalyzer() {
-
+		_imageOcr();
 	}
 
 	public void analyze(BufferedImage image) {
@@ -605,6 +609,20 @@ public class HearthstoneAnalyzer extends Observable {
 				{ 280, 461, 255, 245, 225 } 
 		};
 		_testForClass("Warior", warriorTests, true);
+	}
+	
+	private void _imageOcr() {
+		File imageFile = new File("test.png");
+        Tesseract instance = Tesseract.getInstance(); //
+
+        try {
+
+        String result = instance.doOCR(imageFile);
+        System.out.println(result.replaceAll("\\s+",""));
+
+        } catch (TesseractException e) {
+        	System.err.println(e.getMessage());
+        }
 	}
 
 }
