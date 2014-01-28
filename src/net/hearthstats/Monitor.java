@@ -53,6 +53,7 @@ public class Monitor extends JFrame implements Observer {
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
 	protected JTextPane _logText;
+	private JScrollPane _logScroll;
 	
 	public void start() throws IOException {
 		
@@ -98,8 +99,8 @@ public class Monitor extends JFrame implements Observer {
 		_logText = new JTextPane ();
 		_logText.setText("Event Log:\n");
 		_logText.setEditable(false);
-		JScrollPane scroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		f.getContentPane().add(scroll);
+		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		f.getContentPane().add(_logScroll);
 		
 		f.setVisible(true);
 		_updateTitle();
@@ -247,7 +248,7 @@ public class Monitor extends JFrame implements Observer {
 		_api.createMatch(hsMatch);
 	}
 	
-	protected void _handleHearthstoneFound() throws AWTException {
+	protected void _handleHearthstoneFound() {
 		
 		// mark hearthstone found if necessary
 		if (_hearthstoneDetected != true) {
@@ -259,12 +260,14 @@ public class Monitor extends JFrame implements Observer {
 		// grab the image from Hearthstone
 		image = _hsHelper.getScreenCapture();
 		
-		// detect image stats 
-		if (image.getWidth() >= 1024)
-			_analyzer.analyze(image);
-		
-		if(Config.mirrorGameImage())
-			_updateImageFrame();
+		if(image != null) {
+			// detect image stats 
+			if (image.getWidth() >= 1024)
+				_analyzer.analyze(image);
+			
+			if(Config.mirrorGameImage())
+				_updateImageFrame();
+		}
 	}
 	
 	protected void _handleHearthstoneNotFound() {
@@ -275,8 +278,6 @@ public class Monitor extends JFrame implements Observer {
 			if(Config.showHsClosedNotification())
 				_notify("Hearthstone closed");
 			
-			f.getContentPane().removeAll();	// empty out the content pane
-			_drawPaneAdded = false;
 		}
 	}
 	
@@ -288,7 +289,7 @@ public class Monitor extends JFrame implements Observer {
 					_handleHearthstoneFound();
 				else
 					_handleHearthstoneNotFound();
-				
+
 				_updateTitle();
 				
 				_pollHearthstone();		// repeat the process
@@ -372,6 +373,8 @@ public class Monitor extends JFrame implements Observer {
 			logText += line + "\n";
         }
 		_logText.setText(logText);
+		
+		_logText.setCaretPosition(_logText.getDocument().getLength());
 	}
 	
 	protected void _handleApiEvent(Object changed) {
