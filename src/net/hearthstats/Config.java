@@ -80,10 +80,16 @@ public class Config {
 		return _getIni().get("notifications", "hsclosed").toString().matches("true");
 	}
 	
-	public static String getVersion() throws IOException {
+	public static String getVersion() {
 		if(_version == null) {
 			_version = "";
-			List<String> lines = Files.readAllLines(Paths.get("version"), Charset.defaultCharset());
+			List<String> lines = null;
+			try {
+				lines = Files.readAllLines(Paths.get("version"), Charset.defaultCharset());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			for (String line : lines) {
                 _version += line;
             }

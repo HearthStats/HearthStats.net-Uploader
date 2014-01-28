@@ -1,6 +1,8 @@
 package net.hearthstats;
 
 import java.awt.image.BufferedImage;
+import java.util.Observable;
+
 import jna.extra.GDI32Extra;
 import jna.extra.User32Extra;
 import jna.extra.WinGDIExtra;
@@ -11,6 +13,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.GDI32;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinGDI;
+import com.sun.jna.platform.win32.Variant.VARIANT._VARIANT.__VARIANT;
 import com.sun.jna.platform.win32.WinDef.HBITMAP;
 import com.sun.jna.platform.win32.WinDef.HDC;
 import com.sun.jna.platform.win32.WinDef.HWND;
@@ -20,11 +23,12 @@ import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 import com.sun.jna.ptr.PointerByReference;
 
-public class ProgramHelper {
+public class ProgramHelper extends Observable {
 
 	protected String _programName;
 	private String _processName;
 	private HWND _windowHandle = null;
+	private String _windowHandleId = null;
 	
 	public ProgramHelper(String programName, String processName) {
 		_programName = programName;
@@ -69,11 +73,21 @@ public class ProgramHelper {
 		      	    Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
 		      	    if(Native.toString(buffer).matches(_processName)) {
 		      	    	_windowHandle = hWnd;
+		      	    	if(!_windowHandle.toString().equals(_windowHandleId)) {
+		      	    		_windowHandleId = _windowHandle.toString();
+		      	    		_notifyObserversOfChangeTo(_programName + " window found with process name " + _processName + " and handle ID " + _windowHandleId);
+		      	    	}
 		      	    }
 	            }
 	            return true;
          	}
 		}, null);
+		
+		// notify of window lost
+		if(_windowHandle == null && _windowHandleId != null) {
+			_notifyObserversOfChangeTo(_programName + " window with process name " + _processName + " closed");
+			_windowHandleId = null;
+		}
 		return _windowHandle;
 	}
 	
@@ -128,6 +142,12 @@ public class ProgramHelper {
 		return image;
 
 	}
+	
+	private void _notifyObserversOfChangeTo(String property) {
+		setChanged();
+	    notifyObservers(property);
+	}
+	
 	protected char[] buffer = new char[MAX_TITLE_LENGTH * 2];
 	private static final int MAX_TITLE_LENGTH = 1024;
 	

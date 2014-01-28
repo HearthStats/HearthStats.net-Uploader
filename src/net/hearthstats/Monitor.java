@@ -3,16 +3,25 @@ package net.hearthstats;
 import java.net.URI;
 import java.awt.AWTException;
 import java.awt.Desktop;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Callable;
@@ -20,8 +29,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -45,19 +56,45 @@ public class Monitor extends JFrame implements Observer {
 	
 	public void start() throws IOException {
 		
+		_clearLog();
 		if(Config.analyticsEnabled()) {
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("AppStart"));
 		}
 		
+		_createAndShowGui();
 		_checkForUpdates();
-		
-		Image icon = new ImageIcon("images/icon.png").getImage();
 
+		
+		_api.addObserver(this);
+		_analyzer.addObserver(this);
+		_hsHelper.addObserver(this);
+		
+		// prompt user to change userkey
+		if(Config.getUserKey().matches("your_userkey_here")) {
+			_log("Config Error: your_userkey_here in config.ini must be replaced");
+			JOptionPane.showMessageDialog(null, "HearthStats.net Uploader Error:\n\nYou need to change [userkey] in config.ini\n\nSee readme.md for instructions");
+		}
+		
+		_pollHearthstone();
+
+	}
+	
+	private void _getFileContents(String path) {
+		
+	}
+	private void _createAndShowGui() {
+		Image icon = new ImageIcon("images/icon.png").getImage();
+		
 		f.setIconImage(icon);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setLocation(20, 20);
 		f.setSize(600, 700);
+		
+		JLabel statusLabel = new JLabel("Status", JLabel.LEFT);
+		f.getContentPane().add(statusLabel);
+		
+		// log
 		_logText = new JTextPane ();
 		_logText.setText("Event Log:\n");
 		_logText.setEditable(false);
@@ -65,24 +102,12 @@ public class Monitor extends JFrame implements Observer {
 		f.getContentPane().add(scroll);
 		
 		f.setVisible(true);
-		f.setTitle("HearthStats.net Uploader");
-		
-		_api.addObserver(this);
-		
-		_analyzer.addObserver(this);
-		
-		// prompt user to change userkey
-		if(Config.getUserKey().matches("your_userkey_here")) {
-			_log("Error: your_userkey_here in config.ini must be replaced");
-			JOptionPane.showMessageDialog(null, "HearthStats.net Uploader Error:\n\nYou need to change [userkey] in config.ini\n\nSee readme.md for instructions");
-		}
-		
-		_pollHearthstone();
-
+		_updateTitle();
 	}
 
 	private void _checkForUpdates() {
 		if(Config.checkForUpdates()) {
+			_log("Checking for updates (installed version: " + Config.getVersion() + ")");
 			try {
 				URL url = new URL("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/version");
 				BufferedReader reader = null;
@@ -93,9 +118,12 @@ public class Monitor extends JFrame implements Observer {
 				    for (String line; (line = reader.readLine()) != null;) {
 				    	availableVersion += line;
 				    }
+				    _log("Latest version available: " + availableVersion);
+				    
 				} finally {
 				    if (reader != null) try { reader.close(); } catch (IOException e) {
 				    	_notify("Exception", e.getMessage());
+				    	_log("Exception: " + e.getMessage());
 				    }
 				}
 				if(!availableVersion.matches(Config.getVersion())) {
@@ -147,6 +175,12 @@ public class Monitor extends JFrame implements Observer {
 
 	protected void _updateTitle() {
 		String title = "HearthStats.net Uploader";
+		try {
+			title += " v" + Config.getVersion();
+		} catch(Exception e) {
+			_log("Exception: " + e.getMessage());
+			_notify("Exception", e.getMessage());
+		}
 		if (_hearthstoneDetected) {
 			if (_analyzer.getScreen() != null) {
 				title += " - " + _analyzer.getScreen();
@@ -167,8 +201,6 @@ public class Monitor extends JFrame implements Observer {
 			}
 		} else {
 			title += " - Waiting for Hearthstone ";
-			title += Math.random() > 0.33 ? ".." : "...";
-			f.setSize(600, 200);
 		}
 		f.setTitle(title);
 	}
@@ -222,7 +254,6 @@ public class Monitor extends JFrame implements Observer {
 			_hearthstoneDetected = true;
 			if(Config.showHsFoundNotification())
 				_notify("Hearthstone found");
-			_log("Hearthstone found");
 		}
 		
 		// grab the image from Hearthstone
@@ -243,7 +274,6 @@ public class Monitor extends JFrame implements Observer {
 			_hearthstoneDetected = false;
 			if(Config.showHsClosedNotification())
 				_notify("Hearthstone closed");
-			_log("Hearthstone closed");
 			
 			f.getContentPane().removeAll();	// empty out the content pane
 			_drawPaneAdded = false;
@@ -314,8 +344,34 @@ public class Monitor extends JFrame implements Observer {
 		}
 	}
 	
+	protected void _clearLog() {
+		File file = new File("log.txt");
+		file.delete();
+	}
 	protected void _log(String str) {
-		_logText.setText(_logText.getText() + "\n" + str);
+		PrintWriter out = null;
+		try {
+			out = new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true)));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		out.println(str);
+		out.close();
+		
+		// read in log
+		String logText = "";
+		List<String> lines = null;
+		try {
+			lines = Files.readAllLines(Paths.get("log.txt"), Charset.defaultCharset());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		for (String line : lines) {
+			logText += line + "\n";
+        }
+		_logText.setText(logText);
 	}
 	
 	protected void _handleApiEvent(Object changed) {
@@ -343,6 +399,9 @@ public class Monitor extends JFrame implements Observer {
 			}
 		if(dispatcher.getClass().toString().matches(".*API"))
 			_handleApiEvent(changed);
+		
+		if(dispatcher.getClass().toString().matches(".*ProgramHelper"))
+			_log((String) changed);
 	}
 
 
