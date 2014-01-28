@@ -37,6 +37,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
@@ -129,17 +130,36 @@ public class Monitor extends JFrame implements Observer {
 				}
 				if(!availableVersion.matches(Config.getVersion())) {
 					if(Config.alertUpdates()) {
-						JOptionPane.showMessageDialog(null, "HearthStats.net Uploader Update Available: v" + availableVersion + "\n\n" +
-								"A new version of HearthStats.net is available.\n" +
-								"You are currently using v" + Config.getVersion() + ".\n\n" +
-								"You will now be taken to the download page.\n\n" +
-								"Edit config.ini to disable future update checks.");				
+						int dialogButton = JOptionPane.YES_NO_OPTION;
+						int dialogResult = JOptionPane.showConfirmDialog(null, 
+								"A new version of HearthStats.net is available\n\n" +
+								"v" + Config.getVersion() + " is your current version\n" +
+								"v" + availableVersion + " is the latest version\n\n" +
+								"Would you exit and go to the download page?\n",
+								"HearthStats.net Uploader Update Available",
+								dialogButton);		
+						if(dialogResult == JOptionPane.YES_OPTION){
+							// Create Desktop object
+							Desktop d = Desktop.getDesktop();
+							// Browse a URL, say google.com
+							d.browse(new URI("https://github.com/JeromeDane/HearthStats.net-Uploader/releases"));
+							System.exit(0);
+						} else {
+							dialogResult = JOptionPane.showConfirmDialog(null, 
+									"Would you like to disable automatic update checking?",
+									"Disable update checking",
+									dialogButton);
+							if(dialogResult == JOptionPane.YES_OPTION){
+								String[] options = {"OK"};
+								JPanel panel = new JPanel();
+								JLabel lbl = new JLabel("You can re-enable update checking by editing config.ini");
+								panel.add(lbl);
+								JOptionPane.showOptionDialog(null, panel, "Automatic Update Checking Disabled", JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
+								Config.setCheckForUpdates(false);
+							}
+						}
 					}
-					// Create Desktop object
-					 Desktop d = Desktop.getDesktop();
 
-					 // Browse a URL, say google.com
-					 d.browse(new URI("https://github.com/JeromeDane/HearthStats.net-Uploader/releases"));
 				}
 			} catch(Exception e) {
 				_notify("Update Checking Error", "Unable to determine the latest available version");

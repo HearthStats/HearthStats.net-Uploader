@@ -96,4 +96,14 @@ public class Config {
 		}
 		return _version;
 	}
+
+	public static void setCheckForUpdates(boolean b) {
+		_getIni().put("updates", "check", "false");
+		try {
+			_getIni().store();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
