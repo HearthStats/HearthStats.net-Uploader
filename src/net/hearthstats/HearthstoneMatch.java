@@ -10,6 +10,7 @@ public class HearthstoneMatch {
 	private boolean _coin = false;
 	private String _result;
 	private int _deckSlot;
+	private String _opponentName;
 	
 	public HearthstoneMatch() {
 		
@@ -23,32 +24,40 @@ public class HearthstoneMatch {
 		return _mode;
 	}
 
-	public void setMode(String _mode) {
-		this._mode = _mode;
+	public void setMode(String mode) {
+		_mode = mode;
 	}
 
 	public String getUserClass() {
 		return _userClass;
 	}
 
-	public void setUserClass(String _userClass) {
-		this._userClass = _userClass;
+	public void setUserClass(String userClass) {
+		_userClass = userClass;
 	}
 
 	public String getOpponentClass() {
 		return _opponentClass;
 	}
 
-	public void setOpponentClass(String _opponentClass) {
-		this._opponentClass = _opponentClass;
+	public void setOpponentClass(String opponentClass) {
+		_opponentClass = opponentClass;
+	}
+	
+	public void setOpponentName(String opponentName) {
+		_opponentName = opponentName;
+	}
+	
+	public String getOpponentName() {
+		return _opponentName;
 	}
 
 	public boolean hasCoin() {
 		return _coin;
 	}
 
-	public void setCoin(boolean _coin) {
-		this._coin = _coin;
+	public void setCoin(boolean coin) {
+		_coin = coin;
 	}
 	
 	public void setDeckSlot(int deckSlot) {
@@ -59,15 +68,19 @@ public class HearthstoneMatch {
 		return _result;
 	}
 
-	public void setResult(String _result) {
-		this._result = _result;
+	public void setResult(String result) {
+		_result = result;
 	}
 	
+	private String _propertyOrUnknown(String propertyVal) {
+		return propertyVal == null ? "[undetected]" : propertyVal;
+	}
 	public String toString() {
-		return (getMode() == null ? "[undetected]" : getMode()) + " " +
+		return _propertyOrUnknown(getMode()) + " " +
 				(hasCoin() ? "" : "no ") + "coin " + 
-				(getUserClass() == null ? "[undetected]" : getUserClass()) + " vs. " +
-				(getOpponentClass() == null ? "[undetected]" : getOpponentClass()) + " " +
+				_propertyOrUnknown(getUserClass()) + " vs. " +
+				_propertyOrUnknown(getOpponentClass()) + " " +
+				"(" + _propertyOrUnknown(getOpponentName()) + ") " +
 				getResult();
 	}
 
@@ -76,6 +89,7 @@ public class HearthstoneMatch {
 		obj.put("mode", getUserClass());
 		obj.put("userclass", getUserClass());
 		obj.put("oppclass", getOpponentClass());
+		obj.put("oppname", getOpponentName());
 		obj.put("win", getResult() == "Victory" ? "true" : "false");
 		obj.put("gofirst", hasCoin() ? "false" : "true");
 		obj.put("slot", getDeckSlot());
