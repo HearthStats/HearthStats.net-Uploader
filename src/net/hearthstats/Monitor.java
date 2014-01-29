@@ -59,6 +59,11 @@ public class Monitor extends JFrame implements Observer {
 	
 	public void start() throws IOException {
 		
+		
+		System.out.println(OCR.process("opponentname.jpg"));
+		//System.exit(0);
+		
+		
 		_clearLog();
 		if(Config.analyticsEnabled()) {
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
@@ -68,7 +73,6 @@ public class Monitor extends JFrame implements Observer {
 		_createAndShowGui();
 		_log("Starting HearthStats.net Uploader v" + Config.getVersion());
 		_checkForUpdates();
-
 		
 		_api.addObserver(this);
 		_analyzer.addObserver(this);
@@ -134,7 +138,7 @@ public class Monitor extends JFrame implements Observer {
 		
 		f.setIconImage(icon);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.setLocation(20, 20);
+		f.setLocation(0, 0);
 		f.setSize(600, 700);
 		
 		JLabel statusLabel = new JLabel("Status", JLabel.LEFT);
@@ -387,6 +391,10 @@ public class Monitor extends JFrame implements Observer {
 			case "opponentClass":
 				_notify("Playing vs " + _analyzer.getOpponentClass());
 				_log("Playing vs " + _analyzer.getOpponentClass());
+				break;
+			case "opponentName":
+				_notify("Opponent: " + _analyzer.getOpponentName());
+				_log("Opponent: " + _analyzer.getOpponentName());
 				break;
 			case "result":
 				_notify(_analyzer.getResult() + " Detected");

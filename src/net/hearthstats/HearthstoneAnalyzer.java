@@ -1,8 +1,21 @@
 package net.hearthstats;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ColorConvertOp;
+import java.awt.image.CropImageFilter;
+import java.awt.image.DataBufferInt;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.RescaleOp;
 import java.io.File;
+import java.io.IOException;
 import java.util.Observable;
+
+import javax.imageio.ImageIO;
 
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -13,17 +26,54 @@ public class HearthstoneAnalyzer extends Observable {
 	private BufferedImage _image;
 	private String _mode;
 	private String _opponentClass;
+	private String _opponentName;
 	private String _result;
 	private String _screen;
 	private String _yourClass;
 	private int _deckSlot;
 	private boolean _isNewArena = false;
+	private float ratio;
+	private int xOffset;
+	private int width;
+	private int height;
+	private float screenRatio;
 
 	public HearthstoneAnalyzer() {
-		_imageOcr();
 	}
 
 	public void analyze(BufferedImage image) {
+		
+		boolean imageTest = false;
+		if(image == null) {
+			try {
+				_image = ImageIO.read(new File("opptest.jpg"));
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			imageTest = true;
+		}
+		
+		// set up ratios and offsets for all resolutions
+		if(_image != null) {
+			
+			// handle 4:3 screen ratios
+			ratio = _image.getHeight() / (float) 768;
+			xOffset = 0;
+			width = _image.getWidth();
+			height = _image.getHeight();
+			screenRatio = (float) width / height;
+			
+			// handle widescreen x offsets
+			if(screenRatio > 1.4) {
+				xOffset = 107;
+				xOffset = (int) (((float) width - (ratio * 1024)) / 2);
+			}
+			if(imageTest) {
+				_analyzeOpponnentName();
+				System.exit(0);
+			}
+		}
 		
 		_image = image;
 
@@ -50,13 +100,15 @@ public class HearthstoneAnalyzer extends Observable {
 			}
 		}
 		
-		if(getScreen() == "Match Start") {
+		if(getScreen() == "Match Start" || getScreen() == "Opponent Name") {
 			if(getYourClass() == null)
 				_testForYourClass();
 			if(getOpponentClass() == null)
 				_testForOpponentClass();
 			if(!getCoin())
 				_testForCoin();
+			if(getScreen() != "Opponent Name")
+				_testForOpponentName();
 		} else {
 			_testForMatchStartScreen();
 		}
@@ -93,6 +145,10 @@ public class HearthstoneAnalyzer extends Observable {
 	
 	public String getOpponentClass() {
 		return _opponentClass;
+	}
+	
+	public String getOpponentName() {
+		return _opponentName;
 	}
 	
 	public String getResult() {
@@ -139,6 +195,11 @@ public class HearthstoneAnalyzer extends Observable {
 	private void _setOpponentClass(String opponentClass) {
 		_opponentClass = opponentClass;
 		_notifyObserversOfChangeTo("opponentClass");
+	}
+	
+	private void _setOpponentName(String opponentName) {
+		_opponentName = opponentName;
+		_notifyObserversOfChangeTo("opponentName");
 	}
 	
 	private void _setResult(String result) {
@@ -351,6 +412,95 @@ public class HearthstoneAnalyzer extends Observable {
 			_setScreen("Finding Opponent");
 		}
 	}
+	/**
+	 * From http://stackoverflow.com/questions/2825837/java-how-to-do-fast-copy-of-a-bufferedimages-pixels-unit-test-included
+	 * 
+	 * @param src
+	 * @param dst
+	 * @param dx
+	 * @param dy
+	 */
+	private static void _copySrcImgIntoDstAt(final BufferedImage src,
+		final BufferedImage dst, final int dx, final int dy) {
+		int[] srcbuf = ((DataBufferInt) src.getRaster().getDataBuffer()).getData();
+		int[] dstbuf = ((DataBufferInt) dst.getRaster().getDataBuffer()).getData();
+		int width = src.getWidth();
+		int height = src.getHeight();
+		int dstoffs = dx + dy * dst.getWidth();
+		int srcoffs = 0;
+		for (int y = 0 ; y < height ; y++ , dstoffs+= dst.getWidth(), srcoffs += width ) {
+			System.arraycopy(srcbuf, srcoffs , dstbuf, dstoffs, width);
+		}
+	}
+	private void _testForOpponentName() {
+		int[][] tests = { 
+			{ 383, 116, 187, 147, 79 },		// title banner left
+			{ 631, 107, 173, 130, 70 },		// title banner right
+			{ 505, 595, 129, 199, 255 }		// confirm button
+		};
+		PixelGroupTest pxTest = new PixelGroupTest(_image, tests);
+		
+		if(pxTest.passed()) {
+			_setScreen("Opponent Name");
+			_analyzeOpponnentName();
+		}
+	}
+	
+	private void _analyzeOpponnentName() {
+		
+		int x = (int) (6 * ratio);
+		int y = (int) (34 * ratio);	// with class name underneath
+//		int y = (int) (40 * ratio);
+		int imageWidth = (int) (100 * ratio);
+		int imageHeight = (int) (19 * ratio);
+	    
+		int bigWidth = imageWidth * 3;
+		int bigHeight = imageHeight * 3;
+		
+		// get cropped image of name
+		BufferedImage opponentNameImg = _image.getSubimage(x, y, imageWidth, imageHeight);
+		
+		// to gray scale
+		BufferedImage grayscale = new BufferedImage(opponentNameImg.getWidth(), opponentNameImg.getHeight(), BufferedImage.TYPE_INT_RGB); 
+		BufferedImageOp grayscaleConv = 
+			      new ColorConvertOp(opponentNameImg.getColorModel().getColorSpace(), 
+			    		  grayscale.getColorModel().getColorSpace(), null);
+			   grayscaleConv.filter(opponentNameImg, grayscale);
+			   
+		// blow it up for ocr
+		BufferedImage newImage = new BufferedImage(bigWidth, bigHeight, BufferedImage.TYPE_INT_RGB);
+		Graphics g = newImage.createGraphics();
+		g.drawImage(grayscale, 0, 0, bigWidth, bigHeight, null);
+		g.dispose();
+		
+		// invert image
+		 for (x = 0; x < newImage.getWidth(); x++) {
+            for (y = 0; y < newImage.getHeight(); y++) {
+                int rgba = newImage.getRGB(x, y);
+                Color col = new Color(rgba, true);
+                col = new Color(255 - col.getRed(),
+                                255 - col.getGreen(),
+                                255 - col.getBlue());
+                newImage.setRGB(x, y, col.getRGB());
+            }
+        }
+		 
+		// increase contrast
+			RescaleOp rescaleOp = new RescaleOp(1.8f, -30, null);
+			rescaleOp.filter(newImage, newImage);  // Source and destination are the same.
+		
+		// save it to a file
+		File outputfile = new File("opponentname.jpg");
+		try {
+			ImageIO.write(newImage, "jpg", outputfile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			_notifyObserversOfChangeTo("Exception: " + e.getMessage());
+		}
+		
+		_setOpponentName(OCR.process("opponentname.jpg"));
+	}
 	
 	private void _testForMainMenuScreen() {
 
@@ -478,8 +628,10 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		PixelGroupTest orcPxTest = new PixelGroupTest(_image, orcBoardTests);
 
-		if (normalPxTest.passed() || orcPxTest.passed())
+		if (normalPxTest.passed() || orcPxTest.passed()) {
 			_setScreen("Playing");
+		//	_analyzeOpponnentName();
+		}
 	}
 	
 	private void _testForPlayScreen() {
@@ -609,18 +761,5 @@ public class HearthstoneAnalyzer extends Observable {
 		_testForClass("Warior", warriorTests, true);
 	}
 	
-	private void _imageOcr() {
-		File imageFile = new File("test.png");
-        Tesseract instance = Tesseract.getInstance(); //
-
-        try {
-
-        String result = instance.doOCR(imageFile);
-        System.out.println(result.replaceAll("\\s+",""));
-
-        } catch (TesseractException e) {
-        	System.err.println(e.getMessage());
-        }
-	}
 
 }
