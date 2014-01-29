@@ -58,8 +58,10 @@ public class Main extends JFrame {
 		
 		try {
 		
-			_loadJarDll("lib/liblept168");
-			_loadJarDll("lib/libtesseract302");
+			_loadJarDll("liblept168");
+			_loadJarDll("libtesseract302");
+			
+			System.out.println(OCR.process("opponentname.jpg"));
 			
 			Monitor monitor = new Monitor();
 			monitor.start();
@@ -71,13 +73,19 @@ public class Main extends JFrame {
 	}
 	
 	private static void _loadJarDll(String name) throws IOException {
-		String architecture = System.getProperty("sun.arch.data.model");
-	    InputStream in = Main.class.getResourceAsStream(name + architecture);
+		String resourcePath = "/lib/" + name + "_" + System.getProperty("sun.arch.data.model") + ".dll";
+	    InputStream in = Main.class.getResourceAsStream(resourcePath);
 	    if(in != null) {
 		    byte[] buffer = new byte[1024];
 		    int read = -1;
-		    File temp = File.createTempFile(name.replace("_32", "").replace("_64",  ""), "");
-		    FileOutputStream fos = new FileOutputStream(temp);
+		    
+		    //File outDir = new File("temp");
+		    //outDir.mkdirs();
+		    //String outPath = outDir.getPath() + "/";
+		    
+		    String outPath = "";
+		    String outFileName = name.replace("_32", "").replace("_64",  "") + ".dll";
+		    FileOutputStream fos = new FileOutputStream(outPath + outFileName);
 	
 		    while((read = in.read(buffer)) != -1) {
 		        fos.write(buffer, 0, read);
@@ -85,7 +93,7 @@ public class Main extends JFrame {
 		    fos.close();
 		    in.close();
 	
-		    System.load(temp.getAbsolutePath());
+		    System.loadLibrary(outPath + name);
 	    }
 	}
 }
