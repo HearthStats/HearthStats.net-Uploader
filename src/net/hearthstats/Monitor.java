@@ -282,6 +282,7 @@ public class Monitor extends JFrame implements Observer {
 		hsMatch.setUserClass(_analyzer.getYourClass());
 		hsMatch.setDeckSlot(_analyzer.getDeckSlot());
 		hsMatch.setOpponentClass(_analyzer.getOpponentClass());
+		hsMatch.setOpponentName(_analyzer.getOpponentName());
 		hsMatch.setCoin(_analyzer.getCoin());
 		hsMatch.setResult(_analyzer.getResult());
 		
