@@ -129,7 +129,7 @@ public class Monitor extends JFrame implements Observer {
 		
 	}
 	private void _createAndShowGui() {
-		Image icon = new ImageIcon("images/icon.png").getImage();
+		Image icon = new ImageIcon(getClass().getResource("/images/icon.png")).getImage();
 		
 		f.setIconImage(icon);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
