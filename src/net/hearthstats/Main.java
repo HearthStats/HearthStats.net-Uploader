@@ -58,27 +58,25 @@ public class Main extends JFrame {
 		
 		try {
 		
-			//System.out.println(System.getProperty("sun.arch.data.model").equals("64"));
-			//System.exit(0);
-			
-			System.loadLibrary("lib/liblept168");
-			System.loadLibrary("lib/libtesseract302");
+			_loadJarDll("lib/liblept168");
+			_loadJarDll("lib/libtesseract302");
 			
 			Monitor monitor = new Monitor();
 			monitor.start();
+			
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(null, "Exception: " + e.getMessage());
+			JOptionPane.showMessageDialog(null, "Exception: " + e.toString());
 		}
 		
-
 	}
-/*
-	public static void loadJarDll(String name) throws IOException {
-	    InputStream in = Main.class.getResourceAsStream(name);
+	
+	private static void _loadJarDll(String name) throws IOException {
+		String architecture = System.getProperty("sun.arch.data.model");
+	    InputStream in = Main.class.getResourceAsStream(name + architecture);
 	    if(in != null) {
 		    byte[] buffer = new byte[1024];
 		    int read = -1;
-		    File temp = File.createTempFile(name, "");
+		    File temp = File.createTempFile(name.replace("_32", "").replace("_64",  ""), "");
 		    FileOutputStream fos = new FileOutputStream(temp);
 	
 		    while((read = in.read(buffer)) != -1) {
@@ -90,5 +88,4 @@ public class Main extends JFrame {
 		    System.load(temp.getAbsolutePath());
 	    }
 	}
-*/
 }
