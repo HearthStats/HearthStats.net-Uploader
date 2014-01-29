@@ -61,13 +61,11 @@ public class Main extends JFrame {
 			_loadJarDll("liblept168");
 			_loadJarDll("libtesseract302");
 			
-			System.out.println(OCR.process("opponentname.jpg"));
-			
 			Monitor monitor = new Monitor();
 			monitor.start();
 			
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(null, "Exception: " + e.toString());
+			JOptionPane.showMessageDialog(null, "Exception: " + e.getStackTrace() + e.toString());
 		}
 		
 	}
@@ -79,11 +77,10 @@ public class Main extends JFrame {
 		    byte[] buffer = new byte[1024];
 		    int read = -1;
 		    
-		    //File outDir = new File("temp");
-		    //outDir.mkdirs();
-		    //String outPath = outDir.getPath() + "/";
+		    File outDir = new File("temp");
+		    outDir.mkdirs();
+		    String outPath = outDir.getPath() + "/";
 		    
-		    String outPath = "";
 		    String outFileName = name.replace("_32", "").replace("_64",  "") + ".dll";
 		    FileOutputStream fos = new FileOutputStream(outPath + outFileName);
 	
