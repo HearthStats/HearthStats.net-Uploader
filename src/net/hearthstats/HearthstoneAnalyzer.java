@@ -32,51 +32,21 @@ public class HearthstoneAnalyzer extends Observable {
 	private String _yourClass;
 	private int _deckSlot;
 	private boolean _isNewArena = false;
-	private float ratio;
-	private int xOffset;
-	private int width;
-	private int height;
-	private float screenRatio;
+	private float _ratio;
+	private int _xOffset;
+	private int _width;
+	private int _height;
+	private float _screenRatio;
 
 	public HearthstoneAnalyzer() {
 	}
 
 	public void analyze(BufferedImage image) {
 		
-		boolean imageTest = false;
-		if(image == null) {
-			try {
-				_image = ImageIO.read(new File("opptest.jpg"));
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			imageTest = true;
-		}
-		
-		// set up ratios and offsets for all resolutions
-		if(_image != null) {
-			
-			// handle 4:3 screen ratios
-			ratio = _image.getHeight() / (float) 768;
-			xOffset = 0;
-			width = _image.getWidth();
-			height = _image.getHeight();
-			screenRatio = (float) width / height;
-			
-			// handle widescreen x offsets
-			if(screenRatio > 1.4) {
-				xOffset = 107;
-				xOffset = (int) (((float) width - (ratio * 1024)) / 2);
-			}
-			if(imageTest) {
-				_analyzeOpponnentName();
-				System.exit(0);
-			}
-		}
-		
 		_image = image;
-
+		
+		_calculateResolutionRatios();
+		
 		if(getScreen() != "Main Menu" && getScreen() != "Playing") {
 			_testForMainMenuScreen();
 		}
@@ -129,6 +99,21 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 		
 		_image.flush();
+	}
+
+	private void _calculateResolutionRatios() {
+		// handle 4:3 screen ratios
+		_ratio = _image.getHeight() / (float) 768;
+		_xOffset = 0;
+		_width = _image.getWidth();
+		_height = _image.getHeight();
+		_screenRatio = (float) _width / _height;
+		
+		// handle widescreen x offsets
+		if(_screenRatio > 1.4) {
+			_xOffset = 107;
+			_xOffset = (int) (((float) _width - (_ratio * 1024)) / 2);
+		}
 	}
 
 	public boolean getCoin() {
@@ -250,8 +235,15 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 833, 94, 100, 22, 16 }, // ranked off
 			{ 698, 128, 200, 255, 255 } // casual blue
 		};
-
-		if((new PixelGroupTest(_image, tests)).passed())
+		PixelGroupTest testOne = new PixelGroupTest(_image, tests);
+		
+		int[][] testsTwo = { 
+				{ 812, 178, 255, 255, 255}, 
+				{ 758, 202, 215, 255, 255 } 
+		};
+		PixelGroupTest testTwo = new PixelGroupTest(_image, testsTwo);
+		
+		if(testOne.passed() || testTwo.passed())
 			_setMode("Casual");
 	}
 	
@@ -412,26 +404,6 @@ public class HearthstoneAnalyzer extends Observable {
 			_setScreen("Finding Opponent");
 		}
 	}
-	/**
-	 * From http://stackoverflow.com/questions/2825837/java-how-to-do-fast-copy-of-a-bufferedimages-pixels-unit-test-included
-	 * 
-	 * @param src
-	 * @param dst
-	 * @param dx
-	 * @param dy
-	 */
-	private static void _copySrcImgIntoDstAt(final BufferedImage src,
-		final BufferedImage dst, final int dx, final int dy) {
-		int[] srcbuf = ((DataBufferInt) src.getRaster().getDataBuffer()).getData();
-		int[] dstbuf = ((DataBufferInt) dst.getRaster().getDataBuffer()).getData();
-		int width = src.getWidth();
-		int height = src.getHeight();
-		int dstoffs = dx + dy * dst.getWidth();
-		int srcoffs = 0;
-		for (int y = 0 ; y < height ; y++ , dstoffs+= dst.getWidth(), srcoffs += width ) {
-			System.arraycopy(srcbuf, srcoffs , dstbuf, dstoffs, width);
-		}
-	}
 	private void _testForOpponentName() {
 		int[][] tests = { 
 			{ 383, 116, 187, 147, 79 },		// title banner left
@@ -448,11 +420,11 @@ public class HearthstoneAnalyzer extends Observable {
 	
 	private void _analyzeOpponnentName() {
 		
-		int x = (int) (6 * ratio);
-		int y = (int) (34 * ratio);	// with class name underneath
+		int x = (int) (6 * _ratio);
+		int y = (int) (34 * _ratio);	// with class name underneath
 //		int y = (int) (40 * ratio);
-		int imageWidth = (int) (100 * ratio);
-		int imageHeight = (int) (19 * ratio);
+		int imageWidth = (int) (100 * _ratio);
+		int imageHeight = (int) (19 * _ratio);
 	    
 		int bigWidth = imageWidth * 3;
 		int bigHeight = imageHeight * 3;

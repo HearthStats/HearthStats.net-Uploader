@@ -2,6 +2,8 @@ package net.hearthstats;
 
 import java.io.File;
 
+import javax.swing.JOptionPane;
+
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 
@@ -9,14 +11,15 @@ public class OCR {
 
 	public static String process(String filePath) {
 		// perform ocr
-		File imageFile = new File(filePath);
-        Tesseract instance = Tesseract.getInstance(); //
-
+		File imageFile = new File(filePath); 
+		
         String output = "";
         try {
-	        output += instance.doOCR(imageFile).replaceAll("\\s+","");
-        } catch (TesseractException e) {
-        	System.err.println(e.getMessage());
+        	Tesseract instance = Tesseract.getInstance(); //
+	        output += instance.doOCR(imageFile);
+	        output = output.replaceAll("\\s+","");
+        } catch (Exception e) {
+        	JOptionPane.showMessageDialog(null, e.getMessage());
         }
         return output;
 	}

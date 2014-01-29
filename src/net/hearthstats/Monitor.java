@@ -59,18 +59,13 @@ public class Monitor extends JFrame implements Observer {
 	
 	public void start() throws IOException {
 		
-		
-		System.out.println(OCR.process("opponentname.jpg"));
-		//System.exit(0);
-		
-		
-		_clearLog();
 		if(Config.analyticsEnabled()) {
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("AppStart"));
 		}
 		
 		_createAndShowGui();
+		_clearLog();
 		_log("Starting HearthStats.net Uploader v" + Config.getVersion());
 		_checkForUpdates();
 		

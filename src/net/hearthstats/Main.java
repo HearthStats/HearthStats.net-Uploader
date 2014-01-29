@@ -5,6 +5,8 @@ import jna.extra.GDI32Extra;
 import jna.extra.User32Extra;
 import jna.extra.WinGDIExtra;
 
+import java.io.File;
+
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -12,7 +14,10 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -23,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 import javax.swing.JApplet;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.sun.jna.Memory;
@@ -49,12 +55,37 @@ public class Main extends JFrame {
 	protected static JFrame f = new JFrame();
 	
 	public static void main(String[] args) throws IOException {
-
-		Monitor monitor = new Monitor();
-		monitor.start();
-
+		
+		try {
+			
+			System.loadLibrary("liblept168");
+			System.loadLibrary("libtesseract302");
+			
+			Monitor monitor = new Monitor();
+			monitor.start();
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(null, "Exception: " + e.getMessage());
+		}
+		
 
 	}
+/*
+	public static void loadJarDll(String name) throws IOException {
+	    InputStream in = Main.class.getResourceAsStream(name);
+	    if(in != null) {
+		    byte[] buffer = new byte[1024];
+		    int read = -1;
+		    File temp = File.createTempFile(name, "");
+		    FileOutputStream fos = new FileOutputStream(temp);
 	
+		    while((read = in.read(buffer)) != -1) {
+		        fos.write(buffer, 0, read);
+		    }
+		    fos.close();
+		    in.close();
 	
+		    System.load(temp.getAbsolutePath());
+	    }
+	}
+*/
 }
