@@ -19,13 +19,13 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.WindowConstants;
 
 public class Notification {
 
-	public JFrame frame = new JFrame();
+	public JDialog frame = new JDialog();
 	public Notification(String header, String message) {
 		
 		frame.setSize(200, 75);
