@@ -1,8 +1,12 @@
 package net.hearthstats;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -83,16 +87,19 @@ public class Config {
 	public static String getVersion() {
 		if(_version == null) {
 			_version = "";
-			List<String> lines = null;
-			try {
-				lines = Files.readAllLines(Paths.get("version"), Charset.defaultCharset());
+			
+			InputStream in = Config.class.getResourceAsStream("/version");
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String strLine;
+            try {
+				while ((strLine = br.readLine()) != null)   {
+				    _version += strLine;
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			for (String line : lines) {
-                _version += line;
-            }
+			
 		}
 		return _version;
 	}

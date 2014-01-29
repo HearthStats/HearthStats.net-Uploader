@@ -1,4 +1,0 @@
-Starting HearthStats.net Uploader v0.5.201301282
-Checking for updates (installed version: 0.5.201301282)
-Latest version available: 0.5.201301282
-Userkey yet not entered
