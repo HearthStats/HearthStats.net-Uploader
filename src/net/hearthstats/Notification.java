@@ -27,7 +27,6 @@ public class Notification {
 
 	public JDialog frame = new JDialog();
 	public Notification(String header, String message) {
-		
 		frame.setSize(200, 75);
 		frame.setLayout(new GridBagLayout());
 		GridBagConstraints constraints = new GridBagConstraints();
@@ -59,7 +58,6 @@ public class Notification {
 		constraints.fill = GridBagConstraints.BOTH;
 		JLabel messageLabel = new JLabel("<HtMl>" + message);
 		frame.add(messageLabel, constraints);
-		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		offset(0);
 	}
 	protected boolean _wasShown = false;
