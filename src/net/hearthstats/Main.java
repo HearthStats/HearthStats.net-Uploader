@@ -57,9 +57,12 @@ public class Main extends JFrame {
 	public static void main(String[] args) throws IOException {
 		
 		try {
+		
+			//System.out.println(System.getProperty("sun.arch.data.model").equals("64"));
+			//System.exit(0);
 			
-			System.loadLibrary("liblept168");
-			System.loadLibrary("libtesseract302");
+			System.loadLibrary("lib/liblept168");
+			System.loadLibrary("lib/libtesseract302");
 			
 			Monitor monitor = new Monitor();
 			monitor.start();
