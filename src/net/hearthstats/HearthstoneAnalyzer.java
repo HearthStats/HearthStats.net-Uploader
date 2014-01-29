@@ -625,7 +625,15 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 833, 88, 220, 255, 255 }, // ranked blue
 			{ 698, 120, 56, 16, 8 } // casual off
 		};
-		if((new PixelGroupTest(_image, tests)).passed())
+		PixelGroupTest testOne = new PixelGroupTest(_image, tests);
+		
+		int[][] testsTwo = { 
+				{ 840, 184, 199, 255, 255 }, 
+				{ 948, 167, 192, 255, 255 } 	
+		};
+		PixelGroupTest testTwo = new PixelGroupTest(_image, testsTwo);
+		
+		if(testOne.passed() || testTwo.passed())
 			_setMode("Ranked");
 	}
 	
