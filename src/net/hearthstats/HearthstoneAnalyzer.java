@@ -92,7 +92,8 @@ public class HearthstoneAnalyzer extends Observable {
 			_testForVictory();
 			_testForDefeat();
 		} else {
-			_testForPlayingScreen();
+			if(getScreen() != "Result")
+				_testForPlayingScreen();
 		}
 		
 		if(getScreen() == "Arena" && !isNewArena()) {
