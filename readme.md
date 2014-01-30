@@ -44,11 +44,10 @@ to see how things are progressing.
 Known Issues
 -------------
 
-* There is currently little configuration interface
-* Only supports Windows at the moment
 * Game must be running in __windowed mode__ for now (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
+* Only supports Windows at the moment
+* There is currently little configuration interface
 * Minimizing Hearthstone completely freezes the uploader (see [issue #67](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/76))
-* Having other windows open with the title "Hearthstone" freezes the uploader (see [issue 66](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/66))
  
 Please see the full [list of known issues](https://github.com/JeromeDane/HearthStats.net-Uploader/issues)
 as well.
