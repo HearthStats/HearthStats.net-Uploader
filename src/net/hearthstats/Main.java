@@ -83,6 +83,7 @@ public class Main extends JFrame {
 			
 		} catch(Exception e) {
 			JOptionPane.showMessageDialog(null, "Exception: " + e.toString());
+			System.exit(1);
 		}
 		
 	}
