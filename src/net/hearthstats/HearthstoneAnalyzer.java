@@ -254,6 +254,8 @@ public class HearthstoneAnalyzer extends Observable {
 			// fourth card right edge
 			{ 869, 389, 155, 250, 103 }, 
 			{ 864, 328, 130, 255, 85 }, 
+			{ 870, 340, 127, 255, 83 },
+			{ 769, 280, 125, 255, 82 },
 			{ 864, 379, 126, 255, 82 }
 		};
 		if((new PixelGroupTest(_image, tests)).passedOr())
