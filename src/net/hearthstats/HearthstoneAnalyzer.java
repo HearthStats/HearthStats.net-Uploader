@@ -426,7 +426,7 @@ public class HearthstoneAnalyzer extends Observable {
 		int x = (int) ((getMode() == "Ranked" ? 76 : 6) * _ratio);
 		int y = (int) (34 * _ratio);	// with class name underneath
 //		int y = (int) (40 * ratio);
-		int imageWidth = (int) (100 * _ratio);
+		int imageWidth = (int) (150 * _ratio);
 		int imageHeight = (int) (19 * _ratio);
 	    
 		int bigWidth = imageWidth * 3;
