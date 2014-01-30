@@ -47,30 +47,30 @@ public class HearthstoneAnalyzer extends Observable {
 		
 		_calculateResolutionRatios();
 		
-		if(!getScreen().equals("Main Menu") && !getScreen().equals("Playing")) {
+		if(getScreen() != "Main Menu" && getScreen() != "Playing") {
 			_testForMainMenuScreen();
 		}
 
-		if(!getScreen().equals("Play")) {
+		if(getScreen() != "Play") {
 			_testForPlayScreen();
 		}
 		
-		if(!getScreen().equals("Arena")) {
+		if(getScreen() != "Arena") {
 			_testForArenaModeScreen();
 		}
 		
-		if(getScreen().equals("Play") || getScreen().equals("Arena")) {
+		if(getScreen() == "Play" || getScreen() == "Arena") {
 			_testForFindingOpponent();
-			if (getScreen().equals("Play")) {
-				if(!getMode().equals("Casual"))
+			if (getScreen() == "Play") {
+				if(getMode() != "Casual")
 					_testForCasualMode();
-				if(!getMode().equals("Ranked"))
+				if(getMode() != "Ranked")
 					_testForRankedMode();
 				_testForDeckSlot();
 			}
 		}
 		
-		if(getScreen().equals("Match Start") || getScreen().equals("Opponent Name")) {
+		if(getScreen() == "Match Start" || getScreen() == "Opponent Name") {
 			if(getYourClass() == null)
 				_testForYourClass();
 			if(getOpponentClass() == null)
@@ -80,22 +80,22 @@ public class HearthstoneAnalyzer extends Observable {
 			if(getScreen() != "Opponent Name")
 				_testForOpponentName();
 		} else {
-			if(!getScreen().equals("Playing"))
+			if(getScreen() != "Playing")
 				_testForMatchStartScreen();
 		}
 		
-		if(getScreen().equals("Result") || getScreen().equals("Arena")) {
+		if(getScreen() == "Result" || getScreen() == "Arena") {
 			_testForArenaEnd();
 		}
 		
-		if(getScreen().equals("Playing")) {
+		if(getScreen() == "Playing") {
 			_testForVictory();
 			_testForDefeat();
 		} else {
 			_testForPlayingScreen();
 		}
 		
-		if(getScreen().equals("Arena") && !isNewArena()) {
+		if(getScreen() == "Arena" && !isNewArena()) {
 			_testForNewArenaRun();
 		}
 		
