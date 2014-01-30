@@ -156,55 +156,45 @@ public class Monitor extends JFrame implements Observer {
 		if(Config.checkForUpdates()) {
 			_log("Checking for updates ...");
 			try {
-				URL url = new URL("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/version");
-				BufferedReader reader = null;
-				String availableVersion = "";
-				try {
-				    reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
-				    
-				    for (String line; (line = reader.readLine()) != null;) {
-				    	availableVersion += line;
-				    }
-				    _log("Latest version available: " + availableVersion);
-				    
-				} finally {
-				    if (reader != null) try { reader.close(); } catch (IOException e) {
-				    	_notify("Exception", e.getMessage());
-				    	_log("Exception: " + e.getMessage());
-				    }
-				}
-				if(!availableVersion.matches(Config.getVersion())) {
-					if(Config.alertUpdates()) {
-						int dialogButton = JOptionPane.YES_NO_OPTION;
-						int dialogResult = JOptionPane.showConfirmDialog(null, 
-								"A new version of HearthStats.net is available\n\n" +
-								"v" + Config.getVersion() + " is your current version\n" +
-								"v" + availableVersion + " is the latest version\n\n" +
-								"Would you exit and go to the download page?\n",
-								"HearthStats.net Uploader Update Available",
-								dialogButton);		
-						if(dialogResult == JOptionPane.YES_OPTION){
-							// Create Desktop object
-							Desktop d = Desktop.getDesktop();
-							// Browse a URL, say google.com
-							d.browse(new URI("https://github.com/JeromeDane/HearthStats.net-Uploader/releases"));
-							System.exit(0);
-						} else {
-							dialogResult = JOptionPane.showConfirmDialog(null, 
-									"Would you like to disable automatic update checking?",
-									"Disable update checking",
-									dialogButton);
+				String availableVersion = Updater.getAvailableVersion();
+				if(availableVersion != null) {
+					_log("Latest version available: " + availableVersion);
+					
+					if(!availableVersion.matches(Config.getVersion())) {
+						if(Config.alertUpdates()) {
+							int dialogButton = JOptionPane.YES_NO_OPTION;
+							int dialogResult = JOptionPane.showConfirmDialog(null, 
+									"A new version of HearthStats.net is available\n\n" +
+									"v" + Config.getVersion() + " is your current version\n" +
+									"v" + availableVersion + " is the latest version\n\n" +
+									"Would you exit and go to the download page?\n",
+									"HearthStats.net Uploader Update Available",
+									dialogButton);		
 							if(dialogResult == JOptionPane.YES_OPTION){
-								String[] options = {"OK"};
-								JPanel panel = new JPanel();
-								JLabel lbl = new JLabel("You can re-enable update checking by editing config.ini");
-								panel.add(lbl);
-								JOptionPane.showOptionDialog(null, panel, "Automatic Update Checking Disabled", JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
-								Config.setCheckForUpdates(false);
+								// Create Desktop object
+								Desktop d = Desktop.getDesktop();
+								// Browse a URL, say google.com
+								d.browse(new URI("https://github.com/JeromeDane/HearthStats.net-Uploader/releases"));
+								System.exit(0);
+							} else {
+								dialogResult = JOptionPane.showConfirmDialog(null, 
+										"Would you like to disable automatic update checking?",
+										"Disable update checking",
+										dialogButton);
+								if(dialogResult == JOptionPane.YES_OPTION){
+									String[] options = {"OK"};
+									JPanel panel = new JPanel();
+									JLabel lbl = new JLabel("You can re-enable update checking by editing config.ini");
+									panel.add(lbl);
+									JOptionPane.showOptionDialog(null, panel, "Automatic Update Checking Disabled", JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
+									Config.setCheckForUpdates(false);
+								}
 							}
 						}
+	
 					}
-
+				} else {
+					_log("Unable to determine latest available version");
 				}
 			} catch(Exception e) {
 				_notify("Update Checking Error", "Unable to determine the latest available version");
