@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Build HearthStats Reporter">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+	    <jar destfile="C:/Dropbox/Projects/HearthStats.net Uploader/src/updater.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="net.hearthstats.Updater"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="C:/Dropbox/Projects/HearthStats.net Uploader/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/ghost4j-0.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/jai_imageio.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-core-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-plugin-awt-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-plugin-cluster-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-plugin-fir-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-plugin-moment-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-plugin-morphology-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/JGoogleAnalytics_0.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/jna-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/jna-platform-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/jna.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/junit-4.10.jar"/>
+        </jar>
+       	<sleep milliseconds="6000"/>
+        <jar destfile="C:/Dropbox/Projects/HearthStats.net Uploader/build/HearthStatsUploader.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="net.hearthstats.Main"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="C:/Dropbox/Projects/HearthStats.net Uploader/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/ghost4j-0.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/jai_imageio.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-core-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-plugin-awt-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-plugin-cluster-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-plugin-fir-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-plugin-moment-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/javaocr-plugin-morphology-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/JGoogleAnalytics_0.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/jna-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/jna-platform-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/jna.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="C:/Dropbox/Projects/HearthStats.net Uploader/lib/junit-4.10.jar"/>
+        </jar>
+    </target>
+</project>

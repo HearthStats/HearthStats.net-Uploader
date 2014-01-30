@@ -163,10 +163,12 @@ public class Monitor extends JFrame implements Observer {
 					if(!availableVersion.matches(Config.getVersion())) {
 						int dialogButton = JOptionPane.YES_NO_OPTION;
 						int dialogResult = JOptionPane.showConfirmDialog(null, 
-								"A new version of HearthStats.net is available\n\n" +
-								"v" + Config.getVersion() + " is your current version\n" +
-								"v" + availableVersion + " is the latest version\n\n" +
-								"Would you install this update now?\n",
+								"A new version of this uploader is available\n\n" +
+								//"v" + Config.getVersion() + " is your current version\n\n" +
+								//"v" + availableVersion + " is the latest version\n\n" +
+								Updater.getRecentChanges() +
+								"\n\nWould you install this update now?"
+								,
 								"HearthStats.net Uploader Update Available",
 								dialogButton);		
 						if(dialogResult == JOptionPane.YES_OPTION){

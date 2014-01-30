@@ -23,6 +23,7 @@ import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
 public class Updater {
 
 	private static String _availableVersion;
+	private static String _recentChanges;
 	private static String _savedUserKey;
 
 	private static JGoogleAnalyticsTracker _analytics;
@@ -180,7 +181,6 @@ public class Updater {
 		} else {
 			_notify("Updator Error", "Unable to locate " + mainFile.getPath());
 		}
-
 	}
 
 	private static void _downloadUpdate() throws IOException {
@@ -211,32 +211,45 @@ public class Updater {
 
 	public static String getAvailableVersion() {
 		if (_availableVersion == null) {
-			URL url = null;
-			try {
-				url = new URL("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/version");
-			} catch (MalformedURLException e) {
-				JOptionPane.showMessageDialog(null, "Exception in Updater: " + e.toString());
-			}
-			BufferedReader reader = null;
-			String availableVersion = null;
-			try {
-				reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
-				_availableVersion = "";
-				for (String line; (line = reader.readLine()) != null;) {
-					_availableVersion += line;
-				}
-			} catch (Exception e) {
-				JOptionPane.showMessageDialog(null, "Exception in Updater: " + e.toString());
-			} finally {
-				if (reader != null)
-					try {
-						reader.close();
-					} catch (IOException e) {
-						JOptionPane.showMessageDialog(null, "Exception in Updater: Unable to get available version.\n\nAre you connected to the internet?\n\nIs GitHub down?");
-					}
-			}
+			_availableVersion = _readRemoteFile("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/version");
 		}
 		return _availableVersion;
+	}
+	public static String getRecentChanges() {
+		if (_recentChanges == null) {
+			_recentChanges = _readRemoteFile("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/recentchanges");
+		}
+		return _recentChanges;
+	}
+	
+	private static String _readRemoteFile(String urlStr) {
+		URL url = null;
+		try {
+			url = new URL(urlStr);
+		} catch (MalformedURLException e) {
+			JOptionPane.showMessageDialog(null, "Exception in Updater: " + e.toString());
+		}
+		BufferedReader reader = null;
+		String availableVersion = null;
+		String returnStr = null;
+		try {
+			reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
+			returnStr = "";
+			for (String line; (line = reader.readLine()) != null;) {
+				returnStr += line + "\n";
+			}
+			returnStr = returnStr.trim();
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Exception in Updater: " + e.toString());
+		} finally {
+			if (reader != null)
+				try {
+					reader.close();
+				} catch (IOException e) {
+					JOptionPane.showMessageDialog(null, "Exception in Updater: Unable to get available version.\n\nAre you connected to the internet?\n\nIs GitHub down?");
+				}
+		}
+		return returnStr;
 	}
 
 }
