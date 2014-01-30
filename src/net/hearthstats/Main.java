@@ -67,6 +67,9 @@ public class Main extends JFrame {
 		
 		try {
 			
+			Notification notification = new Notification("HearthStats.net Uploader", "Loading ...");
+			notification.show();
+			
 			_extractTessData();
 			
 			_loadJarDll("liblept168");
@@ -75,6 +78,7 @@ public class Main extends JFrame {
 			System.out.println(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
 			
 			Monitor monitor = new Monitor();
+			notification.close();
 			monitor.start();
 			
 		} catch(Exception e) {
