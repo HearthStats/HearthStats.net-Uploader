@@ -55,7 +55,7 @@ import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 public class Main extends JFrame {
 
 	public static String getExtractionFolder() {
-		return "bin";
+		return "tmp";
 	}
 	
 	protected static ScheduledExecutorService scheduledExecutorService = Executors
@@ -75,7 +75,7 @@ public class Main extends JFrame {
 			_loadJarDll("liblept168");
 			_loadJarDll("libtesseract302");
 			
-			//System.out.println(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
+			System.out.println(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
 			
 			Monitor monitor = new Monitor();
 			notification.close();
@@ -92,6 +92,7 @@ public class Main extends JFrame {
 		(new File(outPath + "tessdata/configs")).mkdirs();
 		_copyFileFromJarTo("/tessdata/eng.traineddata", outPath + "tessdata/eng.traineddata");
 		_copyFileFromJarTo("/tessdata/configs/api_config", outPath + "tessdata/configs/api_config");
+		_copyFileFromJarTo("/tessdata/configs/digits", outPath + "/tessdata/configs/digits");
 		_copyFileFromJarTo("/tessdata/configs/hocr", outPath + "/tessdata/configs/hocr");
 		OCR.setTessdataPath(outPath + "tessdata");
 	}
