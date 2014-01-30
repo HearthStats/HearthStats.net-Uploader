@@ -73,7 +73,7 @@ public class ProgramHelper extends Observable {
 		      	    Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
 		      	    if(Native.toString(buffer).matches(_processName)) {
 		      	    	_windowHandle = hWnd;
-		      	    	if(!_windowHandle.toString().equals(_windowHandleId)) {
+		      	    	if(_windowHandleId == null) {
 		      	    		_windowHandleId = _windowHandle.toString();
 		      	    		_notifyObserversOfChangeTo(_programName + " window found with process name " + _processName + " and handle ID " + _windowHandleId);
 		      	    	}
@@ -99,7 +99,11 @@ public class ProgramHelper extends Observable {
 	public boolean foundProgram() {
 		
 		// windows version
-		return _getWindowHandle() != null;
+		if(_getWindowHandle() != null) {
+			return true;
+		}
+		_windowHandleId = null;
+		return false;
 		
 		// TODO: implement OSX version
 	}

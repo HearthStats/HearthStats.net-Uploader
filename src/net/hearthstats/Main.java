@@ -55,7 +55,7 @@ import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 public class Main extends JFrame {
 
 	public static String getExtractionFolder() {
-		return "tmp";
+		return "bin";
 	}
 	
 	protected static ScheduledExecutorService scheduledExecutorService = Executors
@@ -75,7 +75,7 @@ public class Main extends JFrame {
 			_loadJarDll("liblept168");
 			_loadJarDll("libtesseract302");
 			
-			System.out.println(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
+			//System.out.println(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
 			
 			Monitor monitor = new Monitor();
 			notification.close();
@@ -132,7 +132,7 @@ public class Main extends JFrame {
 		    byte[] buffer = new byte[1024];
 		    int read = -1;
 		    
-		    File outDir = new File("temp");
+		    File outDir = new File(Main.getExtractionFolder());
 		    outDir.mkdirs();
 		    String outPath = outDir.getPath() + "/";
 		    

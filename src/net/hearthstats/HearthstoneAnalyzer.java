@@ -462,7 +462,7 @@ public class HearthstoneAnalyzer extends Observable {
 			rescaleOp.filter(newImage, newImage);  // Source and destination are the same.
 		
 		// save it to a file
-		File outputfile = new File("temp/opponentname.jpg");
+		File outputfile = new File(Main.getExtractionFolder() + "/opponentname.jpg");
 		try {
 			ImageIO.write(newImage, "jpg", outputfile);
 		} catch (IOException e) {
@@ -471,7 +471,7 @@ public class HearthstoneAnalyzer extends Observable {
 			_notifyObserversOfChangeTo("Exception: " + e.getMessage());
 		}
 		
-		_setOpponentName(OCR.process("temp/opponentname.jpg"));
+		_setOpponentName(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
 	}
 	
 	private void _testForMainMenuScreen() {
