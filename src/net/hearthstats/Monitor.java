@@ -154,7 +154,7 @@ public class Monitor extends JFrame implements Observer {
 		if(Config.checkForUpdates()) {
 			_log("Checking for updates ...");
 			try {
-				URL url = new URL("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/version");
+				URL url = new URL("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/version");
 				BufferedReader reader = null;
 				String availableVersion = "";
 				try {
