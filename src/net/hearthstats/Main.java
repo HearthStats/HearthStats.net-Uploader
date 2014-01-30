@@ -82,7 +82,7 @@ public class Main extends JFrame {
 			monitor.start();
 			
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(null, "Exception: " + e.toString());
+			JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
 			System.exit(1);
 		}
 		
