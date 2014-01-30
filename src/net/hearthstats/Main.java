@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
@@ -27,9 +29,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.swing.JApplet;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import net.sourceforge.tess4j.Tesseract;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -49,6 +54,10 @@ import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 @SuppressWarnings("serial")
 public class Main extends JFrame {
 
+	public static String getExtractionFolder() {
+		return "tmp";
+	}
+	
 	protected static ScheduledExecutorService scheduledExecutorService = Executors
 			.newScheduledThreadPool(5);
 	
@@ -57,17 +66,59 @@ public class Main extends JFrame {
 	public static void main(String[] args) throws IOException {
 		
 		try {
-		
+			
+			_extractTessData();
+			
 			_loadJarDll("liblept168");
 			_loadJarDll("libtesseract302");
+			
+			System.out.println(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
 			
 			Monitor monitor = new Monitor();
 			monitor.start();
 			
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(null, "Exception: " + e.getStackTrace() + e.toString());
+			JOptionPane.showMessageDialog(null, "Exception: " + e.toString());
 		}
 		
+	}
+	
+	private static void _extractTessData() {
+		String outPath = Main.getExtractionFolder() + "/";
+		(new File(outPath + "tessdata/configs")).mkdirs();
+		_copyFileFromJarTo("/tessdata/eng.traineddata", outPath + "tessdata/eng.traineddata");
+		_copyFileFromJarTo("/tessdata/configs/api_config", outPath + "tessdata/configs/api_config");
+		_copyFileFromJarTo("/tessdata/configs/hocr", outPath + "/tessdata/configs/hocr");
+		OCR.setTessdataPath(outPath + "tessdata");
+	}
+	
+	private static void _copyFileFromJarTo(String jarPath, String outPath) {
+		InputStream stream = Main.class.getResourceAsStream(jarPath);
+	    if (stream == null) {
+	    	JOptionPane.showMessageDialog(null, "Exception: Unable to find " + jarPath + " in .jar file");
+	    	System.exit(1);
+	    } else {
+		    OutputStream resStreamOut = null;
+		    int readBytes;
+		    byte[] buffer = new byte[4096];
+		    try {
+		        resStreamOut = new FileOutputStream(new File(outPath));
+		        while ((readBytes = stream.read(buffer)) > 0) {
+		            resStreamOut.write(buffer, 0, readBytes);
+		        }
+		    } catch (IOException e1) {
+		        // TODO Auto-generated catch block
+		        e1.printStackTrace();
+		    } finally {
+		        try {
+					stream.close();
+					resStreamOut.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		    }
+	    }
 	}
 	
 	private static void _loadJarDll(String name) throws IOException {

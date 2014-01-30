@@ -5,9 +5,14 @@ import java.io.File;
 import javax.swing.JOptionPane;
 
 import net.sourceforge.tess4j.Tesseract;
-import net.sourceforge.tess4j.TesseractException;
 
 public class OCR {
+	
+	private static String _tessdataPath = "tessdata";
+			
+	public static void setTessdataPath(String path)  {
+		_tessdataPath = path;
+	}
 
 	public static String process(String filePath) {
 		// perform ocr
@@ -15,11 +20,12 @@ public class OCR {
 		
         String output = "";
         try {
-        	Tesseract instance = Tesseract.getInstance(); //
+        	Tesseract instance = Tesseract.getInstance(); 
+        	instance.setDatapath(_tessdataPath);
 	        output += instance.doOCR(imageFile);
 	        output = output.replaceAll("\\s+","");
         } catch (Exception e) {
-        	JOptionPane.showMessageDialog(null, e.getMessage());
+        	JOptionPane.showMessageDialog(null, "Exception in OCR: " + e.toString());
         }
         return output;
 	}
