@@ -75,7 +75,7 @@ public class Main extends JFrame {
 			_loadJarDll("liblept168");
 			_loadJarDll("libtesseract302");
 			
-			System.out.println(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
+			//System.out.println(OCR.process("opponentname.jpg"));
 			
 			Monitor monitor = new Monitor();
 			notification.close();
