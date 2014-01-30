@@ -53,10 +53,6 @@ public class Config {
 		return _getIni().get("updates", "check").toString().matches("true");
 	}
 	
-	public static boolean alertUpdates() {
-		return _getIni().get("updates", "alert").toString().matches("true");
-	}
-	
 	public static boolean showDeckNotification() {
 		return _getIni().get("notifications", "deck").toString().matches("true");
 	}
