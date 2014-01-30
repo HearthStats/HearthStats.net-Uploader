@@ -73,11 +73,12 @@ public class Monitor extends JFrame implements Observer {
 		_analyzer.addObserver(this);
 		_hsHelper.addObserver(this);
 		
-		_log("Waiting for Hearthstone ...");
 		
 		if(_checkForUserKey()) {
 			_pollHearthstone();
 		}
+		
+		_log("Waiting for Hearthstone ...");
 
 	}
 	
