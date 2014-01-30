@@ -65,13 +65,13 @@ public class ProgramHelper extends Observable {
 	               return true;
 	            }
 	
-	            if(wText.matches(".*" + _programName + ".*")) {
+	            if(wText.equals(_programName)) {
 	            	
 		      	 	PointerByReference pointer = new PointerByReference();
 		      	    User32DLL.GetWindowThreadProcessId(hWnd, pointer);
 		      	    Pointer process = Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION | Kernel32.PROCESS_VM_READ, false, pointer.getValue());
 		      	    Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
-		      	    if(Native.toString(buffer).matches(_processName)) {
+		      	    if(Native.toString(buffer).equals(_processName)) {
 		      	    	_windowHandle = hWnd;
 		      	    	if(_windowHandleId == null) {
 		      	    		_windowHandleId = _windowHandle.toString();
