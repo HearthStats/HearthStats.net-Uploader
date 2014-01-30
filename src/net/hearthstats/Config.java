@@ -50,7 +50,7 @@ public class Config {
 	}
 	
 	public static boolean checkForUpdates() {
-		return _getIni().get("updates", "check").toString().matches("true");
+		return _getIni().get("updates", "alert").toString().matches("true");
 	}
 	
 	public static boolean alertUpdates() {
@@ -98,7 +98,7 @@ public class Config {
 	}
 
 	public static void setCheckForUpdates(boolean b) {
-		_getIni().put("updates", "check", "false");
+		_getIni().put("updates", "alert", b);
 		try {
 			_getIni().store();
 		} catch (IOException e) {
