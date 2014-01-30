@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -37,7 +38,7 @@ public class Notification {
 		constraints.insets = new Insets(5, 5, 5, 5);
 		constraints.fill = GridBagConstraints.BOTH;
 		JLabel headingLabel = new JLabel(header);
-		ImageIcon headingIcon = new ImageIcon("images/icon_16px.png");
+		ImageIcon headingIcon = new ImageIcon(getClass().getResource("/images/icon_16px.png"));
 		headingLabel.setIcon(headingIcon); // --- use image icon you want to
 		headingLabel.setOpaque(false);
 		frame.add(headingLabel, constraints);
