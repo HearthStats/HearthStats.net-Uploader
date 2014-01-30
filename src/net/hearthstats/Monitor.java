@@ -166,15 +166,18 @@ public class Monitor extends JFrame implements Observer {
 								"A new version of HearthStats.net is available\n\n" +
 								"v" + Config.getVersion() + " is your current version\n" +
 								"v" + availableVersion + " is the latest version\n\n" +
-								"Would you exit and go to the download page?\n",
+								"Would you install this update now?\n",
 								"HearthStats.net Uploader Update Available",
 								dialogButton);		
 						if(dialogResult == JOptionPane.YES_OPTION){
+							/*
 							// Create Desktop object
 							Desktop d = Desktop.getDesktop();
 							// Browse a URL, say google.com
 							d.browse(new URI("https://github.com/JeromeDane/HearthStats.net-Uploader/releases"));
 							System.exit(0);
+							*/
+							Updater.run();
 						} else {
 							dialogResult = JOptionPane.showConfirmDialog(null, 
 									"Would you like to disable automatic update checking?",

@@ -55,7 +55,9 @@ import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 public class Main extends JFrame {
 
 	public static String getExtractionFolder() {
-		return "tmp";
+		String path = "tmp";
+		(new File(path)).mkdirs();
+		return path;
 	}
 	
 	protected static ScheduledExecutorService scheduledExecutorService = Executors
@@ -67,18 +69,19 @@ public class Main extends JFrame {
 		
 		try {
 			
-			Notification notification = new Notification("HearthStats.net Uploader", "Loading ...");
-			notification.show();
+			Notification loadingNotification = new Notification("HearthStats.net Uploader", "Loading ...");
+			loadingNotification.show();
+			
+			Updater.cleanUp();
 			
 			_extractTessData();
-			
 			_loadJarDll("liblept168");
 			_loadJarDll("libtesseract302");
-			
 			//System.out.println(OCR.process("opponentname.jpg"));
 			
+			loadingNotification.close();
+			
 			Monitor monitor = new Monitor();
-			notification.close();
 			monitor.start();
 			
 		} catch(Exception e) {
@@ -91,14 +94,14 @@ public class Main extends JFrame {
 	private static void _extractTessData() {
 		String outPath = Main.getExtractionFolder() + "/";
 		(new File(outPath + "tessdata/configs")).mkdirs();
-		_copyFileFromJarTo("/tessdata/eng.traineddata", outPath + "tessdata/eng.traineddata");
-		_copyFileFromJarTo("/tessdata/configs/api_config", outPath + "tessdata/configs/api_config");
-		_copyFileFromJarTo("/tessdata/configs/digits", outPath + "/tessdata/configs/digits");
-		_copyFileFromJarTo("/tessdata/configs/hocr", outPath + "/tessdata/configs/hocr");
+		copyFileFromJarTo("/tessdata/eng.traineddata", outPath + "tessdata/eng.traineddata");
+		copyFileFromJarTo("/tessdata/configs/api_config", outPath + "tessdata/configs/api_config");
+		copyFileFromJarTo("/tessdata/configs/digits", outPath + "/tessdata/configs/digits");
+		copyFileFromJarTo("/tessdata/configs/hocr", outPath + "/tessdata/configs/hocr");
 		OCR.setTessdataPath(outPath + "tessdata");
 	}
 	
-	private static void _copyFileFromJarTo(String jarPath, String outPath) {
+	public static void copyFileFromJarTo(String jarPath, String outPath) {
 		InputStream stream = Main.class.getResourceAsStream(jarPath);
 	    if (stream == null) {
 	    	JOptionPane.showMessageDialog(null, "Exception: Unable to find " + jarPath + " in .jar file");
