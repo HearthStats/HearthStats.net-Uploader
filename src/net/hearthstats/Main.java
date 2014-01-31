@@ -14,6 +14,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,7 +66,7 @@ public class Main extends JFrame {
 	
 	protected static JFrame f = new JFrame();
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		
 		try {
 			
@@ -75,8 +76,13 @@ public class Main extends JFrame {
 			Updater.cleanUp();
 			
 			_extractTessData();
-			_loadJarDll("liblept168");
-			_loadJarDll("libtesseract302");
+			
+			try {
+				_loadJarDll("liblept168");
+				_loadJarDll("libtesseract302");
+			} catch(Exception e) {
+				JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+			}
 			//System.out.println(OCR.process("opponentname.jpg"));
 			
 			loadingNotification.close();
@@ -115,9 +121,10 @@ public class Main extends JFrame {
 		        while ((readBytes = stream.read(buffer)) > 0) {
 		            resStreamOut.write(buffer, 0, readBytes);
 		        }
-		    } catch (IOException e1) {
+		    } catch (IOException e) {
 		        // TODO Auto-generated catch block
-		        e1.printStackTrace();
+		        e.printStackTrace();
+		        JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
 		    } finally {
 		        try {
 					stream.close();
@@ -125,12 +132,13 @@ public class Main extends JFrame {
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
 				}
 		    }
 	    }
 	}
 	
-	private static void _loadJarDll(String name) throws IOException {
+	private static void _loadJarDll(String name) {
 		String resourcePath = "/lib/" + name + "_" + System.getProperty("sun.arch.data.model") + ".dll";
 	    InputStream in = Main.class.getResourceAsStream(resourcePath);
 	    if(in != null) {
@@ -142,15 +150,31 @@ public class Main extends JFrame {
 		    String outPath = outDir.getPath() + "/";
 		    
 		    String outFileName = name.replace("_32", "").replace("_64",  "") + ".dll";
-		    FileOutputStream fos = new FileOutputStream(outPath + outFileName);
+		    
+		    FileOutputStream fos = null;
+			try {
+				fos = new FileOutputStream(outPath + outFileName);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+			}
 	
-		    while((read = in.read(buffer)) != -1) {
-		        fos.write(buffer, 0, read);
+		    try {
+				while((read = in.read(buffer)) != -1) {
+				    fos.write(buffer, 0, read);
+				}
+				fos.close();
+				in.close();
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+			}
+		    try {
+		    	System.loadLibrary(outPath + name);
+		    } catch(Exception e) {
+		    	JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
 		    }
-		    fos.close();
-		    in.close();
-	
-		    System.loadLibrary(outPath + name);
 	    }
 	}
 }
