@@ -1,4 +1,4 @@
-v0.7.201301302
+v0.8.201301311
 * Improved stability
 * Fixed minimizing Hearthstone causing silent crash (issue #76)
 * Detection and notication of Hearthstone in fullscreen
