@@ -1,3 +1,6 @@
+v0.7.201301302
+* Fixed specific detection loops (Issue #95)
+
 v0.7.201301301
 * New optional auto updater
 * Improved match detection stability
