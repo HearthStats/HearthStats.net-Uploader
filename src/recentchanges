@@ -1,7 +1,11 @@
 v0.7.201301302
+* Improved stability
+* Fixed minimizing Hearthstone causing silent crash (issue #76)
+* Detection and notication of Hearthstone in fullscreen
+* Added instructions to beginning of log (issue #100)
+* Opponent name submitted undetected when appropriate
+
+v0.7.201301302
 * Fixed specific detection loops (Issue #95)
 
-v0.7.201301301
-* New optional auto updater
-* Improved match detection stability
-* Improved coin detection
+
