@@ -76,8 +76,14 @@ public class ProgramHelper extends Observable {
 		      	    User32DLL.GetWindowThreadProcessId(hWnd, pointer);
 		      	    Pointer process = Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION | Kernel32.PROCESS_VM_READ, false, pointer.getValue());
 		      	    Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
+		      	    
 		      	    if(Native.toString(buffer).equals(_processName)) {
 		      	    	_windowHandle = hWnd;
+		      	    	
+		      	    	char[] className = new char[512];
+		      	    	User32.INSTANCE.GetClassName(_windowHandle, className, 512);
+		      	    	String classNameStr = Native.toString(className);
+		      	    	
 		      	    	if(_windowHandleId == null) {
 		      	    		_windowHandleId = _windowHandle.toString();
 		      	    		_notifyObserversOfChangeTo(_programName + " window found with process name " + _processName);
