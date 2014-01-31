@@ -405,6 +405,7 @@ public class HearthstoneAnalyzer extends Observable {
 			_coin = false;
 			_yourClass = null;
 			_opponentClass = null;
+			_opponentName = null;
 			_setScreen("Finding Opponent");
 		}
 	}
