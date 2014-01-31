@@ -82,7 +82,9 @@ public class HearthstoneMatch {
 				_propertyOrUnknown(getOpponentClass()) + " " +
 				"(" + _propertyOrUnknown(getOpponentName()) + ") " +
 				getResult() + " " +
-				" deck slot " + getDeckSlot();
+				(getDeckSlot() == 0 ? "" : " deck slot " + getDeckSlot());
+				
+				
 	}
 
 	public JSONObject toJsonObject() {

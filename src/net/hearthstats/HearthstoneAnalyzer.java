@@ -117,6 +117,7 @@ public class HearthstoneAnalyzer extends Observable {
 		_opponentName = null;
 		_screen = null;
 		_mode = null;
+		_deckSlot = 0;
 	}
 	public boolean getCoin() {
 		return _coin;
