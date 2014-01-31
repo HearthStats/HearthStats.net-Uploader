@@ -1,3 +1,6 @@
+Unreleased
+* Further improved detection of Hearthstone window
+
 v0.8.201301311
 * Improved stability
 * Fixed minimizing Hearthstone causing silent crash (issue #76)

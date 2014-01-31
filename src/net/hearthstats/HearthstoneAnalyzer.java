@@ -418,7 +418,14 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(_image, tests);
 		
-		if(pxTest.passed()) {
+		int[][] testsTwo = { 
+				{ 379, 118, 189, 146, 82 },		// title banner left
+				{ 641, 119, 197, 154, 86 },		// title banner right
+				{ 515, 622, 121, 191, 255 }		// confirm button
+		};
+		PixelGroupTest pxTestTwo = new PixelGroupTest(_image, testsTwo);
+		
+		if(pxTest.passed() || pxTestTwo.passed()) {
 			_setScreen("Opponent Name");
 			_analyzeOpponnentName();
 		}
