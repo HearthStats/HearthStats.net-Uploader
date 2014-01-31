@@ -37,7 +37,6 @@ public class Updater {
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("UpdateStart"));
 		}
-
 		
 		_saveSettings();
 
@@ -61,7 +60,7 @@ public class Updater {
 
 	public static void cleanUp() {
 		_removeFile("updater.jar");
-		_removeFile(Main.getExtractionFolder() + "/updatezip");
+		_removeFile(Main.getExtractionFolder() + "/update.zip");
 	}
 	
 	private static void _removeFile(String path) {
