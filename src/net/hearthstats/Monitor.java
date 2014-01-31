@@ -307,7 +307,7 @@ public class Monitor extends JFrame implements Observer {
 	protected void _handleHearthstoneFound() {
 		
 		// mark hearthstone found if necessary
-		if (_hearthstoneDetected != true) {
+		if (!_hearthstoneDetected) {
 			_hearthstoneDetected = true;
 			if(Config.showHsFoundNotification())
 				_notify("Hearthstone found");
@@ -331,8 +331,10 @@ public class Monitor extends JFrame implements Observer {
 		// mark hearthstone not found if necessary
 		if (_hearthstoneDetected) {
 			_hearthstoneDetected = false;
-			if(Config.showHsClosedNotification())
+			if(Config.showHsClosedNotification()) {
 				_notify("Hearthstone closed");
+				_analyzer.reset();
+			}
 			
 		}
 	}

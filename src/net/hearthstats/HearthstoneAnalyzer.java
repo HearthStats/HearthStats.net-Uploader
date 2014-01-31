@@ -2,23 +2,15 @@ package net.hearthstats;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorConvertOp;
-import java.awt.image.CropImageFilter;
-import java.awt.image.DataBufferInt;
-import java.awt.image.FilteredImageSource;
 import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 
 import javax.imageio.ImageIO;
-
-import net.sourceforge.tess4j.Tesseract;
-import net.sourceforge.tess4j.TesseractException;
 
 public class HearthstoneAnalyzer extends Observable {
 
@@ -118,6 +110,14 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 	}
 
+	public void reset() {
+		_coin = false;
+		_yourClass = null;
+		_opponentClass = null;
+		_opponentName = null;
+		_screen = null;
+		_mode = null;
+	}
 	public boolean getCoin() {
 		return _coin;
 	}
