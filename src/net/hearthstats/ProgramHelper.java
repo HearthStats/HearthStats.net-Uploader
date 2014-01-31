@@ -1,5 +1,7 @@
 package net.hearthstats;
 
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Observable;
@@ -30,6 +32,7 @@ public class ProgramHelper extends Observable {
 	private String _processName;
 	private HWND _windowHandle = null;
 	private String _windowHandleId = null;
+	private boolean _isFullscreen = false;
 	private static boolean _isMinimized = false;
 	
 	public ProgramHelper(String programName, String processName) {
@@ -110,6 +113,14 @@ public class ProgramHelper extends Observable {
 		// TODO: implement OSX version
 	}
 	
+	private boolean _isFullScreen(Rectangle rect) {
+		// check to make sure Hearthstone's not in full screen
+		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		int width = gd.getDisplayMode().getWidth();
+		int height = gd.getDisplayMode().getHeight();
+		return (rect.width >= width && rect.height >= height);
+	}
+	
 	private BufferedImage _getScreenCaptureWindows(HWND hWnd) {
 
 		HDC hdcWindow = User32.INSTANCE.GetDC(hWnd);
@@ -117,39 +128,49 @@ public class ProgramHelper extends Observable {
 
 		RECT bounds = new RECT();
 		User32Extra.INSTANCE.GetClientRect(hWnd, bounds);
+		
+		// check to make sure the window's not minimized
 		if(bounds.toRectangle().width >= 1024) {
 			if(_isMinimized) {
 				_notifyObserversOfChangeTo(_programName + " window restored");
 				_isMinimized = false;
 			}
+			
+			if(_isFullScreen(bounds.toRectangle())) {
+				if(!_isFullscreen) {
+					_notifyObserversOfChangeTo(_programName + " running in fullscreen");
+					_isFullscreen  = true;
+				}
+				return null;
+			} else {
+				int width = bounds.right - bounds.left;
+				int height = bounds.bottom - bounds.top;
 		
-			int width = bounds.right - bounds.left;
-			int height = bounds.bottom - bounds.top;
-	
-			HBITMAP hBitmap = GDI32.INSTANCE.CreateCompatibleBitmap(hdcWindow, width, height);
-	
-			HANDLE hOld = GDI32.INSTANCE.SelectObject(hdcMemDC, hBitmap);
-			GDI32Extra.INSTANCE.BitBlt(hdcMemDC, 0, 0, width, height, hdcWindow, 0, 0, WinGDIExtra.SRCCOPY);
-	
-			GDI32.INSTANCE.SelectObject(hdcMemDC, hOld);
-			GDI32.INSTANCE.DeleteDC(hdcMemDC);
-	
-			BITMAPINFO bmi = new BITMAPINFO();
-			bmi.bmiHeader.biWidth = width;
-			bmi.bmiHeader.biHeight = -height;
-			bmi.bmiHeader.biPlanes = 1;
-			bmi.bmiHeader.biBitCount = 32;
-			bmi.bmiHeader.biCompression = WinGDI.BI_RGB;
-	
-			Memory buffer = new Memory(width * height * 4);
-			GDI32.INSTANCE.GetDIBits(hdcWindow, hBitmap, 0, height, buffer, bmi, WinGDI.DIB_RGB_COLORS);
-	
-			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			image.setRGB(0, 0, width, height, buffer.getIntArray(0, width * height), 0, width);
-	
-			GDI32.INSTANCE.DeleteObject(hBitmap);
-			User32.INSTANCE.ReleaseDC(hWnd, hdcWindow);
-			return image;
+				HBITMAP hBitmap = GDI32.INSTANCE.CreateCompatibleBitmap(hdcWindow, width, height);
+		
+				HANDLE hOld = GDI32.INSTANCE.SelectObject(hdcMemDC, hBitmap);
+				GDI32Extra.INSTANCE.BitBlt(hdcMemDC, 0, 0, width, height, hdcWindow, 0, 0, WinGDIExtra.SRCCOPY);
+		
+				GDI32.INSTANCE.SelectObject(hdcMemDC, hOld);
+				GDI32.INSTANCE.DeleteDC(hdcMemDC);
+		
+				BITMAPINFO bmi = new BITMAPINFO();
+				bmi.bmiHeader.biWidth = width;
+				bmi.bmiHeader.biHeight = -height;
+				bmi.bmiHeader.biPlanes = 1;
+				bmi.bmiHeader.biBitCount = 32;
+				bmi.bmiHeader.biCompression = WinGDI.BI_RGB;
+		
+				Memory buffer = new Memory(width * height * 4);
+				GDI32.INSTANCE.GetDIBits(hdcWindow, hBitmap, 0, height, buffer, bmi, WinGDI.DIB_RGB_COLORS);
+		
+				BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+				image.setRGB(0, 0, width, height, buffer.getIntArray(0, width * height), 0, width);
+		
+				GDI32.INSTANCE.DeleteObject(hBitmap);
+				User32.INSTANCE.ReleaseDC(hWnd, hdcWindow);
+				return image;
+			}
 		}
 		if(!_isMinimized) {
 			_notifyObserversOfChangeTo("Warning! " + _programName + " minimized. No detection possible.");

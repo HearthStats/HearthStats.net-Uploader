@@ -456,6 +456,8 @@ public class Monitor extends JFrame implements Observer {
 		_log(changed.toString());
 		if(changed.toString().matches(".*minimized.*")) 
 			_notify("Hearthstone Minimized", "Warning! No detection possible while minimized.");
+		if(changed.toString().matches(".*fullscreen.*")) 
+			JOptionPane.showMessageDialog(null, "Hearthstats.net Uploader Warning! \n\nNo detection possible while Hearthstone is in fullscreen mode.\n\nPlease set Hearthstone to WINDOWED mode and close and RESTART Hearthstone.\n\nSorry for the inconvenience.");
 		if(changed.toString().matches(".*restored.*")) 
 			_notify("Hearthstone Restored", "Resuming detection ...");
 	}
