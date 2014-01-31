@@ -58,8 +58,6 @@ public class Monitor extends JFrame implements Observer {
 		_showWelcomeLog();
 		_checkForUpdates();
 		
-		
-		
 		_api.addObserver(this);
 		_analyzer.addObserver(this);
 		_hsHelper.addObserver(this);
@@ -75,7 +73,7 @@ public class Monitor extends JFrame implements Observer {
 	
 	private void _showWelcomeLog() {
 		_log("Starting HearthStats.net Uploader v" + Config.getVersion());
-		_log("\nThis is a pre-release. It may have glitches. Your data will be synced with the live site,");
+		_log("\nThis is a pre-release. It may have glitches. Your stats will be synced with the live site,");
 		_log("but most information is only visible on http://BETA.HearthStats.net for the moment.\n");
 		_log("1 - Se readme.md for full details");
 		_log("2 - Set your deck slots at http://beta.hearthstats.net/decks/active_decks");
