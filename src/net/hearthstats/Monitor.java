@@ -81,6 +81,8 @@ public class Monitor extends JFrame implements Observer {
 		_log("5 - Look for event notifications in this log and bottom right of screen");
 		_log("6 - Submit feedback to http://goo.gl/lMbdzg (copy and paste this log)");
 		_log("7 - @JeromeDane on twitter or https://plus.google.com/+JeromeDane/ to contact me directly\n");
+		_log("Donate to support this uploader: http://goo.gl/G2jMKw");
+		_log("Donate to support the site: http://hearthstats.net/aboutus\n");
 	}
 	
 	private boolean _checkForUserKey() {
