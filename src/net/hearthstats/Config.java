@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
+import javax.swing.JOptionPane;
+
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Wini;
 
@@ -32,6 +35,7 @@ public class Config {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Exception in Config: " + e.toString());
 			}
 		}
 		return _ini;
@@ -87,6 +91,7 @@ public class Config {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Exception in Config: " + e.toString());
 			}
 			
 		}
@@ -100,6 +105,7 @@ public class Config {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Exception in Config: " + e.toString());
 		}
 	}
 
@@ -111,6 +117,7 @@ public class Config {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Exception in Config: " + e.toString());
 		}
 	}
 }

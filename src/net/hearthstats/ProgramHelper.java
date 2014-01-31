@@ -75,7 +75,7 @@ public class ProgramHelper extends Observable {
 		      	    	_windowHandle = hWnd;
 		      	    	if(_windowHandleId == null) {
 		      	    		_windowHandleId = _windowHandle.toString();
-		      	    		_notifyObserversOfChangeTo(_programName + " window found with process name " + _processName + " and handle ID " + _windowHandleId);
+		      	    		_notifyObserversOfChangeTo(_programName + " window found with process name " + _processName);
 		      	    	}
 		      	    }
 	            }
