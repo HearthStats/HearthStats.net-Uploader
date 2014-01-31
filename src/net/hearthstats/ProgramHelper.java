@@ -1,5 +1,6 @@
 package net.hearthstats;
 
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Observable;
 
@@ -29,6 +30,7 @@ public class ProgramHelper extends Observable {
 	private String _processName;
 	private HWND _windowHandle = null;
 	private String _windowHandleId = null;
+	private static boolean _isMinimized = false;
 	
 	public ProgramHelper(String programName, String processName) {
 		_programName = programName;
@@ -108,43 +110,52 @@ public class ProgramHelper extends Observable {
 		// TODO: implement OSX version
 	}
 	
-	protected static BufferedImage _getScreenCaptureWindows(HWND hWnd) {
+	private BufferedImage _getScreenCaptureWindows(HWND hWnd) {
 
 		HDC hdcWindow = User32.INSTANCE.GetDC(hWnd);
 		HDC hdcMemDC = GDI32.INSTANCE.CreateCompatibleDC(hdcWindow);
 
 		RECT bounds = new RECT();
 		User32Extra.INSTANCE.GetClientRect(hWnd, bounds);
-
-		int width = bounds.right - bounds.left;
-		int height = bounds.bottom - bounds.top;
-
-		HBITMAP hBitmap = GDI32.INSTANCE.CreateCompatibleBitmap(hdcWindow, width, height);
-
-		HANDLE hOld = GDI32.INSTANCE.SelectObject(hdcMemDC, hBitmap);
-		GDI32Extra.INSTANCE.BitBlt(hdcMemDC, 0, 0, width, height, hdcWindow, 0, 0, WinGDIExtra.SRCCOPY);
-
-		GDI32.INSTANCE.SelectObject(hdcMemDC, hOld);
-		GDI32.INSTANCE.DeleteDC(hdcMemDC);
-
-		BITMAPINFO bmi = new BITMAPINFO();
-		bmi.bmiHeader.biWidth = width;
-		bmi.bmiHeader.biHeight = -height;
-		bmi.bmiHeader.biPlanes = 1;
-		bmi.bmiHeader.biBitCount = 32;
-		bmi.bmiHeader.biCompression = WinGDI.BI_RGB;
-
-		Memory buffer = new Memory(width * height * 4);
-		GDI32.INSTANCE.GetDIBits(hdcWindow, hBitmap, 0, height, buffer, bmi, WinGDI.DIB_RGB_COLORS);
-
-		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		image.setRGB(0, 0, width, height, buffer.getIntArray(0, width * height), 0, width);
-
-		GDI32.INSTANCE.DeleteObject(hBitmap);
-		User32.INSTANCE.ReleaseDC(hWnd, hdcWindow);
-
-		return image;
-
+		if(bounds.toRectangle().width >= 1024) {
+			if(_isMinimized) {
+				_notifyObserversOfChangeTo(_programName + " window restored");
+				_isMinimized = false;
+			}
+		
+			int width = bounds.right - bounds.left;
+			int height = bounds.bottom - bounds.top;
+	
+			HBITMAP hBitmap = GDI32.INSTANCE.CreateCompatibleBitmap(hdcWindow, width, height);
+	
+			HANDLE hOld = GDI32.INSTANCE.SelectObject(hdcMemDC, hBitmap);
+			GDI32Extra.INSTANCE.BitBlt(hdcMemDC, 0, 0, width, height, hdcWindow, 0, 0, WinGDIExtra.SRCCOPY);
+	
+			GDI32.INSTANCE.SelectObject(hdcMemDC, hOld);
+			GDI32.INSTANCE.DeleteDC(hdcMemDC);
+	
+			BITMAPINFO bmi = new BITMAPINFO();
+			bmi.bmiHeader.biWidth = width;
+			bmi.bmiHeader.biHeight = -height;
+			bmi.bmiHeader.biPlanes = 1;
+			bmi.bmiHeader.biBitCount = 32;
+			bmi.bmiHeader.biCompression = WinGDI.BI_RGB;
+	
+			Memory buffer = new Memory(width * height * 4);
+			GDI32.INSTANCE.GetDIBits(hdcWindow, hBitmap, 0, height, buffer, bmi, WinGDI.DIB_RGB_COLORS);
+	
+			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			image.setRGB(0, 0, width, height, buffer.getIntArray(0, width * height), 0, width);
+	
+			GDI32.INSTANCE.DeleteObject(hBitmap);
+			User32.INSTANCE.ReleaseDC(hWnd, hdcWindow);
+			return image;
+		}
+		if(!_isMinimized) {
+			_notifyObserversOfChangeTo("Warning! " + _programName + " minimized. No detection possible.");
+			_isMinimized = true;
+		}
+		return null;
 	}
 	
 	private void _notifyObserversOfChangeTo(String property) {

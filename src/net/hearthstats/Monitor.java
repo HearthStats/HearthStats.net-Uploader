@@ -450,6 +450,14 @@ public class Monitor extends JFrame implements Observer {
 		}
 	}
 	
+	protected void _handleProgramHelperEvent(Object changed) {
+		_log(changed.toString());
+		if(changed.toString().matches(".*minimized.*")) 
+			_notify("Hearthstone Minimized", "Warning! No detection possible while minimized.");
+		if(changed.toString().matches(".*restored.*")) 
+			_notify("Hearthstone Restored", "Resuming detection ...");
+	}
+	
 	@Override
 	public void update(Observable dispatcher, Object changed) {
 		if(dispatcher.getClass().toString().matches(".*HearthstoneAnalyzer"))
@@ -464,7 +472,7 @@ public class Monitor extends JFrame implements Observer {
 			_handleApiEvent(changed);
 		
 		if(dispatcher.getClass().toString().matches(".*ProgramHelper"))
-			_log((String) changed);
+			_handleProgramHelperEvent(changed);
 	}
 
 
