@@ -1,6 +1,7 @@
 Unreleased
 * Further improved detection of Hearthstone window
 * Improved opponent name detection
+* Added detection and notification of practice mode
 * Fixed end arena request loop bug (issue #105)
 
 v0.8.201301311

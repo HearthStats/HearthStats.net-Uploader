@@ -45,6 +45,9 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 
 		if(getScreen() != "Play") {
+			if(getMode() != "Practice") {
+				_testForPracticeScreen();
+			}
 			_testForPlayScreen();
 		}
 		
@@ -52,7 +55,7 @@ public class HearthstoneAnalyzer extends Observable {
 			_testForArenaModeScreen();
 		}
 		
-		if(getScreen() == "Play" || getScreen() == "Arena") {
+		if((getScreen() == "Play" || getScreen() == "Arena") && getMode() != "Practice") {
 			_testForFindingOpponent();
 			if (getScreen() == "Play") {
 				if(getMode() != "Casual")
@@ -63,7 +66,7 @@ public class HearthstoneAnalyzer extends Observable {
 			}
 		}
 		
-		if(getScreen() == "Match Start" || getScreen() == "Opponent Name") {
+		if((getScreen() == "Match Start" || getScreen() == "Opponent Name") && getMode() != "Practice") {
 			if(getYourClass() == null)
 				_testForYourClass();
 			if(getOpponentClass() == null)
@@ -73,7 +76,7 @@ public class HearthstoneAnalyzer extends Observable {
 			if(getScreen() != "Opponent Name")
 				_testForOpponentName();
 		} else {
-			if(getScreen() != "Playing")
+			if(getScreen() != "Playing" && getMode() != "Practice")
 				_testForMatchStartScreen();
 		}
 		
@@ -81,12 +84,14 @@ public class HearthstoneAnalyzer extends Observable {
 			_testForArenaEnd();
 		}
 		
-		if(getScreen() == "Playing") {
-			_testForVictory();
-			_testForDefeat();
-		} else {
-			if(getScreen() != "Result")
-				_testForPlayingScreen();
+		if(getMode() != "Practice") {
+			if(getScreen() == "Playing") {
+				_testForVictory();
+				_testForDefeat();
+			} else {
+				if(getScreen() != "Result")
+					_testForPlayingScreen();
+			}
 		}
 		
 		if(getScreen() == "Arena" && !isNewArena()) {
@@ -635,6 +640,19 @@ public class HearthstoneAnalyzer extends Observable {
 			_setScreen("Play");
 	}
 	
+	private void _testForPracticeScreen() {
+		
+		int[][] tests = { 
+				{ 583, 120, 100, 99, 50 }, 	// practice mode green background
+				{ 255, 628, 87, 91, 45 }, 	// practice mode green background
+				{ 244, 28, 222, 199, 157 },	// section heading  
+				{ 262, 695, 217, 193, 151 }	// bottom label 
+		};
+		if((new PixelGroupTest(_image, tests)).passed()) {
+			_setScreen("Practice");
+			_setMode("Practice");
+		}
+	}
 
 	private void _testForRankedMode() {
 

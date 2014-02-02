@@ -398,9 +398,16 @@ public class Monitor extends JFrame implements Observer {
 				_submitMatchResult();
 				break;
 			case "screen":
-				if(_analyzer.getScreen() != "Result" && Config.showScreenNotification())
-					_notify(_analyzer.getScreen() + " Screen Detected");
-				_log(_analyzer.getScreen() + " Screen Detected");
+				if(_analyzer.getScreen() != "Result" && Config.showScreenNotification()) {
+					if(_analyzer.getScreen() == "Practice")
+						_notify(_analyzer.getScreen() + " Screen Detected", "Results are not tracked in practice mode");
+					else
+						_notify(_analyzer.getScreen() + " Screen Detected");
+				}
+				if(_analyzer.getScreen() == "Practice")
+					_log(_analyzer.getScreen() + " Screen Detected. Result tracking disabled.");
+				else
+					_log(_analyzer.getScreen() + " Screen Detected");
 				break;
 			case "yourClass":
 				_notify("Playing as " + _analyzer.getYourClass());
