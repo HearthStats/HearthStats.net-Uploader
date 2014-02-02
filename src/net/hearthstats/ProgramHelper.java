@@ -81,7 +81,7 @@ public class ProgramHelper extends Observable {
 		      	    char[] className = new char[512];
 		      	    User32.INSTANCE.GetClassName(hWnd, className, 512);
 		      	    String classNameStr = Native.toString(className);
-		      	    
+
 		      	    if(Native.toString(buffer).equals(_processName) && classNameStr.equals("UnityWndClass")) {
 		      	    	_windowHandle = hWnd;
 		      	    	if(_windowHandleId == null) {

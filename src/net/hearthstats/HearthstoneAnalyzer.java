@@ -29,6 +29,7 @@ public class HearthstoneAnalyzer extends Observable {
 	private int _width;
 	private int _height;
 	private float _screenRatio;
+	private boolean _arenaRunEndDetected = false;
 
 	public HearthstoneAnalyzer() {
 	}
@@ -76,7 +77,7 @@ public class HearthstoneAnalyzer extends Observable {
 				_testForMatchStartScreen();
 		}
 		
-		if(getScreen() == "Result" || getScreen() == "Arena") {
+		if((getScreen() == "Result" || getScreen() == "Arena") && !_arenaRunEndDetected ) {
 			_testForArenaEnd();
 		}
 		
@@ -118,6 +119,7 @@ public class HearthstoneAnalyzer extends Observable {
 		_screen = null;
 		_mode = null;
 		_deckSlot = 0;
+		_arenaRunEndDetected = false;
 	}
 	public boolean getCoin() {
 		return _coin;
@@ -214,6 +216,7 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		if((new PixelGroupTest(_image, tests)).passed()) {
 			_screen = "Arena";
+			_arenaRunEndDetected = true;
 			_notifyObserversOfChangeTo("arenaEnd");
 		}
 	}
@@ -407,6 +410,7 @@ public class HearthstoneAnalyzer extends Observable {
 			_yourClass = null;
 			_opponentClass = null;
 			_opponentName = null;
+			_arenaRunEndDetected = false;
 			_setScreen("Finding Opponent");
 		}
 	}
