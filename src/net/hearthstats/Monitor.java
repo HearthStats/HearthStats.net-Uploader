@@ -83,6 +83,7 @@ public class Monitor extends JFrame implements Observer {
 		_log("7 - @JeromeDane on twitter or https://plus.google.com/+JeromeDane/ to contact me directly\n");
 		_log("Donate to support this uploader: http://goo.gl/G2jMKw (shortened PayPal link)");
 		_log("Donate to support the site: http://hearthstats.net/aboutus\n");
+		_log("Project source: https://github.com/JeromeDane/HearthStats.net-Uploader/\n");
 	}
 	
 	private boolean _checkForUserKey() {
