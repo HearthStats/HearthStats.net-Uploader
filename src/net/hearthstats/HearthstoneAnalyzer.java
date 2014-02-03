@@ -488,12 +488,15 @@ public class HearthstoneAnalyzer extends Observable {
 		try {
 			ImageIO.write(newImage, "jpg", outputfile);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			_notifyObserversOfChangeTo("Exception: " + e.getMessage());
+			_notifyObserversOfChangeTo("Exception trying to write opponent name image:\n" + e.getMessage());
 		}
-		
-		_setOpponentName(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
+		try {
+			_setOpponentName(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
+		} catch(Exception e) {
+			e.printStackTrace();
+			_notifyObserversOfChangeTo("Exception tryint to analyze opponent name image:\n" + e.getMessage());
+		}
 	}
 	
 	private void _testForMainMenuScreen() {
