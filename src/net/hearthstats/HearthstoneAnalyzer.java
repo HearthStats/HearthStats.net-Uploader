@@ -773,7 +773,7 @@ public class HearthstoneAnalyzer extends Observable {
 				{ 291, 579, 234, 192, 53 }, 
 				{ 280, 461, 255, 245, 225 } 
 		};
-		_testForClass("Warior", warriorTests, true);
+		_testForClass("Warrior", warriorTests, true);
 	}
 	
 
