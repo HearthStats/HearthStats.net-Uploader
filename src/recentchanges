@@ -1,5 +1,6 @@
 v0.9.201302043 
 * Fixed rank not being re-detected when changed
+* Window position and size are now saved
 
 v0.9.201302042
 * Fixed update loop. Sorry about that!

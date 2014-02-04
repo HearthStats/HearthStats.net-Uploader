@@ -5,11 +5,14 @@ import java.net.URISyntaxException;
 import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.MenuItem;
+import java.awt.Point;
 import java.awt.PopupMenu;
+import java.awt.Rectangle;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
@@ -154,8 +157,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private void _createAndShowGui() {
 		Image icon = new ImageIcon(getClass().getResource("/images/icon.png")).getImage();
 		setIconImage(icon);
-		setLocation(0, 0);
-		setSize(600, 700);
+		setLocation(Config.getX(), Config.getY());
+		setSize(Config.getWidth(), Config.getHeight());
 		
 		JTabbedPane tabbedPane = new JTabbedPane();
 		add(tabbedPane);
@@ -541,10 +544,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 
 	@Override
 	public void windowClosing(WindowEvent e) {
-		// TODO Auto-generated method stub
-		System.out.println("closing...");
-		System.out.println(getLocationOnScreen());
-		
+		Point p = getLocationOnScreen();
+		Config.setX(p.x);
+		Config.setY(p.y);
+		Dimension rect = getSize();
+		Config.setWidth((int) rect.getWidth());
+		Config.setHeight((int) rect.getHeight());
 		System.exit(0);
 	}
 

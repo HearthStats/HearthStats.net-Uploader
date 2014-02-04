@@ -20,6 +20,27 @@ public class Config {
 	public static String getUserKey() {
 		return  _getIni().get("API", "userkey", String.class);
 	}
+	
+	private static int getIntegerSetting(String group, String key, int deflt) {
+		String setting = _getIni().get(group, key);
+		return setting == null ? deflt : Integer.parseInt(setting); 
+	}
+	
+	public static int getX() {
+		return getIntegerSetting("ui", "x", 0);
+	}
+	
+	public static int getY() {
+		return getIntegerSetting("ui", "y", 0);
+	}
+	
+	public static int getWidth() {
+		return getIntegerSetting("ui", "width", 600);
+	}
+	
+	public static int getHeight() {
+		return getIntegerSetting("ui", "height", 700);
+	}
 
 	private static Wini _getIni() {
 		if(_ini == null) {
@@ -129,5 +150,29 @@ public class Config {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "Exception in Config: " + e.toString());
 		}
+	}
+	
+	private static void _setIntVal(String group, String key, int val) {
+		// TODO Auto-generated method stub
+		_getIni().put(group, key, val + "");
+		try {
+			_getIni().store();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Exception in Config: " + e.toString());
+		}
+	}
+	public static void setX(int val) {
+		_setIntVal("ui", "x", val);
+	}
+	public static void setY(int val) {
+		_setIntVal("ui", "y", val);
+	}
+	public static void setWidth(int val) {
+		_setIntVal("ui", "width", val);
+	}
+	public static void setHeight(int val) {
+		_setIntVal("ui", "height", val);
 	}
 }
