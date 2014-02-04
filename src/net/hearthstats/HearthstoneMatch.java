@@ -11,6 +11,7 @@ public class HearthstoneMatch {
 	private String _result;
 	private int _deckSlot;
 	private String _opponentName;
+	private String _rankLeve;
 	
 	public HearthstoneMatch() {
 		
@@ -64,10 +65,17 @@ public class HearthstoneMatch {
 		_deckSlot = deckSlot;
 	}
 
+	public String getRankLevel() {
+		return _rankLeve;
+	}
 	public String getResult() {
 		return _result;
 	}
 
+	public void setRankLevel(String rankLevel) {
+		_rankLeve = rankLevel;
+	}
+	
 	public void setResult(String result) {
 		_result = result;
 	}
@@ -76,7 +84,9 @@ public class HearthstoneMatch {
 		return propertyVal == null ? "[undetected]" : propertyVal;
 	}
 	public String toString() {
-		return _propertyOrUnknown(getMode()) + " " +
+		return _propertyOrUnknown(getMode()) + 
+				(getMode() == "Ranked" ? " level " + getRankLevel() : "") +
+				" " +
 				(hasCoin() ? "" : "no ") + "coin " + 
 				_propertyOrUnknown(getUserClass()) + " vs. " +
 				_propertyOrUnknown(getOpponentClass()) + " " +
@@ -97,6 +107,7 @@ public class HearthstoneMatch {
 		obj.put("gofirst", hasCoin() ? "false" : "true");
 		obj.put("slot", getDeckSlot());
 		obj.put("rank", getMode());
+		obj.put("ranklvl", getRankLevel());
 		
 		return obj;
 	}

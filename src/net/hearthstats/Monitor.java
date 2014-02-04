@@ -296,6 +296,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		hsMatch.setOpponentClass(_analyzer.getOpponentClass());
 		hsMatch.setOpponentName(_analyzer.getOpponentName());
 		hsMatch.setCoin(_analyzer.getCoin());
+		hsMatch.setRankLevel(_analyzer.getRankLevel());
 		hsMatch.setResult(_analyzer.getResult());
 		
 		// check for new arena run
@@ -390,8 +391,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_log("Deck Slot " + _analyzer.getDeckSlot() + " Detected");
 				break;
 			case "mode":
-				if(Config.showModeNotification())
-					_notify(_analyzer.getMode() + " Mode Detected");
+				if(Config.showModeNotification()) {
+					System.out.println(_analyzer.getMode() + " level " + _analyzer.getRankLevel());
+					if(_analyzer.getMode() == "Ranked")
+						_notify(_analyzer.getMode() + " Mode Detected", "Rank Level " + _analyzer.getRankLevel());
+					else
+						_notify(_analyzer.getMode() + " Mode Detected");
+				}
 				_log(_analyzer.getMode() + " Mode Detected");
 				break;
 			case "newArena":
