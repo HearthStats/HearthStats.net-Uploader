@@ -77,8 +77,9 @@ public class Config {
 		return _getIni().get("notifications", "hsclosed").toString().matches("true");
 	}
 	
-	public static boolean disableAllNotifications() {
-		return _getIni().get("notifications", "disableAllNotifications").toString().matches("true");
+	public static boolean showNotifications() {
+		String setting = _getIni().get("notifications", "ebabled");
+		return (setting == null || setting.equals("true"));
 	}
 	
 	public static String getVersion() {
