@@ -410,7 +410,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 					else
 						_notify(_analyzer.getMode() + " Mode Detected");
 				}
-				_log(_analyzer.getMode() + " Mode Detected");
+				if(_analyzer.getMode() == "Ranked")
+					_log(_analyzer.getMode() + " Mode Detected - Level " + _analyzer.getRankLevel());
+				else
+					_log(_analyzer.getMode() + " Mode Detected");
 				break;
 			case "newArena":
 				if(_analyzer.isNewArena())
