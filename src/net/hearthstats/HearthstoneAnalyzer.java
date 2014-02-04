@@ -30,12 +30,13 @@ public class HearthstoneAnalyzer extends Observable {
 	private int _height;
 	private float _screenRatio;
 	private boolean _arenaRunEndDetected = false;
+	private boolean _isAnalyzing = false;
 
 	public HearthstoneAnalyzer() {
 	}
 
 	public void analyze(BufferedImage image) {
-		
+		_isAnalyzing = true;
 		_image = image;
 		
 		_calculateResolutionRatios();
@@ -99,6 +100,10 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 		
 		_image.flush();
+		_isAnalyzing = false;
+	}
+	public boolean isAnalyzing() {
+		return _isAnalyzing;
 	}
 
 	private void _calculateResolutionRatios() {

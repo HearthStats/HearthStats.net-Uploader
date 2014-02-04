@@ -52,7 +52,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected API _api = new API();
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
 	protected ProgramHelper _hsHelper = new ProgramHelper("Hearthstone", "Hearthstone.exe");
-	protected int _pollingIntervalInMs = 100;
+	protected int _pollingIntervalInMs = 200;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
 	protected JTextPane _logText;
@@ -333,7 +333,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		if(image != null) {
 			// detect image stats 
 			if (image.getWidth() >= 1024)
-				_analyzer.analyze(image);
+				if(!_analyzer.isAnalyzing())
+					_analyzer.analyze(image);
 			
 			if(Config.mirrorGameImage())
 				_updateImageFrame();
