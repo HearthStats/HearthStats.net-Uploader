@@ -77,6 +77,11 @@ public class Config {
 		return _getIni().get("notifications", "hsclosed").toString().matches("true");
 	}
 	
+	public static boolean minimizeToTray() {
+		String setting = _getIni().get("ui", "mintotray");
+		return (setting == null || setting.equals("true"));
+	}
+	
 	public static boolean showNotifications() {
 		String setting = _getIni().get("notifications", "enabled");
 		return (setting == null || setting.equals("true"));

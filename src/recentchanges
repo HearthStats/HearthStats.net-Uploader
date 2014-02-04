@@ -1,4 +1,5 @@
 Under development:
+* Minimizes to system tray by default
 * Reduced memory usage
 * Improve detection of finding opponent window
 * Reduced instances of detecting incorrect opponent class

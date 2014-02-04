@@ -73,7 +73,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	
 	public void start() throws IOException {
 		
-		_enableMinimizeToTray();
 		
 		if(Config.analyticsEnabled()) {
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
@@ -179,6 +178,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		// options
 		JComponent optionsPanel = new JTabbedPane();
 		tabbedPane.add(optionsPanel, "Options");
+		
+		_enableMinimizeToTray();
 		
 		setVisible(true);
 		_updateTitle();
@@ -570,13 +571,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		// TODO Auto-generated method stub
 		
 	}
-
-
 	
-	
+	//http://stackoverflow.com/questions/7461477/how-to-hide-a-jframe-in-system-tray-of-taskbar
 	TrayIcon trayIcon;
     SystemTray tray;
-    //http://stackoverflow.com/questions/7461477/how-to-hide-a-jframe-in-system-tray-of-taskbar
     private void _enableMinimizeToTray(){
         System.out.println("creating instance");
         try{
@@ -590,14 +588,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             System.out.println("system tray supported");
             tray = SystemTray.getSystemTray();
 
-            Image image = Toolkit.getDefaultToolkit().getImage("/media/faisal/DukeImg/Duke256.png");
             ActionListener exitListener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     System.out.println("Exiting....");
                     System.exit(0);
                 }
             };
-            PopupMenu popup=new PopupMenu();
+            PopupMenu popup = new PopupMenu();
             MenuItem defaultItem = new MenuItem("Restore");
             defaultItem.setFont(new Font("Arial",Font.BOLD,14));
             defaultItem.addActionListener(new ActionListener() {
@@ -611,10 +608,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             defaultItem.addActionListener(exitListener);
             defaultItem.setFont(new Font("Arial",Font.PLAIN,14));
             popup.add(defaultItem);
-            trayIcon = new TrayIcon(image, "SystemTray Demo", popup);
-            trayIcon.setImageAutoSize(true);
             Image icon = new ImageIcon(getClass().getResource("/images/icon.png")).getImage();
-            trayIcon.setImage(icon);
+            trayIcon = new TrayIcon(icon, "SystemTray Demo", popup);
+            trayIcon.setImageAutoSize(true);
             trayIcon.addMouseListener(new MouseAdapter(){
             	public void mousePressed(MouseEvent e){
             		if(e.getClickCount() >= 2){
@@ -628,37 +624,39 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         }
         addWindowStateListener(new WindowStateListener() {
             public void windowStateChanged(WindowEvent e) {
-                if(e.getNewState() == ICONIFIED){
-                    try {
-                        tray.add(trayIcon);
-                        setVisible(false);
-                        System.out.println("added to SystemTray");
-                    } catch (AWTException ex) {
-                        System.out.println("unable to add to tray");
-                    }
-                }
-        if(e.getNewState()==7){
-            try{
-            	tray.add(trayIcon);
-            setVisible(false);
-            System.out.println("added to SystemTray");
-            }catch(AWTException ex){
-            System.out.println("unable to add to system tray");
-        }
-            }
-        if(e.getNewState()==MAXIMIZED_BOTH){
-                    tray.remove(trayIcon);
-                    setVisible(true);
-                    System.out.println("Tray icon removed");
-                }
-                if(e.getNewState()==NORMAL){
-                    tray.remove(trayIcon);
-                    setVisible(true);
-                    System.out.println("Tray icon removed");
-                }
-            }
-        });
-
+            	if(Config.minimizeToTray()) {
+	                if(e.getNewState() == ICONIFIED){
+	                    try {
+	                        tray.add(trayIcon);
+	                        setVisible(false);
+	                        System.out.println("added to SystemTray");
+	                    } catch (AWTException ex) {
+	                        System.out.println("unable to add to tray");
+	                    }
+	                }
+			        if(e.getNewState()==7){
+			            try{
+			            	tray.add(trayIcon);
+			            	setVisible(false);
+			            	System.out.println("added to SystemTray");
+			            }catch(AWTException ex){
+				            System.out.println("unable to add to system tray");
+				        }
+		            }
+			        if(e.getNewState()==MAXIMIZED_BOTH){
+		                    tray.remove(trayIcon);
+		                    setVisible(true);
+		                    System.out.println("Tray icon removed");
+		                }
+		                if(e.getNewState()==NORMAL){
+		                    tray.remove(trayIcon);
+		                    setVisible(true);
+		                    System.out.println("Tray icon removed");
+		                }
+		            }
+            	}
+       		});
+        
     }
 	
 }
