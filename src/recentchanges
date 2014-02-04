@@ -1,4 +1,7 @@
-v0.9.201302041
+v0.9.201302042
+* Fixed update loop. Sorry about that!
+
+v0.9.201302042
 * Minimizes to system tray by default
 * Reduced memory usage
 * Improve detection of finding opponent window
