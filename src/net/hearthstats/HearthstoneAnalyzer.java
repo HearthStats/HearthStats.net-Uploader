@@ -414,8 +414,15 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 839, 585, 139, 113, 77 } 
 		};
 		PixelGroupTest arenaPxTest = new PixelGroupTest(_image, arenaTests);
+		
+		int[][] pxTestsThree = { 
+				{ 516, 643, 242, 208, 181 }, 	// title bar
+				{ 157, 363, 93, 78, 73 }, 
+				{ 851, 163, 27, 25, 26 } 
+		};
+		PixelGroupTest pxTestThree = new PixelGroupTest(_image, pxTestsThree);
 
-		if (pxTest.passed() || arenaPxTest.passed()) {
+		if (pxTest.passed() || arenaPxTest.passed() || pxTestThree.passed()) {
 			_coin = false;
 			_yourClass = null;
 			_opponentClass = null;
