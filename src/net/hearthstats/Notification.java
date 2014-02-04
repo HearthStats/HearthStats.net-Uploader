@@ -6,6 +6,7 @@ package net.hearthstats;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -29,6 +30,7 @@ public class Notification {
 	public JDialog frame = new JDialog();
 	public Notification(String header, String message) {
 		frame.setSize(200, 75);
+		frame.setFont(new Font("Arial",Font.PLAIN,14));
 		frame.setLayout(new GridBagLayout());
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridx = 0;
@@ -57,7 +59,7 @@ public class Notification {
 		constraints.weighty = 1.0f;
 		constraints.insets = new Insets(5, 5, 5, 5);
 		constraints.fill = GridBagConstraints.BOTH;
-		JLabel messageLabel = new JLabel("<HtMl>" + message);
+		JLabel messageLabel = new JLabel("<html>" + message + "</html>");
 		frame.add(messageLabel, constraints);
 		offset(0);
 	}

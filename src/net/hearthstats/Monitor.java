@@ -3,6 +3,7 @@ package net.hearthstats;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.awt.AWTException;
+import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -164,10 +165,15 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_logText.setText("Event Log:\n");
 		_logText.setEditable(false);
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		tabbedPane.add(_logScroll, "Event Log");
+		tabbedPane.add(_logScroll, "Main");
 		
 		// options
-		JComponent optionsPanel = new JTabbedPane();
+		JLabel optionsText = new JLabel("<html>" +
+				"<br/> &nbsp; &nbsp; &nbsp; Coming soon ..." +
+				"<br/><br/> &nbsp; &nbsp; &nbsp; Edit config.ini manually for now.</html>");
+		JPanel optionsPanel = new JPanel();
+		optionsPanel.setLayout(new BorderLayout());
+		optionsPanel.add(optionsText, BorderLayout.NORTH);
 		tabbedPane.add(optionsPanel, "Options");
 		
 		_enableMinimizeToTray();
