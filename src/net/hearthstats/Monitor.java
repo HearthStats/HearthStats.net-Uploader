@@ -2,19 +2,31 @@ package net.hearthstats;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Button;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.event.WindowStateListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -42,6 +54,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.UIManager;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
 import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
@@ -59,6 +72,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JScrollPane _logScroll;
 	
 	public void start() throws IOException {
+		
+		_enableMinimizeToTray();
 		
 		if(Config.analyticsEnabled()) {
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
@@ -166,7 +181,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		tabbedPane.add(optionsPanel, "Options");
 		
 		setVisible(true);
-		
 		_updateTitle();
 	}
 
@@ -521,6 +535,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	@Override
 	public void windowClosed(WindowEvent e) {
 		// TODO Auto-generated method stub
+		System.out.println("closed");
 	}
 
 	@Override
@@ -557,4 +572,93 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 
+	
+	
+	TrayIcon trayIcon;
+    SystemTray tray;
+    //http://stackoverflow.com/questions/7461477/how-to-hide-a-jframe-in-system-tray-of-taskbar
+    private void _enableMinimizeToTray(){
+        System.out.println("creating instance");
+        try{
+            System.out.println("setting look and feel");
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }catch(Exception e){
+            System.out.println("Unable to set LookAndFeel");
+        }
+        if(SystemTray.isSupported()){
+        	
+            System.out.println("system tray supported");
+            tray = SystemTray.getSystemTray();
+
+            Image image = Toolkit.getDefaultToolkit().getImage("/media/faisal/DukeImg/Duke256.png");
+            ActionListener exitListener = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    System.out.println("Exiting....");
+                    System.exit(0);
+                }
+            };
+            PopupMenu popup=new PopupMenu();
+            MenuItem defaultItem = new MenuItem("Restore");
+            defaultItem.setFont(new Font("Arial",Font.BOLD,14));
+            defaultItem.addActionListener(new ActionListener() {
+            	public void actionPerformed(ActionEvent e) {
+            		setVisible(true);
+            		setExtendedState(JFrame.NORMAL);
+            	}
+            });
+            popup.add(defaultItem);
+            defaultItem = new MenuItem("Exit");
+            defaultItem.addActionListener(exitListener);
+            defaultItem.setFont(new Font("Arial",Font.PLAIN,14));
+            popup.add(defaultItem);
+            trayIcon = new TrayIcon(image, "SystemTray Demo", popup);
+            trayIcon.setImageAutoSize(true);
+            Image icon = new ImageIcon(getClass().getResource("/images/icon.png")).getImage();
+            trayIcon.setImage(icon);
+            trayIcon.addMouseListener(new MouseAdapter(){
+            	public void mousePressed(MouseEvent e){
+            		if(e.getClickCount() >= 2){
+            			setVisible(true);
+                		setExtendedState(JFrame.NORMAL);
+            		}
+            	}
+            });
+        }else{
+            System.out.println("system tray not supported");
+        }
+        addWindowStateListener(new WindowStateListener() {
+            public void windowStateChanged(WindowEvent e) {
+                if(e.getNewState() == ICONIFIED){
+                    try {
+                        tray.add(trayIcon);
+                        setVisible(false);
+                        System.out.println("added to SystemTray");
+                    } catch (AWTException ex) {
+                        System.out.println("unable to add to tray");
+                    }
+                }
+        if(e.getNewState()==7){
+            try{
+            	tray.add(trayIcon);
+            setVisible(false);
+            System.out.println("added to SystemTray");
+            }catch(AWTException ex){
+            System.out.println("unable to add to system tray");
+        }
+            }
+        if(e.getNewState()==MAXIMIZED_BOTH){
+                    tray.remove(trayIcon);
+                    setVisible(true);
+                    System.out.println("Tray icon removed");
+                }
+                if(e.getNewState()==NORMAL){
+                    tray.remove(trayIcon);
+                    setVisible(true);
+                    System.out.println("Tray icon removed");
+                }
+            }
+        });
+
+    }
+	
 }

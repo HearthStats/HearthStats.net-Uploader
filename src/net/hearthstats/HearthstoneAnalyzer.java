@@ -525,9 +525,6 @@ public class HearthstoneAnalyzer extends Observable {
 		int width = (int) (29 * _ratio);
 		int height = (int) (21 * _ratio);
 		
-		System.out.println("xoffset: " + _xOffset);
-		System.out.println("x: " + x);
-		System.out.println("xy: " + y);
 		_setRankLevel(_prepareImageForOcr(x, y, width, height, "ranklevel.jpg"));
 		
 	}
