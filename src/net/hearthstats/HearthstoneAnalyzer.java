@@ -480,12 +480,16 @@ public class HearthstoneAnalyzer extends Observable {
         }
 		 
 		// increase contrast
+		try {
 			RescaleOp rescaleOp = new RescaleOp(1.8f, -30, null);
 			rescaleOp.filter(newImage, newImage);  // Source and destination are the same.
-		
+		} catch(Exception e) {
+			e.printStackTrace();
+			_notifyObserversOfChangeTo("Exception trying to write opponent name image:\n" + e.getMessage());
+		}
 		// save it to a file
-		File outputfile = new File(Main.getExtractionFolder() + "/opponentname.jpg");
 		try {
+			File outputfile = new File(Main.getExtractionFolder() + "/opponentname.jpg");
 			ImageIO.write(newImage, "jpg", outputfile);
 		} catch (IOException e) {
 			e.printStackTrace();

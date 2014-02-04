@@ -2,9 +2,19 @@ package net.hearthstats;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.awt.BorderLayout;
+import java.awt.Button;
 import java.awt.Desktop;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -23,11 +33,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 
@@ -35,7 +47,7 @@ import com.boxysystems.jgoogleanalytics.FocusPoint;
 import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
 
 @SuppressWarnings("serial")
-public class Monitor extends JFrame implements Observer {
+public class Monitor extends JFrame implements Observer, WindowListener {
 
 	protected API _api = new API();
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
@@ -52,6 +64,7 @@ public class Monitor extends JFrame implements Observer {
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("AppStart"));
 		}
+		addWindowListener(this);
 		
 		_createAndShowGui();
 		_clearLog();
@@ -132,28 +145,28 @@ public class Monitor extends JFrame implements Observer {
 		return true;
 	}
 	
-	private void _getFileContents(String path) {
-		
-	}
 	private void _createAndShowGui() {
 		Image icon = new ImageIcon(getClass().getResource("/images/icon.png")).getImage();
+		setIconImage(icon);
+		setLocation(0, 0);
+		setSize(600, 700);
 		
-		f.setIconImage(icon);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.setLocation(0, 0);
-		f.setSize(600, 700);
-		
-		JLabel statusLabel = new JLabel("Status", JLabel.LEFT);
-		f.getContentPane().add(statusLabel);
+		JTabbedPane tabbedPane = new JTabbedPane();
+		add(tabbedPane);
 		
 		// log
 		_logText = new JTextPane ();
 		_logText.setText("Event Log:\n");
 		_logText.setEditable(false);
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		f.getContentPane().add(_logScroll);
+		tabbedPane.add(_logScroll, "Event Log");
 		
-		f.setVisible(true);
+		// options
+		JComponent optionsPanel = new JTabbedPane();
+		tabbedPane.add(optionsPanel, "Options");
+		
+		setVisible(true);
+		
 		_updateTitle();
 	}
 
@@ -211,8 +224,6 @@ public class Monitor extends JFrame implements Observer {
 
 	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
 
-	protected JFrame f = new JFrame();
-
 	protected boolean _drawPaneAdded = false;
 
 	protected BufferedImage image;
@@ -259,20 +270,20 @@ public class Monitor extends JFrame implements Observer {
 		} else {
 			title += " - Waiting for Hearthstone ";
 		}
-		f.setTitle(title);
+		setTitle(title);
 	}
 
 	protected void _updateImageFrame() {
 		if (!_drawPaneAdded) {
-			f.add(_drawPane);
+			add(_drawPane);
 		}
 		if (image.getWidth() >= 1024) {
-			f.setSize(image.getWidth(), image.getHeight());
+			setSize(image.getWidth(), image.getHeight());
 		}
 		_drawPane.repaint();
-		f.invalidate();
-		f.validate();
-		f.repaint();
+		invalidate();
+		validate();
+		repaint();
 	}
 
 	protected void _submitMatchResult() throws IOException {
@@ -414,6 +425,9 @@ public class Monitor extends JFrame implements Observer {
 				_notify("Playing as " + _analyzer.getYourClass());
 				_log("Playing as " + _analyzer.getYourClass());
 				break;
+			default:
+				_notify(changed.toString());
+				_log(changed.toString());
 		}
 	}
 	
@@ -487,6 +501,50 @@ public class Monitor extends JFrame implements Observer {
 		
 		if(dispatcher.getClass().toString().matches(".*ProgramHelper"))
 			_handleProgramHelperEvent(changed);
+	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		// TODO Auto-generated method stub
+		System.out.println("closing...");
+		System.out.println(getLocationOnScreen());
+		
+		System.exit(0);
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 
