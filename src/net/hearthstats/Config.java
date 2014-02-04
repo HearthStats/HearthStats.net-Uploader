@@ -78,7 +78,7 @@ public class Config {
 	}
 	
 	public static boolean showNotifications() {
-		String setting = _getIni().get("notifications", "ebabled");
+		String setting = _getIni().get("notifications", "enabled");
 		return (setting == null || setting.equals("true"));
 	}
 	
