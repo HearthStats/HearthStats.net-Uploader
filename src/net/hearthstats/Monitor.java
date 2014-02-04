@@ -170,7 +170,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		// options
 		JLabel optionsText = new JLabel("<html>" +
 				"<br/> &nbsp; &nbsp; &nbsp; Coming soon ..." +
-				"<br/><br/> &nbsp; &nbsp; &nbsp; Edit config.ini manually for now.</html>");
+				"<br/><br/> &nbsp; &nbsp; &nbsp; Edit config.ini manually for now. Restart after making changes.</html>");
 		JPanel optionsPanel = new JPanel();
 		optionsPanel.setLayout(new BorderLayout());
 		optionsPanel.add(optionsText, BorderLayout.NORTH);

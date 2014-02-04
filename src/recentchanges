@@ -1,4 +1,4 @@
-Under development:
+v0.9.201302041
 * Minimizes to system tray by default
 * Reduced memory usage
 * Improve detection of finding opponent window
@@ -9,9 +9,3 @@ v0.8.201302031
 * Fixed detection of playing as Warrior
 * Fixed detection of Warrior decks
 * Improved accuracy of opponent name recognition
-
-v0.8.201302021
-* Further improved detection of Hearthstone window
-* Improved opponent name detection
-* Detection and notification of practice mode
-* Fixed end arena request loop bug (issue #105)
