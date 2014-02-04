@@ -678,8 +678,10 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 956, 553, 24, 8, 8 }, 
 			{ 489, 688, 68, 65, 63 } 
 		};
-		if((new PixelGroupTest(_image, tests)).passed())
+		if((new PixelGroupTest(_image, tests)).passed()) {
+			_testForRankedMode();
 			_setScreen("Play");
+		}
 	}
 	
 	private void _testForPracticeScreen() {

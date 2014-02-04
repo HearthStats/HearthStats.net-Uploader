@@ -1,3 +1,6 @@
+v0.9.201302043 
+* Fixed rank not being re-detected when changed
+
 v0.9.201302042
 * Fixed update loop. Sorry about that!
 
@@ -7,8 +10,3 @@ v0.9.201302042
 * Improve detection of finding opponent window
 * Reduced instances of detecting incorrect opponent class
 * Improved accuracy of opponent name detection
-
-v0.8.201302031
-* Fixed detection of playing as Warrior
-* Fixed detection of Warrior decks
-* Improved accuracy of opponent name recognition
