@@ -1,6 +1,7 @@
 Under development:
 * Reduced memory usage
 * Improve detection of finding opponent window
+* Reduced instances of finding incorrect opponent class
 
 v0.8.201302031
 * Fixed detection of playing as Warrior

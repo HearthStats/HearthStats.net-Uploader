@@ -393,9 +393,9 @@ public class HearthstoneAnalyzer extends Observable {
 	
 	private void _testForClass(String className, int[][] pixelTests, boolean isYours) {
 		if((new PixelGroupTest(_image, pixelTests)).passed()) {
-			if(isYours)
+			if(isYours && _yourClass == null)
 				_setYourClass(className);
-			else
+			else if(_opponentClass == null)
 				_setOpponentClass(className);
 		}
 	}
