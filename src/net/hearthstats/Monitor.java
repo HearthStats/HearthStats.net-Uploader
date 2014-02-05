@@ -182,6 +182,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_enableMinimizeToTray();
 		
 		setVisible(true);
+		
+		if(Config.startMinimized())
+			setState(JFrame.ICONIFIED);
+		
 		_updateTitle();
 	}
 

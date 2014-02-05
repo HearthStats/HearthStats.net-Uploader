@@ -62,6 +62,10 @@ public class Config {
 		return _ini;
 	}
 
+	public static boolean startMinimized() {
+		return _getIni().get("ui", "startminimized").toString().matches("true");
+	}
+	
 	public static boolean analyticsEnabled() {
 		return _getIni().get("analytics", "enabled").toString().matches("true");
 	}
