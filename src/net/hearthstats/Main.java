@@ -155,7 +155,7 @@ public class Main extends JFrame {
 		    FileOutputStream fos = null;
 			try {
 				fos = new FileOutputStream(outPath + outFileName);
-			} catch (FileNotFoundException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
 			}
