@@ -251,11 +251,7 @@ public class Config {
 		if(_ini == null) {
 			_createConfigIniIfNecessary();
 			try {
-				
-				// check for build/config.ini (dev environment)
-				File buildConfigFile = new File("build/config.ini");
-				
-				_ini = new Wini(buildConfigFile.exists() ? buildConfigFile : new File("config.ini"));
+				_ini = new Wini(new File("config.ini"));
 			} catch (InvalidFileFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -3,16 +3,18 @@ package net.hearthstats;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.awt.AWTException;
-import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.Point;
 import java.awt.PopupMenu;
-import java.awt.Rectangle;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
@@ -39,19 +41,26 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.BoxLayout;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
+
+import net.miginfocom.swing.MigLayout;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
 import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
@@ -67,9 +76,19 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected JGoogleAnalyticsTracker _analytics;
 	protected JTextPane _logText;
 	private JScrollPane _logScroll;
+	private JPasswordField _userKeyField;
+	private JCheckBox _checkUpdatesField;
+	private JCheckBox _notificationsEnabledField;
+	private JCheckBox _showHsFoundField;
+	private JCheckBox _showHsClosedField;
+	private JCheckBox _showScreenNotificationField;
+	private JCheckBox _showModeNotificationField;
+	private JCheckBox _showDeckNotificationField;
+	private JCheckBox _analyticsField;
+	private JCheckBox _minToTrayField;
+	private JCheckBox _startMinimizedField;
 	
 	public void start() throws IOException {
-		
 		if(Config.analyticsEnabled()) {
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("AppStart"));
@@ -144,6 +163,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			    	_checkForUserKey();
 			    } else {
 			    	Config.setUserKey(userkey);
+			    	Config.save();
 			    	_log("Userkey stored");
 			    	_pollHearthstone();
 			    }
@@ -185,19 +205,130 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 	private JPanel _createOptionsUi() {
-		JPanel optionsPanel = new JPanel();
+		JPanel panel = new JPanel();
 		
-		SpringLayout layout = new SpringLayout();
+		MigLayout layout = new MigLayout("");
+		panel.setLayout(layout);
 		
-		optionsPanel.setLayout(layout);
+		panel.add(new JLabel(" "), "wrap");
+		
+		// user key
+		panel.add(new JLabel("User Key: "), "skip,right");
+		_userKeyField = new JPasswordField();
+		_userKeyField.setText(Config.getUserKey());
+		panel.add(_userKeyField, "wrap");
+		
+		// check for updates
+		panel.add(new JLabel("Updates: "), "skip,right");
+		_checkUpdatesField = new JCheckBox("Check for updates when starting the app");
+		_checkUpdatesField.setSelected(Config.checkForUpdates());
+		panel.add(_checkUpdatesField, "wrap");
+		
+		// show notifications
+		panel.add(new JLabel("Notifications: "), "skip,right");
+		_notificationsEnabledField = new JCheckBox("Show notifications");
+		_notificationsEnabledField.setSelected(Config.showNotifications());
+		_notificationsEnabledField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	_updateNotificationCheckboxes();
+            }
+        });
+		panel.add(_notificationsEnabledField, "wrap");
+		
+		// show HS found notification
+		panel.add(new JLabel(""), "skip,right");
+		_showHsFoundField = new JCheckBox("Hearthstone found");
+		_showHsFoundField.setSelected(Config.showHsFoundNotification());
+		panel.add(_showHsFoundField, "wrap");
+		
+		// show HS closed notification
+		panel.add(new JLabel(""), "skip,right");
+		_showHsClosedField = new JCheckBox("Hearthstone closed");
+		_showHsClosedField.setSelected(Config.showHsClosedNotification());
+		panel.add(_showHsClosedField, "wrap");
+		
+		// show game screen notification
+		panel.add(new JLabel(""), "skip,right");
+		_showScreenNotificationField = new JCheckBox("Game screen detection");
+		_showScreenNotificationField.setSelected(Config.showScreenNotification());
+		panel.add(_showScreenNotificationField, "wrap");
+		
+		// show game mode notification
+		panel.add(new JLabel(""), "skip,right");
+		_showModeNotificationField = new JCheckBox("Game mode detection");
+		_showModeNotificationField.setSelected(Config.showModeNotification());
+		panel.add(_showModeNotificationField, "wrap");
+		
+		// show deck notification
+		panel.add(new JLabel(""), "skip,right");
+		_showDeckNotificationField = new JCheckBox("Deck detection");
+		_showDeckNotificationField.setSelected(Config.showDeckNotification());
+		panel.add(_showDeckNotificationField, "wrap");
+		
+		_updateNotificationCheckboxes();
+		
+		// minimize to tray
+		panel.add(new JLabel("Interface: "), "skip,right");
+		_minToTrayField = new JCheckBox("Minimize to system tray");
+		_minToTrayField.setSelected(Config.checkForUpdates());
+		panel.add(_minToTrayField, "wrap");
+		
+		// start minimized
+		panel.add(new JLabel(""), "skip,right");
+		_startMinimizedField = new JCheckBox("Start minimized");
+		_startMinimizedField.setSelected(Config.startMinimized());
+		panel.add(_startMinimizedField, "wrap");
 
-		JLabel optionsText = new JLabel("<html>" +
-				"<br/> &nbsp; &nbsp; &nbsp; Coming soon ..." +
-				"<br/><br/> &nbsp; &nbsp; &nbsp; Edit config.ini manually for now. Restart after making changes.</html>");
-		optionsPanel.add(optionsText);
+		// analytics
+		panel.add(new JLabel("Analytics: "), "skip,right");
+		_analyticsField = new JCheckBox("Submit anonymous useage stats");
+		_analyticsField.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(!_analyticsField.isSelected()) {
+					int dialogResult = JOptionPane.showConfirmDialog(null, 
+							"A lot of work has gone into this uploader.\n" +
+									"It is provided for free, and all we ask in return\n" +
+									"is that you let us track basic, anonymous statistics\n" +
+									"about how frequently it is being used." +
+									"\n\nAre you sure you want to disable analytics?"
+									,
+									"Please reconsider ...",
+									JOptionPane.YES_NO_OPTION);		
+					if(dialogResult == JOptionPane.NO_OPTION){
+						_analyticsField.setSelected(true);
+					}
+				}
+			}
+		});
+		_analyticsField.setSelected(Config.analyticsEnabled());
+		panel.add(_analyticsField, "wrap");
 		
-		return optionsPanel;
+		// Save button
+		panel.add(new JLabel(""), "skip,right");
+		JButton saveOptionsButton = new JButton("Save Options");
+		saveOptionsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	_saveOptions();
+            }
+        });
+		panel.add(saveOptionsButton, "wrap");
+		
+		
+		return panel;
 	}
+	
+	private void _updateNotificationCheckboxes() {
+		boolean isEnabled = _notificationsEnabledField.isSelected();
+		_showHsFoundField.setEnabled(isEnabled);
+		_showHsClosedField.setEnabled(isEnabled);
+		_showScreenNotificationField.setEnabled(isEnabled);
+		_showModeNotificationField.setEnabled(isEnabled);
+		_showDeckNotificationField.setEnabled(isEnabled);
+	}
+	
 	private void _checkForUpdates() {
 		if(Config.checkForUpdates()) {
 			_log("Checking for updates ...");
@@ -563,6 +694,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		Dimension rect = getSize();
 		Config.setWidth((int) rect.getWidth());
 		Config.setHeight((int) rect.getHeight());
+		Config.save();
 		System.exit(0);
 	}
 
@@ -588,6 +720,22 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	public void windowOpened(WindowEvent e) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	private void _saveOptions() {
+		Config.setUserKey(_userKeyField.getPassword().toString());
+		Config.setCheckForUpdates(_checkUpdatesField.isSelected());
+		Config.setShowNotifications(_notificationsEnabledField.isSelected());
+		Config.setShowHsFoundNotification(_showHsFoundField.isSelected());
+		Config.setShowHsClosedNotification(_showHsClosedField.isSelected());
+		Config.setShowScreenNotification(_showScreenNotificationField.isSelected());
+		Config.setShowModeNotification(_showModeNotificationField.isSelected());
+		Config.setShowDeckNotification(_showDeckNotificationField.isSelected());
+		Config.setAnalyticsEnabled(_analyticsField.isSelected());
+		Config.setMinToTray(_minToTrayField.isSelected());
+		Config.setStartMinimized(_startMinimizedField.isSelected());
+		Config.save();
+		JOptionPane.showMessageDialog(null, "Options Saved");
 	}
 	
 	//http://stackoverflow.com/questions/7461477/how-to-hide-a-jframe-in-system-tray-of-taskbar
@@ -676,5 +824,5 @@ public class Monitor extends JFrame implements Observer, WindowListener {
        		});
         
     }
-	
+    
 }
