@@ -39,6 +39,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -49,6 +50,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
@@ -169,14 +171,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		tabbedPane.add(_logScroll, "Main");
 		
-		// options
-		JLabel optionsText = new JLabel("<html>" +
-				"<br/> &nbsp; &nbsp; &nbsp; Coming soon ..." +
-				"<br/><br/> &nbsp; &nbsp; &nbsp; Edit config.ini manually for now. Restart after making changes.</html>");
-		JPanel optionsPanel = new JPanel();
-		optionsPanel.setLayout(new BorderLayout());
-		optionsPanel.add(optionsText, BorderLayout.NORTH);
-		tabbedPane.add(optionsPanel, "Options");
+		tabbedPane.add(_createOptionsUi(), "Options");
+		
 		
 		_enableMinimizeToTray();
 		
@@ -188,6 +184,28 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_updateTitle();
 	}
 
+	private JPanel _createOptionsUi() {
+		JPanel optionsPanel = new JPanel();
+		
+		SpringLayout layout = new SpringLayout();
+		
+		optionsPanel.setLayout(layout);
+
+		JLabel fobar = new JLabel("<html>foobar</html>");
+		layout.putConstraint(SpringLayout.WEST, fobar,
+                20,
+                SpringLayout.EAST, optionsPanel);
+		optionsPanel.add(fobar);
+		
+		
+		
+		JLabel optionsText = new JLabel("<html>" +
+				"<br/> &nbsp; &nbsp; &nbsp; Coming soon ..." +
+				"<br/><br/> &nbsp; &nbsp; &nbsp; Edit config.ini manually for now. Restart after making changes.</html>");
+		optionsPanel.add(optionsText);
+		
+		return optionsPanel;
+	}
 	private void _checkForUpdates() {
 		if(Config.checkForUpdates()) {
 			_log("Checking for updates ...");

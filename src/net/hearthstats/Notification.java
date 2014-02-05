@@ -51,6 +51,7 @@ public class Notification {
 		constraints.anchor = GridBagConstraints.NORTH;
 		frame.setAlwaysOnTop(true);
 		frame.setUndecorated(true);
+		frame.setFocusableWindowState(false);
 		JComponent frameComponent = ((JComponent) frame.getContentPane());
 		frameComponent.setBorder(BorderFactory.createMatteBorder( 1, 1, 1, 1, Color.black ));
 		constraints.gridx = 0;
