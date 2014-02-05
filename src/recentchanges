@@ -2,6 +2,7 @@ v0.9.201302044
 * Better re-detection of rank when changed 
 * Improved accuracy of rank level detection
 * Option to start minimized
+* Notifications no longer take focus
 
 v0.9.201302043 
 * Fixed rank not being re-detected when changed

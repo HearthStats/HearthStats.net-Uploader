@@ -191,14 +191,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		optionsPanel.setLayout(layout);
 
-		JLabel fobar = new JLabel("<html>foobar</html>");
-		layout.putConstraint(SpringLayout.WEST, fobar,
-                20,
-                SpringLayout.EAST, optionsPanel);
-		optionsPanel.add(fobar);
-		
-		
-		
 		JLabel optionsText = new JLabel("<html>" +
 				"<br/> &nbsp; &nbsp; &nbsp; Coming soon ..." +
 				"<br/><br/> &nbsp; &nbsp; &nbsp; Edit config.ini manually for now. Restart after making changes.</html>");
