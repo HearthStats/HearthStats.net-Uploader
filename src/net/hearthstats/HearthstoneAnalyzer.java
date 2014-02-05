@@ -462,7 +462,7 @@ public class HearthstoneAnalyzer extends Observable {
 			_analyzeOpponnentName();
 		}
 	}
-	private String _prepareImageForOcr(int x, int y, int width, int height, String output) {
+	private String _performOcr(int x, int y, int width, int height, String output) {
 		int bigWidth = width * 3;
 		int bigHeight = height * 3;
 		
@@ -525,7 +525,10 @@ public class HearthstoneAnalyzer extends Observable {
 		int width = (int) (29 * _ratio);
 		int height = (int) (21 * _ratio);
 		
-		_setRankLevel(_prepareImageForOcr(x, y, width, height, "ranklevel.jpg"));
+		String rankStr = _performOcr(x, y, width, height, "ranklevel.jpg");
+		rankStr = rankStr.replace("I", "1");
+		rankStr = rankStr.replace("S", "5");
+		_setRankLevel(rankStr);
 		
 	}
 	private void _analyzeOpponnentName() {
@@ -535,7 +538,7 @@ public class HearthstoneAnalyzer extends Observable {
 		int width = (int) (150 * _ratio);
 		int height = (int) (19 * _ratio);
 	    
-		_setOpponentName(_prepareImageForOcr(x, y, width, height, "opponentname.jpg"));
+		_setOpponentName(_performOcr(x, y, width, height, "opponentname.jpg"));
 		
 	}
 	
@@ -679,7 +682,8 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 489, 688, 68, 65, 63 } 
 		};
 		if((new PixelGroupTest(_image, tests)).passed()) {
-			_testForRankedMode();
+			if(getMode() == "Ranked")
+				_analyzeRankLevel();
 			_setScreen("Play");
 		}
 	}
