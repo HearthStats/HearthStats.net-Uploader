@@ -81,7 +81,9 @@ public class Main extends JFrame {
 				_loadJarDll("liblept168");
 				_loadJarDll("libtesseract302");
 			} catch(Exception e) {
-				JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Unable to read required libraries.\nIs the app already running?\n\nExiting ...");
+				System.exit(0);
 			}
 			//System.out.println(OCR.process("opponentname.jpg"));
 			
@@ -157,7 +159,6 @@ public class Main extends JFrame {
 				fos = new FileOutputStream(outPath + outFileName);
 			} catch (Exception e) {
 				e.printStackTrace();
-				JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
 			}
 	
 		    try {
