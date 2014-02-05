@@ -16,6 +16,73 @@ public class Config {
 	private static String _version;
 	
 	private static Wini _ini = null;
+
+	private static String _userkey;
+
+	private static boolean _checkForUpdates;
+
+	private static boolean _showNotifications;
+
+	private static boolean _showHsFoundNotification;
+
+	private static boolean _showHsClosedNotification;
+
+	private static boolean _showScreenNotification;
+
+	private static boolean _showModeNotification;
+
+	private static boolean _showDeckNotification;
+
+	private static boolean _analyticsEnabled;
+
+	private static boolean _minToTray;
+
+	private static boolean _startMinimized;
+
+	private static int _x;
+
+	private static int _y;
+
+	private static int _width;
+
+	private static int _height;
+	
+	public static void rebuild() {
+		
+		_storePreviousValues();
+		
+		_getIni().clear();
+		
+		// api
+		setUserKey("your_userkey_here");
+		
+		// updates
+		setCheckForUpdates(true);
+		
+		// notifications
+		setShowNotifications(true);
+		setShowHsFoundNotification(true);
+		setShowHsClosedNotification(true);
+		setShowScreenNotification(true);
+		setShowModeNotification(true);
+		setShowDeckNotification(true);
+		
+		// analytics
+		setAnalyticsEnabled(true);
+		
+		// ui
+		setMinToTray(true);
+		setStartMinimized(false);
+		setX(0);
+		setY(0);
+		setWidth(600);
+		setHeight(700);
+		
+		_restorePreviousValues();
+		
+		save();
+		
+	}
 	
 	public static String getUserKey() {
 		return _getStringSetting("API", "userkey", "your_userkey_here");
@@ -105,10 +172,39 @@ public class Config {
 		return _version;
 	}
 
+	public static void setShowNotifications(boolean val) {
+		_setBooleanValue("notifications", "enabled", val);
+	}
+	
+	public static void setAnalyticsEnabled(boolean val) {
+		_setBooleanValue("analytics", "enabled", val);
+	}
+	public static void setShowHsFoundNotification(boolean val) {
+		_setBooleanValue("notifications", "hsfound", val);
+	}
+	public static void setShowHsClosedNotification(boolean val) {
+		_setBooleanValue("notifications", "hsclosed", val);
+	}
+	public static void setShowScreenNotification(boolean val) {
+		_setBooleanValue("notifications", "screen", val);
+	}
+	public static void setShowModeNotification(boolean val) {
+		_setBooleanValue("notifications", "mode", val);
+	}
+	public static void setShowDeckNotification(boolean val) {
+		_setBooleanValue("notifications", "deck", val);
+	}
+	
 	public static void setCheckForUpdates(boolean val) {
 		_setBooleanValue("updates", "check", val);
 	}
-
+	public static void setMinToTray(boolean val) {
+		_setBooleanValue("ui", "mintotray", val);
+	}
+	public static void setStartMinimized(boolean val) {
+		_setBooleanValue("ui", "startminimized", val);
+	}
+	
 	public static void setUserKey(String userkey) {
 		// TODO Auto-generated method stub
 		_getIni().put("API", "userkey", userkey);
@@ -121,9 +217,21 @@ public class Config {
 		}
 	}
 	
+	private static void _createConfigIniIfNecessary() {
+		File configFile = new File("config.ini");
+		if(!configFile.exists()) {
+			try {
+				configFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Unable to create config.ini");
+				System.exit(1);
+			}
+		}
+	}
+	
 	private static void _setBooleanValue(String group, String key, boolean val) {
 		_getIni().put(group, key, val);
-		_save(group, key, val);
 	}
 	
 	public static void setX(int val) {
@@ -141,6 +249,7 @@ public class Config {
 	
 	private static Wini _getIni() {
 		if(_ini == null) {
+			_createConfigIniIfNecessary();
 			try {
 				
 				// check for build/config.ini (dev environment)
@@ -174,19 +283,52 @@ public class Config {
 		return setting == null ? deflt : setting;
 	}
 	
-	private static void _setIntVal(String group, String key, int val) {
-		_getIni().put(group, key, val + "");
-		_save(group, key, val);
+	private static void _restorePreviousValues() {
+		setUserKey(_userkey);
+		setCheckForUpdates(_checkForUpdates);
+		setShowNotifications(_showNotifications);
+		setShowHsFoundNotification(_showHsFoundNotification);
+		setShowHsClosedNotification(_showHsClosedNotification);
+		setShowScreenNotification(_showScreenNotification);
+		setShowModeNotification(_showModeNotification);
+		setShowDeckNotification(_showDeckNotification);
+		setAnalyticsEnabled(_analyticsEnabled);
+		setMinToTray(_minToTray);
+		setStartMinimized(_startMinimized);
+		setX(_x);
+		setY(_y);
+		setWidth(_width);
+		setHeight(_height);
 	}
 	
-	private static void _save(String group, String key, Object val) {
+	private static void _storePreviousValues() {
+		_userkey = getUserKey();
+		_checkForUpdates = checkForUpdates();
+		_showNotifications = showNotifications();
+		_showHsFoundNotification = showHsFoundNotification();
+		_showHsClosedNotification = showHsClosedNotification();
+		_showScreenNotification = showScreenNotification();
+		_showModeNotification = showModeNotification();
+		_showDeckNotification = showDeckNotification();
+		_analyticsEnabled = analyticsEnabled();
+		_minToTray = minimizeToTray();
+		_startMinimized = startMinimized();
+		_x = getX();
+		_y = getY();
+		_width = getWidth();
+		_height = getHeight();
+	}
+	
+	private static void _setIntVal(String group, String key, int val) {
+		_getIni().put(group, key, val + "");
+	}
+	
+	public static void save() {
 		try {
 			_getIni().store();
 		} catch (IOException e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Unable to write to config.ini while trying to save " + 
-					group + "." + key + " = " + val + "\n\n" + e.toString()
-					);
+			JOptionPane.showMessageDialog(null, "Unable to write to config.ini while trying to save settings");
 		}
 	}
 }

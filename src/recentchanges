@@ -1,3 +1,8 @@
+Under development
+* Detect and warn when trying to launch two instances
+* Fixed null exception when loading unset vals from config.ini
+* All settings now persist after updates
+
 v0.9.201302044
 * Better re-detection of rank when changed 
 * Improved accuracy of rank level detection

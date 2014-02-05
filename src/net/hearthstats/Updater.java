@@ -96,8 +96,10 @@ public class Updater {
 	public static void _saveSettings() {
 		_savedUserKey = Config.getUserKey();
 	}
-	public static void _restoreSettings() {
-		Config.setUserKey(_savedUserKey); 
+	private static void _restoreSettings() {
+		Config.rebuild();
+		Config.setUserKey(_savedUserKey);
+		
 	}
 	public static void _extractZip() {
 
@@ -108,7 +110,7 @@ public class Updater {
 		} else {
 			_notify("Updater Error", "Unable to locate " + updateZip.getPath());
 		}
-
+		
 	}
 
 	/**
@@ -167,7 +169,7 @@ public class Updater {
 	}
 
 	public static void _runMain() {
-		System.out.println("trying to run main");
+		JOptionPane.showMessageDialog(null, "Update complete. The uploader will now restart ...");
 		_notify("Restarting ...");
 		File mainFile = new File("HearthStatsUploader.jar");
 		if (mainFile.exists()) {

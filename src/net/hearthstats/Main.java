@@ -74,6 +74,7 @@ public class Main extends JFrame {
 			loadingNotification.show();
 			
 			Updater.cleanUp();
+			Config.rebuild();
 			
 			_extractTessData();
 			
