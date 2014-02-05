@@ -249,6 +249,7 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		if((new PixelGroupTest(_image, tests)).passed()) {
 			_rankLevel = null;
+			_deckSlot = 0;
 			_setScreen("Arena");
 			_setMode("Arena");
 		}
