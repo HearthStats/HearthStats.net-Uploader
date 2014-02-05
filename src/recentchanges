@@ -10,10 +10,3 @@ v0.9.201302043
 
 v0.9.201302042
 * Fixed update loop. Sorry about that!
-
-v0.9.201302042
-* Minimizes to system tray by default
-* Reduced memory usage
-* Improve detection of finding opponent window
-* Reduced instances of detecting incorrect opponent class
-* Improved accuracy of opponent name detection
