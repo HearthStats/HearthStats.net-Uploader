@@ -6,3 +6,4 @@ v0.10.201302051
 * Clickable links in log
 * Fixed null exception when loading unset vals from config.ini
 * Notification of update complete
+* Improved accuracy of opponent name recodnition
