@@ -1,7 +1,8 @@
 v0.10.201302051
+* New Options tab
+* New About tab
 * Detect and warn when trying to launch two instances
-* Fixed null exception when loading unset vals from config.ini
 * All settings now persist after updates
 * Clickable links in log
-* Options tab
-* About tab
+* Fixed null exception when loading unset vals from config.ini
+* Notification of update complete

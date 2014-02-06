@@ -66,6 +66,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 
+import net.miginfocom.*;
 import net.miginfocom.swing.MigLayout;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
@@ -164,6 +165,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			    } else {
 			    	Config.setUserKey(userkey);
 			    	Config.save();
+			    	_userKeyField.setText(userkey);
 			    	_log("Userkey stored");
 			    	_pollHearthstone();
 			    }
@@ -301,7 +303,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JPanel _createOptionsUi() {
 		JPanel panel = new JPanel();
 		
-		MigLayout layout = new MigLayout("");
+		MigLayout layout = new MigLayout();
 		panel.setLayout(layout);
 		
 		panel.add(new JLabel(" "), "wrap");

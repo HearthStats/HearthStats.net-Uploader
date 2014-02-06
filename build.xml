@@ -30,6 +30,9 @@
             <zipfileset excludes="META-INF/*.SF" src="./lib/jna.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/junit-4.10.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-core-4.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-swing-4.2.jar"/>
         </jar>
        	<sleep milliseconds="6000"/>
         <jar destfile="./build/HearthStatsUploader.jar" filesetmanifest="mergewithoutmain">
@@ -53,6 +56,8 @@
             <zipfileset excludes="META-INF/*.SF" src="./lib/jna.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/junit-4.10.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-core-4.2.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-swing-4.2.jar"/>
         </jar>
 		<antcall target="delete_updater_jar" />
     </target>
