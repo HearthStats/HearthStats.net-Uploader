@@ -514,7 +514,7 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 		
 		try {
-			return OCR.process(Main.getExtractionFolder() + "/" + output);
+			return OCR.process(newImage);
 		} catch(Exception e) {
 			e.printStackTrace();
 			_notifyObserversOfChangeTo("Exception tryint to analyze opponent name image:\n" + e.getMessage());

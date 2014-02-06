@@ -1,5 +1,6 @@
 package net.hearthstats;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.swing.JOptionPane;
@@ -15,15 +16,14 @@ public class OCR {
 		_tessdataPath = path;
 	}
 
-	public static String process(String filePath) throws TesseractException {
+	public static String process(BufferedImage image) throws TesseractException {
 		// perform ocr
-		File imageFile = new File(filePath); 
 		
         String output = "";
     	Tesseract instance = Tesseract.getInstance(); 
     	instance.setDatapath(_tessdataPath);
-        output += instance.doOCR(imageFile);
-        output = output.replaceAll("\\s+","");
+        output += instance.doOCR(image);
+        output = output.trim();
         return output;
 	}
 
