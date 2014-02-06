@@ -64,7 +64,10 @@ public class API extends Observable {
 		ArenaRun resultingArenaRun = null;
 		if(result != null) {
 			resultingArenaRun = new ArenaRun(result);
-			_dispatchResultMessage("Match created: " + hsMatch.toString());
+			if(hsMatch.getMode() != "Arena")
+				_dispatchResultMessage("Success. <a href=\"http://hearthstats.net/constructeds/" + result.get("id") + "/edit\">Edit match #" + result.get("id") + " on HearthStats.net</a>");
+			else
+				_dispatchResultMessage("Arena match successfully created");
 		}
 		
 		return resultingArenaRun;

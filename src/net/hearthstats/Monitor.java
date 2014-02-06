@@ -80,9 +80,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected int _pollingIntervalInMs = 200;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
-	protected JTextPane _logText;
+	protected JEditorPane _logText;
 	private JScrollPane _logScroll;
-	private JPasswordField _userKeyField;
+	private JTextField _userKeyField;
 	private JCheckBox _checkUpdatesField;
 	private JCheckBox _notificationsEnabledField;
 	private JCheckBox _showHsFoundField;
@@ -120,18 +120,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 	
 	private void _showWelcomeLog() {
-		_log("Starting HearthStats.net Uploader v" + Config.getVersion());
-		_log("\nThis is a pre-release. It may have glitches. Your stats will be synced with the live site,");
-		_log("but most information is only visible on http://BETA.HearthStats.net for the moment.\n");
-		_log("1 - Se readme.md for full details");
-		_log("2 - Set your deck slots at http://beta.hearthstats.net/decks/active_decks");
-		_log("4 - Run Hearthstone in WINDOWED mode");
-		_log("5 - Look for event notifications in this log and bottom right of screen");
-		_log("6 - Submit feedback to http://goo.gl/lMbdzg (copy and paste this log)");
-		_log("7 - @JeromeDane on twitter or https://plus.google.com/+JeromeDane/ to contact me directly\n");
-		_log("Donate to support this uploader: http://goo.gl/G2jMKw (shortened PayPal link)");
-		_log("Donate to support the site: http://hearthstats.net/aboutus\n");
-		_log("Project source: https://github.com/JeromeDane/HearthStats.net-Uploader/\n");
+		_log("<strong>HearthStats.net Uploader v" + Config.getVersion() + "</strong>");
+		_log("\nThis is a pre-release. It may have glitches. Your stats will be synced with the live site but most information is only visible on <a href=\"http://BETA.HearthStats.net\">http://BETA.HearthStats.net</a> for the moment.\n");
+		_log("1 - <a href=\"http://beta.hearthstats.net/decks/active_decks\">Set your deck slots here</a>");
+		_log("2 - Run Hearthstone in <strong>WINDOWED</strong> mode");
+		_log("3 - Look for event notifications in this log and bottom right of screen");
+		_log("4 - <a href=\"http://goo.gl/lMbdzg\">Submit feedback here</a> (please copy and paste this log)\n");
 	}
 	
 	private boolean _checkForUserKey() {
@@ -191,9 +185,32 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		add(tabbedPane);
 		
 		// log
-		_logText = new JTextPane ();
+		_logText = new JEditorPane();
+		_logText.setContentType("text/html");
+		_logText.setEditable(false);
 		_logText.setText("Event Log:\n");
 		_logText.setEditable(false);
+		_logText.addHyperlinkListener(new HyperlinkListener() {
+			@Override
+			public void hyperlinkUpdate(HyperlinkEvent e) {
+				if (HyperlinkEvent.EventType.ACTIVATED == e.getEventType()) {
+					if (Desktop.isDesktopSupported()) {
+						// Create Desktop object
+						Desktop d = Desktop.getDesktop();
+						// Browse a URL, say google.com
+						try {
+							d.browse(new URI(e.getURL().toString()));
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (URISyntaxException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
+			}
+		});
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		tabbedPane.add(_logScroll, "Main");
 		
@@ -219,11 +236,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.setLayout(layout);
 		
 		JEditorPane text = new JEditorPane();
-		//text.setContentType("text/html");
+		text.setContentType("text/html");
 		text.setEditable(false);
-		// add a HTMLEditorKit to the editor pane
-		HTMLEditorKit kit = new HTMLEditorKit();
-		text.setEditorKit(kit);
 		text.setBackground(Color.WHITE);
 		text.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
 				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> uploader v" + Config.getVersion() + "</h2>" +
@@ -233,12 +247,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				"<p>&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/\">Project source on GitHub</a><br/>" +
 				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/releases\">Latest releases & changelog</a><br/>" +
 				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/issues\">Feedback and suggestions</a><br/>" +
-				"&bull; <a href=\"http://redd.it/1wa4rc/\">Reddit thread</a> (Please upvote!)</p>" +
+				"&bull; <a href=\"http://redd.it/1wa4rc/\">Reddit thread</a> (please up-vote)</p>" +
 				"<p>Support this project:</p>" +
 				"</body></html>"
 			);
 		
-		HyperlinkListener l = new HyperlinkListener() {
+	    text.addHyperlinkListener(new HyperlinkListener() {
 	        @Override
 	        public void hyperlinkUpdate(HyperlinkEvent e) {
 	            if (HyperlinkEvent.EventType.ACTIVATED == e.getEventType()) {
@@ -257,11 +271,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	        			}
 	            	}
 	            }
-
 	        }
-
-	    };
-	    text.addHyperlinkListener(l);
+	    });
 	    
 	    panel.add(text, "wrap");
 		
@@ -297,7 +308,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		// user key
 		panel.add(new JLabel("User Key: "), "skip,right");
-		_userKeyField = new JPasswordField();
+		_userKeyField = new JTextField();
 		_userKeyField.setText(Config.getUserKey());
 		panel.add(_userKeyField, "wrap");
 		
@@ -701,7 +712,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		out.close();
 		
 		// read in log
-		String logText = "";
+		String logText = "<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">";
 		List<String> lines = null;
 		try {
 			lines = Files.readAllLines(Paths.get("log.txt"), Charset.defaultCharset());
@@ -710,8 +721,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			e.printStackTrace();
 		}
 		for (String line : lines) {
-			logText += line + "\n";
+			logText += line + "<br/>";
         }
+		logText += "</body></html>";
 		_logText.setText(logText);
 		
 		_logText.setCaretPosition(_logText.getDocument().getLength());
@@ -806,7 +818,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 	private void _saveOptions() {
-		Config.setUserKey(_userKeyField.getPassword().toString());
+		Config.setUserKey(_userKeyField.getText());
 		Config.setCheckForUpdates(_checkUpdatesField.isSelected());
 		Config.setShowNotifications(_notificationsEnabledField.isSelected());
 		Config.setShowHsFoundNotification(_showHsFoundField.isSelected());
