@@ -33,8 +33,6 @@ to see how things are progressing.
 * Extract the downloaded zip file to any directory
 * Log into the [HearthStats.net Beta Site](http://beta.hearthstats.net/)
 * If you play constructed, go to Decks > [Active Decks](http://beta.hearthstats.net/decks/active_decks) and set your decks there to match the layout you have in game
-* Find your __userkey__ on [your profile page](http://beta.hearthstats.net/profile)
-* Edit __config.ini__, replace **your_userkey_here** with the string you found in the previous step, and save the file   
 * Run the HearthStatsUploader.jar
 * A window should open called "HearthStats.net Uploader"
 * Start your Hearthstone client and put it in __windowed mode__ (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
@@ -46,8 +44,6 @@ Known Issues
 
 * Game must be running in __windowed mode__ for now (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
 * Only supports Windows at the moment
-* There is currently little configuration interface
-* Minimizing Hearthstone completely freezes the uploader (see [issue #67](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/76))
  
 Please see the full [list of known issues](https://github.com/JeromeDane/HearthStats.net-Uploader/issues)
 as well.
