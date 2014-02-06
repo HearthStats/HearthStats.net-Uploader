@@ -272,6 +272,7 @@ public class HearthstoneAnalyzer extends Observable {
 		
 		if(testOne.passed() || testTwo.passed()) {
 			_rankLevel = null;
+			_analyzeRankRetries = 0;
 			_setMode("Casual");
 		}
 	}
@@ -505,10 +506,10 @@ public class HearthstoneAnalyzer extends Observable {
 			_notifyObserversOfChangeTo("Exception trying to write opponent name image:\n" + e.getMessage());
 		}
 		// save it to a file
+		File outputfile = new File(Main.getExtractionFolder() + "/" + output);
 		try {
-			File outputfile = new File(Main.getExtractionFolder() + "/" + output);
 			ImageIO.write(newImage, "jpg", outputfile);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			_notifyObserversOfChangeTo("Exception trying to write opponent name image:\n" + e.getMessage());
 		}
@@ -524,16 +525,24 @@ public class HearthstoneAnalyzer extends Observable {
 	
 	private int _analyzeRankRetries = 0;
 	private void _analyzeRankLevel() {
-		int x = (int) (877 * _ratio + _xOffset);
-		int y = (int) (163 * _ratio);	
-		int width = (int) (29 * _ratio);
-		int height = (int) (21 * _ratio);
+		int retryOffset = _analyzeRankRetries % 2; 
+		int x = (int) ((874 + retryOffset) * _ratio + _xOffset);
+		int y = (int) (162 * _ratio);	
+		int width = (int) (32 * _ratio);
+		int height = (int) (22 * _ratio);
 		
 		String rankStr = _performOcr(x, y, width, height, "ranklevel.jpg");
-		if(rankStr != null)
-		rankStr = rankStr.replace("I", "1");
-		rankStr = rankStr.replace("S", "5");
 		System.out.println("Rank str: " + rankStr);
+		if(rankStr != null) {
+			rankStr = rankStr.replaceAll("l", "1");
+			rankStr = rankStr.replaceAll("I", "1");
+			rankStr = rankStr.replaceAll("i", "1");
+			rankStr = rankStr.replaceAll("S", "5");
+			rankStr = rankStr.replaceAll("O", "0");
+			rankStr = rankStr.replaceAll("o", "0");
+			rankStr = rankStr.replaceAll("[^\\d.]", "");
+		}
+		System.out.println("Rank str parsed: " + rankStr);
 		
 		if(rankStr != null && !rankStr.isEmpty() && Integer.parseInt(rankStr) != 0 && Integer.parseInt(rankStr) < 26) 
 			_setRankLevel(rankStr);
