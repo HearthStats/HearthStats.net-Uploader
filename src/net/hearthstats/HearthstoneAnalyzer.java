@@ -515,7 +515,6 @@ public class HearthstoneAnalyzer extends Observable {
 			ImageIO.write(newImage, "jpg", outputfile);
 		} catch (Exception e) {
 			e.printStackTrace();
-			_notifyObserversOfChangeTo("Exception trying to write opponent name image:\n" + e.getMessage());
 		}
 		
 		try {
@@ -734,8 +733,7 @@ public class HearthstoneAnalyzer extends Observable {
 	private void _testForRankedMode() {
 
 		int[][] tests = { 
-			{ 833, 88, 220, 255, 255 }, // ranked blue
-			{ 698, 120, 56, 16, 8 } // casual off
+			{ 833, 88, 215, 255, 255 } // ranked blue
 		};
 		PixelGroupTest testOne = new PixelGroupTest(_image, tests);
 		
@@ -745,7 +743,12 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		PixelGroupTest testTwo = new PixelGroupTest(_image, testsTwo);
 		
-		if(testOne.passed() || testTwo.passed()) {
+		int[][] testsThree = { 
+				{ 800, 159, 162, 255, 255 } // ranked blue
+		};
+		PixelGroupTest testThree = new PixelGroupTest(_image, testsThree);
+		
+		if(testOne.passed() || testTwo.passed() || testThree.passed()) {
 			_analyzeRankLevel();
 			_setMode("Ranked");
 		}
