@@ -259,7 +259,6 @@ public class HearthstoneAnalyzer extends Observable {
 	private void _testForCasualMode() {
 
 		int[][] tests = { 
-			{ 833, 94, 100, 22, 16 }, // ranked off
 			{ 698, 128, 200, 255, 255 } // casual blue
 		};
 		PixelGroupTest testOne = new PixelGroupTest(_image, tests);
@@ -270,7 +269,12 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		PixelGroupTest testTwo = new PixelGroupTest(_image, testsTwo);
 		
-		if(testOne.passed() || testTwo.passed()) {
+		int[][] testsThree = { 
+				{ 680, 157, 160, 255, 255} 
+		};
+		PixelGroupTest testThree = new PixelGroupTest(_image, testsThree);
+		
+		if(testOne.passed() || testTwo.passed() || testThree.passed()) {
 			_rankLevel = null;
 			_analyzeRankRetries = 0;
 			_setMode("Casual");
