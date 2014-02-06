@@ -131,6 +131,7 @@ public class HearthstoneAnalyzer extends Observable {
 		_mode = null;
 		_deckSlot = 0;
 		_rankLevel = null;
+		_analyzeRankRetries = 0;
 		_arenaRunEndDetected = false;
 	}
 	public boolean getCoin() {
@@ -520,8 +521,10 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 		return null;
 	}
+	
+	private int _analyzeRankRetries = 0;
 	private void _analyzeRankLevel() {
-		int x = (int) (877 * _ratio + _xOffset);
+		int x = (int) (878 * _ratio + _xOffset);
 		int y = (int) (163 * _ratio);	
 		int width = (int) (29 * _ratio);
 		int height = (int) (21 * _ratio);
@@ -529,7 +532,14 @@ public class HearthstoneAnalyzer extends Observable {
 		String rankStr = _performOcr(x, y, width, height, "ranklevel.jpg");
 		rankStr = rankStr.replace("I", "1");
 		rankStr = rankStr.replace("S", "5");
-		_setRankLevel(rankStr);
+		
+		if(!rankStr.isEmpty() || Integer.parseInt(rankStr) == 0 || Integer.parseInt(rankStr) > 25) 
+			_setRankLevel(rankStr);
+		else 
+			if(_analyzeRankRetries < 5) {	// retry up to 5 times
+				_analyzeRankRetries++;
+				_analyzeRankLevel();
+			}
 		
 	}
 	private void _analyzeOpponnentName() {
@@ -683,8 +693,10 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 489, 688, 68, 65, 63 } 
 		};
 		if((new PixelGroupTest(_image, tests)).passed()) {
-			if(getMode() == "Ranked")
+			if(getMode() == "Ranked") {
+				_analyzeRankRetries = 0;
 				_analyzeRankLevel();
+			}
 			_setScreen("Play");
 		}
 	}
