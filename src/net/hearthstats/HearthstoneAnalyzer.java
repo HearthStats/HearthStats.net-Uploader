@@ -524,20 +524,23 @@ public class HearthstoneAnalyzer extends Observable {
 	
 	private int _analyzeRankRetries = 0;
 	private void _analyzeRankLevel() {
-		int x = (int) (878 * _ratio + _xOffset);
+		int x = (int) (877 * _ratio + _xOffset);
 		int y = (int) (163 * _ratio);	
 		int width = (int) (29 * _ratio);
 		int height = (int) (21 * _ratio);
 		
 		String rankStr = _performOcr(x, y, width, height, "ranklevel.jpg");
+		if(rankStr != null)
 		rankStr = rankStr.replace("I", "1");
 		rankStr = rankStr.replace("S", "5");
+		System.out.println("Rank str: " + rankStr);
 		
-		if(!rankStr.isEmpty() || Integer.parseInt(rankStr) == 0 || Integer.parseInt(rankStr) > 25) 
+		if(rankStr != null && !rankStr.isEmpty() && Integer.parseInt(rankStr) != 0 && Integer.parseInt(rankStr) < 26) 
 			_setRankLevel(rankStr);
 		else 
 			if(_analyzeRankRetries < 5) {	// retry up to 5 times
 				_analyzeRankRetries++;
+				System.out.println("rank detection try #" + _analyzeRankRetries);
 				_analyzeRankLevel();
 			}
 		
