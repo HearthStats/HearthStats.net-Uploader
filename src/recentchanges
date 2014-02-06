@@ -1,7 +1,9 @@
-Under development
+v0.10.201302051
 * Detect and warn when trying to launch two instances
 * Fixed null exception when loading unset vals from config.ini
 * All settings now persist after updates
+* Options tab
+* About tab
 
 v0.9.201302044
 * Better re-detection of rank when changed 

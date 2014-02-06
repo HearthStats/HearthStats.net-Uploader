@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -47,6 +48,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -54,11 +56,15 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLEditorKit;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -192,6 +198,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		tabbedPane.add(_logScroll, "Main");
 		
 		tabbedPane.add(_createOptionsUi(), "Options");
+		tabbedPane.add(_createAboutUi(), "About");
 		
 		
 		_enableMinimizeToTray();
@@ -204,6 +211,82 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_updateTitle();
 	}
 
+	private JPanel _createAboutUi() {
+		JPanel panel = new JPanel();
+		panel.setBackground(Color.WHITE);
+		
+		MigLayout layout = new MigLayout("");
+		panel.setLayout(layout);
+		
+		JEditorPane text = new JEditorPane();
+		//text.setContentType("text/html");
+		text.setEditable(false);
+		// add a HTMLEditorKit to the editor pane
+		HTMLEditorKit kit = new HTMLEditorKit();
+		text.setEditorKit(kit);
+		text.setBackground(Color.WHITE);
+		text.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
+				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> uploader v" + Config.getVersion() + "</h2>" +
+				"<p><strong>Author:</strong> Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>)</p>" + 
+				"<p>This utility uses screen grab analysis of your Hearthstone window and does not do any packet sniffing, monitoring, or network modification of any kind.</p>" +
+				"<p>This project is and always will be open source so that you can do your own builds and see exactly what's happening within the program.</p>" +
+				"<p>&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/\">Project source on GitHub</a><br/>" +
+				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/releases\">Latest releases & changelog</a><br/>" +
+				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/issues\">Feedback and suggestions</a><br/>" +
+				"&bull; <a href=\"http://redd.it/1wa4rc/\">Reddit thread</a> (Please upvote!)</p>" +
+				"<p>Support this project:</p>" +
+				"</body></html>"
+			);
+		
+		HyperlinkListener l = new HyperlinkListener() {
+	        @Override
+	        public void hyperlinkUpdate(HyperlinkEvent e) {
+	            if (HyperlinkEvent.EventType.ACTIVATED == e.getEventType()) {
+	            	if (Desktop.isDesktopSupported()) {
+	            		// Create Desktop object
+	        			Desktop d = Desktop.getDesktop();
+	        			// Browse a URL, say google.com
+	        			try {
+	        				d.browse(new URI(e.getURL().toString()));
+	        			} catch (IOException e1) {
+	        				// TODO Auto-generated catch block
+	        				e1.printStackTrace();
+	        			} catch (URISyntaxException e1) {
+	        				// TODO Auto-generated catch block
+	        				e1.printStackTrace();
+	        			}
+	            	}
+	            }
+
+	        }
+
+	    };
+	    text.addHyperlinkListener(l);
+	    
+	    panel.add(text, "wrap");
+		
+	    JButton donateButton = new JButton("<html><img style=\"border-style: none;\" src=\"" + getClass().getResource("/images/donate.gif") + "\"/></html>");
+	    donateButton.addActionListener(new ActionListener() {
+	    	@Override
+	    	public void actionPerformed(ActionEvent e) {
+	    		// Create Desktop object
+    			Desktop d = Desktop.getDesktop();
+    			// Browse a URL, say google.com
+    			try {
+    				d.browse(new URI("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UJFTUHZF6WPDS"));
+    			} catch (IOException e1) {
+    				// TODO Auto-generated catch block
+    				e1.printStackTrace();
+    			} catch (URISyntaxException e1) {
+    				// TODO Auto-generated catch block
+    				e1.printStackTrace();
+    			}
+	    	}
+	    });
+	    donateButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+	    panel.add(donateButton);
+		return panel;
+	}
 	private JPanel _createOptionsUi() {
 		JPanel panel = new JPanel();
 		
