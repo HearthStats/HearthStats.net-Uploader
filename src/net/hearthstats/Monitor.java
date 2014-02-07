@@ -872,7 +872,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             defaultItem.setFont(new Font("Arial",Font.PLAIN,14));
             popup.add(defaultItem);
             Image icon = new ImageIcon(getClass().getResource("/images/icon.png")).getImage();
-            trayIcon = new TrayIcon(icon, "SystemTray Demo", popup);
+            trayIcon = new TrayIcon(icon, "HearthStats.net Uploader", popup);
             trayIcon.setImageAutoSize(true);
             trayIcon.addMouseListener(new MouseAdapter(){
             	public void mousePressed(MouseEvent e){
