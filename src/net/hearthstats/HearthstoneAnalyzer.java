@@ -529,12 +529,13 @@ public class HearthstoneAnalyzer extends Observable {
 	
 	private int _analyzeRankRetries = 0;
 	private void _analyzeRankLevel() {
-		int retryOffset = _analyzeRankRetries % 2; 
-		int x = (int) ((874 + retryOffset) * _ratio + _xOffset);
+		int retryOffset = (_analyzeRankRetries - 1) % 3; 
+		int x = (int) ((875 + retryOffset) * _ratio + _xOffset);
 		int y = (int) (162 * _ratio);	
 		int width = (int) (32 * _ratio);
 		int height = (int) (22 * _ratio);
 		
+		//OCR.setLang("num");
 		String rankStr = _performOcr(x, y, width, height, "ranklevel.jpg");
 		System.out.println("Rank str: " + rankStr);
 		if(rankStr != null) {
@@ -551,7 +552,7 @@ public class HearthstoneAnalyzer extends Observable {
 		if(rankStr != null && !rankStr.isEmpty() && Integer.parseInt(rankStr) != 0 && Integer.parseInt(rankStr) < 26) 
 			_setRankLevel(rankStr);
 		else 
-			if(_analyzeRankRetries < 5) {	// retry up to 5 times
+			if(_analyzeRankRetries < 10) {	// retry up to 5 times
 				_analyzeRankRetries++;
 				System.out.println("rank detection try #" + _analyzeRankRetries);
 				_analyzeRankLevel();
@@ -565,6 +566,7 @@ public class HearthstoneAnalyzer extends Observable {
 		int width = (int) (150 * _ratio);
 		int height = (int) (19 * _ratio);
 	    
+		OCR.setLang("eng");
 		_setOpponentName(_performOcr(x, y, width, height, "opponentname.jpg"));
 		
 	}
