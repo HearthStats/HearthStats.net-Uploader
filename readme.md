@@ -33,7 +33,7 @@ to see how things are progressing.
 * Extract the downloaded zip file to any directory
 * Log into the [HearthStats.net Beta Site](http://beta.hearthstats.net/)
 * If you play constructed, go to Decks > [Active Decks](http://beta.hearthstats.net/decks/active_decks) and set your decks there to match the layout you have in game
-* Run the HearthStatsUploader.jar
+* Run HearthStats.exe in the folder where you extracted the zip file
 * A window should open called "HearthStats.net Uploader"
 * Start your Hearthstone client and put it in __windowed mode__ (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
 * Look for notifications in the bottom right of your screen that indicate event detection

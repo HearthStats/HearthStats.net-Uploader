@@ -5,12 +5,5 @@ v0.11.201302071
 * Improved accuracy of rank level detection
 * Fixed several silent crashes that halted detection
 
-v0.10.201302051
-* New Options tab
-* New About tab
-* Detect and warn when trying to launch two instances
-* All settings now persist after updates
-* Clickable links in log
-* Fixed null exception when loading unset vals from config.ini
-* Notification of update complete
-* Improved accuracy of opponent name recognition
+You will need to launch HearthStats.exe 
+manually after this update.
