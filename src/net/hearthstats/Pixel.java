@@ -27,7 +27,6 @@ public class Pixel {
 		red = (rgb >> 16) & 0xFF;
 		green = (rgb >> 8) & 0xFF;
 		blue = (rgb & 0xFF);
-		//image.setRGB(x, y, 255);
 	}
 	
 	public void mark() {
