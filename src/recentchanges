@@ -1,3 +1,10 @@
+v0.11.201302071
+* Packaged as HearthStats.exe instead of a .jar
+* Reduced memory usage (should cap at 100mb max now)
+* Improved speed of ranked and casual mode detection
+* Improved accuracy of rank level detection
+* Fixed several silent crashes that halted detection
+
 v0.10.201302051
 * New Options tab
 * New About tab

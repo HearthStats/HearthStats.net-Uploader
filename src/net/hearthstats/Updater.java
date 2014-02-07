@@ -60,6 +60,7 @@ public class Updater {
 
 	public static void cleanUp() {
 		_removeFile("updater.jar");
+		_removeFile("HearthStatsUploader.jar");	// remove old jar since we're using an exe now
 		_removeFile(Main.getExtractionFolder() + "/update.zip");
 	}
 	
@@ -81,7 +82,7 @@ public class Updater {
 		if (updaterFile.exists()) {
 			System.out.println("found updater.jar");
 			try {
-				Runtime.getRuntime().exec("java -jar " + updaterFile.getPath());
+				Runtime.getRuntime().exec("HearthStats.exe");
 			} catch (IOException e) {
 				e.printStackTrace();
 				_notifyException(e);
