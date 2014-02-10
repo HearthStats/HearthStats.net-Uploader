@@ -32,7 +32,8 @@ public class HearthstoneAnalyzer extends Observable {
 	private float _screenRatio;
 	private boolean _arenaRunEndDetected = false;
 	private boolean _isAnalyzing = false;
-	private boolean _isYourTurn = false;
+	private boolean _isYourTurn = true;
+	private int _numTurns = 0;
 	
 	public HearthstoneAnalyzer() {
 	}
@@ -134,6 +135,8 @@ public class HearthstoneAnalyzer extends Observable {
 		_deckSlot = 0;
 		_rankLevel = null;
 		_analyzeRankRetries = 0;
+		_isYourTurn = true;
+		_numTurns = 0;
 		_arenaRunEndDetected = false;
 	}
 	public boolean getCoin() {
@@ -146,6 +149,10 @@ public class HearthstoneAnalyzer extends Observable {
 	
 	public String getMode() {
 		return _mode;
+	}
+	
+	public int getNumTurns() {
+		return _numTurns;
 	}
 	
 	public String getOpponentClass() {
@@ -233,10 +240,10 @@ public class HearthstoneAnalyzer extends Observable {
 	}
 	private void _setYourTurn(boolean yourTurn) {
 		if( _isYourTurn != yourTurn ){
+			_numTurns++;
 			_isYourTurn = yourTurn;
 			_notifyObserversOfChangeTo("yourTurn");
 		}
-
 	}
 	
 	private void _testForArenaEnd() {
@@ -304,8 +311,10 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 769, 280, 125, 255, 82 },
 			{ 864, 379, 126, 255, 82 }
 		};
-		if((new PixelGroupTest(_image, tests)).passedOr())
+		if((new PixelGroupTest(_image, tests)).passedOr()) {
+			_isYourTurn = false;
 			_setCoin(true);
+		}
 	}
 	
 	private void _testForDeckSlot() {
@@ -459,6 +468,8 @@ public class HearthstoneAnalyzer extends Observable {
 			_opponentClass = null;
 			_opponentName = null;
 			_arenaRunEndDetected = false;
+			_isYourTurn = true;
+			_numTurns = 0;
 			_setScreen("Finding Opponent");
 		}
 	}
