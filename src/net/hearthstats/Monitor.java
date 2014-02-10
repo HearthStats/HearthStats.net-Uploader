@@ -688,11 +688,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_log("Playing as " + _analyzer.getYourClass());
 				break;
 			case "yourTurn":
-				if(_analyzer.isYourTurn()){
-					if(Config.showYourTurnNotification())
-						_notify("It is your turn.");
-					_log("It is your turn.");
-				}
+				if(Config.showYourTurnNotification())
+					_notify((_analyzer.isYourTurn() ? "Your" : "Opponent") + " turn detected");
+				_log((_analyzer.isYourTurn() ? "Your" : "Opponent") + " turn detected");
 				break;
 			default:
 				_notify(changed.toString());

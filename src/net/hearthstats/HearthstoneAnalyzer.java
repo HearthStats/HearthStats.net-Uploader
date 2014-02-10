@@ -92,7 +92,10 @@ public class HearthstoneAnalyzer extends Observable {
 		
 		if(getMode() != "Practice") {
 			if(getScreen() == "Playing") {
-				_testForYourTurn();
+				if(isYourTurn())
+					_testForOpponentTurn();
+				else
+					_testForYourTurn();
 				_testForVictory();
 				_testForDefeat();
 			} else {
@@ -137,7 +140,7 @@ public class HearthstoneAnalyzer extends Observable {
 		_deckSlot = 0;
 		_rankLevel = null;
 		_analyzeRankRetries = 0;
-		_isYourTurn = true;
+		_isYourTurn = false;
 		_numTurns = 0;
 		_arenaRunEndDetected = false;
 	}
@@ -245,11 +248,10 @@ public class HearthstoneAnalyzer extends Observable {
 		_notifyObserversOfChangeTo("yourClass");
 	}
 	private void _setYourTurn(boolean yourTurn) {
-		if( _isYourTurn != yourTurn ){
+		_isYourTurn = yourTurn;
+		if(yourTurn)
 			_numTurns++;
-			_isYourTurn = yourTurn;
-			_notifyObserversOfChangeTo("yourTurn");
-		}
+		_notifyObserversOfChangeTo("yourTurn");
 	}
 	
 	private void _testForArenaEnd() {
@@ -318,7 +320,6 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 864, 379, 126, 255, 82 }
 		};
 		if((new PixelGroupTest(_image, tests)).passedOr()) {
-			_isYourTurn = false;
 			_setCoin(true);
 		}
 	}
@@ -475,7 +476,7 @@ public class HearthstoneAnalyzer extends Observable {
 			_opponentClass = null;
 			_opponentName = null;
 			_arenaRunEndDetected = false;
-			_isYourTurn = true;
+			_isYourTurn = false;
 			_numTurns = 0;
 			_setScreen("Finding Opponent");
 		}
@@ -900,12 +901,19 @@ public class HearthstoneAnalyzer extends Observable {
 	}
 	private void _testForYourTurn() {
 		int[][] tests = { 
-				{ 280, 380, 112, 108, 154 },  // left side of pop-up turn banner
-				{ 450, 380, 112, 108, 154 }   // right side of pop-up turn banner
+				{ 933, 336, 255, 254, 2 },  // top of "end turn" button
+				{ 933, 359, 239, 222, 0 }   // top of "end turn" button
 		};
 		if ((new PixelGroupTest(_image, tests, true)).passed() ) {
 			_setYourTurn(true);
-		} else {
+		}
+	}
+	private void _testForOpponentTurn() {
+		int[][] tests = { 
+				{ 929, 336, 108, 110, 102 },  // top of "enemy turn" button
+				{ 928, 360, 150, 151, 127 }   // top of "enemy turn" button
+		};
+		if ((new PixelGroupTest(_image, tests, true)).passed() ) {
 			_setYourTurn(false);
 		}
 	}
