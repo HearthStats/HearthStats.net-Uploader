@@ -529,7 +529,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		repaint();
 	}
 
-	protected void _submitMatchResult() throws IOException {
+	private void _submitMatchResult() throws IOException {
 		HearthstoneMatch hsMatch = new HearthstoneMatch();
 		hsMatch.setMode(_analyzer.getMode());
 		hsMatch.setUserClass(_analyzer.getYourClass());
@@ -539,6 +539,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		hsMatch.setCoin(_analyzer.getCoin());
 		hsMatch.setRankLevel(_analyzer.getRankLevel());
 		hsMatch.setResult(_analyzer.getResult());
+		hsMatch.setNumTurns(_analyzer.getNumTurns());
 		
 		// check for new arena run
 		if(hsMatch.getMode() == "Arena" && _analyzer.isNewArena()) {

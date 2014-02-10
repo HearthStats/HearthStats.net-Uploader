@@ -12,6 +12,7 @@ public class HearthstoneMatch {
 	private int _deckSlot;
 	private String _opponentName;
 	private String _rankLeve;
+	private int _numTurns;
 	
 	public HearthstoneMatch() {
 		
@@ -24,9 +25,17 @@ public class HearthstoneMatch {
 	public String getMode() {
 		return _mode;
 	}
+	
+	public int getNumTurns() {
+		return _numTurns;
+	}
 
 	public void setMode(String mode) {
 		_mode = mode;
+	}
+	
+	public void setMode(int numTurns) {
+		_numTurns = numTurns;
 	}
 
 	public String getUserClass() {
@@ -108,6 +117,7 @@ public class HearthstoneMatch {
 		obj.put("slot", getDeckSlot());
 		obj.put("rank", getMode());
 		obj.put("ranklvl", getRankLevel());
+		obj.put("numturns", getNumTurns());
 		
 		return obj;
 	}
