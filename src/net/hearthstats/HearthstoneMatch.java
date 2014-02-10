@@ -34,7 +34,7 @@ public class HearthstoneMatch {
 		_mode = mode;
 	}
 	
-	public void setMode(int numTurns) {
+	public void setNumTurns(int numTurns) {
 		_numTurns = numTurns;
 	}
 
