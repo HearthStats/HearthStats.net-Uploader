@@ -32,7 +32,8 @@ public class HearthstoneAnalyzer extends Observable {
 	private float _screenRatio;
 	private boolean _arenaRunEndDetected = false;
 	private boolean _isAnalyzing = false;
-
+	private boolean _isYourTurn = false;
+	
 	public HearthstoneAnalyzer() {
 	}
 
@@ -88,6 +89,7 @@ public class HearthstoneAnalyzer extends Observable {
 		
 		if(getMode() != "Practice") {
 			if(getScreen() == "Playing") {
+				_testForYourTurn();
 				_testForVictory();
 				_testForDefeat();
 			} else {
@@ -99,7 +101,7 @@ public class HearthstoneAnalyzer extends Observable {
 		if(getScreen() == "Arena" && !isNewArena()) {
 			_testForNewArenaRun();
 		}
-		
+
 		_image.flush();
 		_isAnalyzing = false;
 	}
@@ -169,6 +171,10 @@ public class HearthstoneAnalyzer extends Observable {
 		return _yourClass;
 	}
 	
+	public boolean getYourTurn() {
+		return _isYourTurn;
+	}
+	
 	public boolean isNewArena() {
 		return _isNewArena;
 	}
@@ -224,6 +230,13 @@ public class HearthstoneAnalyzer extends Observable {
 	private void _setYourClass(String yourClass) {
 		_yourClass = yourClass;
 		_notifyObserversOfChangeTo("yourClass");
+	}
+	private void _setYourTurn(boolean yourTurn) {
+		if( _isYourTurn != yourTurn ){
+			_isYourTurn = yourTurn;
+			_notifyObserversOfChangeTo("yourTurn");
+		}
+
 	}
 	
 	private void _testForArenaEnd() {
@@ -861,6 +874,16 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		_testForClass("Warrior", warriorTests, true);
 	}
-	
+	private void _testForYourTurn() {
+		int[][] tests = { 
+				{ 280, 380, 112, 108, 154 },  // left side of pop-up turn banner
+				{ 450, 380, 112, 108, 154 }   // right side of pop-up turn banner
+		};
+		if ((new PixelGroupTest(_image, tests, true)).passed() ) {
+			_setYourTurn(true);
+		} else {
+			_setYourTurn(false);
+		}
+	}
 
 }
