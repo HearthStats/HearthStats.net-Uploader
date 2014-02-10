@@ -1,3 +1,8 @@
+If you're coming from v0.11.x you will need
+to manually download the new file from 
+http://goo.gl/8NlWBX due to an upgrade bug 
+in that release. Apologies.
+
 v0.12.2013020101
 * Detection and notification of your turn
 * Tracking and submission of number of turns in match

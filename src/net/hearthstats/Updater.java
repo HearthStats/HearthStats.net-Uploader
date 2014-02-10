@@ -82,7 +82,7 @@ public class Updater {
 		if (updaterFile.exists()) {
 			System.out.println("found updater.jar");
 			try {
-				Runtime.getRuntime().exec("HearthStats.exe");
+				Runtime.getRuntime().exec("java -jar " + updaterFile.getPath());
 			} catch (IOException e) {
 				e.printStackTrace();
 				_notifyException(e);
