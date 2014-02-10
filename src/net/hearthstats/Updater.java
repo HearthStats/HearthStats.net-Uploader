@@ -170,18 +170,13 @@ public class Updater {
 	}
 
 	public static void _runMain() {
-		JOptionPane.showMessageDialog(null, "Update complete. The uploader will now restart ...");
+		JOptionPane.showMessageDialog(null, "Update complete. Attempting to restart ...");
 		_notify("Restarting ...");
-		File mainFile = new File("HearthStatsUploader.jar");
-		if (mainFile.exists()) {
-			try {
-				Runtime.getRuntime().exec("java -jar " + mainFile.getPath());
-			} catch (IOException e) {
-				e.printStackTrace();
-				_notifyException(e);
-			}
-		} else {
-			_notify("Updator Error", "Unable to locate " + mainFile.getPath());
+		try {
+			Runtime.getRuntime().exec("HearthStats.exe");
+		} catch (IOException e) {
+			e.printStackTrace();
+			_notifyException(e);
 		}
 	}
 
