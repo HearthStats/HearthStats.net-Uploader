@@ -101,8 +101,8 @@ public class HearthstoneMatch {
 				_propertyOrUnknown(getOpponentClass()) + " " +
 				"(" + _propertyOrUnknown(getOpponentName()) + ") " +
 				getResult() + " " +
-				(getDeckSlot() == 0 ? "" : " deck slot " + getDeckSlot());
-				
+				(getDeckSlot() == 0 ? "" : " deck slot " + getDeckSlot()) +
+				" " + getNumTurns() + " turns";
 				
 	}
 
