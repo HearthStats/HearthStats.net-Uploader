@@ -66,6 +66,7 @@ public class Config {
 		setShowScreenNotification(true);
 		setShowModeNotification(true);
 		setShowDeckNotification(true);
+		setShowYourTurnNotification(true);
 		
 		// analytics
 		setAnalyticsEnabled(true);
@@ -139,6 +140,9 @@ public class Config {
 	public static boolean showModeNotification() {
 		return _getBooleanSetting("notifications", "mode", true);
 	}
+	public static boolean showYourTurnNotification() {
+		return _getBooleanSetting("notifications", "yourturn", true);
+	}
 	
 	public static boolean showHsClosedNotification() {
 		return _getBooleanSetting("notifications", "hsclosed", true);
@@ -187,6 +191,9 @@ public class Config {
 	}
 	public static void setShowScreenNotification(boolean val) {
 		_setBooleanValue("notifications", "screen", val);
+	}
+	public static void setShowYourTurnNotification(boolean val) {
+		_setBooleanValue("notifications", "yourturn", val);
 	}
 	public static void setShowModeNotification(boolean val) {
 		_setBooleanValue("notifications", "mode", val);

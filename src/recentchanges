@@ -1,3 +1,8 @@
+under development
+* Detection and notification of your turn
+* Tracking and submission of number of turns in match
+* Tracking and submission of match duration in seconds
+
 v0.11.201302071
 * Packaged as HearthStats.exe instead of a .jar
 * Reduced memory usage (should cap at 100mb max now)

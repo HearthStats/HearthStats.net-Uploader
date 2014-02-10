@@ -80,6 +80,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JCheckBox _analyticsField;
 	private JCheckBox _minToTrayField;
 	private JCheckBox _startMinimizedField;
+	private JCheckBox _showYourTurnNotificationField;
 	
 	public void start() throws IOException {
 		if(Config.analyticsEnabled()) {
@@ -347,6 +348,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_showDeckNotificationField = new JCheckBox("Deck detection");
 		_showDeckNotificationField.setSelected(Config.showDeckNotification());
 		panel.add(_showDeckNotificationField, "wrap");
+		
+		// show your turn notification
+		panel.add(new JLabel(""), "skip,right");
+		_showYourTurnNotificationField = new JCheckBox("Your turn");
+		_showYourTurnNotificationField.setSelected(Config.showYourTurnNotification());
+		panel.add(_showYourTurnNotificationField, "wrap");
 		
 		_updateNotificationCheckboxes();
 		
@@ -618,7 +625,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}, _pollingIntervalInMs, TimeUnit.MILLISECONDS);
 	}
 
-	protected void _handleAnalyzerEvent(Object changed) throws IOException {
+	private void _handleAnalyzerEvent(Object changed) throws IOException {
 		switch(changed.toString()) {
 			case "arenaEnd":
 				_notify("End of Arena Run Detected");
@@ -681,8 +688,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_log("Playing as " + _analyzer.getYourClass());
 				break;
 			case "yourTurn":
-				if( _analyzer.isYourTurn() ){
-					_notify("It is your turn.");
+				if(_analyzer.isYourTurn()){
+					if(Config.showYourTurnNotification())
+						_notify("It is your turn.");
 					_log("It is your turn.");
 				}
 				break;
@@ -692,11 +700,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 	
-	protected void _clearLog() {
+	private void _clearLog() {
 		File file = new File("log.txt");
 		file.delete();
 	}
-	protected void _log(String str) {
+	private void _log(String str) {
 		PrintWriter out = null;
 		try {
 			out = new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true)));
@@ -725,7 +733,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_logText.setCaretPosition(_logText.getDocument().getLength());
 	}
 	
-	protected void _handleApiEvent(Object changed) {
+	private void _handleApiEvent(Object changed) {
 		switch(changed.toString()) {
 			case "error":
 				_notify("API Error", _api.getMessage());
@@ -738,7 +746,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 	
-	protected void _handleProgramHelperEvent(Object changed) {
+	private void _handleProgramHelperEvent(Object changed) {
 		_log(changed.toString());
 		if(changed.toString().matches(".*minimized.*")) 
 			_notify("Hearthstone Minimized", "Warning! No detection possible while minimized.");
@@ -822,6 +830,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		Config.setShowScreenNotification(_showScreenNotificationField.isSelected());
 		Config.setShowModeNotification(_showModeNotificationField.isSelected());
 		Config.setShowDeckNotification(_showDeckNotificationField.isSelected());
+		Config.setShowYourTurnNotification(_showYourTurnNotificationField.isSelected());
 		Config.setAnalyticsEnabled(_analyticsField.isSelected());
 		Config.setMinToTray(_minToTrayField.isSelected());
 		Config.setStartMinimized(_startMinimizedField.isSelected());
