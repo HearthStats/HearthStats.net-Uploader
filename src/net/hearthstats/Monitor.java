@@ -540,6 +540,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		hsMatch.setRankLevel(_analyzer.getRankLevel());
 		hsMatch.setResult(_analyzer.getResult());
 		hsMatch.setNumTurns(_analyzer.getNumTurns());
+		hsMatch.setDuration(_analyzer.getDuration());
 		
 		// check for new arena run
 		if(hsMatch.getMode() == "Arena" && _analyzer.isNewArena()) {

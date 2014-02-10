@@ -13,6 +13,7 @@ public class HearthstoneMatch {
 	private String _opponentName;
 	private String _rankLeve;
 	private int _numTurns;
+	private int _duration;
 	
 	public HearthstoneMatch() {
 		
@@ -20,6 +21,10 @@ public class HearthstoneMatch {
 
 	public int getDeckSlot() {
 		return _deckSlot;
+	}
+	
+	public int getDuration() {
+		return _duration;
 	}
 	
 	public String getMode() {
@@ -73,6 +78,10 @@ public class HearthstoneMatch {
 	public void setDeckSlot(int deckSlot) {
 		_deckSlot = deckSlot;
 	}
+	
+	public void setDuration(int duration) {
+		_duration = duration;
+	}
 
 	public String getRankLevel() {
 		return _rankLeve;
@@ -106,6 +115,7 @@ public class HearthstoneMatch {
 				
 	}
 
+	@SuppressWarnings("unchecked")
 	public JSONObject toJsonObject() {
 		JSONObject obj = new JSONObject();
 		obj.put("mode", getUserClass());
@@ -118,6 +128,7 @@ public class HearthstoneMatch {
 		obj.put("rank", getMode());
 		obj.put("ranklvl", getRankLevel());
 		obj.put("numturns", getNumTurns());
+		obj.put("duration", getDuration());
 		
 		return obj;
 	}

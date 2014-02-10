@@ -34,6 +34,8 @@ public class HearthstoneAnalyzer extends Observable {
 	private boolean _isAnalyzing = false;
 	private boolean _isYourTurn = true;
 	private int _numTurns = 0;
+	long _startTime;
+	long _endTime;
 	
 	public HearthstoneAnalyzer() {
 	}
@@ -145,6 +147,10 @@ public class HearthstoneAnalyzer extends Observable {
 	
 	public int getDeckSlot() {
 		return _deckSlot;
+	}
+	
+	public int getDuration() {
+		return _duration;
 	}
 	
 	public String getMode() {
@@ -426,6 +432,7 @@ public class HearthstoneAnalyzer extends Observable {
 		PixelGroupTest pxTestThree = new PixelGroupTest(_image, testsThree);
 
 		if (pxTest.passed() || pxTestTwo.passed() || pxTestThree.passed()) {
+			_endTimer();
 			_setScreen("Result");
 			_setResult("Defeat");
 		}
@@ -552,6 +559,7 @@ public class HearthstoneAnalyzer extends Observable {
 	}
 	
 	private int _analyzeRankRetries = 0;
+	private int _duration;
 	private void _analyzeRankLevel() {
 		int retryOffset = (_analyzeRankRetries - 1) % 3; 
 		int x = (int) ((875 + retryOffset) * _ratio + _xOffset);
@@ -582,6 +590,9 @@ public class HearthstoneAnalyzer extends Observable {
 				_analyzeRankLevel();
 			}
 		
+	}
+	private void _endTimer() {
+		_duration = Math.round((System.currentTimeMillis() - _startTime) / 1000); 
 	}
 	private void _analyzeOpponnentName() {
 		
@@ -722,6 +733,7 @@ public class HearthstoneAnalyzer extends Observable {
 		PixelGroupTest orcPxTest = new PixelGroupTest(_image, orcBoardTests);
 
 		if (normalPxTest.passed() || orcPxTest.passed()) {
+			_startTime = System.currentTimeMillis();
 			_setScreen("Playing");
 		}
 	}
@@ -806,6 +818,7 @@ public class HearthstoneAnalyzer extends Observable {
 		PixelGroupTest pxTestThree = new PixelGroupTest(_image, testsThree);
 
 		if(pxTest.passed() || pxTestTwo.passed() || pxTestThree.passed()) {
+			_endTimer();
 			_setScreen("Result");
 			_setResult("Victory");
 		}
