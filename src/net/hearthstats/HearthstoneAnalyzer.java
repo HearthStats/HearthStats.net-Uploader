@@ -171,7 +171,7 @@ public class HearthstoneAnalyzer extends Observable {
 		return _yourClass;
 	}
 	
-	public boolean getYourTurn() {
+	public boolean isYourTurn() {
 		return _isYourTurn;
 	}
 	
