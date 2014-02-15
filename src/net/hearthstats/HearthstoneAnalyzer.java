@@ -902,18 +902,34 @@ public class HearthstoneAnalyzer extends Observable {
 	private void _testForYourTurn() {
 		int[][] tests = { 
 				{ 933, 336, 255, 254, 2 },  // top of "end turn" button
-				{ 933, 359, 239, 222, 0 }   // top of "end turn" button
+				{ 933, 359, 239, 222, 0 }   // bottom of "end turn" button
 		};
-		if ((new PixelGroupTest(_image, tests, true)).passed() ) {
+		PixelGroupTest normalTest = new PixelGroupTest(_image, tests);
+		
+		int[][] testsOgrimmar = { 
+				{ 931, 337, 243, 197, 2 },  // top of "end turn" button
+				{ 933, 357, 216, 163, 11 }   // bottom of "end turn" button
+		};
+		PixelGroupTest oggrimarTest = new PixelGroupTest(_image, testsOgrimmar);
+		
+		if (normalTest.passed() || oggrimarTest.passed()) {
 			_setYourTurn(true);
 		}
 	}
 	private void _testForOpponentTurn() {
 		int[][] tests = { 
-				{ 929, 336, 108, 110, 102 },  // top of "enemy turn" button
-				{ 928, 360, 150, 151, 127 }   // top of "enemy turn" button
+				{ 927, 338, 122, 103, 88 },  // top of "enemy turn" button
+				{ 928, 360, 139, 118, 96}   // bottom of "enemy turn" button
 		};
-		if ((new PixelGroupTest(_image, tests, true)).passed() ) {
+		PixelGroupTest normalTest = new PixelGroupTest(_image, tests);
+		
+		int[][] testsOgrimmar = { 
+				{ 932, 336, 106, 90, 80 },  // top of "end turn" button
+				{ 927, 359, 193, 118, 96 }   // bottom of "end turn" button
+		};
+		PixelGroupTest oggrimarTest = new PixelGroupTest(_image, testsOgrimmar);
+		
+		if (normalTest.passed() || oggrimarTest.passed()) {
 			_setYourTurn(false);
 		}
 	}
