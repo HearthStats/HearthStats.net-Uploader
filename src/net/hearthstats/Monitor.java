@@ -663,8 +663,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				}
 				if(_analyzer.getScreen() == "Practice")
 					_log(_analyzer.getScreen() + " Screen Detected. Result tracking disabled.");
-				else
+				else {
+					if(_analyzer.getScreen() == "Match Start")
+						_log("\n------------------------------------------");
 					_log(_analyzer.getScreen() + " Screen Detected");
+				}
 				break;
 			case "yourClass":
 				_notify("Playing as " + _analyzer.getYourClass());
@@ -723,6 +726,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			case "result":
 				_notify("API Result", _api.getMessage());
 				_log("API Result: " + _api.getMessage());
+				
+				// new line after match result
+				if(_api.getMessage().matches(".*(Edit match|Arena match successfully created).*"))
+					_log("------------------------------------------\n");
+				
 				break;
 		}
 	}
