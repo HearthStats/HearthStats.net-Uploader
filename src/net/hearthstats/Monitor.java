@@ -1,20 +1,8 @@
 package net.hearthstats;
 
+import java.awt.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.awt.AWTException;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.MenuItem;
-import java.awt.Point;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -63,7 +51,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 
 	protected API _api = new API();
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
-	protected ProgramHelper _hsHelper = new ProgramHelper("Hearthstone", "Hearthstone.exe");
+	protected ProgramHelper _hsHelper;
 	protected int _pollingIntervalInMs = 50;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
@@ -81,8 +69,24 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JCheckBox _minToTrayField;
 	private JCheckBox _startMinimizedField;
 	private JCheckBox _showYourTurnNotificationField;
-	
-	public void start() throws IOException {
+
+
+    public Monitor() throws HeadlessException {
+        switch (Config.os) {
+            case WINDOWS:
+                _hsHelper = new ProgramHelperWindows("Hearthstone", "Hearthstone.exe");
+                break;
+            case OSX:
+                _hsHelper = new ProgramHelperOsx("unity.Blizzard Entertainment.Hearthstone");
+                break;
+            default:
+                throw new UnsupportedOperationException("HearthStats.net Uploader only supports Windows and Mac OS X");
+        }
+    }
+
+
+
+    public void start() throws IOException {
 		if(Config.analyticsEnabled()) {
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("AppStart"));

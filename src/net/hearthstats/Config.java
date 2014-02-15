@@ -13,6 +13,8 @@ import org.ini4j.Wini;
 
 public class Config {
 
+    public static final OS os = _parseOperatingSystem();
+
 	private static String _version;
 	
 	private static Wini _ini = null;
@@ -48,11 +50,11 @@ public class Config {
 	private static int _height;
 	
 	public static void rebuild() {
-		
+
 		_storePreviousValues();
-		
+
 		_getIni().clear();
-		
+
 		// api
 		setUserKey("your_userkey_here");
 		
@@ -84,7 +86,7 @@ public class Config {
 		save();
 		
 	}
-	
+
 	public static String getUserKey() {
 		return _getStringSetting("API", "userkey", "your_userkey_here");
 	}
@@ -334,4 +336,36 @@ public class Config {
 			JOptionPane.showMessageDialog(null, "Unable to write to config.ini while trying to save settings");
 		}
 	}
+
+    private static String _getSystemProperty(String property) {
+        try {
+            return System.getProperty(property);
+        } catch (SecurityException ex) {
+            // Some system properties may not be available if the user has their security settings locked down
+            System.err.println("Caught a SecurityException reading the system property '" + property + "', defaulting to blank string.");
+            return "";
+        }
+    }
+
+    /**
+     * Parses the os.name system property to determine what operating system we are using.
+     * This method is private because you should use the cached version {@link Config#os)} which is faster.
+     * @return The current OS
+     */
+    private static OS _parseOperatingSystem() {
+        String osString = _getSystemProperty("os.name");
+        if (osString == null) {
+            return OS.UNSUPPORTED;
+        } else if (osString.startsWith("Windows")) {
+            return OS.WINDOWS;
+        } else if (osString.startsWith("Mac OS X")) {
+            return OS.OSX;
+        } else {
+            return OS.UNSUPPORTED;
+        }
+    }
+
+    public static enum OS {
+        WINDOWS, OSX, UNSUPPORTED;
+    }
 }

@@ -2,6 +2,13 @@
 <project default="create_run_jar" name="Build HearthStats Reporter">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
+
+    <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask">
+        <classpath>
+            <pathelement location="./lib/build/appbundler-1.0.jar"/>
+        </classpath>
+    </taskdef>
+
 	<target name="check-update_jar">
 	    <available file="./src/updater.jar" property="update_jar.present"/>
 	</target>
@@ -9,6 +16,7 @@
 		<delete file="./src/updater.jar"/>
 	</target>
 	<target name="create_run_jar">
+        <mkdir dir="./bin"/>
 	    <jar destfile="./src/updater.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="net.hearthstats.Updater"/>
@@ -61,4 +69,90 @@
         </jar>
 		<antcall target="delete_updater_jar" />
     </target>
+
+    <target name="clean_osx">
+        <echo>Cleaning OS X build folder</echo>
+        <delete failonerror="false" includeemptydirs="true" quiet="false">
+            <fileset dir="./build/osx" />
+            <fileset dir="./build/HearthStats.app" />
+        </delete>
+    </target>
+
+    <target name="build_osx" depends="clean_osx">
+        <mkdir dir="./build/osx" />
+
+        <!-- Load the version number from the version file -->
+        <loadfile property="hearthstats.version"
+                srcFile="./src/version" />
+
+        <echo>Building OS X version ${hearthstats.version}</echo>
+
+        <!-- Compile the code -->
+        <javac debug="true" deprecation="false"
+               encoding="UTF-8"
+               destdir="./build/osx"
+               includeantruntime="false"
+               failonerror="true" verbose="false">
+            <src path="./src" />
+            <classpath>
+                <fileset dir="./lib" includes="*.jar"/>
+            </classpath>
+        </javac>
+
+        <!-- Copy resources, other than Windows-specific files like DLLs -->
+        <copy preservelastmodified="true" todir="./build/osx">
+            <fileset dir="./src">
+                <include name="**/*.gif" />
+                <include name="**/*.png" />
+                <include name="**/*.dylib" />
+                <include name="tessdata/**" />
+                <include name="version" />
+
+                <exclude name="**/.DS_Store" />
+            </fileset>
+        </copy>
+
+        <!-- Build a JAR -->
+        <jar destfile="./build/HearthStatsUploader-OSX.jar">
+            <fileset dir="./build/osx"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/asm-3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/cglib-2.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/ghost4j-0.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jai_imageio.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-core-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-awt-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-cluster-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-fir-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-moment-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-morphology-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/JGoogleAnalytics_0.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jna-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jna-platform-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jna.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/junit-4.10.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-core-4.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-swing-4.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/rococoa-core-0.5.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/slf4j-api-1.7.6.jar"/>
+        </jar>
+
+
+        <bundleapp outputdirectory="./build"
+                   name="HearthStats"
+                   displayname="HearthStats.net Uploader"
+                   identifier="net.hearthstats.HearthStatsUploader"
+                   shortversion="${hearthstats.version}"
+                   applicationCategory="public.app-category.games"
+                   icon="./src/images/icon.icns"
+                   mainclassname="net/hearthstats/Main">
+            <classpath file="./build/HearthStatsUploader-OSX.jar" />
+            <option value="-Dapple.laf.useScreenMenuBar=true"/>
+            <option value="-Xdock:icon=Contents/Resources/${bundle.icon}"/>
+        </bundleapp>
+
+    </target>
+
+
 </project>
