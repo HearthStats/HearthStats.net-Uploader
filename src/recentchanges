@@ -3,6 +3,12 @@ to manually download the new file from
 http://goo.gl/8NlWBX due to an upgrade bug 
 in that release. Apologies.
 
+under development
+* Support for OSx (Thanks Charles Gutjahr!)
+* Added contributors to about tab
+* Notifications can now be manually closed early 
+* Links in notifications are now clickable
+
 v0.12.2013020121
 * Restored 100mb memory usage limit
 

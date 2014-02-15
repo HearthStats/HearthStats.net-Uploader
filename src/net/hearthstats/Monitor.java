@@ -201,27 +201,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_updateTitle();
 	}
 	
-	private HyperlinkListener _hyperLinkListener = new HyperlinkListener() {
-        @Override
-        public void hyperlinkUpdate(HyperlinkEvent e) {
-            if (HyperlinkEvent.EventType.ACTIVATED == e.getEventType()) {
-            	if (Desktop.isDesktopSupported()) {
-            		// Create Desktop object
-        			Desktop d = Desktop.getDesktop();
-        			// Browse a URL, say google.com
-        			try {
-        				d.browse(new URI(e.getURL().toString()));
-        			} catch (IOException e1) {
-        				// TODO Auto-generated catch block
-        				e1.printStackTrace();
-        			} catch (URISyntaxException e1) {
-        				// TODO Auto-generated catch block
-        				e1.printStackTrace();
-        			}
-            	}
-            }
-        }
-    };
+	private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
 
 	private JScrollPane _createAboutUi() {
 		
