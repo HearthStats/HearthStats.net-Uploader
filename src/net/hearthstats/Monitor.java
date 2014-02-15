@@ -183,27 +183,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_logText.setEditable(false);
 		_logText.setText("Event Log:\n");
 		_logText.setEditable(false);
-		_logText.addHyperlinkListener(new HyperlinkListener() {
-			@Override
-			public void hyperlinkUpdate(HyperlinkEvent e) {
-				if (HyperlinkEvent.EventType.ACTIVATED == e.getEventType()) {
-					if (Desktop.isDesktopSupported()) {
-						// Create Desktop object
-						Desktop d = Desktop.getDesktop();
-						// Browse a URL, say google.com
-						try {
-							d.browse(new URI(e.getURL().toString()));
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						} catch (URISyntaxException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}
-				}
-			}
-		});
+		_logText.addHyperlinkListener(_hyperLinkListener);
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		tabbedPane.add(_logScroll, "Main");
 		
@@ -220,11 +200,34 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		_updateTitle();
 	}
+	
+	private HyperlinkListener _hyperLinkListener = new HyperlinkListener() {
+        @Override
+        public void hyperlinkUpdate(HyperlinkEvent e) {
+            if (HyperlinkEvent.EventType.ACTIVATED == e.getEventType()) {
+            	if (Desktop.isDesktopSupported()) {
+            		// Create Desktop object
+        			Desktop d = Desktop.getDesktop();
+        			// Browse a URL, say google.com
+        			try {
+        				d.browse(new URI(e.getURL().toString()));
+        			} catch (IOException e1) {
+        				// TODO Auto-generated catch block
+        				e1.printStackTrace();
+        			} catch (URISyntaxException e1) {
+        				// TODO Auto-generated catch block
+        				e1.printStackTrace();
+        			}
+            	}
+            }
+        }
+    };
 
-	private JPanel _createAboutUi() {
-		JPanel panel = new JPanel();
-		panel.setBackground(Color.WHITE);
+	private JScrollPane _createAboutUi() {
 		
+		JPanel panel = new JPanel();
+		panel.setMaximumSize(new Dimension(100,100));		
+		panel.setBackground(Color.WHITE);
 		MigLayout layout = new MigLayout("");
 		panel.setLayout(layout);
 		
@@ -235,38 +238,19 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		text.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
 				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> uploader v" + Config.getVersion() + "</h2>" +
 				"<p><strong>Author:</strong> Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>)</p>" + 
-				"<p>This utility uses screen grab analysis of your Hearthstone window and does not do any packet sniffing, monitoring, or network modification of any kind.</p>" +
-				"<p>This project is and always will be open source so that you can do your own builds and see exactly what's happening within the program.</p>" +
+				"<p>This utility uses screen grab analysis of your Hearthstone window<br>" +
+					"and does not do any packet sniffing, monitoring, or network<br>" +
+					"modification of any kind.</p>" +
+				"<p>This project is and always will be open source so that you can do<br>" +
+					"your own builds and see exactly what's happening within the program.</p>" +
 				"<p>&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/\">Project source on GitHub</a><br/>" +
 				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/releases\">Latest releases & changelog</a><br/>" +
 				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/issues\">Feedback and suggestions</a><br/>" +
 				"&bull; <a href=\"http://redd.it/1wa4rc/\">Reddit thread</a> (please up-vote)</p>" +
-				"<p>Support this project:</p>" +
+				"<p><strong>Support this project:</strong></p>" +
 				"</body></html>"
 			);
-		
-	    text.addHyperlinkListener(new HyperlinkListener() {
-	        @Override
-	        public void hyperlinkUpdate(HyperlinkEvent e) {
-	            if (HyperlinkEvent.EventType.ACTIVATED == e.getEventType()) {
-	            	if (Desktop.isDesktopSupported()) {
-	            		// Create Desktop object
-	        			Desktop d = Desktop.getDesktop();
-	        			// Browse a URL, say google.com
-	        			try {
-	        				d.browse(new URI(e.getURL().toString()));
-	        			} catch (IOException e1) {
-	        				// TODO Auto-generated catch block
-	        				e1.printStackTrace();
-	        			} catch (URISyntaxException e1) {
-	        				// TODO Auto-generated catch block
-	        				e1.printStackTrace();
-	        			}
-	            	}
-	            }
-	        }
-	    });
-	    
+	    text.addHyperlinkListener(_hyperLinkListener);
 	    panel.add(text, "wrap");
 		
 	    JButton donateButton = new JButton("<html><img style=\"border-style: none;\" src=\"" + getClass().getResource("/images/donate.gif") + "\"/></html>");
@@ -288,8 +272,24 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    	}
 	    });
 	    donateButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-	    panel.add(donateButton);
-		return panel;
+	    panel.add(donateButton, "wrap");
+	    
+	    JEditorPane contribtorsText = new JEditorPane();
+	    contribtorsText.setContentType("text/html");
+	    contribtorsText.setEditable(false);
+	    contribtorsText.setBackground(Color.WHITE);
+	    contribtorsText.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
+				"<p><strong>Contributors</strong> (listed alphabetically):</p>" +
+				"<p>" +
+					"&bull; <a href=\"http://charlesgutjahr.com\">Charles Gutjahr</a> - Added OSx support<br>" +
+					"&bull; <a href=\"https://github.com/nwalsh1995\">nwalsh1995</a> - Started turn detection development<br>" +
+				"</p>"+
+				"</body></html>"
+			);
+	    contribtorsText.addHyperlinkListener(_hyperLinkListener);
+	    panel.add(contribtorsText, "wrap");
+	    
+		return new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 	}
 	private JPanel _createOptionsUi() {
 		JPanel panel = new JPanel();
