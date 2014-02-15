@@ -771,7 +771,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		if(dispatcher.getClass().toString().matches(".*API"))
 			_handleApiEvent(changed);
 		
-		if(dispatcher.getClass().toString().matches(".*ProgramHelper"))
+		if(dispatcher.getClass().toString().matches(".*ProgramHelper(Windows|Osx)?"))
 			_handleProgramHelperEvent(changed);
 	}
 
