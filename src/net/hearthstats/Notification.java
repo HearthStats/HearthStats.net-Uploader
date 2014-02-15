@@ -30,7 +30,7 @@ public class Notification {
 
 	public JDialog frame = new JDialog();
 	public Notification(String header, String message) {
-		frame.setSize(230, 75);
+		frame.setSize(250, message == "" ? 40 : 100);
 		frame.setFont(new Font("Arial",Font.PLAIN,14));
 		frame.setLayout(new GridBagLayout());
 		frame.setBackground(Color.LIGHT_GRAY);
@@ -38,9 +38,11 @@ public class Notification {
 		constraints.gridx = 0;
 		constraints.gridy = 0;
 		constraints.weightx = 1.0f;
-		constraints.weighty = 1.0f;
-		constraints.insets = new Insets(5, 5, 5, 5);
+		constraints.weighty = 0f;
+		constraints.insets = new Insets(0, 5, 0, 0);
 		constraints.fill = GridBagConstraints.BOTH;
+		
+		// header
 		JLabel headingLabel = new JLabel(header);
 		ImageIcon headingIcon = new ImageIcon(getClass().getResource("/images/icon_16px.png"));
 		headingLabel.setIcon(headingIcon); // --- use image icon you want to
@@ -59,8 +61,9 @@ public class Notification {
 	               frame.dispose();
 	        }
 		});
-		closeButton.setMargin(new Insets(1, 4, 1, 4));
+		closeButton.setMargin(new Insets(0, 4, 1, 4));
 		closeButton.setFocusable(false);
+		constraints.insets = new Insets(5, 5, 5, 5);
 		frame.add(closeButton, constraints);
 		
 		frame.setAlwaysOnTop(true);

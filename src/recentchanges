@@ -8,6 +8,7 @@ under development
 * Added contributors to about tab
 * Notifications can now be manually closed early 
 * Links in notifications are now clickable
+* Improved formatting of notifications 
 
 v0.12.2013020121
 * Restored 100mb memory usage limit

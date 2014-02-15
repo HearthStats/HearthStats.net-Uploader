@@ -190,7 +190,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		tabbedPane.add(_createOptionsUi(), "Options");
 		tabbedPane.add(_createAboutUi(), "About");
 		
-		
 		_enableMinimizeToTray();
 		
 		setVisible(true);
@@ -825,12 +824,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     SystemTray tray;
     private void _enableMinimizeToTray(){
         System.out.println("creating instance");
-        try{
-            System.out.println("setting look and feel");
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        }catch(Exception e){
-            System.out.println("Unable to set LookAndFeel");
-        }
         if(SystemTray.isSupported()){
         	
             System.out.println("system tray supported");
