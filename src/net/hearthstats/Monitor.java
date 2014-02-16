@@ -29,6 +29,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -39,8 +41,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import net.miginfocom.swing.MigLayout;
@@ -187,11 +193,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_logText.setEditable(false);
 		_logText.addHyperlinkListener(_hyperLinkListener);
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		tabbedPane.add(_logScroll, "Main");
+		tabbedPane.add(_logScroll, "Log");
 		
-		tabbedPane.add(_createMatchUi(), "Current Match");
+		tabbedPane.add(_createMatchUi(), "Match Data");
 		tabbedPane.add(_createOptionsUi(), "Options");
 		tabbedPane.add(_createAboutUi(), "About");
+		
+		_updateCurrentMatchUi();
 		
 		_enableMinimizeToTray();
 		
@@ -205,6 +213,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	
 	private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
 	private JTextField _currentOpponentNameField;
+	private JLabel _currentMatchLabel;
+	private JLabel _currentYourClassLabel;
+	private JCheckBox _currentGameCoinField;
+	private JTextArea _currentNotesField;
 
 	private JScrollPane _createAboutUi() {
 		
@@ -280,21 +292,59 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		MigLayout layout = new MigLayout();
 		panel.setLayout(layout);
 		
+		// match label
 		panel.add(new JLabel(" "), "wrap");
-		panel.add(new JLabel("Current Match"), "skip,wrap");
+		_currentMatchLabel = new JLabel();
+		panel.add(_currentMatchLabel, "skip,span,wrap");
 		
-		// user key
-		panel.add(new JLabel("Opponent: "), "skip,right");
+		panel.add(new JLabel(" "), "wrap");
+		
+		// opponent class
+		panel.add(new JLabel("Opponent's Class: "), "skip,right");
+		_currentOpponentClassLabel = new JLabel();
+		panel.add(_currentOpponentClassLabel, "wrap");
+		
+		// Opponent name
+		panel.add(new JLabel("Opponent's Name: "), "skip,right");
 		_currentOpponentNameField = new JTextField();
-		_currentOpponentNameField.setMinimumSize(new Dimension(200, 1));
+		_currentOpponentNameField.setMinimumSize(new Dimension(100, 1));
 		_currentOpponentNameField.addKeyListener(new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
 				_analyzer.getMatch().setOpponentName(_currentOpponentNameField.getText());
 	        }
 	    });
-		
 		panel.add(_currentOpponentNameField, "wrap");
 		
+		// your class
+		panel.add(new JLabel("Your Class: "), "skip,right");
+		_currentYourClassLabel = new JLabel();
+		panel.add(_currentYourClassLabel, "wrap");
+		
+		// coin
+		panel.add(new JLabel("Coin: "), "skip,right");
+		_currentGameCoinField = new JCheckBox("started with the coin");
+		_currentGameCoinField.setSelected(Config.showHsClosedNotification());
+		_currentGameCoinField.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				_analyzer.getMatch().setCoin(_currentGameCoinField.isSelected());
+			}
+		});
+		panel.add(_currentGameCoinField, "wrap");
+		
+		// notes
+		/*
+		panel.add(new JLabel("Notes: "), "skip,wrap");
+		_currentNotesField = new JTextArea();
+		_currentNotesField.setBorder(BorderFactory.createMatteBorder( 1, 1, 1, 1, Color.black ));
+		_currentNotesField.setMinimumSize(new Dimension(350,150));
+	    _currentNotesField.setBackground(Color.WHITE);
+	    _currentNotesField.addKeyListener(new KeyAdapter() {
+			public void keyReleased(KeyEvent e) {
+				_analyzer.getMatch().setNotes(_currentNotesField.getText());
+	        }
+	    });
+	    panel.add(_currentNotesField, "skip,span");
+		*/
 		return panel;
 	}
 	private JPanel _createOptionsUi() {
@@ -495,6 +545,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	};
 
 	protected NotificationQueue _notificationQueue = new NotificationQueue();
+	private JLabel _currentOpponentClassLabel;
+	private Boolean _currentMatchEnabled = false;
 
 	protected void _notify(String header) {
 		_notify(header, "");
@@ -533,7 +585,19 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		setTitle(title);
 	}
 
-	protected void _updateImageFrame() {
+	private void _updateCurrentMatchUi() {
+		HearthstoneMatch match = _analyzer.getMatch();
+		if(_currentMatchEnabled)
+			_currentMatchLabel.setText(match.getMode() + " Match - " + " Turn " + match.getNumTurns());
+		else 
+			_currentMatchLabel.setText("Waiting for next match to start ...");
+		_currentOpponentClassLabel.setText(match.getOpponentClass() == null ? "[n/a]" : match.getOpponentClass());
+		_currentOpponentNameField.setText(match.getOpponentName());
+		_currentYourClassLabel.setText(match.getUserClass() == null ? "[n/a]" : match.getUserClass());
+		_currentGameCoinField.setSelected(match.hasCoin());
+		//_currentNotesField.setText(match.getNotes());
+	}
+	private void _updateImageFrame() {
 		if (!_drawPaneAdded) {
 			add(_drawPane);
 		}
@@ -641,6 +705,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_log("Deck Slot " + _analyzer.getDeckSlot() + " Detected");
 				break;
 			case "mode":
+				_setCurrentMatchUEnabledi(false);
 				if(Config.showModeNotification()) {
 					System.out.println(_analyzer.getMode() + " level " + _analyzer.getRankLevel());
 					if(_analyzer.getMode() == "Ranked")
@@ -663,7 +728,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_log("Playing vs " + _analyzer.getOpponentClass());
 				break;
 			case "opponentName":
-				_currentOpponentNameField.setText(_analyzer.getOpponentName());
 				_notify("Opponent: " + _analyzer.getOpponentName());
 				_log("Opponent: " + _analyzer.getOpponentName());
 				break;
@@ -673,6 +737,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_submitMatchResult();
 				break;
 			case "screen":
+				if(_analyzer.getScreen() == "Match Start")
+					_setCurrentMatchUEnabledi(true);
 				if(_analyzer.getScreen() != "Result" && Config.showScreenNotification()) {
 					if(_analyzer.getScreen() == "Practice")
 						_notify(_analyzer.getScreen() + " Screen Detected", "Results are not tracked in practice mode");
@@ -700,6 +766,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_notify(changed.toString());
 				_log(changed.toString());
 		}
+		_updateCurrentMatchUi();
 	}
 	
 	private void _clearLog() {
@@ -843,6 +910,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		Config.setStartMinimized(_startMinimizedField.isSelected());
 		Config.save();
 		JOptionPane.showMessageDialog(null, "Options Saved");
+	}
+	
+	private void _setCurrentMatchUEnabledi(Boolean enabled){
+		_currentMatchEnabled = enabled;
+		_currentGameCoinField.setEnabled(enabled);
+		_currentOpponentNameField.setEnabled(enabled);
+		//_currentNotesField.setEnabled(enabled);
 	}
 	
 	//http://stackoverflow.com/questions/7461477/how-to-hide-a-jframe-in-system-tray-of-taskbar

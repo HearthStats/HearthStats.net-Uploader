@@ -5,7 +5,7 @@ in that release. Apologies.
 
 under development
 * Support for OSx (Thanks Charles Gutjahr!)
-* Added "Current Match" tab for live corrections and notes
+* Added "Match Data" tab for live corrections and notes
 * Added contributors to about tab
 * Notifications can now be manually closed early 
 * Links in notifications are now clickable

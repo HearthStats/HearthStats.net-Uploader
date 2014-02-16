@@ -14,6 +14,7 @@ public class HearthstoneMatch {
 	private String _rankLeve;
 	private int _numTurns = 0;
 	private int _duration;
+	private String _notes;
 	
 	public HearthstoneMatch() {
 		
@@ -110,8 +111,8 @@ public class HearthstoneMatch {
 				_propertyOrUnknown(getOpponentClass()) + " " +
 				"(" + _propertyOrUnknown(getOpponentName()) + ") " +
 				getResult() + " " +
-				(getDeckSlot() == 0 ? "" : " deck slot " + getDeckSlot()) +
-				" " + getNumTurns() + " turns";
+				(getDeckSlot() == 0 ? "" : " deck slot (" + getDeckSlot()) +
+				" " + getNumTurns() + " turns) " + getNotes();
 				
 	}
 
@@ -126,11 +127,19 @@ public class HearthstoneMatch {
 		obj.put("gofirst", hasCoin() ? "false" : "true");
 		obj.put("slot", getDeckSlot());
 		obj.put("rank", getMode());
+		obj.put("notes", getNotes());
 		obj.put("ranklvl", getRankLevel());
 		obj.put("numturns", getNumTurns());
 		obj.put("duration", getDuration());
 		
 		return obj;
+	}
+
+	public String getNotes() {
+		return _notes;
+	}
+	public void setNotes(String text) {
+		_notes = text;
 	}
 
 }
