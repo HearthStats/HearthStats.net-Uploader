@@ -12,7 +12,7 @@ public class HearthstoneMatch {
 	private int _deckSlot;
 	private String _opponentName;
 	private String _rankLeve;
-	private int _numTurns;
+	private int _numTurns = 0;
 	private int _duration;
 	
 	public HearthstoneMatch() {

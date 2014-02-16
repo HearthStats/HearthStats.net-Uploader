@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
@@ -187,6 +189,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		tabbedPane.add(_logScroll, "Main");
 		
+		tabbedPane.add(_createMatchUi(), "Current Match");
 		tabbedPane.add(_createOptionsUi(), "Options");
 		tabbedPane.add(_createAboutUi(), "About");
 		
@@ -201,6 +204,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 	
 	private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
+	private JTextField _currentOpponentNameField;
 
 	private JScrollPane _createAboutUi() {
 		
@@ -269,6 +273,29 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    panel.add(contribtorsText, "wrap");
 	    
 		return new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+	}
+	private JPanel _createMatchUi() {
+		JPanel panel = new JPanel();
+
+		MigLayout layout = new MigLayout();
+		panel.setLayout(layout);
+		
+		panel.add(new JLabel(" "), "wrap");
+		panel.add(new JLabel("Current Match"), "skip,wrap");
+		
+		// user key
+		panel.add(new JLabel("Opponent: "), "skip,right");
+		_currentOpponentNameField = new JTextField();
+		_currentOpponentNameField.setMinimumSize(new Dimension(200, 1));
+		_currentOpponentNameField.addKeyListener(new KeyAdapter() {
+			public void keyReleased(KeyEvent e) {
+				_analyzer.getMatch().setOpponentName(_currentOpponentNameField.getText());
+	        }
+	    });
+		
+		panel.add(_currentOpponentNameField, "wrap");
+		
+		return panel;
 	}
 	private JPanel _createOptionsUi() {
 		JPanel panel = new JPanel();
@@ -520,17 +547,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 	private void _submitMatchResult() throws IOException {
-		HearthstoneMatch hsMatch = new HearthstoneMatch();
-		hsMatch.setMode(_analyzer.getMode());
-		hsMatch.setUserClass(_analyzer.getYourClass());
-		hsMatch.setDeckSlot(_analyzer.getDeckSlot());
-		hsMatch.setOpponentClass(_analyzer.getOpponentClass());
-		hsMatch.setOpponentName(_analyzer.getOpponentName());
-		hsMatch.setCoin(_analyzer.getCoin());
-		hsMatch.setRankLevel(_analyzer.getRankLevel());
-		hsMatch.setResult(_analyzer.getResult());
-		hsMatch.setNumTurns(_analyzer.getNumTurns());
-		hsMatch.setDuration(_analyzer.getDuration());
+		HearthstoneMatch hsMatch = _analyzer.getMatch();
 		
 		// check for new arena run
 		if(hsMatch.getMode() == "Arena" && _analyzer.isNewArena()) {
@@ -646,6 +663,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_log("Playing vs " + _analyzer.getOpponentClass());
 				break;
 			case "opponentName":
+				_currentOpponentNameField.setText(_analyzer.getOpponentName());
 				_notify("Opponent: " + _analyzer.getOpponentName());
 				_log("Opponent: " + _analyzer.getOpponentName());
 				break;
