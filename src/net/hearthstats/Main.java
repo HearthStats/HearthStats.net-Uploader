@@ -10,13 +10,10 @@ public class Main extends JFrame {
 
 	public static String getExtractionFolder() {
         if (Config.os == Config.OS.OSX) {
-            // On OS X use the bundle's Contents/Resources folder instead of the temp folder so that files aren't deleted between runs
-            File libFolder = new File(System.getProperty("java.library.path"));
-            File parentFolder = libFolder.getParentFile();
-            File resourcesFolder = new File(parentFolder, "Resources");
-            File tmpFolder = new File(resourcesFolder, "tmp");
-            tmpFolder.mkdirs();
-            return tmpFolder.getAbsolutePath();
+            File libFolder = new File("/private/tmp/HearthStats.net-Uploader");
+            libFolder.mkdir();
+            return libFolder.getAbsolutePath();
+
         } else {
             String path = "tmp";
             (new File(path)).mkdirs();
