@@ -195,7 +195,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		tabbedPane.add(_logScroll, "Log");
 		
-		tabbedPane.add(_createMatchUi(), "Match Data");
+		tabbedPane.add(_createMatchUi(), "Current Match");
 		tabbedPane.add(_createOptionsUi(), "Options");
 		tabbedPane.add(_createAboutUi(), "About");
 		
@@ -277,7 +277,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				"<p><strong>Contributors</strong> (listed alphabetically):</p>" +
 				"<p>" +
 					"&bull; <a href=\"http://charlesgutjahr.com\">Charles Gutjahr</a> - Added OSx support<br>" +
+					"&bull; <a href=\"https://github.com/sargonas\">J Eckert</a> - Fixed notifications spawning taskbar icons<br>" +
 					"&bull; <a href=\"https://github.com/nwalsh1995\">nwalsh1995</a> - Started turn detection development<br>" +
+					"&bull; <a href=\"https://github.com/remcoros\">Remco Ros</a> (<a href=\"http://hearthstonetracker.com/\">HearthstoneTracker</a>) - Provides advice & suggestins<br>" +
+					"&bull; <a href=\"https://github.com/RoiyS\">RoiyS</a> - Added option to disable all notifications<br>" +
 				"</p>"+
 				"</body></html>"
 			);
@@ -310,7 +313,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_currentOpponentNameField.setMinimumSize(new Dimension(100, 1));
 		_currentOpponentNameField.addKeyListener(new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
-				_analyzer.getMatch().setOpponentName(_currentOpponentNameField.getText());
+				_analyzer.getMatch().setOpponentName(_currentOpponentNameField.getText().replaceAll("(\r\n|\n)", "<br/>"));
 	        }
 	    });
 		panel.add(_currentOpponentNameField, "wrap");
@@ -332,7 +335,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(_currentGameCoinField, "wrap");
 		
 		// notes
-		/*
 		panel.add(new JLabel("Notes: "), "skip,wrap");
 		_currentNotesField = new JTextArea();
 		_currentNotesField.setBorder(BorderFactory.createMatteBorder( 1, 1, 1, 1, Color.black ));
@@ -344,8 +346,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	        }
 	    });
 	    panel.add(_currentNotesField, "skip,span");
-		*/
-		return panel;
+
+	    return panel;
 	}
 	private JPanel _createOptionsUi() {
 		JPanel panel = new JPanel();
@@ -595,7 +597,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_currentOpponentNameField.setText(match.getOpponentName());
 		_currentYourClassLabel.setText(match.getUserClass() == null ? "[n/a]" : match.getUserClass());
 		_currentGameCoinField.setSelected(match.hasCoin());
-		//_currentNotesField.setText(match.getNotes());
+		_currentNotesField.setText(match.getNotes());
 	}
 	private void _updateImageFrame() {
 		if (!_drawPaneAdded) {
@@ -916,7 +918,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_currentMatchEnabled = enabled;
 		_currentGameCoinField.setEnabled(enabled);
 		_currentOpponentNameField.setEnabled(enabled);
-		//_currentNotesField.setEnabled(enabled);
+		_currentNotesField.setEnabled(enabled);
 	}
 	
 	//http://stackoverflow.com/questions/7461477/how-to-hide-a-jframe-in-system-tray-of-taskbar

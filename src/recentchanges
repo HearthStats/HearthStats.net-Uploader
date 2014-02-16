@@ -1,11 +1,6 @@
-If you're coming from v0.11.x you will need
-to manually download the new file from 
-http://goo.gl/8NlWBX due to an upgrade bug 
-in that release. Apologies.
-
-under development
+v0.13.201302161
 * Support for OSx (Thanks Charles Gutjahr!)
-* Added "Match Data" tab for live corrections and notes
+* Added "Current Match" tab for live corrections and notes
 * Added contributors to about tab
 * Notifications can now be manually closed early 
 * Links in notifications are now clickable
@@ -13,14 +8,3 @@ under development
 * Improved formatting of log text
 * Fixed turn detection on Oggrimar board
 * Improved overall opponent turn detection
-
-v0.12.2013020121
-* Restored 100mb memory usage limit
-
-v0.12.2013020101
-* Detection and notification of your turn
-* Tracking and submission of number of turns in match
-* Tracking and submission of match duration in seconds
-
-You may need to launch HearthStats.exe 
-manually after this update.
