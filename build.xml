@@ -107,6 +107,7 @@
                 <include name="**/*.dylib" />
                 <include name="tessdata/**" />
                 <include name="version" />
+                <include name="version-osx" />
 
                 <exclude name="**/.DS_Store" />
             </fileset>
