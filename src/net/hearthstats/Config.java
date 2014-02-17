@@ -161,8 +161,11 @@ public class Config {
 	public static String getVersion() {
 		if(_version == null) {
 			_version = "";
-			
-			InputStream in = Config.class.getResourceAsStream("/version");
+			String versionFile = "/version";
+			if(Config.os.toString().equals("OSX")) {
+				versionFile += "-osx";
+			}
+			InputStream in = Config.class.getResourceAsStream(versionFile);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String strLine;
             try {

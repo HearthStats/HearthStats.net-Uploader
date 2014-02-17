@@ -226,7 +226,7 @@ public class Updater {
 	public static String getAvailableVersion() {
 		if (_availableVersion == null) {
 			String url = "https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/version";
-			if(Config.os.equals("OSX"))
+			if(Config.os.toString().equals("OSX"))
 				url += "-osx";
 			_availableVersion = _readRemoteFile(url);
 		}
@@ -235,7 +235,7 @@ public class Updater {
 	public static String getRecentChanges() {
 		if (_recentChanges == null) {
 			String url = "https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/recentchanges";
-			if(Config.os.equals("OSX"))
+			if(Config.os.toString().equals("OSX"))
 				url += "-osx";
 			_recentChanges = _readRemoteFile(url);
 		}
