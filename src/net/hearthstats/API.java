@@ -25,7 +25,7 @@ public class API extends Observable {
 
 	private String _key;
 	private String _message;
-	private String _baseURL = "http://beta.hearthstats.net/api/v1/";
+	private String _baseURL = "http://198.101.151.59/api/v1/";
 	
 	public API() {
 		 
