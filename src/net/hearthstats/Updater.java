@@ -34,7 +34,7 @@ public class Updater {
 	public static void main(String[] args) {
 
 		if (Config.analyticsEnabled()) {
-			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
+			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersionWithOs(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("UpdateStart"));
 		}
 		

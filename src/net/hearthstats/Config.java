@@ -177,6 +177,9 @@ public class Config {
 		}
 		return _version;
 	}
+	public static String getVersionWithOs() {
+		return getVersion() + '-' + os;
+	}
 
 	public static void setShowNotifications(boolean val) {
 		_setBooleanValue("notifications", "enabled", val);
