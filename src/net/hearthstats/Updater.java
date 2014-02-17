@@ -182,7 +182,16 @@ public class Updater {
 
 	private static void _downloadUpdate() throws IOException {
 		URL website;
-		website = new URL("https://github.com/JeromeDane/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "/HearthStats.net.Uploader.v" + getAvailableVersion() + ".zip");
+		String zipUrl = null;
+		switch(Config.os.toString()) {
+			case "WINDOWS":
+				 zipUrl = "https://github.com/JeromeDane/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "/HearthStats.net.Uploader.v" + getAvailableVersion() + ".zip";
+				 break;
+			case "OSX":
+				zipUrl = "https://github.com/JeromeDane/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "-osx/HearthStats.net.Uploader.v" + getAvailableVersion() + "-osx.zip";
+				break;
+		}
+		website = new URL(zipUrl);
 		ReadableByteChannel rbc = Channels.newChannel(website.openStream());
 		FileOutputStream fos = new FileOutputStream(Main.getExtractionFolder() + "/update.zip");
 		fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
@@ -208,13 +217,19 @@ public class Updater {
 
 	public static String getAvailableVersion() {
 		if (_availableVersion == null) {
-			_availableVersion = _readRemoteFile("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/version");
+			String url = "https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/version";
+			if(Config.os.equals("OSX"))
+				url += "-osx";
+			_availableVersion = _readRemoteFile(url);
 		}
 		return _availableVersion;
 	}
 	public static String getRecentChanges() {
 		if (_recentChanges == null) {
-			_recentChanges = _readRemoteFile("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/recentchanges");
+			String url = "https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/recentchanges";
+			if(Config.os.equals("OSX"))
+				url += "-osx";
+			_recentChanges = _readRemoteFile(url);
 		}
 		return _recentChanges;
 	}
