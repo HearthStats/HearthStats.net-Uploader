@@ -1,6 +1,7 @@
 package net.hearthstats;
 
 import java.awt.Container;
+import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -173,7 +174,14 @@ public class Updater {
 		JOptionPane.showMessageDialog(null, "Update complete. Attempting to restart ...");
 		_notify("Restarting ...");
 		try {
-			Runtime.getRuntime().exec("HearthStats.exe");
+			switch(Config.os.toString()) {
+				case "WINDOWS":	
+					Runtime.getRuntime().exec("HearthStats.exe");
+					break;
+				case "OSX":	
+					Desktop.getDesktop().open(new File("HearthStats.app"));
+					break;
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			_notifyException(e);
