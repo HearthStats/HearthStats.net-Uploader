@@ -68,7 +68,7 @@ public class Notification {
 		
 		frame.setAlwaysOnTop(true);
 		frame.setUndecorated(true);
-		frame.setFocusableWindowState(false);
+		frame.setFocusable(false);
 		
 		JComponent frameComponent = ((JComponent) frame.getContentPane());
 		frameComponent.setBorder(BorderFactory.createMatteBorder( 1, 1, 1, 1, Color.black ));

@@ -529,7 +529,7 @@ public class HearthstoneAnalyzer extends Observable {
 			RescaleOp rescaleOp = new RescaleOp(1.8f, -30, null);
 			rescaleOp.filter(newImage, newImage);  // Source and destination are the same.
 		} catch(Exception e) {
-			e.printStackTrace();
+			Main.logException(e);
 			_notifyObserversOfChangeTo("Exception trying to write opponent name image:\n" + e.getMessage());
 		}
 		// save it to a file
@@ -537,21 +537,20 @@ public class HearthstoneAnalyzer extends Observable {
 		try {
 			ImageIO.write(newImage, "jpg", outputfile);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Main.logException(e);
 		}
 		
 		try {
 			String ocrString = OCR.process(newImage);
 			return ocrString == null ? "" : ocrString.replaceAll("\\s+","");
 		} catch(Exception e) {
-			e.printStackTrace();
+			Main.logException(e);
 			_notifyObserversOfChangeTo("Exception tryint to analyze opponent name image:\n" + e.getMessage());
 		}
 		return null;
 	}
 	
 	private int _analyzeRankRetries = 0;
-	private int _duration;
 	private void _analyzeRankLevel() {
 		int retryOffset = (_analyzeRankRetries - 1) % 3; 
 		int x = (int) ((875 + retryOffset) * _ratio + _xOffset);
@@ -559,7 +558,6 @@ public class HearthstoneAnalyzer extends Observable {
 		int width = (int) (32 * _ratio);
 		int height = (int) (22 * _ratio);
 		
-		//OCR.setLang("num");
 		String rankStr = _performOcr(x, y, width, height, "ranklevel.jpg");
 		System.out.println("Rank str: " + rankStr);
 		if(rankStr != null) {

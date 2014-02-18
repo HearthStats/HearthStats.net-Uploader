@@ -1,6 +1,10 @@
 package net.hearthstats;
 
 import javax.swing.*;
+
+import java.awt.Dimension;
+import java.awt.JobAttributes;
+import java.awt.Window;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -51,7 +55,14 @@ public class Main extends JFrame {
 	public static void logException(Exception e) {
 		e.printStackTrace();
 		Main.log("Exception in Main: " + e.getMessage());
-		Main.log(e.getStackTrace().toString());
+		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+		for (StackTraceElement element : stackTraceElements) {
+			Main.log(element.toString());
+		}
+		Main.showMessageDialog(e.getMessage() + "\n\nSee log.txt for details");
+	}
+	public static void showMessageDialog(String message) {
+		JOptionPane.showMessageDialog(null, message);
 	}
 	
 	protected static ScheduledExecutorService scheduledExecutorService = Executors
@@ -85,7 +96,7 @@ public class Main extends JFrame {
                         throw new UnsupportedOperationException("HearthStats.net Uploader only supports Windows and Mac OS X");
                 }
 			} catch(Exception e) {
-				e.printStackTrace();
+				Main.logException(e);
 				JOptionPane.showMessageDialog(null, "Unable to read required libraries.\nIs the app already running?\n\nExiting ...");
 				System.exit(0);
 			}
@@ -97,8 +108,7 @@ public class Main extends JFrame {
 			monitor.start();
 			
 		} catch(Exception e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Exception (Error): " + e.toString());
+			Main.logException(e);
 			System.exit(1);
 		}
 		
@@ -117,7 +127,8 @@ public class Main extends JFrame {
 	public static void copyFileFromJarTo(String jarPath, String outPath) {
 		InputStream stream = Main.class.getResourceAsStream(jarPath);
 	    if (stream == null) {
-	    	JOptionPane.showMessageDialog(null, "Exception: Unable to find " + jarPath + " in .jar file");
+	    	Main.log("Exception: Unable to load file from JAR: " + jarPath);
+	    	Main.showMessageDialog("Exception: Unable to find " + jarPath + " in .jar file\n\nSee log.txt for details");
 	    	System.exit(1);
 	    } else {
 		    OutputStream resStreamOut = null;
@@ -129,17 +140,13 @@ public class Main extends JFrame {
 		            resStreamOut.write(buffer, 0, readBytes);
 		        }
 		    } catch (IOException e) {
-		        // TODO Auto-generated catch block
-		        e.printStackTrace();
-		        JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+		        Main.logException(e);
 		    } finally {
 		        try {
 					stream.close();
 					resStreamOut.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+					Main.logException(e);
 				}
 		    }
 	    }
@@ -162,7 +169,7 @@ public class Main extends JFrame {
 			try {
 				fos = new FileOutputStream(outPath + outFileName);
 			} catch (Exception e) {
-				e.printStackTrace();
+				Main.logException(e);
 			}
 	
 		    try {
@@ -173,14 +180,15 @@ public class Main extends JFrame {
 				in.close();
 				
 			} catch (IOException e) {
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+				Main.logException(e);
 			}
 		    try {
 		    	System.loadLibrary(outPath + name);
 		    } catch(Exception e) {
-		    	JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+		    	Main.logException(e);
 		    }
+	    } else {
+	    	Main.logException(new Exception("Unable to load library from " + resourcePath));
 	    }
 	}
 

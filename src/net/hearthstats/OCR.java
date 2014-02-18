@@ -20,16 +20,20 @@ public class OCR {
 	public static void setLang(String lang)  {
 		_lang = lang;
 	}
-	public static String process(BufferedImage image) throws TesseractException {
+	public static String process(BufferedImage image) {
 		// perform ocr
 		
-        String output = "";
-    	Tesseract instance = Tesseract.getInstance(); 
-    	instance.setDatapath(_tessdataPath);
-    	instance.setLanguage(_lang);
-        output += instance.doOCR(image);
-        output = output.trim();
-        return output;
+		String output = "";
+		try {
+			Tesseract instance = Tesseract.getInstance(); 
+			instance.setDatapath(_tessdataPath);
+			instance.setLanguage(_lang);
+			output += instance.doOCR(image);
+			output = output.trim();
+		} catch(Exception e) {
+			Main.logException(e);
+		}
+		return output;
 	}
 
 }

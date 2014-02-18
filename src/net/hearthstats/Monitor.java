@@ -13,15 +13,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Callable;
@@ -29,7 +22,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -43,11 +35,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import net.miginfocom.swing.MigLayout;
 
@@ -143,11 +132,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			try {
 				d.browse(new URI("http://beta.hearthstats.net/profiles"));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Main.logException(e);
 			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Main.logException(e);
 			}
 			
 			String[] options = {"OK", "Cancel"};
@@ -257,12 +244,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     			// Browse a URL, say google.com
     			try {
     				d.browse(new URI("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UJFTUHZF6WPDS"));
-    			} catch (IOException e1) {
-    				// TODO Auto-generated catch block
-    				e1.printStackTrace();
-    			} catch (URISyntaxException e1) {
-    				// TODO Auto-generated catch block
-    				e1.printStackTrace();
+    			} catch (Exception e1) {
+    				Main.logException(e1);
     			}
 	    	}
 	    });
@@ -822,9 +805,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			try {
 				_handleAnalyzerEvent(changed);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				_notify("Exception", e.getMessage());
+				Main.logException(e);
 			}
 		if(dispatcher.getClass().toString().matches(".*API"))
 			_handleApiEvent(changed);
