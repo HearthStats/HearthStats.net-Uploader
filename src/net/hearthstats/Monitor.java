@@ -690,7 +690,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_log("Deck Slot " + _analyzer.getDeckSlot() + " Detected");
 				break;
 			case "mode":
-				_setCurrentMatchUEnabledi(false);
+				_setCurrentMatchEnabledi(false);
 				if(Config.showModeNotification()) {
 					System.out.println(_analyzer.getMode() + " level " + _analyzer.getRankLevel());
 					if(_analyzer.getMode() == "Ranked")
@@ -717,13 +717,14 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_log("Opponent: " + _analyzer.getOpponentName());
 				break;
 			case "result":
+				_setCurrentMatchEnabledi(false);
 				_notify(_analyzer.getResult() + " Detected");
 				_log(_analyzer.getResult() + " Detected");
 				_submitMatchResult();
 				break;
 			case "screen":
 				if(_analyzer.getScreen() == "Match Start")
-					_setCurrentMatchUEnabledi(true);
+					_setCurrentMatchEnabledi(true);
 				if(_analyzer.getScreen() != "Result" && Config.showScreenNotification()) {
 					if(_analyzer.getScreen() == "Practice")
 						_notify(_analyzer.getScreen() + " Screen Detected", "Results are not tracked in practice mode");
@@ -879,7 +880,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		JOptionPane.showMessageDialog(null, "Options Saved");
 	}
 	
-	private void _setCurrentMatchUEnabledi(Boolean enabled){
+	private void _setCurrentMatchEnabledi(Boolean enabled){
 		_currentMatchEnabled = enabled;
 		_currentGameCoinField.setEnabled(enabled);
 		_currentOpponentNameField.setEnabled(enabled);
