@@ -115,6 +115,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_log("2 - Run Hearthstone in <strong>WINDOWED</strong> mode");
 		_log("3 - Look for event notifications in this log and bottom right of screen");
 		_log("4 - <a href=\"http://goo.gl/lMbdzg\">Submit feedback here</a> (please copy and paste this log)\n");
+		_log("System OS: " + Config.os + "\n");
 	}
 	
 	private boolean _checkForUserKey() {
