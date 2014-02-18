@@ -2,6 +2,10 @@ package net.hearthstats;
 
 import javax.swing.*;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -19,6 +23,35 @@ public class Main extends JFrame {
             (new File(path)).mkdirs();
             return path;
         }
+	}
+	
+	public static String getLogText() {
+		String logText = "";
+		List<String> lines = null;
+		try {
+			lines = Files.readAllLines(Paths.get("log.txt"), Charset.defaultCharset());
+		} catch (IOException e) {
+			Main.logException(e);			
+		}
+		for (String line : lines) {
+			logText += line + "\n";
+        }
+		return logText;
+	}
+	public static void log(String str) {
+		PrintWriter out = null;
+		try {
+			out = new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true)));
+		} catch (IOException e) {
+			Main.logException(e);
+		}
+		out.println(str);
+		out.close();
+	}
+	public static void logException(Exception e) {
+		e.printStackTrace();
+		Main.log("Exception in Main: " + e.getMessage());
+		Main.log(e.getStackTrace().toString());
 	}
 	
 	protected static ScheduledExecutorService scheduledExecutorService = Executors
@@ -65,7 +98,7 @@ public class Main extends JFrame {
 			
 		} catch(Exception e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+			JOptionPane.showMessageDialog(null, "Exception (Error): " + e.toString());
 			System.exit(1);
 		}
 		
