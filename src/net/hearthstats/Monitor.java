@@ -132,11 +132,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			try {
 				d.browse(new URI("http://beta.hearthstats.net/profiles"));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Main.logException(e);
 			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Main.logException(e);
 			}
 			
 			String[] options = {"OK", "Cancel"};
@@ -246,12 +244,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     			// Browse a URL, say google.com
     			try {
     				d.browse(new URI("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UJFTUHZF6WPDS"));
-    			} catch (IOException e1) {
-    				// TODO Auto-generated catch block
-    				e1.printStackTrace();
-    			} catch (URISyntaxException e1) {
-    				// TODO Auto-generated catch block
-    				e1.printStackTrace();
+    			} catch (Exception e1) {
+    				Main.logException(e1);
     			}
 	    	}
 	    });
@@ -811,9 +805,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			try {
 				_handleAnalyzerEvent(changed);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				_notify("Exception", e.getMessage());
+				Main.logException(e);
 			}
 		if(dispatcher.getClass().toString().matches(".*API"))
 			_handleApiEvent(changed);
