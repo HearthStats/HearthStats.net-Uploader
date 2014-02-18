@@ -109,13 +109,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 	
 	private void _showWelcomeLog() {
-		_log("<strong>HearthStats.net Uploader v" + Config.getVersion() + "</strong>");
+		_log("<strong>HearthStats.net Uploader v" + Config.getVersionWithOs() + "</strong>");
 		_log("\nThis is a pre-release. It may have glitches. Your stats will be synced with the live site but most information is only visible on <a href=\"http://BETA.HearthStats.net\">http://BETA.HearthStats.net</a> for the moment.\n");
 		_log("1 - <a href=\"http://beta.hearthstats.net/decks/active_decks\">Set your deck slots here</a>");
 		_log("2 - Run Hearthstone in <strong>WINDOWED</strong> mode");
 		_log("3 - Look for event notifications in this log and bottom right of screen");
 		_log("4 - <a href=\"http://goo.gl/lMbdzg\">Submit feedback here</a> (please copy and paste this log)\n");
-		_log("System OS: " + Config.os + "\n");
 	}
 	
 	private boolean _checkForUserKey() {
