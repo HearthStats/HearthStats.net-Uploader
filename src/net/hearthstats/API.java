@@ -1,8 +1,5 @@
 package net.hearthstats;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,15 +8,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.charset.Charset;
 import java.util.Observable;
 
 //http://www.mkyong.com/java/json-simple-example-read-and-write-json/
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class API extends Observable {
 
@@ -52,7 +45,7 @@ public class API extends Observable {
 		return resultingArenaRun;
 	}
 	
-	public ArenaRun createMatch(HearthstoneMatch hsMatch) throws IOException {
+	public void createMatch(HearthstoneMatch hsMatch) throws IOException {
 		
 		JSONObject result = null;
 		
@@ -61,16 +54,13 @@ public class API extends Observable {
 		else
 			result = _post("constructeds/new", hsMatch.toJsonObject());
 			
-		ArenaRun resultingArenaRun = null;
 		if(result != null) {
-			resultingArenaRun = new ArenaRun(result);
 			if(hsMatch.getMode() != "Arena")
 				_dispatchResultMessage("Success. <a href=\"http://hearthstats.net/constructeds/" + result.get("id") + "/edit\">Edit match #" + result.get("id") + " on HearthStats.net</a>");
 			else
 				_dispatchResultMessage("Arena match successfully created");
 		}
 		
-		return resultingArenaRun;
 	}
 	public ArenaRun getLastArenaRun() throws IOException {
 		
