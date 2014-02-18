@@ -2,9 +2,6 @@ package net.hearthstats;
 
 import javax.swing.*;
 
-import java.awt.Dimension;
-import java.awt.JobAttributes;
-import java.awt.Window;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -211,7 +208,7 @@ public class Main extends JFrame {
            try {
                fos = new FileOutputStream(absolutePath);
            } catch (Exception e) {
-               e.printStackTrace();
+        	   Main.logException(e);
            }
 
            try {
@@ -222,13 +219,12 @@ public class Main extends JFrame {
                in.close();
 
            } catch (IOException e) {
-               e.printStackTrace();
-               JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+        	   Main.logException(e);
            }
            try {
                System.load(absolutePath);
            } catch(Exception e) {
-               JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+               Main.logException(e);
            }
        }
 
