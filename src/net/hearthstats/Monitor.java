@@ -776,28 +776,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		file.delete();
 	}
 	private void _log(String str) {
-		PrintWriter out = null;
-		try {
-			out = new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true)));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		out.println(str);
-		out.close();
+		
+		Main.log(str);
 		
 		// read in log
 		String logText = "<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">";
-		List<String> lines = null;
-		try {
-			lines = Files.readAllLines(Paths.get("log.txt"), Charset.defaultCharset());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		for (String line : lines) {
-			logText += line + "<br/>";
-        }
+		logText += Main.getLogText().replaceAll("\n", "<br>");
 		logText += "</body></html>";
 		_logText.setText(logText);
 		
