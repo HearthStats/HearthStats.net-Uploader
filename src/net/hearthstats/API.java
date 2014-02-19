@@ -55,10 +55,7 @@ public class API extends Observable {
 		
 		JSONObject result = null;
 		
-		if(hsMatch.getMode().equals("Arena"))
-			result = _post("arenas/new", hsMatch.toJsonObject());
-		else
-			result = _post("constructeds/new", hsMatch.toJsonObject());
+		result = _post("matches/new", hsMatch.toJsonObject());
 			
 		if(result != null) {
 			try {
