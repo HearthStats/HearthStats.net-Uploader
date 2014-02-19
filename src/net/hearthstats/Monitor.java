@@ -204,6 +204,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JLabel _currentYourClassLabel;
 	private JCheckBox _currentGameCoinField;
 	private JTextArea _currentNotesField;
+	private JButton _lastMatchButton;
+	private HearthstoneMatch _lastMatch;
 
 	private JScrollPane _createAboutUi() {
 		
@@ -330,6 +332,25 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    });
 	    panel.add(_currentNotesField, "skip,span");
 
+	    panel.add(new JLabel(" "), "wrap");
+	    
+	    // last match
+	    panel.add(new JLabel("Previous Match: "), "skip,wrap");
+	    _lastMatchButton = new JButton("[n/a]");
+	    _lastMatchButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					String url = _lastMatch.getMode() == "Arena" ? "http://hearthstats.net/arenas/new" : _lastMatch.getEditUrl();
+					Desktop.getDesktop().browse(new URI(url));
+				} catch (Exception e) {
+					Main.logException(e);
+				}
+			}
+		});
+	    _lastMatchButton.setEnabled(false);
+	    panel.add(_lastMatchButton, "skip,wrap,span");
+	    
 	    return panel;
 	}
 	private JPanel _createOptionsUi() {
@@ -581,6 +602,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_currentYourClassLabel.setText(match.getUserClass() == null ? "[n/a]" : match.getUserClass());
 		_currentGameCoinField.setSelected(match.hasCoin());
 		_currentNotesField.setText(match.getNotes());
+		// last match
+		if(_lastMatch != null) {
+			String tooltip = (_lastMatch.getMode().equals("Arena") ? "View current arena run on" : "Edit the previous match") + " on HearthStats.net";
+			_lastMatchButton.setToolTipText(tooltip);
+			_lastMatchButton.setText(_lastMatch.toString());
+			_lastMatchButton.setEnabled(true);
+		}
 	}
 	private void _updateImageFrame() {
 		if (!_drawPaneAdded) {
@@ -781,7 +809,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			case "result":
 				_notify("API Result", _api.getMessage());
 				_log("API Result: " + _api.getMessage());
-				
+				_lastMatch = _analyzer.getMatch();
+				_lastMatch.setId(_api.getLastMatchId());
+				_setCurrentMatchEnabledi(false);
+				_updateCurrentMatchUi();
 				// new line after match result
 				if(_api.getMessage().matches(".*(Edit match|Arena match successfully created).*"))
 					_log("------------------------------------------\n");

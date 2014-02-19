@@ -15,6 +15,7 @@ public class HearthstoneMatch {
 	private int _numTurns = 0;
 	private int _duration;
 	private String _notes;
+	private int _id = 0;
 	
 	public HearthstoneMatch() {
 		
@@ -111,8 +112,8 @@ public class HearthstoneMatch {
 				_propertyOrUnknown(getOpponentClass()) + " " +
 				"(" + _propertyOrUnknown(getOpponentName()) + ") " +
 				getResult() + " " +
-				(getDeckSlot() == 0 ? "" : " deck slot (" + getDeckSlot()) +
-				" " + getNumTurns() + " turns) " + getNotes();
+				(getDeckSlot() == 0 ? "" : " deck slot " + getDeckSlot()) +
+				" (" + getNumTurns() + " turns)";
 				
 	}
 
@@ -160,6 +161,17 @@ public class HearthstoneMatch {
 			case "Warrior": return 9;
 		}
 		return 0;
+	}
+	
+	public String getEditUrl() {
+		return "http://hearthstats.net/constructeds/" + getId() + "/edit";		
+	}
+
+	public int getId() {
+		return _id;
+	}
+	public void setId(int id) {
+		_id  = id;
 	}
 
 }

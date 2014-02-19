@@ -45,16 +45,27 @@ public class API extends Observable {
 		return resultingArenaRun;
 	}
 	
+	
+	private int _lastMatchId = 0;
+	
+	public int getLastMatchId() {
+		return _lastMatchId;
+	}
 	public void createMatch(HearthstoneMatch hsMatch) throws IOException {
 		
 		JSONObject result = null;
 		
-		if(hsMatch.getMode() == "Arena")
+		if(hsMatch.getMode().equals("Arena"))
 			result = _post("arenas/new", hsMatch.toJsonObject());
 		else
 			result = _post("constructeds/new", hsMatch.toJsonObject());
 			
 		if(result != null) {
+			try {
+				_lastMatchId = Math.round((Long) result.get("id"));
+			} catch(Exception e) {
+				Main.logException(e);
+			}
 			if(hsMatch.getMode() != "Arena")
 				_dispatchResultMessage("Success. <a href=\"http://hearthstats.net/constructeds/" + result.get("id") + "/edit\">Edit match #" + result.get("id") + " on HearthStats.net</a>");
 			else
