@@ -151,6 +151,8 @@
             <classpath file="./build/HearthStatsUploader-OSX.jar" />
             <option value="-Dapple.laf.useScreenMenuBar=true"/>
             <option value="-Xdock:icon=Contents/Resources/${bundle.icon}"/>
+            <option value="-Xms96m"/>
+            <option value="-Xmx192m"/>
         </bundleapp>
 
     </target>
