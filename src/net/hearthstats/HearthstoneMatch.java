@@ -121,18 +121,12 @@ public class HearthstoneMatch {
 	public JSONObject toJsonObject() {
 		JSONObject obj = new JSONObject();
 		obj.put("mode", getMode());
-		obj.put("mode_id", getMode() == "Arena" ? 1 : 2);
-		obj.put("userclass", getUserClass());
-		obj.put("klass_id", _getClassId(getUserClass()));
+		obj.put("class", getUserClass());
 		obj.put("oppclass", getOpponentClass());
-		obj.put("oppclass_id", _getClassId(getOpponentClass()));
 		obj.put("oppname", getOpponentName());
-		obj.put("win", getResult() == "Victory" ? "true" : "false");
-		obj.put("result_id", getResult() == "Victory" ? 1 : 2);
-		obj.put("gofirst", hasCoin() ? "false" : "true");
+		obj.put("result", getResult() == "Victory" ? "Win" : "Loss");
 		obj.put("coin", hasCoin() ? "true" : "false");
 		obj.put("slot", getDeckSlot());
-		obj.put("rank", getMode());
 		obj.put("notes", getNotes());
 		obj.put("ranklvl", getRankLevel());
 		obj.put("numturns", getNumTurns());
@@ -146,21 +140,6 @@ public class HearthstoneMatch {
 	}
 	public void setNotes(String text) {
 		_notes = text;
-	}
-	
-	private int _getClassId(String className) {
-		switch(className) {
-			case "Druid": return 1;
-			case "Hunter": return 2;
-			case "Mage": return 3;
-			case "Paladin": return 4;
-			case "Priest": return 5;
-			case "Rogue": return 6;
-			case "Shaman": return 7;
-			case "Warlock": return 8;
-			case "Warrior": return 9;
-		}
-		return 0;
 	}
 	
 	public String getEditUrl() {
