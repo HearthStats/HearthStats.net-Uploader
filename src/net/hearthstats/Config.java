@@ -48,6 +48,8 @@ public class Config {
 	private static int _width;
 
 	private static int _height;
+
+	private static String _defaultApiBaseUrl = "http://hearthstats.net/api/v1/";
 	
 	public static void rebuild() {
 
@@ -57,6 +59,7 @@ public class Config {
 
 		// api
 		setUserKey("your_userkey_here");
+		setApiBaseUrl(_defaultApiBaseUrl );
 		
 		// updates
 		setCheckForUpdates(true);
@@ -85,6 +88,13 @@ public class Config {
 		
 		save();
 		
+	}
+
+	public static String getApiBaseUrl() {
+		return _getStringSetting("API", "baseurl", _defaultApiBaseUrl);
+	}
+	private static void setApiBaseUrl(String baseUrl) {
+		_setStringValue("API", "baseurl", baseUrl);
 	}
 
 	public static String getUserKey() {
@@ -221,15 +231,7 @@ public class Config {
 	}
 	
 	public static void setUserKey(String userkey) {
-		// TODO Auto-generated method stub
-		_getIni().put("API", "userkey", userkey);
-		try {
-			_getIni().store();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Exception in Config: " + e.toString());
-		}
+		_setStringValue("API", "userkey", userkey);
 	}
 	
 	private static void _createConfigIniIfNecessary() {
@@ -238,10 +240,17 @@ public class Config {
 			try {
 				configFile.createNewFile();
 			} catch (IOException e) {
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(null, "Unable to create config.ini");
-				System.exit(1);
+				Main.logException(e);
 			}
+		}
+	}
+	
+	private static void _setStringValue(String group, String key, String val) {
+		_getIni().put(group, key, val);
+		try {
+			_getIni().store();
+		} catch (IOException e) {
+			Main.logException(e);
 		}
 	}
 	
@@ -267,13 +276,8 @@ public class Config {
 			_createConfigIniIfNecessary();
 			try {
 				_ini = new Wini(new File("config.ini"));
-			} catch (InvalidFileFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(null, "Exception in Config: " + e.toString());
+			} catch (Exception e) {
+				Main.logException(e);
 			}
 		}
 		return _ini;

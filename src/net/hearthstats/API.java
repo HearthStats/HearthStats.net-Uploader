@@ -18,7 +18,6 @@ public class API extends Observable {
 
 	private String _key;
 	private String _message;
-	private String _baseURL = "http://198.101.151.59/api/v1/";
 	
 	public API() {
 		 
@@ -81,7 +80,7 @@ public class API extends Observable {
 	}
 	
 	private JSONObject _get(String method) throws MalformedURLException, IOException {
-		URL url = new URL(_baseURL + method + "?userkey=" + _getKey());
+		URL url = new URL(Config.getApiBaseUrl() + method + "?userkey=" + _getKey());
 		BufferedReader reader = null;
 		String resultString = "";
 		try {
@@ -115,7 +114,7 @@ public class API extends Observable {
 	
 	private JSONObject _post(String method, JSONObject jsonData) throws MalformedURLException, IOException {
 		
-		URL url = new URL(_baseURL + method + "?userkey=" + _getKey());
+		URL url = new URL(Config.getApiBaseUrl() + method + "?userkey=" + _getKey());
 		
 		HttpURLConnection httpcon = (HttpURLConnection) (url.openConnection());
 		httpcon.setDoOutput(true);
