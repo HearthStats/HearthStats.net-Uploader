@@ -49,10 +49,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected API _api = new API();
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
 	protected ProgramHelper _hsHelper;
-	protected int _pollingIntervalInMs = 50;
+	protected int _pollingIntervalInMs = 80;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
 	protected JEditorPane _logText;
+    private int _pollIterations = 0;
 	private JScrollPane _logScroll;
 	private JTextField _userKeyField;
 	private JCheckBox _checkUpdatesField;
@@ -536,7 +537,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 
-	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
+	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
 
 	protected boolean _drawPaneAdded = false;
 
@@ -687,6 +688,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected void _pollHearthstone() {
 		scheduledExecutorService.schedule(new Callable<Object>() {
 			public Object call() throws Exception {
+                _pollIterations++;
 				
 				if (_hsHelper.foundProgram())
 					_handleHearthstoneFound();
@@ -696,7 +698,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_updateTitle();
 				
 				_pollHearthstone();		// repeat the process
-				
+
+                // Keep memory usage down by telling the JVM to perform a garbage collection after every fifth poll (ie GC 1-2 times per second)
+                if (_pollIterations % 5 == 0) {
+                    System.gc();
+                }
+
 				return "";
 			}
 		}, _pollingIntervalInMs, TimeUnit.MILLISECONDS);
