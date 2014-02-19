@@ -1,3 +1,6 @@
+v0.13.201302191
+* Fixed silent crash when trying to read opponent name or rank level
+
 v0.13.201302161
 * First build for OSx (Thanks Charles Gutjahr!)
 * Added "Current Match" tab for live corrections and notes
