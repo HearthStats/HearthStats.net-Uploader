@@ -92,6 +92,9 @@ public class API extends Observable {
 		    for (String line; (line = reader.readLine()) != null;) {
 		    	resultString += line;
 		    }
+		} catch(Exception e) {
+			Main.logException(e, false);
+			_throwError("Error communicating with HearthStats.net");
 		} finally {
 		    if (reader != null) try { reader.close(); } catch (IOException ignore) {}
 		}
@@ -106,8 +109,8 @@ public class API extends Observable {
 		} catch(Exception ignore) {
 			_throwError("Error parsing reply");
 		}
-		Object s = result.get("status").toString();
 		if(result.get("status").toString().matches("success")) {
+			_message = result.get("message").toString();
 			try {
 				return (JSONObject) result.get("data");
 			} catch(Exception e) {
@@ -119,34 +122,40 @@ public class API extends Observable {
 		}
 	}
 	
-	private JSONObject _post(String method, JSONObject jsonData) throws MalformedURLException, IOException {
+	private JSONObject _post(String method, JSONObject jsonData) throws IOException {
 		
 		URL url = new URL(Config.getApiBaseUrl() + method + "?userkey=" + _getKey());
 		
-		HttpURLConnection httpcon = (HttpURLConnection) (url.openConnection());
-		httpcon.setDoOutput(true);
-		httpcon.setRequestProperty("Content-Type", "application/json");
-		httpcon.setRequestProperty("Accept", "application/json");
-		httpcon.setRequestMethod("POST");
-		httpcon.connect();
-
-		// send JSON
-		byte[] outputBytes = jsonData.toJSONString().getBytes("UTF-8");
-		OutputStream os = httpcon.getOutputStream();
-		os.write(outputBytes);
-		os.close();
-		
-		// get response
-		InputStream instr = httpcon.getInputStream();
-		BufferedReader br = new BufferedReader(new InputStreamReader(instr));
-		String resultString = "";
-		String lin;
-		while((lin = br.readLine())!=null){
-			resultString += lin;
+		HttpURLConnection httpcon = null;
+		try {
+			httpcon = (HttpURLConnection) (url.openConnection());
+			
+			httpcon.setDoOutput(true);
+			httpcon.setRequestProperty("Content-Type", "application/json");
+			httpcon.setRequestProperty("Accept", "application/json");
+			httpcon.setRequestMethod("POST");
+			httpcon.connect();
+	
+			// send JSON
+			byte[] outputBytes = jsonData.toJSONString().getBytes("UTF-8");
+			OutputStream os = httpcon.getOutputStream();
+			os.write(outputBytes);
+			os.close();
+			
+			// get response
+			InputStream instr = httpcon.getInputStream();
+			BufferedReader br = new BufferedReader(new InputStreamReader(instr));
+			String resultString = "";
+			String lin;
+			while((lin = br.readLine())!=null){
+				resultString += lin;
+			}
+			return (JSONObject) _parseResult(resultString);	
+		} catch(Exception e) {
+			Main.logException(e, false);
+			_throwError("Error communicating with HearthStats.net");
 		}
-		
-		return (JSONObject) _parseResult(resultString);	
-		
+		return null;		
 	}
 	
 	public String getMessage() {
@@ -179,7 +188,7 @@ public class API extends Observable {
 	public List<JSONObject> getDecks() throws IOException {
 		JSONArray resultArray = (JSONArray) _get("decks/show");
 		if(resultArray != null) {
-			_dispatchResultMessage("Fetched your decks");
+			_dispatchResultMessage("Fetched your decks from HearthStats.net");
 		}
 		
 		List<JSONObject> jsonValues = new ArrayList<JSONObject>();

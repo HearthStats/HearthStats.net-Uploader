@@ -201,7 +201,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 					try {
 						_updateDecksTab();
 					} catch (IOException e1) {
-						Main.logException(e1);
+						_notify("Error loading decks", "Unable to load your decks. Is HearthStats.net down?");
+						_log("Unable to load your decks. Is HearthStats.net down?");
+						Main.logException(e1, false);
 					}
 	        }
 	    });
@@ -291,7 +293,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    contribtorsText.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
 				"<p><strong>Contributors</strong> (listed alphabetically):</p>" +
 				"<p>" +
-					"&bull; <a href=\"http://charlesgutjahr.com\">Charles Gutjahr</a> - Added OSx support<br>" +
+					"&bull; <a href=\"http://charlesgutjahr.com\">Charles Gutjahr</a> - Added OSx support and memory improvements<br>" +
 					"&bull; <a href=\"https://github.com/sargonas\">J Eckert</a> - Fixed notifications spawning taskbar icons<br>" +
 					"&bull; <a href=\"https://github.com/nwalsh1995\">nwalsh1995</a> - Started turn detection development<br>" +
 					"&bull; <a href=\"https://github.com/remcoros\">Remco Ros</a> (<a href=\"http://hearthstonetracker.com/\">HearthstoneTracker</a>) - Provides advice & suggestins<br>" +
