@@ -53,6 +53,20 @@ public class API extends Observable {
 	public int getLastMatchId() {
 		return _lastMatchId;
 	}
+	public void setDeckSlots(Integer slot1, Integer slot2, Integer slot3, Integer slot4, Integer slot5, Integer slot6, Integer slot7, Integer slot8, Integer slot9) throws IOException {
+		JSONObject jsonData = new JSONObject();
+		jsonData.put("slot_1", slot1);
+		jsonData.put("slot_2", slot2);
+		jsonData.put("slot_3", slot3);
+		jsonData.put("slot_4", slot4);
+		jsonData.put("slot_5", slot5);
+		jsonData.put("slot_6", slot6);
+		jsonData.put("slot_7", slot7);
+		jsonData.put("slot_8", slot8);
+		jsonData.put("slot_9", slot9);
+		
+		_post("decks/slots", jsonData);
+	}
 	public void createMatch(HearthstoneMatch hsMatch) throws IOException {
 		
 		JSONObject result = null;
@@ -113,13 +127,17 @@ public class API extends Observable {
 			try {
 				_message = result.get("message").toString();
 			} catch(Exception e) {
-				Main.log("No message property in API call:");
-				Main.log(resultString);
+				_message = null;
 			}
 			try {
 				return (JSONObject) result.get("data");
 			} catch(Exception e) {
-				return (JSONArray) result.get("data");
+				try {
+					return (JSONArray) result.get("data");
+				} catch(Exception e1) {
+					// eat it ... there's just no data to parse
+					return null;
+				}
 			}
 		} else {
 			_throwError((String) result.get("message"));
@@ -168,10 +186,7 @@ public class API extends Observable {
 	}
 	
 	private String _getKey() throws IOException {
-		if(_key != null)
-			return _key;
-		_key = Config.getUserKey();
-		return _key;
+		return Config.getUserKey();
 	}
 	
 	private void _dispatchResultMessage(String message) {

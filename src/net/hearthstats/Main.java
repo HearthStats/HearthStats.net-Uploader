@@ -66,8 +66,8 @@ public class Main extends JFrame {
 		}
 	}
 	public static void showMessageDialog(String message) {
-		JOptionPane op = new JOptionPane("HearthStats.net",JOptionPane.INFORMATION_MESSAGE);
-		JDialog dialog = op.createDialog(message);
+		JOptionPane op = new JOptionPane(message,JOptionPane.INFORMATION_MESSAGE);
+		JDialog dialog = op.createDialog("HearthStats.net");
 		dialog.setAlwaysOnTop(true);
 		dialog.setModal(true);
 		dialog.setFocusableWindowState(true);

@@ -956,9 +956,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			case "error":
 				_notify("API Error", _api.getMessage());
 				_log("API Error: " + _api.getMessage());
+				Main.showMessageDialog("API Error: " + _api.getMessage());
 				break;
 			case "result":
-				_notify("API Result", _api.getMessage());
 				_log("API Result: " + _api.getMessage());
 				_lastMatch = _analyzer.getMatch();
 				_lastMatch.setId(_api.getLastMatchId());
@@ -967,7 +967,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				// new line after match result
 				if(_api.getMessage().matches(".*(Edit match|Arena match successfully created).*"))
 					_log("------------------------------------------\n");
-				
 				break;
 		}
 	}
@@ -1053,19 +1052,27 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		if(matcher.find()) {
 			deckId = Integer.parseInt(matcher.group(1));
 		}
-		System.out.println(deckId);
 		return deckId;
 	}
 	private void _saveDeckSlots() {
-		Integer slot1Id = _getDeckSlotDeckId(_deckSlot1Field);
-		Integer slot2Id = _getDeckSlotDeckId(_deckSlot2Field);
-		Integer slot3Id = _getDeckSlotDeckId(_deckSlot3Field);
-		Integer slot4Id = _getDeckSlotDeckId(_deckSlot4Field);
-		Integer slot5Id = _getDeckSlotDeckId(_deckSlot5Field);
-		Integer slot6Id = _getDeckSlotDeckId(_deckSlot6Field);
-		Integer slot7Id = _getDeckSlotDeckId(_deckSlot7Field);
-		Integer slot8Id = _getDeckSlotDeckId(_deckSlot8Field);
-		Integer slot9Id = _getDeckSlotDeckId(_deckSlot9Field);
+		
+		try {
+			_api.setDeckSlots(
+				_getDeckSlotDeckId(_deckSlot1Field),
+				_getDeckSlotDeckId(_deckSlot2Field),
+				_getDeckSlotDeckId(_deckSlot3Field),
+				_getDeckSlotDeckId(_deckSlot4Field),
+				_getDeckSlotDeckId(_deckSlot5Field),
+				_getDeckSlotDeckId(_deckSlot6Field),
+				_getDeckSlotDeckId(_deckSlot7Field),
+				_getDeckSlotDeckId(_deckSlot8Field),
+				_getDeckSlotDeckId(_deckSlot9Field)
+			);
+			Main.showMessageDialog(_api.getMessage());
+			_updateDecksTab();
+		} catch (Exception e) {
+			Main.logException(e);
+		}
 	}
 	
 	private void _saveOptions() {
