@@ -110,7 +110,12 @@ public class API extends Observable {
 			_throwError("Error parsing reply");
 		}
 		if(result.get("status").toString().matches("success")) {
-			_message = result.get("message").toString();
+			try {
+				_message = result.get("message").toString();
+			} catch(Exception e) {
+				Main.log("No message property in API call:");
+				Main.log(resultString);
+			}
 			try {
 				return (JSONObject) result.get("data");
 			} catch(Exception e) {
