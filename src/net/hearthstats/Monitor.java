@@ -15,17 +15,21 @@ import java.awt.event.WindowStateListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -38,6 +42,9 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkListener;
+
+import org.json.simple.JSONObject;
+
 import net.miginfocom.swing.MigLayout;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
@@ -170,7 +177,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		setLocation(Config.getX(), Config.getY());
 		setSize(Config.getWidth(), Config.getHeight());
 		
-		JTabbedPane tabbedPane = new JTabbedPane();
+		final JTabbedPane tabbedPane = new JTabbedPane();
 		add(tabbedPane);
 		
 		// log
@@ -184,13 +191,26 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		tabbedPane.add(_logScroll, "Log");
 		
 		tabbedPane.add(_createMatchUi(), "Current Match");
+		tabbedPane.add(_createDecksUi(), "Decks");
 		tabbedPane.add(_createOptionsUi(), "Options");
 		tabbedPane.add(_createAboutUi(), "About");
+		
+		tabbedPane.addChangeListener(new ChangeListener() {
+	        public void stateChanged(ChangeEvent e) {
+	            if(tabbedPane.getSelectedIndex() == 2)
+					try {
+						_updateDecksTab();
+					} catch (IOException e1) {
+						Main.logException(e1);
+					}
+	        }
+	    });
 		
 		_updateCurrentMatchUi();
 		
 		_enableMinimizeToTray();
 		
+		setMinimumSize(new Dimension(500, 600));
 		setVisible(true);
 		
 		if(Config.startMinimized())
@@ -207,6 +227,15 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JTextArea _currentNotesField;
 	private JButton _lastMatchButton;
 	private HearthstoneMatch _lastMatch;
+	private JComboBox _deckSlot1Field;
+	private JComboBox _deckSlot2Field;
+	private JComboBox _deckSlot3Field;
+	private JComboBox _deckSlot4Field;
+	private JComboBox _deckSlot5Field;
+	private JComboBox _deckSlot6Field;
+	private JComboBox _deckSlot7Field;
+	private JComboBox _deckSlot8Field;
+	private JComboBox _deckSlot9Field;
 
 	private JScrollPane _createAboutUi() {
 		
@@ -354,6 +383,66 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    
 	    return panel;
 	}
+	private JPanel _createDecksUi() {
+		JPanel panel = new JPanel();
+
+		MigLayout layout = new MigLayout();
+		panel.setLayout(layout);
+		
+		panel.add(new JLabel(" "), "wrap");
+		panel.add(new JLabel("Set your deck slots ..."), "skip,span,wrap");
+		panel.add(new JLabel(" "), "wrap");
+		
+		panel.add(new JLabel("Slot 1:"), "skip"); 
+		panel.add(new JLabel("Slot 2:"), ""); 
+		panel.add(new JLabel("Slot 3:"), "wrap");
+		
+		_deckSlot1Field = new JComboBox();
+		panel.add(_deckSlot1Field, "skip"); 
+		_deckSlot2Field = new JComboBox();
+		panel.add(_deckSlot2Field, ""); 
+		_deckSlot3Field = new JComboBox();
+		panel.add(_deckSlot3Field, "wrap");
+		
+		panel.add(new JLabel(" "), "wrap");
+		
+		panel.add(new JLabel("Slot 4:"), "skip"); 
+		panel.add(new JLabel("Slot 5:"), ""); 
+		panel.add(new JLabel("Slot 6:"), "wrap");
+		
+		_deckSlot4Field = new JComboBox();
+		panel.add(_deckSlot4Field, "skip"); 
+		_deckSlot5Field = new JComboBox();
+		panel.add(_deckSlot5Field, ""); 
+		_deckSlot6Field = new JComboBox();
+		panel.add(_deckSlot6Field, "wrap");
+		
+		panel.add(new JLabel(" "), "wrap");
+		
+		panel.add(new JLabel("Slot 7:"), "skip"); 
+		panel.add(new JLabel("Slot 8:"), ""); 
+		panel.add(new JLabel("Slot 9:"), "wrap");
+		
+		_deckSlot7Field = new JComboBox();
+		panel.add(_deckSlot7Field, "skip"); 
+		_deckSlot8Field = new JComboBox();
+		panel.add(_deckSlot8Field, ""); 
+		_deckSlot9Field = new JComboBox();
+		panel.add(_deckSlot9Field, "wrap");
+		
+		panel.add(new JLabel(" "), "wrap");
+		
+		JButton saveButton = new JButton("Save Deck Slots");
+		panel.add(saveButton, "skip");
+		saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	_saveDeckSlots();
+            }
+        });
+		
+		return panel;
+	}
 	private JPanel _createOptionsUi() {
 		JPanel panel = new JPanel();
 		
@@ -484,7 +573,30 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_showModeNotificationField.setEnabled(isEnabled);
 		_showDeckNotificationField.setEnabled(isEnabled);
 	}
-	
+	private void _applyDecksToSelector(List<JSONObject> decks, JComboBox selector, Integer slotNum) {
+		
+		selector.setMaximumSize(new Dimension(145, selector.getSize().height));
+		selector.removeAllItems();
+		
+		selector.addItem("- Select a deck -");
+		for(int i = 0; i < decks.size(); i++) {
+			selector.addItem(decks.get(i).get("name") + "                        #" + decks.get(i).get("id"));
+			if(decks.get(i).get("slot") != null && decks.get(i).get("slot").toString().equals(slotNum.toString()))
+				selector.setSelectedIndex(i + 1);
+		}
+	}
+	private void _updateDecksTab() throws IOException {
+		List<JSONObject> decks = _api.getDecks();
+		_applyDecksToSelector(decks, _deckSlot1Field, 1);
+		_applyDecksToSelector(decks, _deckSlot2Field, 2);
+		_applyDecksToSelector(decks, _deckSlot3Field, 3);
+		_applyDecksToSelector(decks, _deckSlot4Field, 4);
+		_applyDecksToSelector(decks, _deckSlot5Field, 5);
+		_applyDecksToSelector(decks, _deckSlot6Field, 6);
+		_applyDecksToSelector(decks, _deckSlot7Field, 7);
+		_applyDecksToSelector(decks, _deckSlot8Field, 8);
+		_applyDecksToSelector(decks, _deckSlot9Field, 9);
+	}
 	private void _checkForUpdates() {
 		if(Config.checkForUpdates()) {
 			_log("Checking for updates ...");
@@ -604,7 +716,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_currentGameCoinField.setSelected(match.hasCoin());
 		_currentNotesField.setText(match.getNotes());
 		// last match
-		if(_lastMatch != null) {
+		if(_lastMatch != null && _lastMatch.getMode() != null) {
 			String tooltip = (_lastMatch.getMode().equals("Arena") ? "View current arena run on" : "Edit the previous match") + " on HearthStats.net";
 			_lastMatchButton.setToolTipText(tooltip);
 			_lastMatchButton.setText(_lastMatch.toString());
@@ -901,6 +1013,29 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 	}
 
+	private Integer _getDeckSlotDeckId(JComboBox selector) {
+		Integer deckId = null;
+		String deckStr = (String) selector.getItemAt(selector.getSelectedIndex());
+		Pattern pattern = Pattern.compile("[^0-9]+([0-9]+)$");
+		Matcher matcher = pattern.matcher(deckStr);
+		if(matcher.find()) {
+			deckId = Integer.parseInt(matcher.group(1));
+		}
+		System.out.println(deckId);
+		return deckId;
+	}
+	private void _saveDeckSlots() {
+		Integer slot1Id = _getDeckSlotDeckId(_deckSlot1Field);
+		Integer slot2Id = _getDeckSlotDeckId(_deckSlot2Field);
+		Integer slot3Id = _getDeckSlotDeckId(_deckSlot3Field);
+		Integer slot4Id = _getDeckSlotDeckId(_deckSlot4Field);
+		Integer slot5Id = _getDeckSlotDeckId(_deckSlot5Field);
+		Integer slot6Id = _getDeckSlotDeckId(_deckSlot6Field);
+		Integer slot7Id = _getDeckSlotDeckId(_deckSlot7Field);
+		Integer slot8Id = _getDeckSlotDeckId(_deckSlot8Field);
+		Integer slot9Id = _getDeckSlotDeckId(_deckSlot9Field);
+	}
+	
 	private void _saveOptions() {
 		Config.setUserKey(_userKeyField.getText());
 		Config.setCheckForUpdates(_checkUpdatesField.isSelected());
@@ -929,15 +1064,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	TrayIcon trayIcon;
     SystemTray tray;
     private void _enableMinimizeToTray(){
-        System.out.println("creating instance");
         if(SystemTray.isSupported()){
         	
-            System.out.println("system tray supported");
             tray = SystemTray.getSystemTray();
 
             ActionListener exitListener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println("Exiting....");
                     System.exit(0);
                 }
             };
@@ -976,24 +1108,19 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	                    try {
 	                        tray.add(trayIcon);
 	                        setVisible(false);
-	                        System.out.println("added to SystemTray");
 	                    } catch (AWTException ex) {
-	                        System.out.println("unable to add to tray");
 	                    }
 	                }
 			        if(e.getNewState()==7){
 			            try{
 			            	tray.add(trayIcon);
 			            	setVisible(false);
-			            	System.out.println("added to SystemTray");
 			            }catch(AWTException ex){
-				            System.out.println("unable to add to system tray");
 				        }
 		            }
 			        if(e.getNewState()==MAXIMIZED_BOTH){
 		                    tray.remove(trayIcon);
 		                    setVisible(true);
-		                    System.out.println("Tray icon removed");
 		                }
 		                if(e.getNewState()==NORMAL){
 		                    tray.remove(trayIcon);

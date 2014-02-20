@@ -8,8 +8,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 
+import org.json.simple.JSONArray;
 //http://www.mkyong.com/java/json-simple-example-read-and-write-json/
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -25,7 +28,7 @@ public class API extends Observable {
 	
 	public void endCurrentArenaRun() throws IOException {
 		
-		JSONObject resultObj = _get("arena_runs/end");
+		JSONObject resultObj = (JSONObject) _get("arena_runs/end");
 		ArenaRun arenaRun = resultObj == null ? null : new ArenaRun(resultObj);
 		if(arenaRun != null)
 			_dispatchResultMessage("Ended " + arenaRun.getUserClass() + " arena run");
@@ -71,7 +74,7 @@ public class API extends Observable {
 	}
 	public ArenaRun getLastArenaRun() throws IOException {
 		
-		JSONObject resultObj = _get("arena_runs/show");
+		JSONObject resultObj = (JSONObject) _get("arena_runs/show");
 		ArenaRun arenaRun =  resultObj == null ? null : new ArenaRun(resultObj);
 		if(arenaRun != null) {
 			_dispatchResultMessage("Fetched current " + arenaRun.getUserClass() + " arena run");
@@ -79,7 +82,7 @@ public class API extends Observable {
 		return arenaRun;
 	}
 	
-	private JSONObject _get(String method) throws MalformedURLException, IOException {
+	private Object _get(String method) throws MalformedURLException, IOException {
 		URL url = new URL(Config.getApiBaseUrl() + method + "?userkey=" + _getKey());
 		BufferedReader reader = null;
 		String resultString = "";
@@ -95,7 +98,7 @@ public class API extends Observable {
 		return _parseResult(resultString);		
 	}
 	
-	private JSONObject _parseResult(String resultString) {
+	private Object _parseResult(String resultString) {
 		JSONParser parser = new JSONParser();
 		JSONObject result = null;
 		try {
@@ -105,7 +108,11 @@ public class API extends Observable {
 		}
 		Object s = result.get("status").toString();
 		if(result.get("status").toString().matches("success")) {
-			return (JSONObject) result.get("data");
+			try {
+				return (JSONObject) result.get("data");
+			} catch(Exception e) {
+				return (JSONArray) result.get("data");
+			}
 		} else {
 			_throwError((String) result.get("message"));
 			return null;
@@ -138,7 +145,7 @@ public class API extends Observable {
 			resultString += lin;
 		}
 		
-		return _parseResult(resultString);	
+		return (JSONObject) _parseResult(resultString);	
 		
 	}
 	
@@ -167,6 +174,19 @@ public class API extends Observable {
 	
 	private void _setMessage(String message) {
 		_message = message;
+	}
+
+	public List<JSONObject> getDecks() throws IOException {
+		JSONArray resultArray = (JSONArray) _get("decks/show");
+		if(resultArray != null) {
+			_dispatchResultMessage("Fetched your decks");
+		}
+		
+		List<JSONObject> jsonValues = new ArrayList<JSONObject>();
+		for (int i = 0; i < resultArray.size(); i++)
+		   jsonValues.add((JSONObject) resultArray.get(i));
+		return jsonValues;
+		
 	}
 
 }
