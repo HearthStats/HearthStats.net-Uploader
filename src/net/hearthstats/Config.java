@@ -50,6 +50,8 @@ public class Config {
 	private static int _height;
 
 	private static String _defaultApiBaseUrl = "http://hearthstats.net/api/v1/";
+
+	private static String _apiBaseUrl;
 	
 	public static void rebuild() {
 
@@ -300,6 +302,7 @@ public class Config {
 	
 	private static void _restorePreviousValues() {
 		setUserKey(_userkey);
+		setApiBaseUrl(_apiBaseUrl);
 		setCheckForUpdates(_checkForUpdates);
 		setShowNotifications(_showNotifications);
 		setShowHsFoundNotification(_showHsFoundNotification);
@@ -318,6 +321,7 @@ public class Config {
 	
 	private static void _storePreviousValues() {
 		_userkey = getUserKey();
+		_apiBaseUrl = getApiBaseUrl();
 		_checkForUpdates = checkForUpdates();
 		_showNotifications = showNotifications();
 		_showHsFoundNotification = showHsFoundNotification();
