@@ -118,7 +118,7 @@
                 <attribute name="Main-Class" value="net.hearthstats.Updater"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
-            <fileset dir="./bin"/>
+            <fileset dir="./build/osx"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/ghost4j-0.3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/jai_imageio.jar"/>
