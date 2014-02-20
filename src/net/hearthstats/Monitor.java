@@ -433,15 +433,45 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(_deckSlot9Field, "wrap");
 		
 		panel.add(new JLabel(" "), "wrap");
+		panel.add(new JLabel(" "), "wrap");
 		
 		JButton saveButton = new JButton("Save Deck Slots");
-		panel.add(saveButton, "skip");
 		saveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            	_saveDeckSlots();
-            }
-        });
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				_saveDeckSlots();
+			}
+		});
+		panel.add(saveButton, "skip");
+		
+		JButton refreshButton = new JButton("Refresh");
+		refreshButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					_updateDecksTab();
+				} catch (IOException e1) {
+					Main.logException(e1);
+				}
+			}
+		});
+		panel.add(refreshButton, "wrap,span");
+		
+		panel.add(new JLabel(" "), "wrap");
+		panel.add(new JLabel(" "), "wrap");
+		
+		JButton myDecksButton = new JButton("Manage your decks on HearthStats.net");
+		myDecksButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Desktop.getDesktop().browse(new URI("http://hearthstats.net/decks"));
+				} catch (Exception e1) {
+					Main.logException(e1);
+				}
+			}
+		});
+		panel.add(myDecksButton, "skip,span");
 		
 		return panel;
 	}

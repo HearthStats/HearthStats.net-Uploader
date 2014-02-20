@@ -66,7 +66,13 @@ public class Main extends JFrame {
 		}
 	}
 	public static void showMessageDialog(String message) {
-		JOptionPane.showMessageDialog(null, message);
+		JOptionPane op = new JOptionPane("HearthStats.net",JOptionPane.INFORMATION_MESSAGE);
+		JDialog dialog = op.createDialog(message);
+		dialog.setAlwaysOnTop(true);
+		dialog.setModal(true);
+		dialog.setFocusableWindowState(true);
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		dialog.setVisible(true);
 	}
 	
 	protected static ScheduledExecutorService scheduledExecutorService = Executors
@@ -156,7 +162,7 @@ public class Main extends JFrame {
 	    }
 	}
 	
-	private static void _loadJarDll(String name) {
+	private static void _loadJarDll(String name) throws FileNotFoundException {
 		String resourcePath = "/lib/" + name + "_" + System.getProperty("sun.arch.data.model") + ".dll";
 	    InputStream in = Main.class.getResourceAsStream(resourcePath);
 	    if(in != null) {
@@ -170,11 +176,7 @@ public class Main extends JFrame {
 		    String outFileName = name.replace("_32", "").replace("_64",  "") + ".dll";
 		    
 		    FileOutputStream fos = null;
-			try {
-				fos = new FileOutputStream(outPath + outFileName);
-			} catch (Exception e) {
-				Main.logException(e, false);
-			}
+			fos = new FileOutputStream(outPath + outFileName);
 	
 		    try {
 				while((read = in.read(buffer)) != -1) {
