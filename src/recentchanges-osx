@@ -1,4 +1,10 @@
-v0.14.201302201
-* Support for Feb. 20th HearthStats.net updates
-* New "Decks" tab to manage your deck slot assignment
-* Added link to edit the previous match under current match tab
+v0.13.201302161
+* First build for OSx (Thanks Charles Gutjahr!)
+* Added "Current Match" tab for live corrections and notes
+* Added contributors to about tab
+* Notifications can now be manually closed early 
+* Links in notifications are now clickable
+* Improved formatting of notifications 
+* Improved formatting of log text
+* Fixed turn detection on Oggrimar board
+* Improved overall opponent turn detection
