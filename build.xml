@@ -99,19 +99,7 @@
             </classpath>
         </javac>
 
-        <!-- Copy resources, other than Windows-specific files like DLLs -->
-        <copy preservelastmodified="true" todir="./build/osx">
-            <fileset dir="./src">
-                <include name="**/*.gif" />
-                <include name="**/*.png" />
-                <include name="**/*.dylib" />
-                <include name="tessdata/**" />
-                <include name="version" />
-                <include name="version-osx" />
-
-                <exclude name="**/.DS_Store" />
-            </fileset>
-        </copy>
+        
 
     	<jar destfile="./src/updater.jar" filesetmanifest="mergewithoutmain">
             <manifest>
@@ -140,6 +128,20 @@
         </jar>
     	<sleep milliseconds="6000"/>
     	
+    	<!-- Copy resources, other than Windows-specific files like DLLs -->
+        <copy preservelastmodified="true" todir="./build/osx">
+            <fileset dir="./src">
+                <include name="**/*.gif" />
+                <include name="**/*.png" />
+                <include name="**/*.dylib" />
+                <include name="tessdata/**" />
+                <include name="version" />
+                <include name="version-osx" />
+                <include name="uploader.jar" />
+            	
+                <exclude name="**/.DS_Store" />
+            </fileset>
+        </copy>
         <!-- Build a JAR -->
         <jar destfile="./build/HearthStatsUploader-OSX.jar">
             <fileset dir="./build/osx"/>
