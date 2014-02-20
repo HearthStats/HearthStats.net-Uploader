@@ -10,6 +10,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -89,6 +91,12 @@ public class Updater {
 				_notifyException(e);
 			}
 		} else {
+			Main.showMessageDialog("Unable to locate " + updaterFile.getPath() + "\n\nYou will now be taken to the download page.");
+			try {
+				Desktop.getDesktop().browse(new URI("http://hearthstats.net/uploader"));
+			}catch (Exception e) {
+				Main.logException(e);
+			}
 			_notify("Updator Error", "Unable to locate " + updaterFile.getPath());
 		}
 		System.exit(0);
