@@ -113,6 +113,33 @@
             </fileset>
         </copy>
 
+    	<jar destfile="./src/updater.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="net.hearthstats.Updater"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="./bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/ghost4j-0.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jai_imageio.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-core-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-awt-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-cluster-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-fir-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-moment-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-morphology-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/JGoogleAnalytics_0.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jna-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jna-platform-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jna.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/junit-4.10.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-core-4.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-swing-4.2.jar"/>
+        </jar>
+    	<sleep milliseconds="6000"/>
+    	
         <!-- Build a JAR -->
         <jar destfile="./build/HearthStatsUploader-OSX.jar">
             <fileset dir="./build/osx"/>
@@ -139,7 +166,7 @@
             <zipfileset excludes="META-INF/*.SF" src="./lib/slf4j-api-1.7.6.jar"/>
         </jar>
 
-
+    	<antcall target="delete_updater_jar" />
         <bundleapp outputdirectory="./build"
                    name="HearthStats"
                    displayname="HearthStats.net Uploader"
