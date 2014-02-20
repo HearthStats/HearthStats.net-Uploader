@@ -1,5 +1,9 @@
-Under development:
+v0.14.201302201
+* Support for Feb. 20th HearthStats.net updates
+* New "Decks" tab to manage your deck slot assignment
 * Added link to edit the previous match under current match tab
+* Improved memory usage and reduced missed detection events
+
 
 v0.13.201302161
 * Support for OSx (Thanks Charles Gutjahr!)
