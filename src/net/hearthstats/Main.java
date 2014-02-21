@@ -112,6 +112,8 @@ public class Main extends JFrame {
 			}
 			//System.out.println(OCR.process("opponentname.jpg"));
 
+			DeckSlotUtils.updateDecks();
+			
 			loadingNotification.close();
 			
 			Monitor monitor = new Monitor();

@@ -74,6 +74,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JCheckBox _minToTrayField;
 	private JCheckBox _startMinimizedField;
 	private JCheckBox _showYourTurnNotificationField;
+	private JTabbedPane _tabbedPane;
 
 
     public Monitor() throws HeadlessException {
@@ -176,8 +177,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		setLocation(Config.getX(), Config.getY());
 		setSize(Config.getWidth(), Config.getHeight());
 		
-		final JTabbedPane tabbedPane = new JTabbedPane();
-		add(tabbedPane);
+		_tabbedPane = new JTabbedPane();
+		add(_tabbedPane);
 		
 		// log
 		_logText = new JEditorPane();
@@ -187,16 +188,16 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_logText.setEditable(false);
 		_logText.addHyperlinkListener(_hyperLinkListener);
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		tabbedPane.add(_logScroll, "Log");
+		_tabbedPane.add(_logScroll, "Log");
 		
-		tabbedPane.add(_createMatchUi(), "Current Match");
-		tabbedPane.add(_createDecksUi(), "Decks");
-		tabbedPane.add(_createOptionsUi(), "Options");
-		tabbedPane.add(_createAboutUi(), "About");
+		_tabbedPane.add(_createMatchUi(), "Current Match");
+		_tabbedPane.add(_createDecksUi(), "Decks");
+		_tabbedPane.add(_createOptionsUi(), "Options");
+		_tabbedPane.add(_createAboutUi(), "About");
 		
-		tabbedPane.addChangeListener(new ChangeListener() {
+		_tabbedPane.addChangeListener(new ChangeListener() {
 	        public void stateChanged(ChangeEvent e) {
-	            if(tabbedPane.getSelectedIndex() == 2)
+	            if(_tabbedPane.getSelectedIndex() == 2)
 					try {
 						_updateDecksTab();
 					} catch (IOException e1) {
@@ -604,12 +605,15 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_showModeNotificationField.setEnabled(isEnabled);
 		_showDeckNotificationField.setEnabled(isEnabled);
 	}
-	private void _applyDecksToSelector(List<JSONObject> decks, JComboBox selector, Integer slotNum) {
+	private void _applyDecksToSelector(JComboBox selector, Integer slotNum) {
 		
 		selector.setMaximumSize(new Dimension(145, selector.getSize().height));
 		selector.removeAllItems();
 		
 		selector.addItem("- Select a deck -");
+		
+		List<JSONObject> decks = DeckSlotUtils.getDecks();
+		
 		for(int i = 0; i < decks.size(); i++) {
 			selector.addItem(decks.get(i).get("name") + "                        #" + decks.get(i).get("id"));
 			if(decks.get(i).get("slot") != null && decks.get(i).get("slot").toString().equals(slotNum.toString()))
@@ -617,16 +621,16 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 	private void _updateDecksTab() throws IOException {
-		List<JSONObject> decks = _api.getDecks();
-		_applyDecksToSelector(decks, _deckSlot1Field, 1);
-		_applyDecksToSelector(decks, _deckSlot2Field, 2);
-		_applyDecksToSelector(decks, _deckSlot3Field, 3);
-		_applyDecksToSelector(decks, _deckSlot4Field, 4);
-		_applyDecksToSelector(decks, _deckSlot5Field, 5);
-		_applyDecksToSelector(decks, _deckSlot6Field, 6);
-		_applyDecksToSelector(decks, _deckSlot7Field, 7);
-		_applyDecksToSelector(decks, _deckSlot8Field, 8);
-		_applyDecksToSelector(decks, _deckSlot9Field, 9);
+		DeckSlotUtils.updateDecks();
+		_applyDecksToSelector(_deckSlot1Field, 1);
+		_applyDecksToSelector(_deckSlot2Field, 2);
+		_applyDecksToSelector(_deckSlot3Field, 3);
+		_applyDecksToSelector(_deckSlot4Field, 4);
+		_applyDecksToSelector(_deckSlot5Field, 5);
+		_applyDecksToSelector(_deckSlot6Field, 6);
+		_applyDecksToSelector(_deckSlot7Field, 7);
+		_applyDecksToSelector(_deckSlot8Field, 8);
+		_applyDecksToSelector(_deckSlot9Field, 9);
 	}
 	private void _checkForUpdates() {
 		if(Config.checkForUpdates()) {
@@ -697,6 +701,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected NotificationQueue _notificationQueue = new NotificationQueue();
 	private JLabel _currentOpponentClassLabel;
 	private Boolean _currentMatchEnabled = false;
+	private boolean _playingInMatch = false;
 
 	protected void _notify(String header) {
 		_notify(header, "");
@@ -748,16 +753,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_currentNotesField.setText(match.getNotes());
 		// last match
 		if(_lastMatch != null && _lastMatch.getMode() != null) {
-			if(_lastMatch.getId() == null) {
-				_notify("Detection Error", "Match result was not detected.");
-				_log("Detection Error: Match result was not detected.");
-				Main.showMessageDialog(
-					"The result of your previous match was not detected.\n\n" +
-					"This often happens if you click away the result banner\n" +
-					"in the game before giving the uploader a second or two\n" +
-					"to recognize the victory and defeat banners."
-				);
-			} else {
+			if(_lastMatch.getResult() != null) {
 				String tooltip = (_lastMatch.getMode().equals("Arena") ? "View current arena run on" : "Edit the previous match") + " on HearthStats.net";
 				_lastMatchButton.setToolTipText(tooltip);
 				_lastMatchButton.setText(_lastMatch.toString());
@@ -875,10 +871,28 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_log("Coin Detected");
 				break;
 			case "deckSlot":
-				_notify("Deck Slot " + _analyzer.getDeckSlot() + " Detected");
-				_log("Deck Slot " + _analyzer.getDeckSlot() + " Detected");
+				JSONObject deck = DeckSlotUtils.getDeckFromSlot(_analyzer.getDeckSlot());
+				if(deck == null) {
+					_tabbedPane.setSelectedIndex(2);
+					Main.showMessageDialog("Unable to determine what deck you have in slot #" + _analyzer.getDeckSlot() + "\n\nPlease set your decks in the \"Decks\" tab.");
+				} else {
+					_notify("Deck Detected", deck.get("name").toString());
+					_log("Deck Detected: " + deck.get("name") + " Detected");
+				}
+				
 				break;
 			case "mode":
+				if(_playingInMatch && _analyzer.getResult() == null) {
+					_notify("Detection Error", "Match result was not detected.");
+					_log("Detection Error: Match result was not detected.");
+					Main.showMessageDialog(
+						"The result of your previous match was not detected.\n\n" +
+						"This often happens if you click away the result banner\n" +
+						"in the game before giving the uploader a second or two\n" +
+						"to recognize the victory and defeat banners."
+					);
+				} 
+				_playingInMatch = false;
 				_setCurrentMatchEnabledi(false);
 				if(Config.showModeNotification()) {
 					System.out.println(_analyzer.getMode() + " level " + _analyzer.getRankLevel());
@@ -906,15 +920,17 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_log("Opponent: " + _analyzer.getOpponentName());
 				break;
 			case "result":
+				_playingInMatch = false;
 				_setCurrentMatchEnabledi(false);
 				_notify(_analyzer.getResult() + " Detected");
 				_log(_analyzer.getResult() + " Detected");
 				_submitMatchResult();
 				break;
 			case "screen":
-				if(_analyzer.getScreen() == "Match Start")
+				if(_analyzer.getScreen() == "Match Start") {
 					_setCurrentMatchEnabledi(true);
-				if(_analyzer.getScreen() != "Result" && Config.showScreenNotification()) {
+					_playingInMatch = true;
+				} if(_analyzer.getScreen() != "Result" && Config.showScreenNotification()) {
 					if(_analyzer.getScreen() == "Practice")
 						_notify(_analyzer.getScreen() + " Screen Detected", "Results are not tracked in practice mode");
 					else
