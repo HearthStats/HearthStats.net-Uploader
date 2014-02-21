@@ -50,16 +50,29 @@ public class Main extends JFrame {
 		out.close();
 	}
 	public static void logException(Exception e) {
+		logException(e, true);		
+	}
+	public static void logException(Exception e, boolean showAlert) {
 		e.printStackTrace();
 		Main.log("Exception in Main: " + e.getMessage());
 		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
 		for (StackTraceElement element : stackTraceElements) {
 			Main.log(element.toString());
 		}
-		Main.showMessageDialog(e.getMessage() + "\n\nSee log.txt for details");
+		if(showAlert) {
+			JFrame frame = new JFrame();
+			frame.setFocusableWindowState(true);
+			Main.showMessageDialog(e.getMessage() + "\n\nSee log.txt for details");
+		}
 	}
 	public static void showMessageDialog(String message) {
-		JOptionPane.showMessageDialog(null, message);
+		JOptionPane op = new JOptionPane(message,JOptionPane.INFORMATION_MESSAGE);
+		JDialog dialog = op.createDialog("HearthStats.net");
+		dialog.setAlwaysOnTop(true);
+		dialog.setModal(true);
+		dialog.setFocusableWindowState(true);
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		dialog.setVisible(true);
 	}
 	
 	protected static ScheduledExecutorService scheduledExecutorService = Executors
@@ -93,7 +106,7 @@ public class Main extends JFrame {
                         throw new UnsupportedOperationException("HearthStats.net Uploader only supports Windows and Mac OS X");
                 }
 			} catch(Exception e) {
-				Main.logException(e);
+				Main.logException(e, false);
 				JOptionPane.showMessageDialog(null, "Unable to read required libraries.\nIs the app already running?\n\nExiting ...");
 				System.exit(0);
 			}
@@ -157,7 +170,7 @@ public class Main extends JFrame {
 	    }
 	}
 	
-	private static void _loadJarDll(String name) {
+	private static void _loadJarDll(String name) throws FileNotFoundException {
 		String resourcePath = "/lib/" + name + "_" + System.getProperty("sun.arch.data.model") + ".dll";
 	    InputStream in = Main.class.getResourceAsStream(resourcePath);
 	    if(in != null) {
@@ -171,11 +184,7 @@ public class Main extends JFrame {
 		    String outFileName = name.replace("_32", "").replace("_64",  "") + ".dll";
 		    
 		    FileOutputStream fos = null;
-			try {
-				fos = new FileOutputStream(outPath + outFileName);
-			} catch (Exception e) {
-				Main.logException(e);
-			}
+			fos = new FileOutputStream(outPath + outFileName);
 	
 		    try {
 				while((read = in.read(buffer)) != -1) {
@@ -185,12 +194,12 @@ public class Main extends JFrame {
 				in.close();
 				
 			} catch (IOException e) {
-				Main.logException(e);
+				Main.logException(e, false);
 			}
 		    try {
 		    	System.loadLibrary(outPath + name);
 		    } catch(Exception e) {
-		    	Main.logException(e);
+		    	Main.logException(e, false);
 		    }
 	    } else {
 	    	Main.logException(new Exception("Unable to load library from " + resourcePath));
