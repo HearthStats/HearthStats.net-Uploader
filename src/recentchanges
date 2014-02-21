@@ -1,4 +1,4 @@
-under development
+v0.14.201302202
 * Deck names are now shown instead of deck slot number
 * Will now warn you if no deck has been assigned
 * Fixed arena run creation warning
