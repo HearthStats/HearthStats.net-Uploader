@@ -117,7 +117,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 	
 	private void _showWelcomeLog() {
-		_log("<strong>HearthStats.net Uploader v" + Config.getVersionWithOs() + "</strong>");
+		_log("<strong>HearthStats.net Uploader v" + Config.getVersionWithOs() + "</strong>\n");
 		_log("1 - Set your deck slots on the \"Decks\" tab");
 		_log("2 - Run Hearthstone in <strong>WINDOWED</strong> mode");
 		_log("3 - Look for event notifications in this log and bottom right of screen");
