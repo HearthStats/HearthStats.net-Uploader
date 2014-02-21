@@ -748,10 +748,21 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_currentNotesField.setText(match.getNotes());
 		// last match
 		if(_lastMatch != null && _lastMatch.getMode() != null) {
-			String tooltip = (_lastMatch.getMode().equals("Arena") ? "View current arena run on" : "Edit the previous match") + " on HearthStats.net";
-			_lastMatchButton.setToolTipText(tooltip);
-			_lastMatchButton.setText(_lastMatch.toString());
-			_lastMatchButton.setEnabled(true);
+			if(_lastMatch.getId() == null) {
+				_notify("Detection Error", "Match result was not detected.");
+				_log("Detection Error: Match result was not detected.");
+				Main.showMessageDialog(
+					"The result of your previous match was not detected.\n\n" +
+					"This often happens if you click away the result banner\n" +
+					"in the game before giving the uploader a second or two\n" +
+					"to recognize the victory and defeat banners."
+				);
+			} else {
+				String tooltip = (_lastMatch.getMode().equals("Arena") ? "View current arena run on" : "Edit the previous match") + " on HearthStats.net";
+				_lastMatchButton.setToolTipText(tooltip);
+				_lastMatchButton.setText(_lastMatch.toString());
+				_lastMatchButton.setEnabled(true);
+			}
 		}
 	}
 	private void _updateImageFrame() {

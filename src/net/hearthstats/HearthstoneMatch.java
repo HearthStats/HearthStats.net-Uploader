@@ -15,7 +15,7 @@ public class HearthstoneMatch {
 	private int _numTurns = 0;
 	private int _duration;
 	private String _notes;
-	private int _id = 0;
+	private Integer _id;
 	
 	public HearthstoneMatch() {
 		
@@ -146,7 +146,7 @@ public class HearthstoneMatch {
 		return "http://hearthstats.net/constructeds/" + getId() + "/edit";		
 	}
 
-	public int getId() {
+	public Integer getId() {
 		return _id;
 	}
 	public void setId(int id) {
