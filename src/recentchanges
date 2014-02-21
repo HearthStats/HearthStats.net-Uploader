@@ -2,6 +2,7 @@ under development
 * Fixed arena run creation warning
 * Removed references to beta site from log introduction
 * Now opens correct profiles page to get user key
+* Added notification of match result detection failure
 
 v0.14.201302201
 * Support for Feb. 20th HearthStats.net updates
