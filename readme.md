@@ -29,11 +29,9 @@ to help test things out or just see how things are going. Check out the project'
 to see how things are progressing.
 
 * Make sure you have Java installed (use windows (http://java.com/en/download/manual.jsp) builds)
-* Download the __[latest release](https://github.com/JeromeDane/HearthStats.net-Uploader/releases)__ of the HearthStats.net Uploader
+* Download the __[latest release](https://hearthstats.net/uploader)__ of the HearthStats.net Uploader
 * Extract the downloaded zip file to any directory
-* Log into the [HearthStats.net Beta Site](http://beta.hearthstats.net/)
-* If you play constructed, go to Decks > [Active Decks](http://beta.hearthstats.net/decks/active_decks) and set your decks there to match the layout you have in game
-* Run HearthStats.exe in the folder where you extracted the zip file
+* On Windows, run HearthStats.exe in the folder where you extracted the zip file
 * A window should open called "HearthStats.net Uploader"
 * Start your Hearthstone client and put it in __windowed mode__ (see [issue #17](https://github.com/JeromeDane/HearthStats.net-Uploader/issues/17))
 * Look for notifications in the bottom right of your screen that indicate event detection
