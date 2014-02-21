@@ -19,6 +19,7 @@ public class DeckSlotUtils {
 	}
 	
 	public static JSONObject getDeckFromSlot(Integer slotNum) {
+		getDecks();
 		for(int i = 0; i < _decks.size(); i++) {
 			if(_decks.get(i).get("slot") != null && _decks.get(i).get("slot").toString().equals(slotNum.toString()))
 				return _decks.get(i); 
@@ -27,6 +28,8 @@ public class DeckSlotUtils {
 	}
 	
 	public static List<JSONObject> getDecks() {
+		if(_decks == null)
+			updateDecks();
 		return _decks;
 	}
 	
