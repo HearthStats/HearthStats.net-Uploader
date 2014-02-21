@@ -706,7 +706,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		if (!Config.showNotifications())
 			return;	//Notifications disabled
 		
-		_notificationQueue.add(new net.hearthstats.Notification(header, message));
+		_notificationQueue.add(new net.hearthstats.Notification(header, message, false));
 	}
 
 	protected void _updateTitle() {

@@ -30,6 +30,9 @@ public class Notification {
 
 	public JDialog frame = new JDialog();
 	public Notification(String header, String message) {
+		this(header, message, true);
+	}
+	public Notification(String header, String message, boolean allowFocus) {
 		frame.setSize(250, message == "" ? 40 : 100);
 		frame.setFont(new Font("Arial",Font.PLAIN,14));
 		frame.setLayout(new GridBagLayout());
@@ -68,7 +71,7 @@ public class Notification {
 		
 		frame.setAlwaysOnTop(true);
 		frame.setUndecorated(true);
-		frame.setFocusableWindowState(false);
+		frame.setFocusableWindowState(allowFocus);
 		
 		JComponent frameComponent = ((JComponent) frame.getContentPane());
 		frameComponent.setBorder(BorderFactory.createMatteBorder( 1, 1, 1, 1, Color.black ));
