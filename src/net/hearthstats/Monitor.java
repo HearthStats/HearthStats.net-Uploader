@@ -131,13 +131,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			JOptionPane.showMessageDialog(null, 
 					"HearthStats.net Uploader Error:\n\n" +
 					"You need to enter your User Key\n\n" +
-					"Get it at http://beta.hearthstats.net/profiles");
+					"Get it at http://hearthstats.net/profiles");
 			
 			// Create Desktop object
 			Desktop d = Desktop.getDesktop();
 			// Browse a URL, say google.com
 			try {
-				d.browse(new URI("http://beta.hearthstats.net/profiles"));
+				d.browse(new URI("http://hearthstats.net/profiles"));
 			} catch (IOException e) {
 				Main.logException(e);
 			} catch (URISyntaxException e) {
