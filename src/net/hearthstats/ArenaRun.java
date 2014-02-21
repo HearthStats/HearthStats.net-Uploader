@@ -22,7 +22,7 @@ public class ArenaRun {
 	
 	public JSONObject toJsonObject() {
 		JSONObject obj = new JSONObject();
-		obj.put("userclass", _userclass);
+		obj.put("class", _userclass);
 		return obj;
 	}
 
