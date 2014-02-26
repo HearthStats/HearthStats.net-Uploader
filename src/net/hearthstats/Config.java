@@ -351,6 +351,10 @@ public class Config {
 		}
 	}
 
+    public static String getJavaLibraryPath() {
+        return _getSystemProperty("java.library.path");
+    }
+
     private static String _getSystemProperty(String property) {
         try {
             return System.getProperty(property);
