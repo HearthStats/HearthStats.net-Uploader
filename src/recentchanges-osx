@@ -1,13 +1,12 @@
-v0.13.201302191
-* Fixed silent crash when trying to read opponent name or rank level
-
-v0.13.201302161
-* First build for OSx (Thanks Charles Gutjahr!)
-* Added "Current Match" tab for live corrections and notes
-* Added contributors to about tab
-* Notifications can now be manually closed early 
-* Links in notifications are now clickable
-* Improved formatting of notifications 
-* Improved formatting of log text
-* Fixed turn detection on Oggrimar board
-* Improved overall opponent turn detection
+v0.14.201302202
+* Support for Feb. 20th HearthStats.net updates
+* Now checks for new versions and updates automatically
+* New "Decks" tab to manage your deck slot assignment
+* Added link to edit the previous match under current match tab
+* Deck names are now shown instead of deck slot number
+* Will now warn you if no deck has been assigned
+* Fixed arena run creation warning
+* Removed references to beta site from log introduction
+* Now opens correct profiles page to get user key
+* Added notification of match result detection failure
+* Important alert dialogs now gain focus appropriately
