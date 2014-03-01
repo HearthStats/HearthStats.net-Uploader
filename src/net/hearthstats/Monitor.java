@@ -53,14 +53,18 @@ import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer, WindowListener {
 
+	protected int _pollingIntervalInMs = 80;
+	protected int _maxThreads = 5;
+	protected int _gcFrequency = 8;
+	
 	protected API _api = new API();
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
 	protected ProgramHelper _hsHelper;
-	protected int _pollingIntervalInMs = 80;
+	
+	private int _pollIterations = 0;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
 	protected JEditorPane _logText;
-    private int _pollIterations = 0;
 	private JScrollPane _logScroll;
 	private JTextField _userKeyField;
 	private JCheckBox _checkUpdatesField;
@@ -75,7 +79,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JCheckBox _startMinimizedField;
 	private JCheckBox _showYourTurnNotificationField;
 	private JTabbedPane _tabbedPane;
-
+	//private List<String> = new 
 
     public Monitor() throws HeadlessException {
         switch (Config.os) {
@@ -114,7 +118,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 		
 		_log("Waiting for Hearthstone (in windowed mode) ...");
-
+		
 	}
 	
 	private void _showWelcomeLog() {
@@ -684,7 +688,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 
-	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+	private int _numThreads = 0;
+	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(_maxThreads);
 
 	protected boolean _drawPaneAdded = false;
 
@@ -715,7 +720,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 	protected void _updateTitle() {
-		String title = "HearthStats.net Uploader";
+		 String title = "HearthStats.net Uploader";
 		if (_hearthstoneDetected) {
 			if (_analyzer.getScreen() != null) {
 				title += " - " + _analyzer.getScreen();
@@ -814,8 +819,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		if(image != null) {
 			// detect image stats 
 			if (image.getWidth() >= 1024)
-				if(!_analyzer.isAnalyzing())
-					_analyzer.analyze(image);
+				_analyzer.analyze(image);
 			
 			if(Config.mirrorGameImage())
 				_updateImageFrame();
@@ -834,10 +838,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			
 		}
 	}
-	
 	protected void _pollHearthstone() {
 		scheduledExecutorService.schedule(new Callable<Object>() {
 			public Object call() throws Exception {
+				_numThreads++;
+				
                 _pollIterations++;
 				
 				if (_hsHelper.foundProgram())
@@ -850,13 +855,38 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_pollHearthstone();		// repeat the process
 
                 // Keep memory usage down by telling the JVM to perform a garbage collection after every fifth poll (ie GC 1-2 times per second)
-                if (_pollIterations % 5 == 0) {
+				if (_pollIterations % _gcFrequency == 0 && Runtime.getRuntime().totalMemory() > 150000000) {
                     System.gc();
                 }
-
+                _numThreads--;
 				return "";
 			}
 		}, _pollingIntervalInMs, TimeUnit.MILLISECONDS);
+	}
+	
+	private void _promptForResult() {
+		Object[] options = { "Victory", "Defeat", "Draw" };
+		String message = "The result of your previous match was not detected.\n\n" +
+				"This often happens if you click away the result banner\n" +
+				"in the game before giving the uploader a second or two\n" +
+				"to recognize the victory and defeat banners.\n\n" +
+				"What was the result of your last match?";
+		String title = "Match Result Not Detected";
+		int dialogResult = JOptionPane.showOptionDialog(null, message, title,
+				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, 
+				null, options, null);
+		if(dialogResult == JOptionPane.YES_OPTION){
+			_analyzer.getMatch().setResult("Victory");
+		} else if(dialogResult == JOptionPane.NO_OPTION){
+			_analyzer.getMatch().setResult("Defeat");
+		} else {
+			_analyzer.getMatch().setResult("Draw");
+		}
+		try {
+			_submitMatchResult();
+		} catch (IOException e) {
+			Main.logException(e);
+		}
 	}
 
 	private void _handleAnalyzerEvent(Object changed) throws IOException {
@@ -882,16 +912,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				
 				break;
 			case "mode":
-				if(_playingInMatch && _analyzer.getResult() == null) {
-					_notify("Detection Error", "Match result was not detected.");
-					_log("Detection Error: Match result was not detected.");
-					Main.showMessageDialog(
-						"The result of your previous match was not detected.\n\n" +
-						"This often happens if you click away the result banner\n" +
-						"in the game before giving the uploader a second or two\n" +
-						"to recognize the victory and defeat banners."
-					);
-				} 
 				_playingInMatch = false;
 				_setCurrentMatchEnabledi(false);
 				if(Config.showModeNotification()) {
@@ -927,6 +947,18 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_submitMatchResult();
 				break;
 			case "screen":
+				
+				boolean inGameModeScreen = (_analyzer.getScreen() == "Arena" || _analyzer.getScreen() == "Play");
+				if(inGameModeScreen) {
+					if(_playingInMatch &&  _analyzer.getResult() == null) {
+						_playingInMatch = false;
+						_notify("Detection Error", "Match result was not detected.");
+						_log("Detection Error: Match result was not detected.");
+						_promptForResult();
+					}
+					_playingInMatch = false;
+				} 
+				
 				if(_analyzer.getScreen() == "Match Start") {
 					_setCurrentMatchEnabledi(true);
 					_playingInMatch = true;

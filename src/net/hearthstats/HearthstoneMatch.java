@@ -120,12 +120,24 @@ public class HearthstoneMatch {
 
 	@SuppressWarnings("unchecked")
 	public JSONObject toJsonObject() {
+		String result = null;
+		switch(getResult()) {
+			case "Victory": case "Win":
+				result = "Win";
+				break;
+			case "Defeat": case "Loss":
+				result = "Loss";
+				break;
+			case "Draw":
+				result = "Draw";
+				break;
+		}
 		JSONObject obj = new JSONObject();
 		obj.put("mode", getMode());
 		obj.put("class", getUserClass());
 		obj.put("oppclass", getOpponentClass());
 		obj.put("oppname", getOpponentName());
-		obj.put("result", getResult() == "Victory" ? "Win" : "Loss");
+		obj.put("result", result);
 		obj.put("coin", hasCoin() ? "true" : "false");
 		obj.put("slot", getDeckSlot());
 		obj.put("notes", getNotes());
