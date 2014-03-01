@@ -6,6 +6,7 @@ package net.hearthstats;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -21,6 +22,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.WindowConstants;
 
@@ -28,15 +30,22 @@ public class Notification {
 
 	public JDialog frame = new JDialog();
 	public Notification(String header, String message) {
-		frame.setSize(200, 75);
+		this(header, message, true);
+	}
+	public Notification(String header, String message, boolean allowFocus) {
+		frame.setSize(250, message == "" ? 40 : 100);
+		frame.setFont(new Font("Arial",Font.PLAIN,14));
 		frame.setLayout(new GridBagLayout());
+		frame.setBackground(Color.LIGHT_GRAY);
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridx = 0;
 		constraints.gridy = 0;
 		constraints.weightx = 1.0f;
-		constraints.weighty = 1.0f;
-		constraints.insets = new Insets(5, 5, 5, 5);
+		constraints.weighty = 0f;
+		constraints.insets = new Insets(0, 5, 0, 0);
 		constraints.fill = GridBagConstraints.BOTH;
+		
+		// header
 		JLabel headingLabel = new JLabel(header);
 		ImageIcon headingIcon = new ImageIcon(getClass().getResource("/images/icon_16px.png"));
 		headingLabel.setIcon(headingIcon); // --- use image icon you want to
@@ -47,8 +56,23 @@ public class Notification {
 		constraints.weighty = 0f;
 		constraints.fill = GridBagConstraints.NONE;
 		constraints.anchor = GridBagConstraints.NORTH;
+		
+		// close button
+		JButton closeButton = new JButton(new AbstractAction("x") {
+	        @Override
+	        public void actionPerformed(final ActionEvent e) {
+	               frame.dispose();
+	        }
+		});
+		closeButton.setMargin(new Insets(0, 4, 1, 4));
+		closeButton.setFocusable(false);
+		constraints.insets = new Insets(5, 5, 5, 5);
+		frame.add(closeButton, constraints);
+		
 		frame.setAlwaysOnTop(true);
 		frame.setUndecorated(true);
+		frame.setFocusableWindowState(allowFocus);
+		
 		JComponent frameComponent = ((JComponent) frame.getContentPane());
 		frameComponent.setBorder(BorderFactory.createMatteBorder( 1, 1, 1, 1, Color.black ));
 		constraints.gridx = 0;
@@ -57,8 +81,15 @@ public class Notification {
 		constraints.weighty = 1.0f;
 		constraints.insets = new Insets(5, 5, 5, 5);
 		constraints.fill = GridBagConstraints.BOTH;
-		JLabel messageLabel = new JLabel("<HtMl>" + message);
-		frame.add(messageLabel, constraints);
+		
+		// message
+		JEditorPane messageText = new JEditorPane();
+		messageText.setContentType("text/html");
+		messageText.setEditable(false);
+		messageText.setBackground(null);
+		messageText.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" + message + "</html>");
+		messageText.addHyperlinkListener(HyperLinkHandler.getInstance());
+		frame.add(messageText, constraints);
 		offset(0);
 	}
 	protected boolean _wasShown = false;

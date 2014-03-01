@@ -11,21 +11,37 @@ public class HearthstoneMatch {
 	private String _result;
 	private int _deckSlot;
 	private String _opponentName;
+	private String _rankLeve;
+	private int _numTurns = 0;
+	private int _duration;
+	private String _notes;
+	private Integer _id;
 	
 	public HearthstoneMatch() {
 		
 	}
-
 	public int getDeckSlot() {
 		return _deckSlot;
+	}
+	
+	public int getDuration() {
+		return _duration;
 	}
 	
 	public String getMode() {
 		return _mode;
 	}
+	
+	public int getNumTurns() {
+		return _numTurns;
+	}
 
 	public void setMode(String mode) {
 		_mode = mode;
+	}
+	
+	public void setNumTurns(int numTurns) {
+		_numTurns = numTurns;
 	}
 
 	public String getUserClass() {
@@ -63,11 +79,22 @@ public class HearthstoneMatch {
 	public void setDeckSlot(int deckSlot) {
 		_deckSlot = deckSlot;
 	}
+	
+	public void setDuration(int duration) {
+		_duration = duration;
+	}
 
+	public String getRankLevel() {
+		return _rankLeve;
+	}
 	public String getResult() {
 		return _result;
 	}
 
+	public void setRankLevel(String rankLevel) {
+		_rankLeve = rankLevel;
+	}
+	
 	public void setResult(String result) {
 		_result = result;
 	}
@@ -76,26 +103,55 @@ public class HearthstoneMatch {
 		return propertyVal == null ? "[undetected]" : propertyVal;
 	}
 	public String toString() {
-		return _propertyOrUnknown(getMode()) + " " +
+		JSONObject deck = DeckSlotUtils.getDeckFromSlot(getDeckSlot());
+		
+		return _propertyOrUnknown(getMode()) + 
+				(getMode() == "Ranked" ? " level " + getRankLevel() : "") +
+				" " +
 				(hasCoin() ? "" : "no ") + "coin " + 
 				_propertyOrUnknown(getUserClass()) + " vs. " +
 				_propertyOrUnknown(getOpponentClass()) + " " +
 				"(" + _propertyOrUnknown(getOpponentName()) + ") " +
-				getResult();
+				getResult() + " " +
+				(deck == null ? "" : " deck: " + deck.get("name")) +
+				" (" + getNumTurns() + " turns)";
+				
 	}
 
+	@SuppressWarnings("unchecked")
 	public JSONObject toJsonObject() {
 		JSONObject obj = new JSONObject();
-		obj.put("mode", getUserClass());
-		obj.put("userclass", getUserClass());
+		obj.put("mode", getMode());
+		obj.put("class", getUserClass());
 		obj.put("oppclass", getOpponentClass());
 		obj.put("oppname", getOpponentName());
-		obj.put("win", getResult() == "Victory" ? "true" : "false");
-		obj.put("gofirst", hasCoin() ? "false" : "true");
+		obj.put("result", getResult() == "Victory" ? "Win" : "Loss");
+		obj.put("coin", hasCoin() ? "true" : "false");
 		obj.put("slot", getDeckSlot());
-		obj.put("rank", getMode());
+		obj.put("notes", getNotes());
+		obj.put("ranklvl", getRankLevel());
+		obj.put("numturns", getNumTurns());
+		obj.put("duration", getDuration());
 		
 		return obj;
+	}
+
+	public String getNotes() {
+		return _notes;
+	}
+	public void setNotes(String text) {
+		_notes = text;
+	}
+	
+	public String getEditUrl() {
+		return "http://hearthstats.net/constructeds/" + getId() + "/edit";		
+	}
+
+	public Integer getId() {
+		return _id;
+	}
+	public void setId(int id) {
+		_id  = id;
 	}
 
 }

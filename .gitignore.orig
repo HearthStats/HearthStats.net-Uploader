@@ -1,0 +1,28 @@
+<<<<<<< HEAD
+/.classpath
+/.project
+/bin
+
+/log.txt
+
+=======
+/.classpath
+/.idea
+/.project
+/.settings
+/bin
+>>>>>>> ca337f87e962d4796679ed9cd94d679567ebc9ce
+/build
+/temp
+/tmp
+/out
+/opponentname.jpg
+<<<<<<< HEAD
+
+.settings/org.eclipse.core.resources.prefs
+=======
+/log.txt
+/config.ini
+/HearthStatsUploader.jar
+/*.iml
+>>>>>>> ca337f87e962d4796679ed9cd94d679567ebc9ce

@@ -1,0 +1,14 @@
+v0.14.201302202
+* Deck names are now shown instead of deck slot number
+* Will now warn you if no deck has been assigned
+* Fixed arena run creation warning
+* Removed references to beta site from log introduction
+* Now opens correct profiles page to get user key
+* Added notification of match result detection failure
+* Important alert dialogs now gain focus appropriately
+
+v0.14.201302201
+* Support for Feb. 20th HearthStats.net updates
+* New "Decks" tab to manage your deck slot assignment
+* Added link to edit the previous match under current match tab
+* Improved memory usage and reduced missed detection events

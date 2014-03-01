@@ -2,14 +2,9 @@ package net.hearthstats;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorConvertOp;
-import java.awt.image.CropImageFilter;
-import java.awt.image.DataBufferInt;
-import java.awt.image.FilteredImageSource;
 import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
@@ -17,32 +12,31 @@ import java.util.Observable;
 
 import javax.imageio.ImageIO;
 
-import net.sourceforge.tess4j.Tesseract;
-import net.sourceforge.tess4j.TesseractException;
-
 public class HearthstoneAnalyzer extends Observable {
 
-	private boolean _coin;
 	private BufferedImage _image;
-	private String _mode;
-	private String _opponentClass;
-	private String _opponentName;
-	private String _result;
 	private String _screen;
-	private String _yourClass;
-	private int _deckSlot;
 	private boolean _isNewArena = false;
 	private float _ratio;
 	private int _xOffset;
 	private int _width;
 	private int _height;
 	private float _screenRatio;
-
+	private boolean _arenaRunEndDetected = false;
+	private boolean _isAnalyzing = false;
+	private boolean _isYourTurn = true;
+	long _startTime;
+	long _endTime;
+	private HearthstoneMatch _match = new HearthstoneMatch();
+	private String _mode;
+	private int _deckSlot;
+	private String _rankLevel;
+	
 	public HearthstoneAnalyzer() {
 	}
 
 	public void analyze(BufferedImage image) {
-		
+		_isAnalyzing = true;
 		_image = image;
 		
 		_calculateResolutionRatios();
@@ -52,6 +46,9 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 
 		if(getScreen() != "Play") {
+			if(getMode() != "Practice") {
+				_testForPracticeScreen();
+			}
 			_testForPlayScreen();
 		}
 		
@@ -59,7 +56,7 @@ public class HearthstoneAnalyzer extends Observable {
 			_testForArenaModeScreen();
 		}
 		
-		if(getScreen() == "Play" || getScreen() == "Arena") {
+		if((getScreen() == "Play" || getScreen() == "Arena") && getMode() != "Practice") {
 			_testForFindingOpponent();
 			if (getScreen() == "Play") {
 				if(getMode() != "Casual")
@@ -70,7 +67,7 @@ public class HearthstoneAnalyzer extends Observable {
 			}
 		}
 		
-		if(getScreen() == "Match Start" || getScreen() == "Opponent Name") {
+		if((getScreen() == "Match Start" || getScreen() == "Opponent Name") && getMode() != "Practice") {
 			if(getYourClass() == null)
 				_testForYourClass();
 			if(getOpponentClass() == null)
@@ -80,26 +77,37 @@ public class HearthstoneAnalyzer extends Observable {
 			if(getScreen() != "Opponent Name")
 				_testForOpponentName();
 		} else {
-			if(getScreen() != "Playing")
+			if(getScreen() != "Playing" && getMode() != "Practice")
 				_testForMatchStartScreen();
 		}
 		
-		if(getScreen() == "Result" || getScreen() == "Arena") {
+		if((getScreen() == "Result" || getScreen() == "Arena") && !_arenaRunEndDetected ) {
 			_testForArenaEnd();
 		}
 		
-		if(getScreen() == "Playing") {
-			_testForVictory();
-			_testForDefeat();
-		} else {
-			_testForPlayingScreen();
+		if(getMode() != "Practice") {
+			if(getScreen() == "Playing") {
+				if(isYourTurn())
+					_testForOpponentTurn();
+				else
+					_testForYourTurn();
+				_testForVictory();
+				_testForDefeat();
+			} else {
+				if(getScreen() != "Result")
+					_testForPlayingScreen();
+			}
 		}
 		
 		if(getScreen() == "Arena" && !isNewArena()) {
 			_testForNewArenaRun();
 		}
-		
+
 		_image.flush();
+		_isAnalyzing = false;
+	}
+	public boolean isAnalyzing() {
+		return _isAnalyzing;
 	}
 
 	private void _calculateResolutionRatios() {
@@ -117,28 +125,49 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 	}
 
+	public void reset() {
+		_match = new HearthstoneMatch();
+		_screen = null;
+		_analyzeRankRetries = 0;
+		_isYourTurn = false;
+		_arenaRunEndDetected = false;
+	}
 	public boolean getCoin() {
-		return _coin;
+		return _match.hasCoin();
+	}
+	public HearthstoneMatch getMatch() {
+		return _match;
 	}
 	
 	public int getDeckSlot() {
-		return _deckSlot;
+		return _match.getDeckSlot();
+	}
+	
+	public int getDuration() {
+		return _match.getDuration();
 	}
 	
 	public String getMode() {
-		return _mode;
+		return _match.getMode();
+	}
+	
+	public int getNumTurns() {
+		return _match.getNumTurns();
 	}
 	
 	public String getOpponentClass() {
-		return _opponentClass;
+		return _match.getOpponentClass();
 	}
 	
 	public String getOpponentName() {
-		return _opponentName;
+		return _match.getOpponentName();
 	}
 	
+	public String getRankLevel() {
+		return _match.getRankLevel();
+	}
 	public String getResult() {
-		return _result;
+		return _match.getResult();
 	}
 	
 	public String getScreen() {
@@ -146,7 +175,11 @@ public class HearthstoneAnalyzer extends Observable {
 	}
 	
 	public String getYourClass() {
-		return _yourClass;
+		return _match.getUserClass();
+	}
+	
+	public boolean isYourTurn() {
+		return _isYourTurn;
 	}
 	
 	public boolean isNewArena() {
@@ -164,32 +197,38 @@ public class HearthstoneAnalyzer extends Observable {
 	}
 	
 	private void _setDeckSlot(int deckSlot) {
+		_match.setDeckSlot(deckSlot);
 		_deckSlot = deckSlot;
 		_notifyObserversOfChangeTo("deckSlot");
 	}
 	
 	private void _setCoin(boolean coin) {
-		_coin = coin;
+		_match.setCoin(coin);
 		_notifyObserversOfChangeTo("coin");
 	}
 	
-	private void _setMode(String screen) {
-		_mode = screen;
+	private void _setMode(String mode) {
+		_mode = mode;
+		_match.setMode(mode);
 		_notifyObserversOfChangeTo("mode");
 	}
 	
 	private void _setOpponentClass(String opponentClass) {
-		_opponentClass = opponentClass;
+		_match.setOpponentClass(opponentClass);
 		_notifyObserversOfChangeTo("opponentClass");
 	}
 	
+	private void _setRankLevel(String rankLevel) {
+		_match.setRankLevel(rankLevel);
+		_rankLevel = rankLevel;
+	}
 	private void _setOpponentName(String opponentName) {
-		_opponentName = opponentName;
+		_match.setOpponentName(opponentName);
 		_notifyObserversOfChangeTo("opponentName");
 	}
 	
 	private void _setResult(String result) {
-		_result = result;
+		_match.setResult(result);
 		_notifyObserversOfChangeTo("result");
 	}
 	
@@ -199,8 +238,14 @@ public class HearthstoneAnalyzer extends Observable {
 	}
 	
 	private void _setYourClass(String yourClass) {
-		_yourClass = yourClass;
+		_match.setUserClass(yourClass);
 		_notifyObserversOfChangeTo("yourClass");
+	}
+	private void _setYourTurn(boolean yourTurn) {
+		_isYourTurn = yourTurn;
+		if(yourTurn)
+			_match.setNumTurns(_match.getNumTurns() + 1);			
+		_notifyObserversOfChangeTo("yourTurn");
 	}
 	
 	private void _testForArenaEnd() {
@@ -212,6 +257,7 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		if((new PixelGroupTest(_image, tests)).passed()) {
 			_screen = "Arena";
+			_arenaRunEndDetected = true;
 			_notifyObserversOfChangeTo("arenaEnd");
 		}
 	}
@@ -225,6 +271,7 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 697, 504, 78, 62, 56 } 
 		};
 		if((new PixelGroupTest(_image, tests)).passed()) {
+			_match = new HearthstoneMatch();
 			_setScreen("Arena");
 			_setMode("Arena");
 		}
@@ -233,7 +280,6 @@ public class HearthstoneAnalyzer extends Observable {
 	private void _testForCasualMode() {
 
 		int[][] tests = { 
-			{ 833, 94, 100, 22, 16 }, // ranked off
 			{ 698, 128, 200, 255, 255 } // casual blue
 		};
 		PixelGroupTest testOne = new PixelGroupTest(_image, tests);
@@ -244,8 +290,15 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		PixelGroupTest testTwo = new PixelGroupTest(_image, testsTwo);
 		
-		if(testOne.passed() || testTwo.passed())
+		int[][] testsThree = { 
+				{ 680, 157, 160, 255, 255} 
+		};
+		PixelGroupTest testThree = new PixelGroupTest(_image, testsThree);
+		
+		if(testOne.passed() || testTwo.passed() || testThree.passed()) {
+			_analyzeRankRetries = 0;
 			_setMode("Casual");
+		}
 	}
 	
 	private void _testForCoin() {
@@ -258,8 +311,9 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 769, 280, 125, 255, 82 },
 			{ 864, 379, 126, 255, 82 }
 		};
-		if((new PixelGroupTest(_image, tests)).passedOr())
+		if((new PixelGroupTest(_image, tests)).passedOr()) {
 			_setCoin(true);
+		}
 	}
 	
 	private void _testForDeckSlot() {
@@ -371,6 +425,7 @@ public class HearthstoneAnalyzer extends Observable {
 		PixelGroupTest pxTestThree = new PixelGroupTest(_image, testsThree);
 
 		if (pxTest.passed() || pxTestTwo.passed() || pxTestThree.passed()) {
+			_endTimer();
 			_setScreen("Result");
 			_setResult("Defeat");
 		}
@@ -378,9 +433,9 @@ public class HearthstoneAnalyzer extends Observable {
 	
 	private void _testForClass(String className, int[][] pixelTests, boolean isYours) {
 		if((new PixelGroupTest(_image, pixelTests)).passed()) {
-			if(isYours)
+			if(isYours && getYourClass() == null)
 				_setYourClass(className);
-			else
+			else if(getOpponentClass() == null)
 				_setOpponentClass(className);
 		}
 	}
@@ -399,11 +454,21 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 839, 585, 139, 113, 77 } 
 		};
 		PixelGroupTest arenaPxTest = new PixelGroupTest(_image, arenaTests);
+		
+		int[][] pxTestsThree = { 
+				{ 516, 643, 242, 208, 181 }, 	// title bar
+				{ 157, 363, 93, 78, 73 }, 
+				{ 851, 163, 27, 25, 26 } 
+		};
+		PixelGroupTest pxTestThree = new PixelGroupTest(_image, pxTestsThree);
 
-		if (pxTest.passed() || arenaPxTest.passed()) {
-			_coin = false;
-			_yourClass = null;
-			_opponentClass = null;
+		if (pxTest.passed() || arenaPxTest.passed() || pxTestThree.passed()) {
+			_match = new HearthstoneMatch();
+			_match.setMode(_mode);
+			_match.setDeckSlot(_deckSlot);
+			_match.setRankLevel(_rankLevel);
+			_arenaRunEndDetected = false;
+			_isYourTurn = false;
 			_setScreen("Finding Opponent");
 		}
 	}
@@ -415,25 +480,24 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		PixelGroupTest pxTest = new PixelGroupTest(_image, tests);
 		
-		if(pxTest.passed()) {
+		int[][] testsTwo = { 
+				{ 379, 118, 189, 146, 82 },		// title banner left
+				{ 641, 119, 197, 154, 86 },		// title banner right
+				{ 515, 622, 121, 191, 255 }		// confirm button
+		};
+		PixelGroupTest pxTestTwo = new PixelGroupTest(_image, testsTwo);
+		
+		if(pxTest.passed() || pxTestTwo.passed()) {
 			_setScreen("Opponent Name");
 			_analyzeOpponnentName();
 		}
 	}
-	
-	private void _analyzeOpponnentName() {
-		
-		int x = (int) ((getMode() == "Ranked" ? 76 : 6) * _ratio);
-		int y = (int) (34 * _ratio);	// with class name underneath
-//		int y = (int) (40 * ratio);
-		int imageWidth = (int) (100 * _ratio);
-		int imageHeight = (int) (19 * _ratio);
-	    
-		int bigWidth = imageWidth * 3;
-		int bigHeight = imageHeight * 3;
+	private String _performOcr(int x, int y, int width, int height, String output) {
+		int bigWidth = width * 3;
+		int bigHeight = height * 3;
 		
 		// get cropped image of name
-		BufferedImage opponentNameImg = _image.getSubimage(x, y, imageWidth, imageHeight);
+		BufferedImage opponentNameImg = _image.getSubimage(x, y, width, height);
 		
 		// to gray scale
 		BufferedImage grayscale = new BufferedImage(opponentNameImg.getWidth(), opponentNameImg.getHeight(), BufferedImage.TYPE_INT_RGB); 
@@ -461,20 +525,75 @@ public class HearthstoneAnalyzer extends Observable {
         }
 		 
 		// increase contrast
+		try {
 			RescaleOp rescaleOp = new RescaleOp(1.8f, -30, null);
 			rescaleOp.filter(newImage, newImage);  // Source and destination are the same.
-		
+		} catch(Exception e) {
+			Main.logException(e);
+			_notifyObserversOfChangeTo("Exception trying to write opponent name image:\n" + e.getMessage());
+		}
 		// save it to a file
-		File outputfile = new File(Main.getExtractionFolder() + "/opponentname.jpg");
+		File outputfile = new File(Main.getExtractionFolder() + "/" + output);
 		try {
 			ImageIO.write(newImage, "jpg", outputfile);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			_notifyObserversOfChangeTo("Exception: " + e.getMessage());
+		} catch (Exception e) {
+			Main.logException(e);
 		}
 		
-		_setOpponentName(OCR.process(Main.getExtractionFolder() + "/opponentname.jpg"));
+		try {
+			String ocrString = OCR.process(newImage);
+			return ocrString == null ? "" : ocrString.replaceAll("\\s+","");
+		} catch(Exception e) {
+			Main.logException(e);
+			_notifyObserversOfChangeTo("Exception trying to analyze opponent name image:\n" + e.getMessage());
+		}
+		return null;
+	}
+	
+	private int _analyzeRankRetries = 0;
+	private void _analyzeRankLevel() {
+		int retryOffset = (_analyzeRankRetries - 1) % 3; 
+		int x = (int) ((875 + retryOffset) * _ratio + _xOffset);
+		int y = (int) (162 * _ratio);	
+		int width = (int) (32 * _ratio);
+		int height = (int) (22 * _ratio);
+		
+		String rankStr = _performOcr(x, y, width, height, "ranklevel.jpg");
+		System.out.println("Rank str: " + rankStr);
+		if(rankStr != null) {
+			rankStr = rankStr.replaceAll("l", "1");
+			rankStr = rankStr.replaceAll("I", "1");
+			rankStr = rankStr.replaceAll("i", "1");
+			rankStr = rankStr.replaceAll("S", "5");
+			rankStr = rankStr.replaceAll("O", "0");
+			rankStr = rankStr.replaceAll("o", "0");
+			rankStr = rankStr.replaceAll("[^\\d.]", "");
+		}
+		System.out.println("Rank str parsed: " + rankStr);
+		
+		if(rankStr != null && !rankStr.isEmpty() && Integer.parseInt(rankStr) != 0 && Integer.parseInt(rankStr) < 26) 
+			_setRankLevel(rankStr);
+		else 
+			if(_analyzeRankRetries < 10) {	// retry up to 5 times
+				_analyzeRankRetries++;
+				System.out.println("rank detection try #" + _analyzeRankRetries);
+				_analyzeRankLevel();
+			}
+		
+	}
+	private void _endTimer() {
+		_match.setDuration(Math.round((System.currentTimeMillis() - _startTime) / 1000));
+	}
+	private void _analyzeOpponnentName() {
+		
+		int x = (int) ((getMode() == "Ranked" ? 76 : 6) * _ratio);
+		int y = (int) (34 * _ratio);	
+		int width = (int) (150 * _ratio);
+		int height = (int) (19 * _ratio);
+	    
+		OCR.setLang("eng");
+		_setOpponentName(_performOcr(x, y, width, height, "opponentname.jpg"));
+		
 	}
 	
 	private void _testForMainMenuScreen() {
@@ -604,8 +723,8 @@ public class HearthstoneAnalyzer extends Observable {
 		PixelGroupTest orcPxTest = new PixelGroupTest(_image, orcBoardTests);
 
 		if (normalPxTest.passed() || orcPxTest.passed()) {
+			_startTime = System.currentTimeMillis();
 			_setScreen("Playing");
-		//	_analyzeOpponnentName();
 		}
 	}
 	
@@ -617,16 +736,34 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 956, 553, 24, 8, 8 }, 
 			{ 489, 688, 68, 65, 63 } 
 		};
-		if((new PixelGroupTest(_image, tests)).passed())
+		if((new PixelGroupTest(_image, tests)).passed()) {
+			_match = new HearthstoneMatch();
+			if(getMode() == "Ranked") {
+				_analyzeRankRetries = 0;
+				_analyzeRankLevel();
+			}
 			_setScreen("Play");
+		}
 	}
 	
+	private void _testForPracticeScreen() {
+		
+		int[][] tests = { 
+				{ 583, 120, 100, 99, 50 }, 	// practice mode green background
+				{ 255, 628, 87, 91, 45 }, 	// practice mode green background
+				{ 244, 28, 222, 199, 157 },	// section heading  
+				{ 262, 695, 217, 193, 151 }	// bottom label 
+		};
+		if((new PixelGroupTest(_image, tests)).passed()) {
+			_setScreen("Practice");
+			_setMode("Practice");
+		}
+	}
 
 	private void _testForRankedMode() {
 
 		int[][] tests = { 
-			{ 833, 88, 220, 255, 255 }, // ranked blue
-			{ 698, 120, 56, 16, 8 } // casual off
+			{ 833, 88, 215, 255, 255 } // ranked blue
 		};
 		PixelGroupTest testOne = new PixelGroupTest(_image, tests);
 		
@@ -636,8 +773,16 @@ public class HearthstoneAnalyzer extends Observable {
 		};
 		PixelGroupTest testTwo = new PixelGroupTest(_image, testsTwo);
 		
-		if(testOne.passed() || testTwo.passed())
+		int[][] testsThree = { 
+				{ 800, 159, 162, 255, 255 } // ranked blue
+		};
+		PixelGroupTest testThree = new PixelGroupTest(_image, testsThree);
+		
+		if(testOne.passed() || testTwo.passed() || testThree.passed()) {
+			_analyzeRankLevel();
 			_setMode("Ranked");
+		}
+			
 	}
 	
 	private void _testForVictory() {
@@ -664,6 +809,7 @@ public class HearthstoneAnalyzer extends Observable {
 		PixelGroupTest pxTestThree = new PixelGroupTest(_image, testsThree);
 
 		if(pxTest.passed() || pxTestTwo.passed() || pxTestThree.passed()) {
+			_endTimer();
 			_setScreen("Result");
 			_setResult("Victory");
 		}
@@ -741,8 +887,47 @@ public class HearthstoneAnalyzer extends Observable {
 				{ 291, 579, 234, 192, 53 }, 
 				{ 280, 461, 255, 245, 225 } 
 		};
-		_testForClass("Warior", warriorTests, true);
+		_testForClass("Warrior", warriorTests, true);
 	}
-	
+	private void _testForYourTurn() {
+		int[][] tests = { 
+				{ 933, 336, 255, 254, 2 },  // top of "end turn" button
+				{ 933, 359, 239, 222, 0 }   // bottom of "end turn" button
+		};
+		PixelGroupTest normalTest = new PixelGroupTest(_image, tests);
+		
+		int[][] testsOgrimmar = { 
+				{ 931, 337, 243, 197, 2 },  // top of "end turn" button
+				{ 933, 357, 216, 163, 11 }   // bottom of "end turn" button
+		};
+		PixelGroupTest oggrimarTest = new PixelGroupTest(_image, testsOgrimmar);
+		
+		if (normalTest.passed() || oggrimarTest.passed()) {
+			_setYourTurn(true);
+		}
+	}
+	private void _testForOpponentTurn() {
+		int[][] tests = { 
+				{ 927, 338, 122, 103, 88 },  // top of "enemy turn" button
+				{ 928, 360, 139, 118, 96}   // bottom of "enemy turn" button
+		};
+		PixelGroupTest normalTest = new PixelGroupTest(_image, tests);
+		
+		int[][] testsTwo = { 
+				{ 924, 342, 134, 137, 141 },  // top of "enemy turn" button
+				{ 939, 360, 134, 137, 140 }   // bottom of "enemy turn" button
+		};
+		PixelGroupTest normalTestTwo = new PixelGroupTest(_image, testsTwo);
+		
+		int[][] testsOgrimmar = { 
+				{ 932, 336, 106, 90, 80 },  // top of "end turn" button
+				{ 927, 359, 193, 118, 96 }   // bottom of "end turn" button
+		};
+		PixelGroupTest oggrimarTest = new PixelGroupTest(_image, testsOgrimmar);
+		
+		if (normalTest.passed() || normalTestTwo.passed() || oggrimarTest.passed()) {
+			_setYourTurn(false);
+		}
+	}
 
 }

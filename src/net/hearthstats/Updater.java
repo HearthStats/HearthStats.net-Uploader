@@ -1,6 +1,7 @@
 package net.hearthstats;
 
 import java.awt.Container;
+import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,6 +10,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -34,10 +37,9 @@ public class Updater {
 	public static void main(String[] args) {
 
 		if (Config.analyticsEnabled()) {
-			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersion(), "UA-45442103-3");
+			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersionWithOs(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("UpdateStart"));
 		}
-
 		
 		_saveSettings();
 
@@ -61,7 +63,8 @@ public class Updater {
 
 	public static void cleanUp() {
 		_removeFile("updater.jar");
-		_removeFile(Main.getExtractionFolder() + "/updatezip");
+		_removeFile("HearthStatsUploader.jar");	// remove old jar since we're using an exe now
+		_removeFile(Main.getExtractionFolder() + "/update.zip");
 	}
 	
 	private static void _removeFile(String path) {
@@ -88,6 +91,12 @@ public class Updater {
 				_notifyException(e);
 			}
 		} else {
+			Main.showMessageDialog("Unable to locate " + updaterFile.getPath() + "\n\nYou will now be taken to the download page.");
+			try {
+				Desktop.getDesktop().browse(new URI("http://hearthstats.net/uploader"));
+			}catch (Exception e) {
+				Main.logException(e);
+			}
 			_notify("Updator Error", "Unable to locate " + updaterFile.getPath());
 		}
 		System.exit(0);
@@ -97,8 +106,10 @@ public class Updater {
 	public static void _saveSettings() {
 		_savedUserKey = Config.getUserKey();
 	}
-	public static void _restoreSettings() {
-		Config.setUserKey(_savedUserKey); 
+	private static void _restoreSettings() {
+		Config.rebuild();
+		Config.setUserKey(_savedUserKey);
+		
 	}
 	public static void _extractZip() {
 
@@ -109,7 +120,7 @@ public class Updater {
 		} else {
 			_notify("Updater Error", "Unable to locate " + updateZip.getPath());
 		}
-
+		
 	}
 
 	/**
@@ -168,24 +179,35 @@ public class Updater {
 	}
 
 	public static void _runMain() {
-		System.out.println("trying to run main");
+		JOptionPane.showMessageDialog(null, "Update complete. Attempting to restart ...");
 		_notify("Restarting ...");
-		File mainFile = new File("HearthStatsUploader.jar");
-		if (mainFile.exists()) {
-			try {
-				Runtime.getRuntime().exec("java -jar " + mainFile.getPath());
-			} catch (IOException e) {
-				e.printStackTrace();
-				_notifyException(e);
+		try {
+			switch(Config.os.toString()) {
+				case "WINDOWS":	
+					Runtime.getRuntime().exec("HearthStats.exe");
+					break;
+				case "OSX":	
+					Desktop.getDesktop().open(new File("HearthStats.app"));
+					break;
 			}
-		} else {
-			_notify("Updator Error", "Unable to locate " + mainFile.getPath());
+		} catch (IOException e) {
+			e.printStackTrace();
+			_notifyException(e);
 		}
 	}
 
 	private static void _downloadUpdate() throws IOException {
 		URL website;
-		website = new URL("https://github.com/JeromeDane/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "/HearthStats.net.Uploader.v" + getAvailableVersion() + ".zip");
+		String zipUrl = null;
+		switch(Config.os.toString()) {
+			case "WINDOWS":
+				 zipUrl = "https://github.com/JeromeDane/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "/HearthStats.net.Uploader.v" + getAvailableVersion() + ".zip";
+				 break;
+			case "OSX":
+				zipUrl = "https://github.com/JeromeDane/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "-osx/HearthStats.net.Uploader.v" + getAvailableVersion() + "-osx.zip";
+				break;
+		}
+		website = new URL(zipUrl);
 		ReadableByteChannel rbc = Channels.newChannel(website.openStream());
 		FileOutputStream fos = new FileOutputStream(Main.getExtractionFolder() + "/update.zip");
 		fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
@@ -211,13 +233,19 @@ public class Updater {
 
 	public static String getAvailableVersion() {
 		if (_availableVersion == null) {
-			_availableVersion = _readRemoteFile("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/version");
+			String url = "https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/version";
+			if(Config.os.toString().equals("OSX"))
+				url += "-osx";
+			_availableVersion = _readRemoteFile(url);
 		}
 		return _availableVersion;
 	}
 	public static String getRecentChanges() {
 		if (_recentChanges == null) {
-			_recentChanges = _readRemoteFile("https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/recentchanges");
+			String url = "https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/recentchanges";
+			if(Config.os.toString().equals("OSX"))
+				url += "-osx";
+			_recentChanges = _readRemoteFile(url);
 		}
 		return _recentChanges;
 	}

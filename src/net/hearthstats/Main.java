@@ -1,63 +1,78 @@
 package net.hearthstats;
 
-import jna.*;
-import jna.extra.GDI32Extra;
-import jna.extra.User32Extra;
-import jna.extra.WinGDIExtra;
+import javax.swing.*;
 
-import java.io.File;
-
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Callable;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
-import javax.imageio.ImageIO;
-import javax.swing.JApplet;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
-import net.sourceforge.tess4j.Tesseract;
-
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-import com.sun.jna.platform.win32.GDI32;
-import com.sun.jna.platform.win32.User32;
-import com.sun.jna.platform.win32.WinDef;
-import com.sun.jna.platform.win32.WinGDI;
-import com.sun.jna.platform.win32.WinDef.HBITMAP;
-import com.sun.jna.platform.win32.WinDef.HDC;
-import com.sun.jna.platform.win32.WinDef.HWND;
-import com.sun.jna.platform.win32.WinDef.RECT;
-import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
-import com.sun.jna.platform.win32.WinNT.HANDLE;
-import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 
 @SuppressWarnings("serial")
 public class Main extends JFrame {
 
 	public static String getExtractionFolder() {
-		String path = "tmp";
-		(new File(path)).mkdirs();
-		return path;
+        if (Config.os == Config.OS.OSX) {
+            File libFolder = new File("/private/tmp/HearthStats.net-Uploader");
+            libFolder.mkdir();
+            return libFolder.getAbsolutePath();
+
+        } else {
+            String path = "tmp";
+            (new File(path)).mkdirs();
+            return path;
+        }
+	}
+	
+	public static String getLogText() {
+		String logText = "";
+		List<String> lines = null;
+		try {
+			lines = Files.readAllLines(Paths.get("log.txt"), Charset.defaultCharset());
+		} catch (IOException e) {
+			Main.logException(e);
+		}
+		for (String line : lines) {
+			logText += line + "\n";
+        }
+		return logText;
+	}
+	public static void log(String str) {
+		PrintWriter out = null;
+		try {
+			out = new PrintWriter(new BufferedWriter(new FileWriter("log.txt", true)));
+		} catch (IOException e) {
+			Main.logException(e);
+		}
+		out.println(str);
+		out.close();
+	}
+	public static void logException(Exception e) {
+		logException(e, true);		
+	}
+	public static void logException(Exception e, boolean showAlert) {
+		e.printStackTrace();
+		Main.log("Exception in Main: " + e.getMessage());
+		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+		for (StackTraceElement element : stackTraceElements) {
+			Main.log(element.toString());
+		}
+		if(showAlert) {
+			JFrame frame = new JFrame();
+			frame.setFocusableWindowState(true);
+			Main.showMessageDialog(e.getMessage() + "\n\nSee log.txt for details");
+		}
+	}
+	public static void showMessageDialog(String message) {
+		JOptionPane op = new JOptionPane(message,JOptionPane.INFORMATION_MESSAGE);
+		JDialog dialog = op.createDialog("HearthStats.net");
+		dialog.setAlwaysOnTop(true);
+		dialog.setModal(true);
+		dialog.setFocusableWindowState(true);
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		dialog.setVisible(true);
 	}
 	
 	protected static ScheduledExecutorService scheduledExecutorService = Executors
@@ -65,46 +80,73 @@ public class Main extends JFrame {
 	
 	protected static JFrame f = new JFrame();
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		
 		try {
-			
+
 			Notification loadingNotification = new Notification("HearthStats.net Uploader", "Loading ...");
 			loadingNotification.show();
-			
+
 			Updater.cleanUp();
-			
+			Config.rebuild();
+
 			_extractTessData();
-			_loadJarDll("liblept168");
-			_loadJarDll("libtesseract302");
+
+			try {
+                switch (Config.os) {
+                    case WINDOWS:
+                        _loadJarDll("liblept168");
+                        _loadJarDll("libtesseract302");
+                        break;
+                    case OSX:
+                        _loadOsxDylib("liblept169");
+                        _loadOsxDylib("libtesseract");
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("HearthStats.net Uploader only supports Windows and Mac OS X");
+                }
+			} catch(Exception e) {
+				Main.logException(e, false);
+				JOptionPane.showMessageDialog(null, "Unable to read required libraries.\nIs the app already running?\n\nExiting ...");
+				System.exit(0);
+			}
 			//System.out.println(OCR.process("opponentname.jpg"));
-			
+
 			loadingNotification.close();
 			
 			Monitor monitor = new Monitor();
 			monitor.start();
 			
 		} catch(Exception e) {
-			JOptionPane.showMessageDialog(null, "Exception in Main: " + e.toString());
+			Main.logException(e);
 			System.exit(1);
 		}
 		
 	}
 	
 	private static void _extractTessData() {
-		String outPath = Main.getExtractionFolder() + "/";
+		String outPath;
+        if (Config.os == Config.OS.OSX) {
+            File libFolder = new File("/tmp/build/share/");
+            libFolder.mkdirs();
+            outPath = libFolder.getAbsolutePath() + "/";
+        } else {
+            outPath = Main.getExtractionFolder() + "/";
+        }
+
 		(new File(outPath + "tessdata/configs")).mkdirs();
 		copyFileFromJarTo("/tessdata/eng.traineddata", outPath + "tessdata/eng.traineddata");
 		copyFileFromJarTo("/tessdata/configs/api_config", outPath + "tessdata/configs/api_config");
-		copyFileFromJarTo("/tessdata/configs/digits", outPath + "/tessdata/configs/digits");
-		copyFileFromJarTo("/tessdata/configs/hocr", outPath + "/tessdata/configs/hocr");
+		copyFileFromJarTo("/tessdata/configs/digits", outPath + "tessdata/configs/digits");
+		copyFileFromJarTo("/tessdata/configs/hocr", outPath + "tessdata/configs/hocr");
 		OCR.setTessdataPath(outPath + "tessdata");
 	}
 	
 	public static void copyFileFromJarTo(String jarPath, String outPath) {
 		InputStream stream = Main.class.getResourceAsStream(jarPath);
 	    if (stream == null) {
-	    	JOptionPane.showMessageDialog(null, "Exception: Unable to find " + jarPath + " in .jar file");
+	    	Main.log("Exception: Unable to load file from JAR: " + jarPath);
+	    	Main.showMessageDialog("Exception: Unable to find " + jarPath + " in .jar file\n\nSee log.txt for details");
 	    	System.exit(1);
 	    } else {
 		    OutputStream resStreamOut = null;
@@ -115,22 +157,20 @@ public class Main extends JFrame {
 		        while ((readBytes = stream.read(buffer)) > 0) {
 		            resStreamOut.write(buffer, 0, readBytes);
 		        }
-		    } catch (IOException e1) {
-		        // TODO Auto-generated catch block
-		        e1.printStackTrace();
+		    } catch (IOException e) {
+		        Main.logException(e);
 		    } finally {
 		        try {
 					stream.close();
 					resStreamOut.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					Main.logException(e);
 				}
 		    }
 	    }
 	}
 	
-	private static void _loadJarDll(String name) throws IOException {
+	private static void _loadJarDll(String name) throws FileNotFoundException {
 		String resourcePath = "/lib/" + name + "_" + System.getProperty("sun.arch.data.model") + ".dll";
 	    InputStream in = Main.class.getResourceAsStream(resourcePath);
 	    if(in != null) {
@@ -142,15 +182,68 @@ public class Main extends JFrame {
 		    String outPath = outDir.getPath() + "/";
 		    
 		    String outFileName = name.replace("_32", "").replace("_64",  "") + ".dll";
-		    FileOutputStream fos = new FileOutputStream(outPath + outFileName);
+		    
+		    FileOutputStream fos = null;
+			fos = new FileOutputStream(outPath + outFileName);
 	
-		    while((read = in.read(buffer)) != -1) {
-		        fos.write(buffer, 0, read);
+		    try {
+				while((read = in.read(buffer)) != -1) {
+				    fos.write(buffer, 0, read);
+				}
+				fos.close();
+				in.close();
+				
+			} catch (IOException e) {
+				Main.logException(e, false);
+			}
+		    try {
+		    	System.loadLibrary(outPath + name);
+		    } catch(Exception e) {
+		    	Main.logException(e, false);
 		    }
-		    fos.close();
-		    in.close();
-	
-		    System.loadLibrary(outPath + name);
+	    } else {
+	    	Main.logException(new Exception("Unable to load library from " + resourcePath));
 	    }
 	}
+
+
+   private static void _loadOsxDylib(String name) {
+
+       String resourcePath = "/darwin/" + name + ".dylib";
+
+       InputStream in = Main.class.getResourceAsStream(resourcePath);
+       if(in != null) {
+           byte[] buffer = new byte[1024];
+           int read = -1;
+
+           File outDir = new File(Main.getExtractionFolder());
+           outDir.mkdirs();
+
+           String absolutePath = outDir.getAbsolutePath() + "/" + name + ".dylib";
+
+           FileOutputStream fos = null;
+           try {
+               fos = new FileOutputStream(absolutePath);
+           } catch (Exception e) {
+        	   Main.logException(e);
+           }
+
+           try {
+               while((read = in.read(buffer)) != -1) {
+                   fos.write(buffer, 0, read);
+               }
+               fos.close();
+               in.close();
+
+           } catch (IOException e) {
+        	   Main.logException(e);
+           }
+           try {
+               System.load(absolutePath);
+           } catch(Exception e) {
+               Main.logException(e);
+           }
+       }
+
+   }
 }
