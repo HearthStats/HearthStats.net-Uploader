@@ -29,7 +29,7 @@ public class HearthstoneAnalyzer extends Observable {
 	private HearthstoneMatch _match = new HearthstoneMatch();
 	private String _mode;
 	private int _deckSlot;
-	private String _rankLevel;
+	private Integer _rankLevel;
 	
 	public HearthstoneAnalyzer() {
 	}
@@ -157,7 +157,7 @@ public class HearthstoneAnalyzer extends Observable {
 		return _match.getOpponentName();
 	}
 	
-	public String getRankLevel() {
+	public Integer getRankLevel() {
 		return _match.getRankLevel();
 	}
 	public String getResult() {
@@ -212,7 +212,7 @@ public class HearthstoneAnalyzer extends Observable {
 		_notifyObserversOfChangeTo("opponentClass");
 	}
 	
-	private void _setRankLevel(String rankLevel) {
+	private void _setRankLevel(Integer rankLevel) {
 		_match.setRankLevel(rankLevel);
 		_rankLevel = rankLevel;
 	}
@@ -568,7 +568,7 @@ public class HearthstoneAnalyzer extends Observable {
 		System.out.println("Rank str parsed: " + rankStr);
 		
 		if(rankStr != null && !rankStr.isEmpty() && Integer.parseInt(rankStr) != 0 && Integer.parseInt(rankStr) < 26) 
-			_setRankLevel(rankStr);
+			_setRankLevel(Integer.parseInt(rankStr));
 		else 
 			if(_analyzeRankRetries < 10) {	// retry up to 5 times
 				_analyzeRankRetries++;

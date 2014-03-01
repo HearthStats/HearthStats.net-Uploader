@@ -11,7 +11,7 @@ public class HearthstoneMatch {
 	private String _result;
 	private int _deckSlot;
 	private String _opponentName;
-	private String _rankLeve;
+	private Integer _rankLeve;
 	private int _numTurns = 0;
 	private int _duration;
 	private String _notes;
@@ -84,14 +84,14 @@ public class HearthstoneMatch {
 		_duration = duration;
 	}
 
-	public String getRankLevel() {
+	public Integer getRankLevel() {
 		return _rankLeve;
 	}
 	public String getResult() {
 		return _result;
 	}
 
-	public void setRankLevel(String rankLevel) {
+	public void setRankLevel(Integer rankLevel) {
 		_rankLeve = rankLevel;
 	}
 	
