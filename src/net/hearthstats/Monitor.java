@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -79,6 +81,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JCheckBox _startMinimizedField;
 	private JCheckBox _showYourTurnNotificationField;
 	private JTabbedPane _tabbedPane;
+	private String[] _hsClassOptions = { "- undetected -", "Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior" };
 	//private List<String> = new 
 
     public Monitor() throws HeadlessException {
@@ -228,7 +231,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
 	private JTextField _currentOpponentNameField;
 	private JLabel _currentMatchLabel;
-	private JLabel _currentYourClassLabel;
 	private JCheckBox _currentGameCoinField;
 	private JTextArea _currentNotesField;
 	private JButton _lastMatchButton;
@@ -242,6 +244,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JComboBox _deckSlot7Field;
 	private JComboBox _deckSlot8Field;
 	private JComboBox _deckSlot9Field;
+	private JComboBox _currentOpponentClassSelect;
+	private JComboBox _currentYourClassSelector;
 
 	private JScrollPane _createAboutUi() {
 		
@@ -323,10 +327,27 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		panel.add(new JLabel(" "), "wrap");
 		
+		// your class
+		panel.add(new JLabel("Your Class: "), "skip,right");
+		_currentYourClassSelector = new JComboBox(_hsClassOptions);
+		_currentYourClassSelector.addItemListener((new ItemListener () {
+			public void itemStateChanged(ItemEvent event) {
+				 if (event.getStateChange() == ItemEvent.SELECTED)
+					_analyzer.getMatch().setUserClass(_currentYourClassSelector.getSelectedItem().toString());
+			}
+		}));
+		panel.add(_currentYourClassSelector, "wrap");
+		
 		// opponent class
 		panel.add(new JLabel("Opponent's Class: "), "skip,right");
-		_currentOpponentClassLabel = new JLabel();
-		panel.add(_currentOpponentClassLabel, "wrap");
+		_currentOpponentClassSelect = new JComboBox(_hsClassOptions);
+		_currentOpponentClassSelect.addItemListener((new ItemListener () {
+			public void itemStateChanged(ItemEvent event) {
+				 if (event.getStateChange() == ItemEvent.SELECTED)
+					_analyzer.getMatch().setOpponentClass(_currentOpponentClassSelect.getSelectedItem().toString());
+			}
+		}));
+		panel.add(_currentOpponentClassSelect, "wrap"); 
 		
 		// Opponent name
 		panel.add(new JLabel("Opponent's Name: "), "skip,right");
@@ -339,10 +360,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    });
 		panel.add(_currentOpponentNameField, "wrap");
 		
-		// your class
-		panel.add(new JLabel("Your Class: "), "skip,right");
-		_currentYourClassLabel = new JLabel();
-		panel.add(_currentYourClassLabel, "wrap");
 		
 		// coin
 		panel.add(new JLabel("Coin: "), "skip,right");
@@ -704,7 +721,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	};
 
 	protected NotificationQueue _notificationQueue = new NotificationQueue();
-	private JLabel _currentOpponentClassLabel;
 	private Boolean _currentMatchEnabled = false;
 	private boolean _playingInMatch = false;
 
@@ -745,15 +761,24 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		setTitle(title);
 	}
 
+	private int _getClassOptionIndex(String cName) {
+		for(int i = 0; i < _hsClassOptions.length; i++) {
+			if(_hsClassOptions[i] == cName)
+				return i;
+		}
+		return 0;
+	}
 	private void _updateCurrentMatchUi() {
 		HearthstoneMatch match = _analyzer.getMatch();
 		if(_currentMatchEnabled)
 			_currentMatchLabel.setText(match.getMode() + " Match - " + " Turn " + match.getNumTurns());
 		else 
 			_currentMatchLabel.setText("Waiting for next match to start ...");
-		_currentOpponentClassLabel.setText(match.getOpponentClass() == null ? "[n/a]" : match.getOpponentClass());
 		_currentOpponentNameField.setText(match.getOpponentName());
-		_currentYourClassLabel.setText(match.getUserClass() == null ? "[n/a]" : match.getUserClass());
+		
+		_currentOpponentClassSelect.setSelectedIndex(_getClassOptionIndex(match.getOpponentClass()));
+		_currentYourClassSelector.setSelectedIndex(_getClassOptionIndex(match.getUserClass()));
+		
 		_currentGameCoinField.setSelected(match.hasCoin());
 		_currentNotesField.setText(match.getNotes());
 		// last match
@@ -1152,6 +1177,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	
 	private void _setCurrentMatchEnabledi(Boolean enabled){
 		_currentMatchEnabled = enabled;
+		_currentYourClassSelector.setEnabled(enabled);
+		_currentOpponentClassSelect.setEnabled(enabled);
 		_currentGameCoinField.setEnabled(enabled);
 		_currentOpponentNameField.setEnabled(enabled);
 		_currentNotesField.setEnabled(enabled);
