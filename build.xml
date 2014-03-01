@@ -83,7 +83,7 @@
 
         <!-- Load the version number from the version file -->
         <loadfile property="hearthstats.version"
-                srcFile="./src/version" />
+                  srcFile="./src/version-osx" />
 
         <echo>Building OS X version ${hearthstats.version}</echo>
 
@@ -99,46 +99,38 @@
             </classpath>
         </javac>
 
-        
+        <!-- Copy resources shared by both the updater and the main program -->
+        <copy preservelastmodified="true" todir="./build/osx">
+            <fileset dir="./src">
+                <include name="**/*.xml" />
+                <include name="**/*.gif" />
+                <include name="**/*.png" />
+                <include name="version" />
+                <include name="version-osx" />
 
-    	<jar destfile="./src/updater.jar" filesetmanifest="mergewithoutmain">
+                <exclude name="**/.DS_Store" />
+            </fileset>
+        </copy>
+
+        <!-- Build the updater jar -->
+        <jar destfile="./build/osx/updater.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="net.hearthstats.Updater"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="./build/osx"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/ghost4j-0.3.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/jai_imageio.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-core-1.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-awt-1.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-cluster-1.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-fir-1.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-moment-1.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-morphology-1.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/JGoogleAnalytics_0.4.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/jna-4.0.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/jna-platform-4.0.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/jna.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/junit-4.10.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-core-4.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-swing-4.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
         </jar>
-    	<sleep milliseconds="6000"/>
-    	
-    	<!-- Copy resources, other than Windows-specific files like DLLs -->
+        <sleep milliseconds="1000"/>
+
+        <!-- Copy remaining resources, other than Windows-specific files like DLLs -->
         <copy preservelastmodified="true" todir="./build/osx">
             <fileset dir="./src">
-                <include name="**/*.gif" />
-                <include name="**/*.png" />
                 <include name="**/*.dylib" />
                 <include name="tessdata/**" />
-                <include name="version" />
-                <include name="version-osx" />
                 <include name="uploader.jar" />
-            	
+
                 <exclude name="**/.DS_Store" />
             </fileset>
         </copy>
