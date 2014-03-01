@@ -23,7 +23,6 @@ public class HearthstoneAnalyzer extends Observable {
 	private int _height;
 	private float _screenRatio;
 	private boolean _arenaRunEndDetected = false;
-	private boolean _isAnalyzing = false;
 	private boolean _isYourTurn = true;
 	long _startTime;
 	long _endTime;
@@ -36,7 +35,6 @@ public class HearthstoneAnalyzer extends Observable {
 	}
 
 	public void analyze(BufferedImage image) {
-		_isAnalyzing = true;
 		_image = image;
 		
 		_calculateResolutionRatios();
@@ -104,10 +102,6 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 
 		_image.flush();
-		_isAnalyzing = false;
-	}
-	public boolean isAnalyzing() {
-		return _isAnalyzing;
 	}
 
 	private void _calculateResolutionRatios() {
@@ -271,7 +265,6 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 697, 504, 78, 62, 56 } 
 		};
 		if((new PixelGroupTest(_image, tests)).passed()) {
-			_match = new HearthstoneMatch();
 			_setScreen("Arena");
 			_setMode("Arena");
 		}
@@ -433,10 +426,13 @@ public class HearthstoneAnalyzer extends Observable {
 	
 	private void _testForClass(String className, int[][] pixelTests, boolean isYours) {
 		if((new PixelGroupTest(_image, pixelTests)).passed()) {
-			if(isYours && getYourClass() == null)
-				_setYourClass(className);
-			else if(getOpponentClass() == null)
-				_setOpponentClass(className);
+			if(isYours) {
+				if(getYourClass() == null)
+					_setYourClass(className);
+			} else { 
+				if(getOpponentClass() == null)
+					_setOpponentClass(className);
+			}
 		}
 	}
 
@@ -737,7 +733,6 @@ public class HearthstoneAnalyzer extends Observable {
 			{ 489, 688, 68, 65, 63 } 
 		};
 		if((new PixelGroupTest(_image, tests)).passed()) {
-			_match = new HearthstoneMatch();
 			if(getMode() == "Ranked") {
 				_analyzeRankRetries = 0;
 				_analyzeRankLevel();
