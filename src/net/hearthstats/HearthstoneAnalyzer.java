@@ -827,9 +827,9 @@ public class HearthstoneAnalyzer extends Observable {
 
 		// Hunter Test
 		int[][] hunterTests = { 
-			{ 289, 438, 173, 161, 147 }, 
-			{ 366, 554, 250, 200, 81 }, 
-			{ 210, 675, 209, 209, 211 } 
+			{ 233, 498, 36, 36, 36 }, 
+			{ 387, 648, 24, 23, 24 }, 
+			{ 296, 435, 173, 180, 186 } 
 		};
 		_testForClass("Hunter", hunterTests, true);
 
