@@ -330,23 +330,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		// your class
 		panel.add(new JLabel("Your Class: "), "skip,right");
 		_currentYourClassSelector = new JComboBox(_hsClassOptions);
-		_currentYourClassSelector.addItemListener((new ItemListener () {
-			public void itemStateChanged(ItemEvent event) {
-				 if (event.getStateChange() == ItemEvent.SELECTED)
-					_analyzer.getMatch().setUserClass(_currentYourClassSelector.getSelectedItem().toString());
-			}
-		}));
 		panel.add(_currentYourClassSelector, "wrap");
 		
 		// opponent class
 		panel.add(new JLabel("Opponent's Class: "), "skip,right");
 		_currentOpponentClassSelect = new JComboBox(_hsClassOptions);
-		_currentOpponentClassSelect.addItemListener((new ItemListener () {
-			public void itemStateChanged(ItemEvent event) {
-				 if (event.getStateChange() == ItemEvent.SELECTED)
-					_analyzer.getMatch().setOpponentClass(_currentOpponentClassSelect.getSelectedItem().toString());
-			}
-		}));
 		panel.add(_currentOpponentClassSelect, "wrap"); 
 		
 		// Opponent name
@@ -769,6 +757,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		return 0;
 	}
 	private void _updateCurrentMatchUi() {
+		_updateMatchClassesIfSet();
 		HearthstoneMatch match = _analyzer.getMatch();
 		if(_currentMatchEnabled)
 			_currentMatchLabel.setText(match.getMode() + " Match - " + " Turn " + match.getNumTurns());
@@ -807,6 +796,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private void _submitMatchResult() throws IOException {
 		HearthstoneMatch hsMatch = _analyzer.getMatch();
 		
+		_updateMatchClassesIfSet();
+		
 		// check for new arena run
 		if(hsMatch.getMode() == "Arena" && _analyzer.isNewArena()) {
 			ArenaRun run = new ArenaRun();
@@ -829,6 +820,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_api.createMatch(hsMatch);
 	}
 	
+	private void _updateMatchClassesIfSet() {
+		if(_currentYourClassSelector.getSelectedIndex() > 0)
+			_analyzer.getMatch().setUserClass(_currentYourClassSelector.getSelectedItem().toString());
+		if(_currentOpponentClassSelect.getSelectedIndex() > 0)
+			_analyzer.getMatch().setOpponentClass(_currentOpponentClassSelect.getSelectedItem().toString());
+	}
+
 	protected void _handleHearthstoneFound() {
 		
 		// mark hearthstone found if necessary
