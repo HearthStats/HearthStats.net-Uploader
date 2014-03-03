@@ -670,7 +670,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			try {
 				String availableVersion = Updater.getAvailableVersion();
 				if(availableVersion != null) {
-					_log(t("latest_v_availabie") + " " + availableVersion);
+					_log(t("latest_v_available") + " " + availableVersion);
 					
 					if(!availableVersion.matches(Config.getVersion())) {
 						int dialogButton = JOptionPane.YES_NO_OPTION;
@@ -709,6 +709,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 					_log("Unable to determine latest available version");
 				}
 			} catch(Exception e) {
+                e.printStackTrace(System.err);
 				_notify("Update Checking Error", "Unable to determine the latest available version");
 			}
 		}
