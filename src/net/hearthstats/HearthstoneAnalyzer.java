@@ -119,8 +119,11 @@ public class HearthstoneAnalyzer extends Observable {
 		}
 	}
 
-	public void reset() {
+	public void resetMatch() {
 		_match = new HearthstoneMatch();
+	}
+	public void reset() {
+		resetMatch();
 		_screen = null;
 		_analyzeRankRetries = 0;
 		_isYourTurn = false;

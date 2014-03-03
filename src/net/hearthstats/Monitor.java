@@ -5,8 +5,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -55,7 +53,7 @@ import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer, WindowListener {
 
-	protected int _pollingIntervalInMs = 333;
+	protected int _pollingIntervalInMs = 200;
 	protected int _maxThreads = 5;
 	protected int _gcFrequency = 8;
 	
@@ -762,7 +760,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		return 0;
 	}
 	private void _updateCurrentMatchUi() {
-		_updateMatchClassesIfSet();
+		_updateMatchClassSelectorsIfSet();
 		HearthstoneMatch match = _analyzer.getMatch();
 		if(_currentMatchEnabled)
 			_currentMatchLabel.setText(match.getMode() + " Match - " + " Turn " + match.getNumTurns());
@@ -801,7 +799,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private void _submitMatchResult() throws IOException {
 		HearthstoneMatch hsMatch = _analyzer.getMatch();
 		
-		_updateMatchClassesIfSet();
+		_updateMatchClassSelectorsIfSet();
 		
 		// check for new arena run
 		if(hsMatch.getMode() == "Arena" && _analyzer.isNewArena()) {
@@ -825,7 +823,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_api.createMatch(hsMatch);
 	}
 	
-	private void _updateMatchClassesIfSet() {
+	private void _resetMatchClassSelectors() {
+		_currentYourClassSelector.setSelectedIndex(0);	
+		_currentOpponentClassSelect.setSelectedIndex(0);	
+	}
+	private void _updateMatchClassSelectorsIfSet() {
 		if(_currentYourClassSelector.getSelectedIndex() > 0)
 			_analyzer.getMatch().setUserClass(_currentYourClassSelector.getSelectedItem().toString());
 		if(_currentOpponentClassSelect.getSelectedIndex() > 0)
@@ -987,6 +989,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 					_playingInMatch = false;
 				} 
 				
+				if(_analyzer.getScreen() == "Finding Opponent") {
+					_resetMatchClassSelectors();
+				}
 				if(_analyzer.getScreen() == "Match Start") {
 					_setCurrentMatchEnabledi(true);
 					_playingInMatch = true;
@@ -1051,8 +1056,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_setCurrentMatchEnabledi(false);
 				_updateCurrentMatchUi();
 				// new line after match result
-				if(_api.getMessage().matches(".*(Edit match|Arena match successfully created).*"))
+				if(_api.getMessage().matches(".*(Edit match|Arena match successfully created).*")) {
+					_analyzer.resetMatch();
+					_resetMatchClassSelectors();
 					_log("------------------------------------------\n");
+				}
 				break;
 		}
 	}
