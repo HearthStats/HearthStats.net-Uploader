@@ -128,6 +128,7 @@
         <copy preservelastmodified="true" todir="./build/osx">
             <fileset dir="./src">
                 <include name="**/*.dylib" />
+                <include name="**/*.properties" />
                 <include name="tessdata/**" />
                 <include name="uploader.jar" />
 
