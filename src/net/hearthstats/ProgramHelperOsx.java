@@ -21,16 +21,12 @@ import java.awt.image.WritableRaster;
  */
 public class ProgramHelperOsx extends ProgramHelper {
 
-    /**
-     * The height of the title of an OS X window. This number of pixels are removed from the top of the screenshot
-     * so that the screenshot doesn't contain the window title.
-     */
-    private final static int WINDOW_TITLE_HEIGHT = 22;
-
     private final String _bundleIdentifier;
 
     private int _pid;
     private int _windowId;
+
+    private boolean _warningWindowSize = false;
 
 
     public ProgramHelperOsx(String bundleIdentifier) {
@@ -48,7 +44,6 @@ public class ProgramHelperOsx extends ProgramHelper {
                 BufferedImage image = getWindowImage(_windowId);
                 if (image == null) {
                     // We seem to have lost the window?
-                    _notifyObserversOfChangeTo("Warning! Window " + _windowId + " could not be found. No detection possible.");
                     _windowId = 0;
                     _pid = 0;
                     return null;
@@ -66,12 +61,9 @@ public class ProgramHelperOsx extends ProgramHelper {
                 } else {
                     // The program was found, so take an image
                     BufferedImage image = getWindowImage(_windowId);
-                    System.out.println("* getScreenCapture() returning image for window " + _windowId);
                     return image;
                 }
             }
-
-            System.out.println("* getScreenCapture() did not find image for window " + _windowId);
 
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
@@ -83,6 +75,13 @@ public class ProgramHelperOsx extends ProgramHelper {
         return null;
     }
 
+
+    /**
+     * <p>Gets a copy of the Hearthstone window with the provided window ID as an in-memory image.</p>
+     *
+     * @param windowId The window ID of Hearthstone, as reported by a call to Quartz Window Services
+     * @return An image of the window, or null if the window doesn't exist or is too small to be an active window.
+     */
     private BufferedImage getWindowImage(int windowId) {
         final NSAutoreleasePool pool = NSAutoreleasePool.new_();
         try {
@@ -104,9 +103,10 @@ public class ProgramHelperOsx extends ProgramHelper {
 
             int width = imageRep.pixelsWide();
             int height = imageRep.pixelsHigh();
-            int heightWithoutTitle = height - WINDOW_TITLE_HEIGHT;
 
-            int format = imageRep.bitmapFormat();
+            int windowTitleHeight = determineWindowTitleHeight(height, width);
+
+            int heightWithoutTitle = height - windowTitleHeight;
 
             Pointer bitmapPointer = imageRep.bitmapData();
             if (bitmapPointer == null || bitmapPointer == Pointer.NULL) {
@@ -116,11 +116,11 @@ public class ProgramHelperOsx extends ProgramHelper {
             } else {
                 int[] data = bitmapPointer.getIntArray(0, width * height);
 
-                if (heightWithoutTitle > WINDOW_TITLE_HEIGHT) {
+                if (heightWithoutTitle > 512) {
                     BufferedImage image = new BufferedImage(width, heightWithoutTitle, BufferedImage.TYPE_INT_RGB);
 
-                    // Start on row WINDOW_TITLE_HEIGHT to exclude the window titlebar
-                    int idx = WINDOW_TITLE_HEIGHT * width;
+                    // Start on row windowTitleHeight to exclude the window titlebar
+                    int idx = windowTitleHeight * width;
 
                     // Manually write each pixel to the raster because OS X generates ARGB screenshots but BufferedImage expects RGB data.
                     WritableRaster raster = image.getRaster();
@@ -151,38 +151,178 @@ public class ProgramHelperOsx extends ProgramHelper {
         }
     }
 
+
+    /**
+     * <p>Determine whether there is a window title on a window given its size, and return the height of that window title.</p>
+     * <p>The technique is quite naive but fast, based on the known screen sizes that Hearthstone supports with backup calculation
+     * if the standard sizes aren't detected.</p>
+     *
+     * @param height Height of the Hearthstone window, in pixels.
+     * @param width Width of the Hearthstone window, in pixels.
+     * @return What the height of the titlebar on the window is likely to be, in pixels. Will be zero in full-screen modes.
+     */
+    private int determineWindowTitleHeight(int height, int width) {
+
+        switch (width) {
+            case 1:
+                if (height == 1) {
+                    return 0;               // Hearthstone has a brief period of its window being 1x1 when changing screen size
+                }
+                break;
+
+            case 1024:
+                if (height == 768) {
+                    return 0;               // Full-screen 1024x768
+                } else if (height == 790) {
+                    return 22;              // Windowed 1024x768
+                }
+                break;                      // Unknown
+
+            case 1344:
+                if (height == 756) {
+                    return 0;               // Full-screen 1344x756
+                } else if (height == 778) {
+                    return 22;              // Windowed 1344x756
+                }
+                break;                      // Unknown
+
+            case 1600:
+                if (height == 900) {
+                    return 0;               // Full-screen 1600x900
+                } else if (height == 922) {
+                    return 22;              // Windowed 1600x900
+                } else if (height == 1200) {
+                    return 0;               // Full-screen 1600x1200
+                } else if (height == 1222) {
+                    return 22;              // Windowed 1600x1200
+                }
+                break;                      // Unknown
+
+            case 1680:
+                if (height == 1050) {
+                    return 0;               // Full-screen 1680x1050
+                } else if (height == 1072) {
+                    return 22;              // Windowed 1680x1050
+                }
+                break;                      // Unknown
+
+            case 1920:
+                if (height == 1080) {
+                    return 0;               // Full-screen 1920x1080
+                } else if (height == 1102) {
+                    return 22;              // Windowed 1920x1080
+                } else if (height == 1200) {
+                    return 0;               // Full-screen 1920x1200
+                } else if (height == 1222) {
+                    return 22;              // Windowed 1920x1200
+                }
+                break;                      // Unknown
+
+            case 2560:
+                if (height == 1440) {
+                    return 0;               // Full-screen 2560x1440
+                } else if (height == 1462) {
+                    return 22;              // Windowed 2560x1440
+                }
+                break;                      // Unknown
+
+        }
+
+        if (!_warningWindowSize) {
+            // This is an unknown window size and we haven't logged a warning yet
+            System.err.println("Encountered unknown window size " + width + "x" + height + " - may not be able to correctly determine whether this window is full-screen.");
+            _warningWindowSize = true;
+        }
+
+        int heightSixteenNineRatio   = width * 9 / 16;
+        int heightSixteenTenRatio    = width * 10 / 16;
+        int heightSixteenTwelveRatio = width * 12 / 16;
+
+        if (height == heightSixteenNineRatio || height == heightSixteenTenRatio || height == heightSixteenTwelveRatio) {
+            // This exactly matches a standard ratio of a Mac screen, so it's probably full-screen
+            return 0;
+
+        } else if (height > heightSixteenNineRatio && height < heightSixteenTenRatio) {
+            // This is just a little taller than a 16:9 ratio, so it's probably windowed
+            return height - heightSixteenNineRatio;
+
+        } else if (height > heightSixteenTenRatio && height < heightSixteenTwelveRatio) {
+            // This is just a little taller than a 16:10 ratio, so it's probably windowed
+            return height - heightSixteenTenRatio;
+
+        } else if (height > heightSixteenTwelveRatio && height < heightSixteenTwelveRatio + 100) {
+            // This is just a little taller than a 16:12 ratio, so it's probably windowed
+            return height - heightSixteenTwelveRatio;
+
+        } else if (height > 22) {
+            // Unknown size, so give up but assume the typical height of an OS X title bar: 22 pixels!
+            return 22;
+        } else {
+            return 0;
+        }
+    }
+
+
+    /**
+     * <p>Finds the main Hearthstone window ID for the given process ID.</p>
+     * <p>Will only return the window that matches expected characteristics of the main Hearthstone window, namely:</p>
+     * <ul>
+     *     <li>kCGWindowIsOnscreen = 1</li>
+     *     <li>kCGWindowLayer = 0</li>
+     *     <li>kCGWindowOwnerPID = [pid]</li>
+     * </ul>
+     *
+     * @param pid The process ID of Hearthstone.
+     * @return the window ID if found, or zero if no suitable window was found. It is normal for the window ID to be zero briefly during startup of Hearthstone.
+     */
     private int findWindow(int pid) {
         final NSAutoreleasePool pool = NSAutoreleasePool.new_();
         try {
 
-            final CFArrayRef originalArray = CoreGraphicsLibrary.INSTANCE.CGWindowListCopyWindowInfo(CGWindow.kCGWindowListExcludeDesktopElements, 0);
+            // Obtain a dictionary of all on-screen windows from Quartz Window Services, which will include all running applications.
+            // Hearthstone typically has five or six windows, but only one or two are 'on screen' and it is those that we are interested in.
+            final CFArrayRef originalArray = CoreGraphicsLibrary.INSTANCE.CGWindowListCopyWindowInfo(CGWindow.kCGWindowListExcludeDesktopElements | CGWindow.kCGWindowListOptionOnScreenOnly, 0);
 
             long count = CoreFoundationLibrary.INSTANCE.CFArrayGetCount(originalArray);
             for (long i = 0; i < count; i++) {
-                Pointer pointer = CoreFoundationLibrary.INSTANCE.CFArrayGetValueAtIndex(originalArray, i);
 
+                // Obtain a CFDictionary containing this window's information dictionary
+                Pointer pointer = CoreFoundationLibrary.INSTANCE.CFArrayGetValueAtIndex(originalArray, i);
                 CFDictionaryRef dictionaryRef = new CFDictionaryRef(pointer);
+
+                // Determine the process ID of this window
                 NSString kCGWindowOwnerPID = CoreGraphicsLibrary.kCGWindowOwnerPID;
                 Pointer pidPointer = CoreFoundationLibrary.INSTANCE.CFDictionaryGetValue(dictionaryRef, kCGWindowOwnerPID.id());
-
                 NativeLongByReference longByReference = new NativeLongByReference();
                 CoreFoundationLibrary.INSTANCE.CFNumberGetValue(pidPointer, CoreFoundationLibrary.CFNumberType.kCFNumberLongType, longByReference.getPointer());
                 long pidLong = longByReference.getValue().longValue();
 
                 if (pidLong == pid) {
+                    // This window is a Hearthstone window
 
-                    NSString kCGWindowNumber = CoreGraphicsLibrary.kCGWindowNumber;
-                    Pointer windowNumberPointer = CoreFoundationLibrary.INSTANCE.CFDictionaryGetValue(dictionaryRef, kCGWindowNumber.id());
+                    // When running in full-screen mode, Hearthstone has two windows: one for the game and one that appears to be a temporary desktop or space for the game to run in.
+                    // The game window always has a kCGWindowLayer of zero, whereas the desktop has a non-zero kCGWindowLayer.
+                    NSString kCGWindowLayer = CoreGraphicsLibrary.kCGWindowLayer;
+                    Pointer windowLayerPointer = CoreFoundationLibrary.INSTANCE.CFDictionaryGetValue(dictionaryRef, kCGWindowLayer.id());
+                    IntByReference windowLayerRef = new IntByReference();
+                    CoreFoundationLibrary.INSTANCE.CFNumberGetValue(windowLayerPointer, CoreFoundationLibrary.CFNumberType.kCFNumberFloatType, windowLayerRef.getPointer());
+                    int windowLayer = windowLayerRef.getValue();
 
-                    if (windowNumberPointer != null) {
+                    if (windowLayer == 0) {
+                        // This window has a zero kCGWindowLayer so it must be the main Hearthstone window
+
+                        NSString kCGWindowNumber = CoreGraphicsLibrary.kCGWindowNumber;
+                        Pointer windowNumberPointer = CoreFoundationLibrary.INSTANCE.CFDictionaryGetValue(dictionaryRef, kCGWindowNumber.id());
                         IntByReference windowIdRef = new IntByReference();
                         CoreFoundationLibrary.INSTANCE.CFNumberGetValue(windowNumberPointer, CoreFoundationLibrary.CFNumberType.kCFNumberIntType, windowIdRef.getPointer());
                         int windowId = windowIdRef.getValue();
+
                         return windowId;
                     }
                 }
             }
 
+            // No Hearthstone window was found
             return 0;
 
         } finally {

@@ -30,7 +30,12 @@ public interface CoreGraphicsLibrary extends Library {
 
     final static NSString kCGWindowNumber =  NSString.getGlobalString("kCGWindowNumber");
     final static NSString kCGWindowOwnerPID =  NSString.getGlobalString("kCGWindowOwnerPID");
-    final static NSString kCGWindowOwnerName =  NSString.getGlobalString("kCGWindowOwnerName");
+    final static NSString kCGWindowBounds =  NSString.getGlobalString("kCGWindowBounds");
+    final static NSString kCGWindowSharingState =  NSString.getGlobalString("kCGWindowSharingState");
+    final static NSString kCGWindowAlpha =  NSString.getGlobalString("kCGWindowAlpha");
+    final static NSString kCGWindowLayer =  NSString.getGlobalString("kCGWindowLayer");
+    final static NSString kCGWindowIsOnscreen =  NSString.getGlobalString("kCGWindowIsOnscreen");
+    final static NSString kCGWindowName =  NSString.getGlobalString("kCGWindowName");
 
     public static final int kCGWindowListOptionAll = 0;
     public static final int kCGWindowListOptionOnScreenOnly = (1 << 0);
