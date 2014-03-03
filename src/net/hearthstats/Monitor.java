@@ -102,15 +102,15 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private ResourceBundle _bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
 	private String[] _hsClassOptions = { 
 			"- " + t("undetected") + " -",
-			t("Druid"),
-			t("Hunter"),
-			t("Mage"),
-			t("Paladin"),
-			t("Priest"),
-			t("Rogue"),
-			t("Shaman"),
-			t("Warlock"),
-			t("Warrior") 
+			"Druid",
+			"Hunter",
+			"Mage",
+			"Paladin",
+			"Priest",
+			"Rogue",
+			"Shaman",
+			"Warlock",
+			"Warrior" 
 		};
 
     public Monitor() throws HeadlessException {
@@ -345,14 +345,19 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		panel.add(new JLabel(" "), "wrap");
 		
+		String[] localizedClassOptions = new String[_hsClassOptions.length];
+		localizedClassOptions[0] = "- " + t("undetected") + " -";
+		for(int i = 1; i < localizedClassOptions.length; i++)
+			localizedClassOptions[i] = t(_hsClassOptions[i]);
+		
 		// your class
 		panel.add(new JLabel(t("match.label.your_class") + " "), "skip,right");
-		_currentYourClassSelector = new JComboBox(_hsClassOptions);
+		_currentYourClassSelector = new JComboBox(localizedClassOptions);
 		panel.add(_currentYourClassSelector, "wrap");
 		
 		// opponent class
 		panel.add(new JLabel(t("match.label.opponents_class") + " "), "skip,right");
-		_currentOpponentClassSelect = new JComboBox(_hsClassOptions);
+		_currentOpponentClassSelect = new JComboBox(localizedClassOptions);
 		panel.add(_currentOpponentClassSelect, "wrap"); 
 		
 		// Opponent name
@@ -842,9 +847,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 	private void _updateMatchClassSelectorsIfSet() {
 		if(_currentYourClassSelector.getSelectedIndex() > 0)
-			_analyzer.getMatch().setUserClass(_currentYourClassSelector.getSelectedItem().toString());
+			_analyzer.getMatch().setUserClass(_hsClassOptions[_currentYourClassSelector.getSelectedIndex()]);
 		if(_currentOpponentClassSelect.getSelectedIndex() > 0)
-			_analyzer.getMatch().setOpponentClass(_currentOpponentClassSelect.getSelectedItem().toString());
+			_analyzer.getMatch().setOpponentClass(_hsClassOptions[_currentOpponentClassSelect.getSelectedIndex()]);
 	}
 
 	protected void _handleHearthstoneFound() {
