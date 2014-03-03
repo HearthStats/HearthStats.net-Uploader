@@ -1,12 +1,9 @@
-v0.14.201302202
-* Support for Feb. 20th HearthStats.net updates
-* Now checks for new versions and updates automatically
-* New "Decks" tab to manage your deck slot assignment
-* Added link to edit the previous match under current match tab
-* Deck names are now shown instead of deck slot number
-* Will now warn you if no deck has been assigned
-* Fixed arena run creation warning
-* Removed references to beta site from log introduction
-* Now opens correct profiles page to get user key
-* Added notification of match result detection failure
-* Important alert dialogs now gain focus appropriately
+v0.15.201403031
+* Full-screen mode is now supported on OS X
+* Improved compatibility with OS X 10.8 Mountain Lion
+* Reduced CPU usage
+* You can now specify a match result if it was undetected
+* You can now change classes in the "Current Match" tab
+* Improved detection of playing as a hunter
+* Minor improvement to rank level detection
+* Started localization
