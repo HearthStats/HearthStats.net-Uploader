@@ -127,7 +127,7 @@ public class Main extends JFrame {
 	private static void _extractTessData() {
 		String outPath;
         if (Config.os == Config.OS.OSX) {
-            File libFolder = new File("/tmp/build/share/");
+            File libFolder = new File(Main.getExtractionFolder() + "/share/");
             libFolder.mkdirs();
             outPath = libFolder.getAbsolutePath() + "/";
         } else {
