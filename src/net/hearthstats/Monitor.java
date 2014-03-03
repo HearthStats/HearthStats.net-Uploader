@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -61,6 +62,25 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
 	protected ProgramHelper _hsHelper;
 	
+	private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
+	private JTextField _currentOpponentNameField;
+	private JLabel _currentMatchLabel;
+	private JCheckBox _currentGameCoinField;
+	private JTextArea _currentNotesField;
+	private JButton _lastMatchButton;
+	private HearthstoneMatch _lastMatch;
+	private JComboBox _deckSlot1Field;
+	private JComboBox _deckSlot2Field;
+	private JComboBox _deckSlot3Field;
+	private JComboBox _deckSlot4Field;
+	private JComboBox _deckSlot5Field;
+	private JComboBox _deckSlot6Field;
+	private JComboBox _deckSlot7Field;
+	private JComboBox _deckSlot8Field;
+	private JComboBox _deckSlot9Field;
+	private JComboBox _currentOpponentClassSelect;
+	private JComboBox _currentYourClassSelector;
+	
 	private int _pollIterations = 0;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
@@ -79,10 +99,22 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JCheckBox _startMinimizedField;
 	private JCheckBox _showYourTurnNotificationField;
 	private JTabbedPane _tabbedPane;
-	private String[] _hsClassOptions = { "- undetected -", "Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior" };
-	//private List<String> = new 
+	private ResourceBundle _bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
+	private String[] _hsClassOptions = { 
+			"- " + t("undetected") + " -",
+			t("Druid"),
+			t("Hunter"),
+			t("Mage"),
+			t("Paladin"),
+			t("Priest"),
+			t("Rogue"),
+			t("Shaman"),
+			t("Warlock"),
+			t("Warrior") 
+		};
 
     public Monitor() throws HeadlessException {
+    	
         switch (Config.os) {
             case WINDOWS:
                 _hsHelper = new ProgramHelperWindows("Hearthstone", "Hearthstone.exe");
@@ -91,15 +123,17 @@ public class Monitor extends JFrame implements Observer, WindowListener {
                 _hsHelper = new ProgramHelperOsx("unity.Blizzard Entertainment.Hearthstone");
                 break;
             default:
-                throw new UnsupportedOperationException("HearthStats.net Uploader only supports Windows and Mac OS X");
+                throw new UnsupportedOperationException(t("error.os_unsupported"));
         }
     }
 
-
-
+    private String t(String key) {
+    	return _bundle.getString(key);
+    }
+    
     public void start() throws IOException {
 		if(Config.analyticsEnabled()) {
-			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersionWithOs(), "UA-45442103-3");
+			_analytics = new JGoogleAnalyticsTracker("HearthStats.net " + t("Uploader"), Config.getVersionWithOs(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("AppStart"));
 		}
 		addWindowListener(this);
@@ -118,31 +152,31 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			_pollHearthstone();
 		}
 		
-		_log("Waiting for Hearthstone (in windowed mode) ...");
+		_log(t("waiting_for_hs_windowed"));
 		
 	}
 	
 	private void _showWelcomeLog() {
-		_log("<strong>HearthStats.net Uploader v" + Config.getVersionWithOs() + "</strong>\n");
-		_log("1 - Set your deck slots on the \"Decks\" tab");
+		_log("<strong>HearthStats.net " + t("Uploader") + " v" + Config.getVersionWithOs() + "</strong>\n");
+		_log(t("welcome_1_set_decks"));
         if (Config.os == Config.OS.OSX) {
-            _log("2 - Run Hearthstone in windowed or full-screen mode");
-            _log("3 - Look for event notifications in this log and bottom right of screen (windowed mode only)");
+            _log(t("welcome_2_run_hearthstone"));
+            _log(t("welcome_3_notifications"));
         } else {
-            _log("2 - Run Hearthstone in <strong>WINDOWED</strong> mode");
-            _log("3 - Look for event notifications in this log and bottom right of screen");
+            _log(t("welcome_2_run_hearthstone_windowed"));
+            _log(t("welcome_3_notifications_windowed"));
         }
-		_log("4 - <a href=\"http://goo.gl/lMbdzg\">Submit feedback here</a> (please copy and paste this log)\n");
+		_log(t("welcome_4_feedback") + "\n");
 	}
 	
 	private boolean _checkForUserKey() {
 		if(Config.getUserKey().equals("your_userkey_here")) {
-			_log("Userkey yet not entered");
+			_log(t("error.userkey_not_entered"));
 			
 			JOptionPane.showMessageDialog(null, 
-					"HearthStats.net Uploader Error:\n\n" +
-					"You need to enter your User Key\n\n" +
-					"Get it at http://hearthstats.net/profiles");
+					"HearthStats.net " + t("error.title") + ":\n\n" +
+					t("you_need_to_enter_userkey") + "\n\n" +
+					t("get_it_at_hsnet_profiles"));
 			
 			// Create Desktop object
 			Desktop d = Desktop.getDesktop();
@@ -155,13 +189,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				Main.logException(e);
 			}
 			
-			String[] options = {"OK", "Cancel"};
+			String[] options = {t("button.ok"), t("button.cancel")};
 			JPanel panel = new JPanel();
-			JLabel lbl = new JLabel("User Key");
+			JLabel lbl = new JLabel(t("UserKey"));
 			JTextField txt = new JTextField(10);
 			panel.add(lbl);
 			panel.add(txt);
-			int selectedOption = JOptionPane.showOptionDialog(null, panel, "Enter your user key", JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
+			int selectedOption = JOptionPane.showOptionDialog(null, panel, t("enter_your_userkey"), JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
 			if(selectedOption == 0) {
 			    String userkey = txt.getText();
 			    if(userkey.isEmpty()) {
@@ -170,7 +204,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			    	Config.setUserKey(userkey);
 			    	Config.save();
 			    	_userKeyField.setText(userkey);
-			    	_log("Userkey stored");
+			    	_log(t("UserkeyStored"));
 			    	_pollHearthstone();
 			    }
 			} else {
@@ -194,16 +228,16 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_logText = new JEditorPane();
 		_logText.setContentType("text/html");
 		_logText.setEditable(false);
-		_logText.setText("Event Log:\n");
+		_logText.setText(t("EventLog") + ":\n");
 		_logText.setEditable(false);
 		_logText.addHyperlinkListener(_hyperLinkListener);
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		_tabbedPane.add(_logScroll, "Log");
+		_tabbedPane.add(_logScroll, t("tab.log"));
 		
-		_tabbedPane.add(_createMatchUi(), "Current Match");
-		_tabbedPane.add(_createDecksUi(), "Decks");
-		_tabbedPane.add(_createOptionsUi(), "Options");
-		_tabbedPane.add(_createAboutUi(), "About");
+		_tabbedPane.add(_createMatchUi(), t("tab.current_match"));
+		_tabbedPane.add(_createDecksUi(), t("tab.decks"));
+		_tabbedPane.add(_createOptionsUi(), t("tab.options"));
+		_tabbedPane.add(_createAboutUi(), t("tab.about"));
 		
 		_tabbedPane.addChangeListener(new ChangeListener() {
 	        public void stateChanged(ChangeEvent e) {
@@ -211,8 +245,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 					try {
 						_updateDecksTab();
 					} catch (IOException e1) {
-						_notify("Error loading decks", "Unable to load your decks. Is HearthStats.net down?");
-						_log("Unable to load your decks. Is HearthStats.net down?");
+						_notify(t("error.loading_decks.title"), t("error.loading_decks"));
+						_log(t("error.loading_decks"));
 						Main.logException(e1, false);
 					}
 	        }
@@ -231,25 +265,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_updateTitle();
 	}
 	
-	private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
-	private JTextField _currentOpponentNameField;
-	private JLabel _currentMatchLabel;
-	private JCheckBox _currentGameCoinField;
-	private JTextArea _currentNotesField;
-	private JButton _lastMatchButton;
-	private HearthstoneMatch _lastMatch;
-	private JComboBox _deckSlot1Field;
-	private JComboBox _deckSlot2Field;
-	private JComboBox _deckSlot3Field;
-	private JComboBox _deckSlot4Field;
-	private JComboBox _deckSlot5Field;
-	private JComboBox _deckSlot6Field;
-	private JComboBox _deckSlot7Field;
-	private JComboBox _deckSlot8Field;
-	private JComboBox _deckSlot9Field;
-	private JComboBox _currentOpponentClassSelect;
-	private JComboBox _currentYourClassSelector;
-
 	private JScrollPane _createAboutUi() {
 		
 		JPanel panel = new JPanel();
@@ -263,18 +278,18 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		text.setEditable(false);
 		text.setBackground(Color.WHITE);
 		text.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
-				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> uploader v" + Config.getVersion() + "</h2>" +
-				"<p><strong>Author:</strong> Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>)</p>" + 
-				"<p>This utility uses screen grab analysis of your Hearthstone window<br>" +
-					"and does not do any packet sniffing, monitoring, or network<br>" +
-					"modification of any kind.</p>" +
-				"<p>This project is and always will be open source so that you can do<br>" +
-					"your own builds and see exactly what's happening within the program.</p>" +
-				"<p>&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/\">Project source on GitHub</a><br/>" +
-				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/releases\">Latest releases & changelog</a><br/>" +
-				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/issues\">Feedback and suggestions</a><br/>" +
+				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> " + t("Uploader") + " v" + Config.getVersion() + "</h2>" +
+				"<p><strong>" + t("Author") + ":</strong> Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>)</p>" + 
+				"<p>" + t("about.utility_l1") + "<br>" +
+					t("about.utility_l2") + "<br>" +
+					t("about.utility_l3") + "</p>" +
+				"<p>" + t("about.open_source_l1") + "<br>" +
+					t("about.open_source_l2") + "</p>" +
+				"<p>&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/\">" + t("about.project_source") + "</a><br/>" +
+				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/releases\">" + t("about.releases_and_changelog") + "</a><br/>" +
+				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/issues\">" + t("about.feedback_and_suggestions") + "</a><br/>" +
 				"&bull; <a href=\"http://redd.it/1wa4rc/\">Reddit thread</a> (please up-vote)</p>" +
-				"<p><strong>Support this project:</strong></p>" +
+				"<p><strong>" + t("about.support_project") + ":</strong></p>" +
 				"</body></html>"
 			);
 	    text.addHyperlinkListener(_hyperLinkListener);
@@ -331,12 +346,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(new JLabel(" "), "wrap");
 		
 		// your class
-		panel.add(new JLabel("Your Class: "), "skip,right");
+		panel.add(new JLabel(t("match.label.your_class") + " "), "skip,right");
 		_currentYourClassSelector = new JComboBox(_hsClassOptions);
 		panel.add(_currentYourClassSelector, "wrap");
 		
 		// opponent class
-		panel.add(new JLabel("Opponent's Class: "), "skip,right");
+		panel.add(new JLabel(t("match.label.opponents_class") + " "), "skip,right");
 		_currentOpponentClassSelect = new JComboBox(_hsClassOptions);
 		panel.add(_currentOpponentClassSelect, "wrap"); 
 		
@@ -353,8 +368,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		
 		// coin
-		panel.add(new JLabel("Coin: "), "skip,right");
-		_currentGameCoinField = new JCheckBox("started with the coin");
+		panel.add(new JLabel(t("match.label.coin") + " "), "skip,right");
+		_currentGameCoinField = new JCheckBox(t("match.coin"));
 		_currentGameCoinField.setSelected(Config.showHsClosedNotification());
 		_currentGameCoinField.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -364,7 +379,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(_currentGameCoinField, "wrap");
 		
 		// notes
-		panel.add(new JLabel("Notes: "), "skip,wrap");
+		panel.add(new JLabel(t("match.label.notes") + " "), "skip,wrap");
 		_currentNotesField = new JTextArea();
 		_currentNotesField.setBorder(BorderFactory.createMatteBorder( 1, 1, 1, 1, Color.black ));
 		_currentNotesField.setMinimumSize(new Dimension(350,150));
@@ -379,7 +394,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    panel.add(new JLabel(" "), "wrap");
 	    
 	    // last match
-	    panel.add(new JLabel("Previous Match: "), "skip,wrap");
+	    panel.add(new JLabel(t("match.label.previous_match") + " "), "skip,wrap");
 	    _lastMatchButton = new JButton("[n/a]");
 	    _lastMatchButton.addActionListener(new ActionListener() {
 			@Override
@@ -404,12 +419,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.setLayout(layout);
 		
 		panel.add(new JLabel(" "), "wrap");
-		panel.add(new JLabel("Set your deck slots ..."), "skip,span,wrap");
+		panel.add(new JLabel(t("set_your_deck_slots")), "skip,span,wrap");
 		panel.add(new JLabel(" "), "wrap");
 		
-		panel.add(new JLabel("Slot 1:"), "skip"); 
-		panel.add(new JLabel("Slot 2:"), ""); 
-		panel.add(new JLabel("Slot 3:"), "wrap");
+		panel.add(new JLabel(t("deck_slot.label_1")), "skip"); 
+		panel.add(new JLabel(t("deck_slot.label_2")), ""); 
+		panel.add(new JLabel(t("deck_slot.label_3")), "wrap");
 		
 		_deckSlot1Field = new JComboBox();
 		panel.add(_deckSlot1Field, "skip"); 
@@ -420,9 +435,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		panel.add(new JLabel(" "), "wrap");
 		
-		panel.add(new JLabel("Slot 4:"), "skip"); 
-		panel.add(new JLabel("Slot 5:"), ""); 
-		panel.add(new JLabel("Slot 6:"), "wrap");
+		panel.add(new JLabel(t("deck_slot.label_4")), "skip"); 
+		panel.add(new JLabel(t("deck_slot.label_5")), ""); 
+		panel.add(new JLabel(t("deck_slot.label_6")), "wrap");
 		
 		_deckSlot4Field = new JComboBox();
 		panel.add(_deckSlot4Field, "skip"); 
@@ -433,9 +448,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		panel.add(new JLabel(" "), "wrap");
 		
-		panel.add(new JLabel("Slot 7:"), "skip"); 
-		panel.add(new JLabel("Slot 8:"), ""); 
-		panel.add(new JLabel("Slot 9:"), "wrap");
+		panel.add(new JLabel(t("deck_slot.label_7")), "skip"); 
+		panel.add(new JLabel(t("deck_slot.label_8")), ""); 
+		panel.add(new JLabel(t("deck_slot.label_9")), "wrap");
 		
 		_deckSlot7Field = new JComboBox();
 		panel.add(_deckSlot7Field, "skip"); 
@@ -447,7 +462,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(new JLabel(" "), "wrap");
 		panel.add(new JLabel(" "), "wrap");
 		
-		JButton saveButton = new JButton("Save Deck Slots");
+		JButton saveButton = new JButton(t("button.save_deck_slots"));
 		saveButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -456,7 +471,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		});
 		panel.add(saveButton, "skip");
 		
-		JButton refreshButton = new JButton("Refresh");
+		JButton refreshButton = new JButton(t("button.refresh"));
 		refreshButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -472,7 +487,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(new JLabel(" "), "wrap");
 		panel.add(new JLabel(" "), "wrap");
 		
-		JButton myDecksButton = new JButton("Manage your decks on HearthStats.net");
+		JButton myDecksButton = new JButton(t("manage_decks_on_hsnet"));
 		myDecksButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -496,19 +511,19 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(new JLabel(" "), "wrap");
 		
 		// user key
-		panel.add(new JLabel("User Key: "), "skip,right");
+		panel.add(new JLabel(t("options.label.userkey") + " "), "skip,right");
 		_userKeyField = new JTextField();
 		_userKeyField.setText(Config.getUserKey());
 		panel.add(_userKeyField, "wrap");
 		
 		// check for updates
-		panel.add(new JLabel("Updates: "), "skip,right");
-		_checkUpdatesField = new JCheckBox("Check for updates when starting the app");
+		panel.add(new JLabel(t("options.label.updates") + " "), "skip,right");
+		_checkUpdatesField = new JCheckBox(t("options.check_updates"));
 		_checkUpdatesField.setSelected(Config.checkForUpdates());
 		panel.add(_checkUpdatesField, "wrap");
 		
 		// show notifications
-		panel.add(new JLabel("Notifications: "), "skip,right");
+		panel.add(new JLabel(t("options.label.notifications") + " "), "skip,right");
 		_notificationsEnabledField = new JCheckBox("Show notifications");
 		_notificationsEnabledField.setSelected(Config.showNotifications());
 		_notificationsEnabledField.addActionListener(new ActionListener() {
@@ -521,37 +536,37 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		// show HS found notification
 		panel.add(new JLabel(""), "skip,right");
-		_showHsFoundField = new JCheckBox("Hearthstone found");
+		_showHsFoundField = new JCheckBox(t("options.notification.hs_found"));
 		_showHsFoundField.setSelected(Config.showHsFoundNotification());
 		panel.add(_showHsFoundField, "wrap");
 		
 		// show HS closed notification
 		panel.add(new JLabel(""), "skip,right");
-		_showHsClosedField = new JCheckBox("Hearthstone closed");
+		_showHsClosedField = new JCheckBox(t("options.notification.hs_closed"));
 		_showHsClosedField.setSelected(Config.showHsClosedNotification());
 		panel.add(_showHsClosedField, "wrap");
 		
 		// show game screen notification
 		panel.add(new JLabel(""), "skip,right");
-		_showScreenNotificationField = new JCheckBox("Game screen detection");
+		_showScreenNotificationField = new JCheckBox(t("options.notification.screen"));
 		_showScreenNotificationField.setSelected(Config.showScreenNotification());
 		panel.add(_showScreenNotificationField, "wrap");
 		
 		// show game mode notification
 		panel.add(new JLabel(""), "skip,right");
-		_showModeNotificationField = new JCheckBox("Game mode detection");
+		_showModeNotificationField = new JCheckBox(t("options.notification.mode"));
 		_showModeNotificationField.setSelected(Config.showModeNotification());
 		panel.add(_showModeNotificationField, "wrap");
 		
 		// show deck notification
 		panel.add(new JLabel(""), "skip,right");
-		_showDeckNotificationField = new JCheckBox("Deck detection");
+		_showDeckNotificationField = new JCheckBox(t("options.notification.deck"));
 		_showDeckNotificationField.setSelected(Config.showDeckNotification());
 		panel.add(_showDeckNotificationField, "wrap");
 		
 		// show your turn notification
 		panel.add(new JLabel(""), "skip,right");
-		_showYourTurnNotificationField = new JCheckBox("Your turn");
+		_showYourTurnNotificationField = new JCheckBox(t("options.notification.turn"));
 		_showYourTurnNotificationField.setSelected(Config.showYourTurnNotification());
 		panel.add(_showYourTurnNotificationField, "wrap");
 		
@@ -559,32 +574,32 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		// minimize to tray
 		panel.add(new JLabel("Interface: "), "skip,right");
-		_minToTrayField = new JCheckBox("Minimize to system tray");
+		_minToTrayField = new JCheckBox(t("options.notification.min_to_tray"));
 		_minToTrayField.setSelected(Config.checkForUpdates());
 		panel.add(_minToTrayField, "wrap");
 		
 		// start minimized
 		panel.add(new JLabel(""), "skip,right");
-		_startMinimizedField = new JCheckBox("Start minimized");
+		_startMinimizedField = new JCheckBox(t("options.notification.start_min"));
 		_startMinimizedField.setSelected(Config.startMinimized());
 		panel.add(_startMinimizedField, "wrap");
 
 		// analytics
 		panel.add(new JLabel("Analytics: "), "skip,right");
-		_analyticsField = new JCheckBox("Submit anonymous useage stats");
+		_analyticsField = new JCheckBox(t("options.submit_stats"));
 		_analyticsField.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(!_analyticsField.isSelected()) {
 					int dialogResult = JOptionPane.showConfirmDialog(null, 
 							"A lot of work has gone into this uploader.\n" +
-									"It is provided for free, and all we ask in return\n" +
-									"is that you let us track basic, anonymous statistics\n" +
-									"about how frequently it is being used." +
-									"\n\nAre you sure you want to disable analytics?"
-									,
-									"Please reconsider ...",
-									JOptionPane.YES_NO_OPTION);		
+							"It is provided for free, and all we ask in return\n" +
+							"is that you let us track basic, anonymous statistics\n" +
+							"about how frequently it is being used." +
+							"\n\nAre you sure you want to disable analytics?"
+							,
+							"Please reconsider ...",
+							JOptionPane.YES_NO_OPTION);		
 					if(dialogResult == JOptionPane.NO_OPTION){
 						_analyticsField.setSelected(true);
 					}
@@ -596,7 +611,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		// Save button
 		panel.add(new JLabel(""), "skip,right");
-		JButton saveOptionsButton = new JButton("Save Options");
+		JButton saveOptionsButton = new JButton(t("button.save_options"));
 		saveOptionsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -627,7 +642,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		List<JSONObject> decks = DeckSlotUtils.getDecks();
 		
 		for(int i = 0; i < decks.size(); i++) {
-			selector.addItem(decks.get(i).get("name") + "                        #" + decks.get(i).get("id"));
+			selector.addItem(decks.get(i).get("name") + "                                       #" + decks.get(i).get("id"));
 			if(decks.get(i).get("slot") != null && decks.get(i).get("slot").toString().equals(slotNum.toString()))
 				selector.setSelectedIndex(i + 1);
 		}
@@ -646,22 +661,20 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 	private void _checkForUpdates() {
 		if(Config.checkForUpdates()) {
-			_log("Checking for updates ...");
+			_log(t("checking_for_updates..."));
 			try {
 				String availableVersion = Updater.getAvailableVersion();
 				if(availableVersion != null) {
-					_log("Latest version available: " + availableVersion);
+					_log(t("latest_v_availabie") + " " + availableVersion);
 					
 					if(!availableVersion.matches(Config.getVersion())) {
 						int dialogButton = JOptionPane.YES_NO_OPTION;
 						int dialogResult = JOptionPane.showConfirmDialog(null, 
 								"A new version of this uploader is available\n\n" +
-								//"v" + Config.getVersion() + " is your current version\n\n" +
-								//"v" + availableVersion + " is the latest version\n\n" +
 								Updater.getRecentChanges() +
-								"\n\nWould you install this update now?"
+								"\n\n" + t("would_u_like_to_install_update")
 								,
-								"HearthStats.net Uploader Update Available",
+								"HearthStats.net " + t("uploader_updates_avail"),
 								dialogButton);		
 						if(dialogResult == JOptionPane.YES_OPTION){
 							/*
@@ -674,15 +687,15 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 							Updater.run();
 						} else {
 							dialogResult = JOptionPane.showConfirmDialog(null, 
-									"Would you like to disable automatic update checking?",
-									"Disable update checking",
+									t("would_you_like_to_disable_updates"),
+									t("disable_update_checking"),
 									dialogButton);
 							if(dialogResult == JOptionPane.YES_OPTION){
-								String[] options = {"OK"};
+								String[] options = { t("button.ok") };
 								JPanel panel = new JPanel();
-								JLabel lbl = new JLabel("You can re-enable update checking by editing config.ini");
+								JLabel lbl = new JLabel(t("reenable_updates_any_time"));
 								panel.add(lbl);
-								JOptionPane.showOptionDialog(null, panel, "Automatic Update Checking Disabled", JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
+								JOptionPane.showOptionDialog(null, panel, t("updates_disabled_msg"), JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
 								Config.setCheckForUpdates(false);
 							}
 						}
