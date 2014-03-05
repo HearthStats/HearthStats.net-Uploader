@@ -1,3 +1,6 @@
+v0.15.201403051
+* Support for Retina displays in both windowed & full-screen mode
+
 v0.15.201403031
 * Full-screen mode is now supported on OS X
 * Improved compatibility with OS X 10.8 Mountain Lion
