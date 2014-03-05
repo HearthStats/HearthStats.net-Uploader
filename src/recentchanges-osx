@@ -1,3 +1,7 @@
+v0.15.201403052
+* Fixed crash when prompted to enter user key
+* Increased detection frequency
+
 v0.15.201403051
 * Support for Retina displays in both windowed & full-screen mode
 
