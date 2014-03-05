@@ -1,5 +1,6 @@
 v0.15.201403051
 * Fixed crash when prompted to enter user key
+* Increased detection frequency
 
 v0.15.201403031
 * Reduced CPU usage
