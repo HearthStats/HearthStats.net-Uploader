@@ -1,3 +1,6 @@
+v0.15.201403051
+* Fixed crash when prompted to enter user key
+
 v0.15.201403031
 * Reduced CPU usage
 * You can now specify a match result if it was undetected
