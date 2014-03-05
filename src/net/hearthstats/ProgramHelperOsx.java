@@ -95,7 +95,7 @@ public class ProgramHelperOsx extends ProgramHelper {
             bounds.size.height = 0;
 
             // Take a screenshot of the program window
-            ID imageRef = CoreGraphicsLibrary.INSTANCE.CGWindowListCreateImage(bounds, CoreGraphicsLibrary.kCGWindowListOptionIncludingWindow | CoreGraphicsLibrary.kCGWindowListExcludeDesktopElements, windowId, CoreGraphicsLibrary.kCGWindowImageBoundsIgnoreFraming);
+            ID imageRef = CoreGraphicsLibrary.INSTANCE.CGWindowListCreateImage(bounds, CoreGraphicsLibrary.kCGWindowListOptionIncludingWindow | CoreGraphicsLibrary.kCGWindowListExcludeDesktopElements, windowId, CoreGraphicsLibrary.kCGWindowImageBoundsIgnoreFraming | CoreGraphicsLibrary.kCGWindowImageNominalResolution);
 
             // Convert the screenshot into a more useful ImageRep object, and retain the object so that it isn't lost before we extract the image data
             NSBitmapImageRep imageRep = NSBitmapImageRep.CLASS.alloc().initWithCGImage(imageRef).initWithCGImage(imageRef);
@@ -175,6 +175,30 @@ public class ProgramHelperOsx extends ProgramHelper {
                     return 0;               // Full-screen 1024x768
                 } else if (height == 790) {
                     return 22;              // Windowed 1024x768
+                } else if (height == 742) {
+                    return 22;              // Windowed 2048x1536 on Retina display, scaled
+                }
+                break;                      // Unknown
+
+            case 1200:
+                if (height == 742) {
+                    return 22;              // Windowed 2560x1600 on Retina display, scaled
+                }
+                break;                      // Unknown
+
+            case 1280:
+                if (height == 720) {
+                    return 0;               // Full-screen 1280x720
+                } else if (height == 742) {
+                    return 22;              // Windowed 1280x720
+                } else if (height == 800) {
+                    return 0;               // Full-screen 1280x800 or 2560x1600 on Retina display, scaled
+                } else if (height == 822) {
+                    return 22;              // Windowed 1280x800
+                } else if (height == 1024) {
+                    return 0;               // Full-screen 1280x1024
+                } else if (height == 1046) {
+                    return 22;              // Windowed 1280x1024
                 }
                 break;                      // Unknown
 
@@ -183,6 +207,12 @@ public class ProgramHelperOsx extends ProgramHelper {
                     return 0;               // Full-screen 1344x756
                 } else if (height == 778) {
                     return 22;              // Windowed 1344x756
+                }
+                break;                      // Unknown
+
+            case 1440:
+                if (height == 900) {
+                    return 0;               // Full-screen 1440x900 or 2880x1800 on Retina display, scaled
                 }
                 break;                      // Unknown
 
@@ -234,32 +264,19 @@ public class ProgramHelperOsx extends ProgramHelper {
             _warningWindowSize = true;
         }
 
-        int heightSixteenNineRatio   = width * 9 / 16;
-        int heightSixteenTenRatio    = width * 10 / 16;
-        int heightSixteenTwelveRatio = width * 12 / 16;
+        // This is an unknown display size. However we can guess whether it is full-screen
+        // because most displays have a ratio that is an even multiple of 1/48th.
 
-        if (height == heightSixteenNineRatio || height == heightSixteenTenRatio || height == heightSixteenTwelveRatio) {
-            // This exactly matches a standard ratio of a Mac screen, so it's probably full-screen
+        int widthBy48 = width * 48;
+        if (widthBy48 % height == 0) {
+            // The ratio is an even multiple of 1/48th so assume it's a full-screen window
             return 0;
-
-        } else if (height > heightSixteenNineRatio && height < heightSixteenTenRatio) {
-            // This is just a little taller than a 16:9 ratio, so it's probably windowed
-            return height - heightSixteenNineRatio;
-
-        } else if (height > heightSixteenTenRatio && height < heightSixteenTwelveRatio) {
-            // This is just a little taller than a 16:10 ratio, so it's probably windowed
-            return height - heightSixteenTenRatio;
-
-        } else if (height > heightSixteenTwelveRatio && height < heightSixteenTwelveRatio + 100) {
-            // This is just a little taller than a 16:12 ratio, so it's probably windowed
-            return height - heightSixteenTwelveRatio;
-
-        } else if (height > 22) {
-            // Unknown size, so give up but assume the typical height of an OS X title bar: 22 pixels!
-            return 22;
         } else {
-            return 0;
+            // Unknown size, so give up but assume the typical height of an OS X title bar: 22 pixels!
+            // Though the native height on a Retina display is 44 pixels, our image is scaled so it is still effectively 22 pixels on a Retina display.
+            return 22;
         }
+
     }
 
 

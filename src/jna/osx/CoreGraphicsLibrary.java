@@ -48,6 +48,8 @@ public interface CoreGraphicsLibrary extends Library {
     public static final int kCGWindowImageBoundsIgnoreFraming = (1 << 0);
     public static final int kCGWindowImageShouldBeOpaque = (1 << 1);
     public static final int kCGWindowImageOnlyShadows = (1 << 2);
+    public static final int kCGWindowImageBestResolution = (1 << 3);
+    public static final int kCGWindowImageNominalResolution = (1 << 4);
 
 
 
