@@ -54,7 +54,7 @@ import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer, WindowListener {
 
-	protected int _pollingIntervalInMs = 200;
+	protected int _pollingIntervalInMs = 100;
 	protected int _maxThreads = 5;
 	protected int _gcFrequency = 8;
 	
