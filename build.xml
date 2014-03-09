@@ -12,9 +12,11 @@
 	<target name="check-update_jar">
 	    <available file="./src/updater.jar" property="update_jar.present"/>
 	</target>
+
 	<target name="delete_updater_jar" depends="check-update_jar" if="update_jar.present">
 		<delete file="./src/updater.jar"/>
 	</target>
+
 	<target name="create_run_jar">
         <mkdir dir="./bin"/>
 	    <jar destfile="./src/updater.jar" filesetmanifest="mergewithoutmain">
@@ -127,7 +129,6 @@
         <!-- Copy remaining resources, other than Windows-specific files like DLLs -->
         <copy preservelastmodified="true" todir="./build/osx">
             <fileset dir="./src">
-                <include name="**/*.dylib" />
                 <include name="**/*.properties" />
                 <include name="tessdata/**" />
                 <include name="uploader.jar" />
@@ -162,6 +163,8 @@
         </jar>
 
     	<antcall target="delete_updater_jar" />
+
+        <!-- Build an OS X application bundle using Oracle's appbundler -->
         <bundleapp outputdirectory="./build"
                    name="HearthStats"
                    displayname="HearthStats.net Uploader"
@@ -171,11 +174,21 @@
                    icon="./src/images/icon.icns"
                    mainclassname="net/hearthstats/Main">
             <classpath file="./build/HearthStatsUploader-OSX.jar" />
+            <librarypath dir="./src/lib" includes="*.dylib"/>
             <option value="-Dapple.laf.useScreenMenuBar=true"/>
+            <option value="-Djna.library.path=$APP_ROOT/Contents/MacOS"/>
             <option value="-Xdock:icon=Contents/Resources/${bundle.icon}"/>
             <option value="-Xms96m"/>
             <option value="-Xmx192m"/>
         </bundleapp>
+
+        <!-- Copy Tesseract data into the Resources folder of the bundle -->
+        <copy preservelastmodified="true" todir="./build/HearthStats.app/Contents/Resources">
+            <fileset dir="./src">
+                <include name="tessdata/**" />
+                <exclude name="**/.DS_Store" />
+            </fileset>
+        </copy>
 
     </target>
 
