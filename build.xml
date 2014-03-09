@@ -190,6 +190,12 @@
             </fileset>
         </copy>
 
+        <!-- Add extra settings to the Info.plist file to enable Retina mode on the app bundle -->
+        <xslt in="./build/HearthStats.app/Contents/Info.plist" out="./build/HearthStats.app/Contents/Info-updated.plist" style="build-osx-plist.xslt"  />
+        <delete file="./build/HearthStats.app/Contents/Info.plist" />
+        <move file="./build/HearthStats.app/Contents/Info-updated.plist" tofile="./build/HearthStats.app/Contents/Info.plist" />
+
+
     </target>
 
 
