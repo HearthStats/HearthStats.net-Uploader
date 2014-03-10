@@ -11,10 +11,18 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class Updater {
+
+    private static final Set<String> FILES_TO_SKIP = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+        "instructions-osx.txt"
+    )));
 
 	private static String _availableVersion;
 	private static String _recentChanges;
@@ -190,23 +198,25 @@ public class Updater {
 			while (ze != null) {
 
 				String fileName = ze.getName();
-				File newFile = new File(outputFolder + File.separator + fileName);
+                if (!FILES_TO_SKIP.contains(fileName)) {
+                    File newFile = new File(outputFolder + File.separator + fileName);
 
-				System.out.println("file unzip : " + newFile.getAbsoluteFile());
+                    System.out.println("file unzip : " + newFile.getAbsoluteFile());
 
-				// create all non exists folders
-				// else you will hit FileNotFoundException for compressed folder
-				new File(newFile.getParent()).mkdirs();
+                    // create all non exists folders
+                    // else you will hit FileNotFoundException for compressed folder
+                    new File(newFile.getParent()).mkdirs();
 
-                if (!ze.isDirectory()) {
-                    FileOutputStream fos = new FileOutputStream(newFile);
-                    try {
-                        int len;
-                        while ((len = zis.read(buffer)) > 0) {
-                            fos.write(buffer, 0, len);
+                    if (!ze.isDirectory()) {
+                        FileOutputStream fos = new FileOutputStream(newFile);
+                        try {
+                            int len;
+                            while ((len = zis.read(buffer)) > 0) {
+                                fos.write(buffer, 0, len);
+                            }
+                        } finally {
+                            fos.close();
                         }
-                    } finally {
-                        fos.close();
                     }
                 }
 

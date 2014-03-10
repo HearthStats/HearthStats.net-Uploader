@@ -100,8 +100,8 @@ public class Main extends JFrame {
                         _loadJarDll("libtesseract302");
                         break;
                     case OSX:
-                        _loadOsxDylib("liblept169");
-                        _loadOsxDylib("libtesseract");
+                        _loadOsxDylib("lept");
+                        _loadOsxDylib("tesseract");
                         break;
                     default:
                         throw new UnsupportedOperationException("HearthStats.net Uploader only supports Windows and Mac OS X");
@@ -128,18 +128,17 @@ public class Main extends JFrame {
 	private static void _extractTessData() {
 		String outPath;
         if (Config.os == Config.OS.OSX) {
-            File libFolder = new File(Main.getExtractionFolder() + "/share/");
-            libFolder.mkdirs();
-            outPath = libFolder.getAbsolutePath() + "/";
+            File javaLibraryPath = new File(Config.getJavaLibraryPath());
+            outPath = javaLibraryPath.getParentFile().getAbsolutePath() + "/Resources";
         } else {
             outPath = Main.getExtractionFolder() + "/";
+            (new File(outPath + "tessdata/configs")).mkdirs();
+            copyFileFromJarTo("/tessdata/eng.traineddata", outPath + "tessdata/eng.traineddata");
+            copyFileFromJarTo("/tessdata/configs/api_config", outPath + "tessdata/configs/api_config");
+            copyFileFromJarTo("/tessdata/configs/digits", outPath + "tessdata/configs/digits");
+            copyFileFromJarTo("/tessdata/configs/hocr", outPath + "tessdata/configs/hocr");
         }
 
-		(new File(outPath + "tessdata/configs")).mkdirs();
-		copyFileFromJarTo("/tessdata/eng.traineddata", outPath + "tessdata/eng.traineddata");
-		copyFileFromJarTo("/tessdata/configs/api_config", outPath + "tessdata/configs/api_config");
-		copyFileFromJarTo("/tessdata/configs/digits", outPath + "tessdata/configs/digits");
-		copyFileFromJarTo("/tessdata/configs/hocr", outPath + "tessdata/configs/hocr");
 		OCR.setTessdataPath(outPath + "tessdata");
 	}
 	
@@ -208,43 +207,13 @@ public class Main extends JFrame {
 	}
 
 
-   private static void _loadOsxDylib(String name) {
+    private static void _loadOsxDylib(String name) {
 
-       String resourcePath = "/darwin/" + name + ".dylib";
-
-       InputStream in = Main.class.getResourceAsStream(resourcePath);
-       if(in != null) {
-           byte[] buffer = new byte[1024];
-           int read = -1;
-
-           File outDir = new File(Main.getExtractionFolder());
-           outDir.mkdirs();
-
-           String absolutePath = outDir.getAbsolutePath() + "/" + name + ".dylib";
-
-           FileOutputStream fos = null;
-           try {
-               fos = new FileOutputStream(absolutePath);
-           } catch (Exception e) {
-        	   Main.logException(e);
-           }
-
-           try {
-               while((read = in.read(buffer)) != -1) {
-                   fos.write(buffer, 0, read);
-               }
-               fos.close();
-               in.close();
-
-           } catch (IOException e) {
-        	   Main.logException(e);
-           }
-           try {
-               System.load(absolutePath);
-           } catch(Exception e) {
-               Main.logException(e);
-           }
+       try {
+           System.loadLibrary(name);
+       } catch(Exception e) {
+           Main.logException(e);
        }
 
-   }
+    }
 }
