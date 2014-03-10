@@ -1,3 +1,8 @@
+v0.15.201403101
+* Now compatible with OS X 10.7 Lion and later versions
+* Enabled HiDPI mode for smoother text on Retina displays
+* Stopped updater from putting instructions-osx.txt in your Applications folder
+
 v0.15.201403052
 * Fixed crash when prompted to enter user key
 * Increased detection frequency
