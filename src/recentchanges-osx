@@ -1,21 +1,7 @@
+v0.15.201403121
+* Fixed arena mode detection on Hearthstone v1.0.0.4944
+
 v0.15.201403101
 * Now compatible with OS X 10.7 Lion and later versions
 * Enabled HiDPI mode for smoother text on Retina displays
 * Stopped updater from putting instructions-osx.txt in your Applications folder
-
-v0.15.201403052
-* Fixed crash when prompted to enter user key
-* Increased detection frequency
-
-v0.15.201403051
-* Support for Retina displays in both windowed & full-screen mode
-
-v0.15.201403031
-* Full-screen mode is now supported on OS X
-* Improved compatibility with OS X 10.8 Mountain Lion
-* Reduced CPU usage
-* You can now specify a match result if it was undetected
-* You can now change classes in the "Current Match" tab
-* Improved detection of playing as a hunter
-* Minor improvement to rank level detection
-* Started localization
