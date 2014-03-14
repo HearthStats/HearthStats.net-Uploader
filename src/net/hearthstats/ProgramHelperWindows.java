@@ -33,8 +33,7 @@ public class ProgramHelperWindows extends ProgramHelper {
 	private boolean _isFullscreen = false;
 	private static boolean _isMinimized = false;
 	
-	public ProgramHelperWindows(String programName, String processName) {
-		_programName = programName;
+	public ProgramHelperWindows(String processName) {
 		_processName = processName;
 	}
 
@@ -69,26 +68,24 @@ public class ProgramHelperWindows extends ProgramHelper {
 	               return true;
 	            }
 	
-	            if(wText.equals(_programName)) {
 	            	
-		      	 	PointerByReference pointer = new PointerByReference();
-		      	    User32DLL.GetWindowThreadProcessId(hWnd, pointer);
-		      	    Pointer process = Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION | Kernel32.PROCESS_VM_READ, false, pointer.getValue());
-		      	    Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
-		      	    
-		      	    // see https://github.com/JeromeDane/HearthStats.net-Uploader/issues/66#issuecomment-33829132
-		      	    char[] className = new char[512];
-		      	    User32.INSTANCE.GetClassName(hWnd, className, 512);
-		      	    String classNameStr = Native.toString(className);
+	      	 	PointerByReference pointer = new PointerByReference();
+	      	    User32DLL.GetWindowThreadProcessId(hWnd, pointer);
+	      	    Pointer process = Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION | Kernel32.PROCESS_VM_READ, false, pointer.getValue());
+	      	    Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
+	      	    
+	      	    // see https://github.com/JeromeDane/HearthStats.net-Uploader/issues/66#issuecomment-33829132
+	      	    char[] className = new char[512];
+	      	    User32.INSTANCE.GetClassName(hWnd, className, 512);
+	      	    String classNameStr = Native.toString(className);
 
-		      	    if(Native.toString(buffer).equals(_processName) && classNameStr.equals("UnityWndClass")) {
-		      	    	_windowHandle = hWnd;
-		      	    	if(_windowHandleId == null) {
-		      	    		_windowHandleId = _windowHandle.toString();
-		      	    		_notifyObserversOfChangeTo(_programName + " window found with process name " + _processName);
-		      	    	}
-		      	    }
-	            }
+	      	    if(Native.toString(buffer).equals(_processName) && classNameStr.equals("UnityWndClass")) {
+	      	    	_windowHandle = hWnd;
+	      	    	if(_windowHandleId == null) {
+	      	    		_windowHandleId = _windowHandle.toString();
+	      	    		_notifyObserversOfChangeTo(_programName + " window found with process name " + _processName);
+	      	    	}
+	      	    }
 	            return true;
          	}
 		}, null);

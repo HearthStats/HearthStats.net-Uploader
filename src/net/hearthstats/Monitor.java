@@ -117,7 +117,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     	
         switch (Config.os) {
             case WINDOWS:
-                _hsHelper = new ProgramHelperWindows("Hearthstone", "Hearthstone.exe");
+                _hsHelper = new ProgramHelperWindows("Hearthstone.exe");
                 break;
             case OSX:
                 _hsHelper = new ProgramHelperOsx("unity.Blizzard Entertainment.Hearthstone");

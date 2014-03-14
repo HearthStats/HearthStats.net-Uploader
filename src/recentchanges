@@ -1,6 +1,5 @@
+v0.15.201403141
+* Fixed detection of Hearthstone window in non-English environments 
+
 v0.15.201403121
 * Fixed arena mode detection on Hearthstone v1.0.0.4944
-
-v0.15.201403051
-* Fixed crash when prompted to enter user key
-* Increased detection frequency
