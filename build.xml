@@ -129,6 +129,7 @@
         <!-- Copy remaining resources, other than Windows-specific files like DLLs -->
         <copy preservelastmodified="true" todir="./build/osx">
             <fileset dir="./src">
+                <include name="**/*.css" />
                 <include name="**/*.properties" />
                 <include name="tessdata/**" />
                 <include name="uploader.jar" />
@@ -156,6 +157,8 @@
             <zipfileset excludes="META-INF/*.SF" src="./lib/jna.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/junit-4.10.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/logback-classic-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/logback-core-1.1.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-core-4.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-swing-4.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/rococoa-core-0.5.jar"/>

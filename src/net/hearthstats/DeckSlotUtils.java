@@ -3,6 +3,7 @@ package net.hearthstats;
 import java.io.IOException;
 import java.util.List;
 
+import net.hearthstats.log.Log;
 import org.json.simple.JSONObject;
 
 public class DeckSlotUtils {
@@ -14,8 +15,8 @@ public class DeckSlotUtils {
 		try {
 			_decks = _api.getDecks();
 		} catch (IOException e) {
-			Main.logException(e);
-		}	
+            Log.warn("Error occurred while loading deck list from HearthStats.net", e);
+		}
 	}
 	
 	public static JSONObject getDeckFromSlot(Integer slotNum) {

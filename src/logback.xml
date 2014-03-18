@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true" scan="true" scanPeriod="5 seconds">
+
+    <!-- Outputs logs to the standard console -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Outputs logs to a file called log.txt -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>log.txt</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%8.8thread] %-5level %20.20logger{20} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Outputs logs to the Log tab in the GIU of the Hearthstats.net Uploader -->
+    <appender name="APP" class="net.hearthstats.log.LogPaneAppender">
+    </appender>
+
+
+    <!-- Send app logs to the Log tab in the GUI. This logger should be left at INFO level. -->
+    <logger name="net.hearthstats.app" level="INFO">
+        <appender-ref ref="APP" />
+    </logger>
+
+
+    <!-- Send all other logs to the log file and the console. -->
+    <!-- Change the level to DEBUG to enable full log output. -->
+    <logger name="net.hearthstats" level="INFO"></logger>
+
+
+    <root level="INFO">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="STDOUT" />
+    </root>
+
+
+</configuration>

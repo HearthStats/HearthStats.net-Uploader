@@ -15,6 +15,7 @@ import java.awt.event.WindowStateListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -44,21 +45,30 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkListener;
 
+import net.hearthstats.log.Log;
+import net.hearthstats.log.LogPane;
 import org.json.simple.JSONObject;
 
 import net.miginfocom.swing.MigLayout;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
 import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer, WindowListener {
 
-	protected int _pollingIntervalInMs = 100;
-	protected int _maxThreads = 5;
-	protected int _gcFrequency = 8;
-	
-	protected API _api = new API();
+    private static final String PROFILES_URL = "http://hearthstats.net/profiles";
+    private static final String DECKS_URL = "http://hearthstats.net/decks";
+	private static final int POLLING_INTERVAL_IN_MS = 100;
+    private static final int MAX_THREADS = 5;
+    private static final int GC_FREQUENCY = 8;
+
+    private static Logger debugLog = LoggerFactory.getLogger(Monitor.class);
+    private static Logger perfLog = LoggerFactory.getLogger("net.hearthstats.performance");
+
+    protected API _api = new API();
 	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
 	protected ProgramHelper _hsHelper;
 	
@@ -84,7 +94,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private int _pollIterations = 0;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
-	protected JEditorPane _logText;
+	protected LogPane _logText;
 	private JScrollPane _logScroll;
 	private JTextField _userKeyField;
 	private JCheckBox _checkUpdatesField;
@@ -113,6 +123,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			"Warrior" 
 		};
 
+
     public Monitor() throws HeadlessException {
     	
         switch (Config.os) {
@@ -127,19 +138,37 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         }
     }
 
+
+    /**
+     * Loads text from the main resource bundle, using the local language when available.
+     * @param key the key for the desired string
+     * @return The requested string
+     */
     private String t(String key) {
     	return _bundle.getString(key);
     }
-    
+
+    /**
+     * Loads text from the main resource bundle, using the local language when available, and puts the given value into the appropriate spot.
+     * @param key the key for the desired string
+     * @param value0 a value to place in the {0} placeholder in the string
+     * @return The requested string
+     */
+    private String t(String key, String value0) {
+        String message = _bundle.getString(key);
+        return MessageFormat.format(message, value0);
+    }
+
+
     public void start() throws IOException {
-		if(Config.analyticsEnabled()) {
+		if (Config.analyticsEnabled()) {
+            debugLog.debug("Enabling analytics");
 			_analytics = new JGoogleAnalyticsTracker("HearthStats.net " + t("Uploader"), Config.getVersionWithOs(), "UA-45442103-3");
 			_analytics.trackAsynchronously(new FocusPoint("AppStart"));
 		}
 		addWindowListener(this);
 		
 		_createAndShowGui();
-		_clearLog();
 		_showWelcomeLog();
 		_checkForUpdates();
 		
@@ -151,27 +180,39 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		if(_checkForUserKey()) {
 			_pollHearthstone();
 		}
-		
-		_log(t("waiting_for_hs_windowed"));
-		
+
+        if (Config.os == Config.OS.OSX) {
+            Log.info(t("waiting_for_hs"));
+        } else {
+            Log.info(t("waiting_for_hs_windowed"));
+        }
 	}
 	
 	private void _showWelcomeLog() {
-		_log("<strong>HearthStats.net " + t("Uploader") + " v" + Config.getVersionWithOs() + "</strong>\n");
-		_log(t("welcome_1_set_decks"));
+        debugLog.debug("Showing welcome log messages");
+
+        Log.welcome("HearthStats.net " + t("Uploader") + " v" + Config.getVersionWithOs());
+
+        Log.help(t("welcome_1_set_decks"));
         if (Config.os == Config.OS.OSX) {
-            _log(t("welcome_2_run_hearthstone"));
-            _log(t("welcome_3_notifications"));
+            Log.help(t("welcome_2_run_hearthstone"));
+            Log.help(t("welcome_3_notifications"));
         } else {
-            _log(t("welcome_2_run_hearthstone_windowed"));
-            _log(t("welcome_3_notifications_windowed"));
+            Log.help(t("welcome_2_run_hearthstone_windowed"));
+            Log.help(t("welcome_3_notifications_windowed"));
         }
-		_log(t("welcome_4_feedback") + "\n");
-	}
+        String logFileLocation = Log.getLogFileLocation();
+        if (logFileLocation == null) {
+            Log.help(t("welcome_4_feedback"));
+        } else {
+            Log.help(t("welcome_4_feedback_with_log", logFileLocation));
+        }
+
+    }
 	
 	private boolean _checkForUserKey() {
 		if(Config.getUserKey().equals("your_userkey_here")) {
-			_log(t("error.userkey_not_entered"));
+            Log.warn(t("error.userkey_not_entered"));
 			
 			JOptionPane.showMessageDialog(null, 
 					"HearthStats.net " + t("error.title") + ":\n\n" +
@@ -182,11 +223,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			Desktop d = Desktop.getDesktop();
 			// Browse a URL, say google.com
 			try {
-				d.browse(new URI("http://hearthstats.net/profiles"));
-			} catch (IOException e) {
-				Main.logException(e);
-			} catch (URISyntaxException e) {
-				Main.logException(e);
+				d.browse(new URI(PROFILES_URL));
+			} catch (IOException | URISyntaxException e) {
+                Log.warn("Error launching browser with URL " + PROFILES_URL, e);
 			}
 			
 			String[] options = {t("button.ok"), t("button.cancel")};
@@ -204,7 +243,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			    	Config.setUserKey(userkey);
 			    	Config.save();
 			    	_userKeyField.setText(userkey);
-			    	_log(t("UserkeyStored"));
+                    Log.info(t("UserkeyStored"));
 			    	_pollHearthstone();
 			    }
 			} else {
@@ -216,6 +255,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 	
 	private void _createAndShowGui() {
+        debugLog.debug("Creating GUI");
+
 		Image icon = new ImageIcon(getClass().getResource("/images/icon.png")).getImage();
 		setIconImage(icon);
 		setLocation(Config.getX(), Config.getY());
@@ -225,12 +266,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		add(_tabbedPane);
 		
 		// log
-		_logText = new JEditorPane();
-		_logText.setContentType("text/html");
-		_logText.setEditable(false);
-		_logText.setText(t("EventLog") + ":\n");
-		_logText.setEditable(false);
-		_logText.addHyperlinkListener(_hyperLinkListener);
+        _logText = new LogPane();
 		_logScroll = new JScrollPane (_logText, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		_tabbedPane.add(_logScroll, t("tab.log"));
 		
@@ -246,8 +282,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 						_updateDecksTab();
 					} catch (IOException e1) {
 						_notify(t("error.loading_decks.title"), t("error.loading_decks"));
-						_log(t("error.loading_decks"));
-						Main.logException(e1, false);
+                        Log.warn(t("error.loading_decks"), e1);
 					}
 	        }
 	    });
@@ -277,7 +312,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		text.setContentType("text/html");
 		text.setEditable(false);
 		text.setBackground(Color.WHITE);
-		text.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
+		text.setText("<html><body style=\"font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:10px;\">" +
 				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> " + t("Uploader") + " v" + Config.getVersion() + "</h2>" +
 				"<p><strong>" + t("Author") + ":</strong> Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>)</p>" + 
 				"<p>" + t("about.utility_l1") + "<br>" +
@@ -305,7 +340,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     			try {
     				d.browse(new URI("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UJFTUHZF6WPDS"));
     			} catch (Exception e1) {
-    				Main.logException(e1);
+    				Main.showErrorDialog("Error launching browser with donation URL", e1);
     			}
 	    	}
 	    });
@@ -404,11 +439,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    _lastMatchButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+                String url = _lastMatch.getMode() == "Arena" ? "http://hearthstats.net/arenas/new" : _lastMatch.getEditUrl();
 				try {
-					String url = _lastMatch.getMode() == "Arena" ? "http://hearthstats.net/arenas/new" : _lastMatch.getEditUrl();
 					Desktop.getDesktop().browse(new URI(url));
 				} catch (Exception e) {
-					Main.logException(e);
+					Main.showErrorDialog("Error launching browser with URL " + url, e);
 				}
 			}
 		});
@@ -483,7 +518,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				try {
 					_updateDecksTab();
 				} catch (IOException e1) {
-					Main.logException(e1);
+					Main.showErrorDialog("Error updating decks", e1);
 				}
 			}
 		});
@@ -497,9 +532,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Desktop.getDesktop().browse(new URI("http://hearthstats.net/decks"));
+					Desktop.getDesktop().browse(new URI(DECKS_URL));
 				} catch (Exception e1) {
-					Main.logException(e1);
+					Main.showErrorDialog("Error launching browser with URL" + DECKS_URL, e1);
 				}
 			}
 		});
@@ -666,11 +701,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 	private void _checkForUpdates() {
 		if(Config.checkForUpdates()) {
-			_log(t("checking_for_updates..."));
+            Log.info(t("checking_for_updates..."));
 			try {
 				String availableVersion = Updater.getAvailableVersion();
 				if(availableVersion != null) {
-					_log(t("latest_v_available") + " " + availableVersion);
+                    Log.info(t("latest_v_available") + " " + availableVersion);
 					
 					if(!availableVersion.matches(Config.getVersion())) {
 						int dialogButton = JOptionPane.YES_NO_OPTION;
@@ -706,7 +741,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 						}
 					}
 				} else {
-					_log("Unable to determine latest available version");
+                    Log.warn("Unable to determine latest available version");
 				}
 			} catch(Exception e) {
                 e.printStackTrace(System.err);
@@ -716,7 +751,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 	private int _numThreads = 0;
-	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(_maxThreads);
+	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(MAX_THREADS);
 
 	protected boolean _drawPaneAdded = false;
 
@@ -824,7 +859,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		if(hsMatch.getMode() == "Arena" && _analyzer.isNewArena()) {
 			ArenaRun run = new ArenaRun();
 			run.setUserClass(hsMatch.getUserClass());
-			_log("Creating new " + run.getUserClass() + "arena run");
+            Log.info("Creating new " + run.getUserClass() + "arena run");
 			_notify("Creating new " + run.getUserClass() + "arena run");
 			_api.createArenaRun(run);
 			_analyzer.setIsNewArena(false);
@@ -833,7 +868,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		String header = "Submitting match result";
 		String message = hsMatch.toString(); 
 		_notify(header, message);
-		_log(header + ": " + message);
+        Log.matchResult(header + ": " + message);
 
 		if(Config.analyticsEnabled()) {
 			_analytics.trackAsynchronously(new FocusPoint("Submit" + hsMatch.getMode() + "Match"));
@@ -853,34 +888,45 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			_analyzer.getMatch().setOpponentClass(_hsClassOptions[_currentOpponentClassSelect.getSelectedIndex()]);
 	}
 
-	protected void _handleHearthstoneFound() {
-		
+	protected void _handleHearthstoneFound(int currentPollIteration) {
+        debugLog.debug("  - Iteration {} found Hearthstone", currentPollIteration);
+
 		// mark hearthstone found if necessary
 		if (!_hearthstoneDetected) {
 			_hearthstoneDetected = true;
-			if(Config.showHsFoundNotification())
+            debugLog.debug("  - Iteration {} changed hearthstoneDetected to true", currentPollIteration);
+            if (Config.showHsFoundNotification()) {
 				_notify("Hearthstone found");
+            }
 		}
 		
 		// grab the image from Hearthstone
+        debugLog.debug("  - Iteration {} screen capture", currentPollIteration);
 		image = _hsHelper.getScreenCapture();
-		
-		if(image != null) {
-			// detect image stats 
-			if (image.getWidth() >= 1024)
+
+        if (image == null) {
+            debugLog.debug("  - Iteration {} screen capture returned null", currentPollIteration);
+        } else {
+			// detect image stats
+			if (image.getWidth() >= 1024) {
+                debugLog.debug("  - Iteration {} analysing image", currentPollIteration);
 				_analyzer.analyze(image);
+            }
 			
-			if(Config.mirrorGameImage())
+			if (Config.mirrorGameImage()) {
+                debugLog.debug("  - Iteration {} mirroring image", currentPollIteration);
 				_updateImageFrame();
+            }
 		}
 	}
 	
-	protected void _handleHearthstoneNotFound() {
+	protected void _handleHearthstoneNotFound(int currentPollIteration) {
 		
 		// mark hearthstone not found if necessary
 		if (_hearthstoneDetected) {
 			_hearthstoneDetected = false;
-			if(Config.showHsClosedNotification()) {
+            debugLog.debug("  - Iteration {} changed hearthstoneDetected to false", currentPollIteration);
+			if (Config.showHsClosedNotification()) {
 				_notify("Hearthstone closed");
 				_analyzer.reset();
 			}
@@ -888,29 +934,39 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 	protected void _pollHearthstone() {
-		scheduledExecutorService.schedule(new Callable<Object>() {
+        scheduledExecutorService.schedule(new Callable<Object>() {
 			public Object call() throws Exception {
 				_numThreads++;
 				
                 _pollIterations++;
+
+                // A copy of pollIterations is kept in localPollIterations
+                int currentPollIteration = _pollIterations;
+                debugLog.debug("--> Iteration {} started", currentPollIteration);
 				
-				if (_hsHelper.foundProgram())
-					_handleHearthstoneFound();
-				else
-					_handleHearthstoneNotFound();
+				if (_hsHelper.foundProgram()) {
+					_handleHearthstoneFound(currentPollIteration);
+                } else {
+                    debugLog.debug("  - Iteration {} did not find Hearthstone", currentPollIteration);
+					_handleHearthstoneNotFound(currentPollIteration);
+                }
 
 				_updateTitle();
 				
 				_pollHearthstone();		// repeat the process
 
-                // Keep memory usage down by telling the JVM to perform a garbage collection after every fifth poll (ie GC 1-2 times per second)
-				if (_pollIterations % _gcFrequency == 0 && Runtime.getRuntime().totalMemory() > 150000000) {
+                // Keep memory usage down by telling the JVM to perform a garbage collection after every eighth poll (ie GC 1-2 times per second)
+				if (_pollIterations % GC_FREQUENCY == 0 && Runtime.getRuntime().totalMemory() > 150000000) {
+                    debugLog.debug("  - Iteration {} triggers GC", currentPollIteration);
                     System.gc();
                 }
+
+                debugLog.debug("<-- Iteration {} finished", currentPollIteration);
+
                 _numThreads--;
 				return "";
 			}
-		}, _pollingIntervalInMs, TimeUnit.MILLISECONDS);
+		}, POLLING_INTERVAL_IN_MS, TimeUnit.MILLISECONDS);
 	}
 	
 	private void _promptForResult() {
@@ -934,7 +990,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		try {
 			_submitMatchResult();
 		} catch (IOException e) {
-			Main.logException(e);
+			Main.showErrorDialog("Error submitting match result", e);
 		}
 	}
 
@@ -942,57 +998,57 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		switch(changed.toString()) {
 			case "arenaEnd":
 				_notify("End of Arena Run Detected");
-				_log("End of Arena Run Detected");
+                Log.info("End of Arena Run Detected");
 				_api.endCurrentArenaRun();
 				break;
 			case "coin":
 				_notify("Coin Detected");
-				_log("Coin Detected");
+                Log.info("Coin Detected");
 				break;
 			case "deckSlot":
 				JSONObject deck = DeckSlotUtils.getDeckFromSlot(_analyzer.getDeckSlot());
-				if(deck == null) {
+				if (deck == null) {
 					_tabbedPane.setSelectedIndex(2);
 					Main.showMessageDialog("Unable to determine what deck you have in slot #" + _analyzer.getDeckSlot() + "\n\nPlease set your decks in the \"Decks\" tab.");
 				} else {
 					_notify("Deck Detected", deck.get("name").toString());
-					_log("Deck Detected: " + deck.get("name") + " Detected");
+                    Log.info("Deck Detected: " + deck.get("name") + " Detected");
 				}
 				
 				break;
 			case "mode":
 				_playingInMatch = false;
 				_setCurrentMatchEnabledi(false);
-				if(Config.showModeNotification()) {
-					System.out.println(_analyzer.getMode() + " level " + _analyzer.getRankLevel());
+				if (Config.showModeNotification()) {
+                    debugLog.debug(_analyzer.getMode() + " level " + _analyzer.getRankLevel());
 					if(_analyzer.getMode() == "Ranked")
 						_notify(_analyzer.getMode() + " Mode Detected", "Rank Level " + _analyzer.getRankLevel());
 					else
 						_notify(_analyzer.getMode() + " Mode Detected");
 				}
-				if(_analyzer.getMode() == "Ranked")
-					_log(_analyzer.getMode() + " Mode Detected - Level " + _analyzer.getRankLevel());
+				if (_analyzer.getMode() == "Ranked")
+                    Log.info(_analyzer.getMode() + " Mode Detected - Level " + _analyzer.getRankLevel());
 				else
-					_log(_analyzer.getMode() + " Mode Detected");
+                    Log.info(_analyzer.getMode() + " Mode Detected");
 				break;
 			case "newArena":
 				if(_analyzer.isNewArena())
 					_notify("New Arena Run Detected");
-				_log("New Arena Run Detected");
+                Log.info("New Arena Run Detected");
 				break;
 			case "opponentClass":
 				_notify("Playing vs " + _analyzer.getOpponentClass());
-				_log("Playing vs " + _analyzer.getOpponentClass());
+                Log.info("Playing vs " + _analyzer.getOpponentClass());
 				break;
 			case "opponentName":
 				_notify("Opponent: " + _analyzer.getOpponentName());
-				_log("Opponent: " + _analyzer.getOpponentName());
+                Log.info("Opponent: " + _analyzer.getOpponentName());
 				break;
 			case "result":
 				_playingInMatch = false;
 				_setCurrentMatchEnabledi(false);
 				_notify(_analyzer.getResult() + " Detected");
-				_log(_analyzer.getResult() + " Detected");
+                Log.info(_analyzer.getResult() + " Detected");
 				_submitMatchResult();
 				break;
 			case "screen":
@@ -1002,7 +1058,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 					if(_playingInMatch &&  _analyzer.getResult() == null) {
 						_playingInMatch = false;
 						_notify("Detection Error", "Match result was not detected.");
-						_log("Detection Error: Match result was not detected.");
+                        Log.info("Detection Error: Match result was not detected.");
 						_promptForResult();
 					}
 					_playingInMatch = false;
@@ -1021,55 +1077,42 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 						_notify(_analyzer.getScreen() + " Screen Detected");
 				}
 				if(_analyzer.getScreen() == "Practice")
-					_log(_analyzer.getScreen() + " Screen Detected. Result tracking disabled.");
+                    Log.info(_analyzer.getScreen() + " Screen Detected. Result tracking disabled.");
 				else {
 					if(_analyzer.getScreen() == "Match Start")
-						_log("\n------------------------------------------");
-					_log(_analyzer.getScreen() + " Screen Detected");
+                        Log.divider();
+                    Log.info(_analyzer.getScreen() + " Screen Detected");
 				}
 				break;
 			case "yourClass":
 				_notify("Playing as " + _analyzer.getYourClass());
-				_log("Playing as " + _analyzer.getYourClass());
+                Log.info("Playing as " + _analyzer.getYourClass());
 				break;
 			case "yourTurn":
 				if(Config.showYourTurnNotification())
 					_notify((_analyzer.isYourTurn() ? "Your" : "Opponent") + " turn detected");
-				_log((_analyzer.isYourTurn() ? "Your" : "Opponent") + " turn detected");
+                Log.info((_analyzer.isYourTurn() ? "Your" : "Opponent") + " turn detected");
 				break;
 			default:
 				_notify(changed.toString());
-				_log(changed.toString());
+                Log.info(changed.toString());
 		}
 		_updateCurrentMatchUi();
 	}
 	
-	private void _clearLog() {
-		File file = new File("log.txt");
-		file.delete();
-	}
-	private void _log(String str) {
-		
-		Main.log(str);
-		
-		// read in log
-		String logText = "<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">";
-		logText += Main.getLogText().replaceAll("\n", "<br>");
-		logText += "</body></html>";
-		_logText.setText(logText);
-		
-		_logText.setCaretPosition(_logText.getDocument().getLength());
-	}
-	
+    public LogPane getLogPane() {
+        return _logText;
+    }
+
 	private void _handleApiEvent(Object changed) {
 		switch(changed.toString()) {
 			case "error":
 				_notify("API Error", _api.getMessage());
-				_log("API Error: " + _api.getMessage());
+				Log.error("API Error: " + _api.getMessage());
 				Main.showMessageDialog("API Error: " + _api.getMessage());
 				break;
 			case "result":
-				_log("API Result: " + _api.getMessage());
+				Log.info("API Result: " + _api.getMessage());
 				_lastMatch = _analyzer.getMatch();
 				_lastMatch.setId(_api.getLastMatchId());
 				_setCurrentMatchEnabledi(false);
@@ -1078,14 +1121,14 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				if(_api.getMessage().matches(".*(Edit match|Arena match successfully created).*")) {
 					_analyzer.resetMatch();
 					_resetMatchClassSelectors();
-					_log("------------------------------------------\n");
+                    Log.divider();
 				}
 				break;
 		}
 	}
 	
 	private void _handleProgramHelperEvent(Object changed) {
-		_log(changed.toString());
+        Log.info(changed.toString());
 		if(changed.toString().matches(".*minimized.*")) 
 			_notify("Hearthstone Minimized", "Warning! No detection possible while minimized.");
 		if(changed.toString().matches(".*fullscreen.*")) 
@@ -1100,7 +1143,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			try {
 				_handleAnalyzerEvent(changed);
 			} catch (IOException e) {
-				Main.logException(e);
+				Main.showErrorDialog("Error handling analyzer event", e);
 			}
 		if(dispatcher.getClass().toString().matches(".*API"))
 			_handleApiEvent(changed);
@@ -1118,7 +1161,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	@Override
 	public void windowClosed(WindowEvent e) {
 		// TODO Auto-generated method stub
-		System.out.println("closed");
+        debugLog.debug("closed");
 	}
 
 	@Override
@@ -1184,7 +1227,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			Main.showMessageDialog(_api.getMessage());
 			_updateDecksTab();
 		} catch (Exception e) {
-			Main.logException(e);
+			Main.showErrorDialog("Error saving deck slots", e);
 		}
 	}
 	
@@ -1252,34 +1295,34 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             		}
             	}
             });
-        }else{
-            System.out.println("system tray not supported");
+        } else {
+            debugLog.debug("system tray not supported");
         }
         addWindowStateListener(new WindowStateListener() {
             public void windowStateChanged(WindowEvent e) {
-            	if(Config.minimizeToTray()) {
-	                if(e.getNewState() == ICONIFIED){
+            	if (Config.minimizeToTray()) {
+	                if (e.getNewState() == ICONIFIED) {
 	                    try {
 	                        tray.add(trayIcon);
 	                        setVisible(false);
 	                    } catch (AWTException ex) {
 	                    }
 	                }
-			        if(e.getNewState()==7){
+			        if (e.getNewState()==7) {
 			            try{
 			            	tray.add(trayIcon);
 			            	setVisible(false);
-			            }catch(AWTException ex){
+			            } catch(AWTException ex){
 				        }
 		            }
-			        if(e.getNewState()==MAXIMIZED_BOTH){
+			        if (e.getNewState()==MAXIMIZED_BOTH) {
 		                    tray.remove(trayIcon);
 		                    setVisible(true);
 		                }
-		                if(e.getNewState()==NORMAL){
+		                if (e.getNewState()==NORMAL) {
 		                    tray.remove(trayIcon);
 		                    setVisible(true);
-		                    System.out.println("Tray icon removed");
+                            debugLog.debug("Tray icon removed");
 		                }
 		            }
             	}

@@ -8,10 +8,14 @@ import java.io.InputStreamReader;
 
 import javax.swing.JOptionPane;
 
-import org.ini4j.InvalidFileFormatException;
+import net.hearthstats.log.Log;
 import org.ini4j.Wini;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Config {
+
+    private final static Logger debugLog = LoggerFactory.getLogger(Config.class);
 
     public static final OS os = _parseOperatingSystem();
 
@@ -54,6 +58,7 @@ public class Config {
 	private static String _apiBaseUrl;
 	
 	public static void rebuild() {
+        debugLog.debug("Building config");
 
 		_storePreviousValues();
 
@@ -242,7 +247,7 @@ public class Config {
 			try {
 				configFile.createNewFile();
 			} catch (IOException e) {
-				Main.logException(e);
+                Log.warn("Error occurred while creating config.ini file", e);
 			}
 		}
 	}
@@ -252,7 +257,7 @@ public class Config {
 		try {
 			_getIni().store();
 		} catch (IOException e) {
-			Main.logException(e);
+            Log.warn("Error occurred while setting key " + key + " in config.ini", e);
 		}
 	}
 	
@@ -279,7 +284,7 @@ public class Config {
 			try {
 				_ini = new Wini(new File("config.ini"));
 			} catch (Exception e) {
-				Main.logException(e);
+                Log.warn("Error occurred while loading config.ini", e);
 			}
 		}
 		return _ini;
@@ -352,15 +357,15 @@ public class Config {
 	}
 
     public static String getJavaLibraryPath() {
-        return _getSystemProperty("java.library.path");
+        return getSystemProperty("java.library.path");
     }
 
-    private static String _getSystemProperty(String property) {
+    public static String getSystemProperty(String property) {
         try {
             return System.getProperty(property);
         } catch (SecurityException ex) {
             // Some system properties may not be available if the user has their security settings locked down
-            System.err.println("Caught a SecurityException reading the system property '" + property + "', defaulting to blank string.");
+            debugLog.warn("Caught a SecurityException reading the system property '" + property + "', defaulting to blank string.");
             return "";
         }
     }
@@ -371,7 +376,7 @@ public class Config {
      * @return The current OS
      */
     private static OS _parseOperatingSystem() {
-        String osString = _getSystemProperty("os.name");
+        String osString = getSystemProperty("os.name");
         if (osString == null) {
             return OS.UNSUPPORTED;
         } else if (osString.startsWith("Windows")) {

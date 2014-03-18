@@ -12,14 +12,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
+import net.hearthstats.log.Log;
 import org.json.simple.JSONArray;
 //http://www.mkyong.com/java/json-simple-example-read-and-write-json/
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class API extends Observable {
 
-	private String _key;
+    private static Logger debugLog = LoggerFactory.getLogger(API.class);
+
+    private String _key;
 	private String _message;
 	
 	public API() {
@@ -77,7 +82,7 @@ public class API extends Observable {
 			try {
 				_lastMatchId = Math.round((Long) result.get("id"));
 			} catch(Exception e) {
-				Main.logException(e);
+                Log.warn("Error occurred while creating new match", e);
 			}
 			if(hsMatch.getMode() != "Arena")
 				_dispatchResultMessage("Success. <a href=\"http://hearthstats.net/constructeds/" + result.get("id") + "/edit\">Edit match #" + result.get("id") + " on HearthStats.net</a>");
@@ -97,7 +102,11 @@ public class API extends Observable {
 	}
 	
 	private Object _get(String method) throws MalformedURLException, IOException {
-		URL url = new URL(Config.getApiBaseUrl() + method + "?userkey=" + _getKey());
+        String baseUrl = Config.getApiBaseUrl() + method + "?userkey=";
+        // Log the URL with the userkey obscured so that users don't compromise their key if they share their logs
+        debugLog.debug("API get {}********", baseUrl);
+        URL url = new URL(baseUrl + _getKey());
+
 		BufferedReader reader = null;
 		String resultString = "";
 		try {
@@ -107,12 +116,13 @@ public class API extends Observable {
 		    	resultString += line;
 		    }
 		} catch(Exception e) {
-			Main.logException(e, false);
+            Log.warn("Error communicating with HearthStats.net (GET " + method + ")", e);
 			_throwError("Error communicating with HearthStats.net");
 		} finally {
 		    if (reader != null) try { reader.close(); } catch (IOException ignore) {}
 		}
-		return _parseResult(resultString);		
+        debugLog.debug("API get result = {}", resultString);
+		return _parseResult(resultString);
 	}
 	
 	private Object _parseResult(String resultString) {
@@ -146,8 +156,14 @@ public class API extends Observable {
 	}
 	
 	private JSONObject _post(String method, JSONObject jsonData) throws IOException {
-		
-		URL url = new URL(Config.getApiBaseUrl() + method + "?userkey=" + _getKey());
+        String baseUrl = Config.getApiBaseUrl() + method + "?userkey=";
+        if (debugLog.isDebugEnabled()) {
+            // Log the URL with the userkey obscured so that users don't compromise their key if they share their logs
+            debugLog.debug("API post {}********", baseUrl);
+            debugLog.debug("API post data = {}", jsonData.toJSONString());
+        }
+
+        URL url = new URL(baseUrl + _getKey());
 		
 		HttpURLConnection httpcon = null;
 		try {
@@ -173,9 +189,10 @@ public class API extends Observable {
 			while((lin = br.readLine())!=null){
 				resultString += lin;
 			}
-			return (JSONObject) _parseResult(resultString);	
+            debugLog.debug("API post result = {}", resultString);
+			return (JSONObject) _parseResult(resultString);
 		} catch(Exception e) {
-			Main.logException(e, false);
+            Log.warn("Error communicating with HearthStats.net (POST " + method + ")", e);
 			_throwError("Error communicating with HearthStats.net");
 		}
 		return null;		

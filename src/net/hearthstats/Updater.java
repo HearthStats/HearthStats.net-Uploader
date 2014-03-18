@@ -23,8 +23,9 @@ public class Updater {
     private static final Set<String> FILES_TO_SKIP = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
         "instructions-osx.txt"
     )));
+    public static final String DOWNLOAD_URL = "http://hearthstats.net/uploader";
 
-	private static String _availableVersion;
+    private static String _availableVersion;
 	private static String _recentChanges;
 	private static String _savedUserKey;
 
@@ -133,9 +134,9 @@ public class Updater {
         if (errorMessage != null) {
             Main.showMessageDialog(errorMessage + "\n\nYou will now be taken to the download page.");
             try {
-                Desktop.getDesktop().browse(new URI("http://hearthstats.net/uploader"));
-            }catch (Exception e) {
-                Main.logException(e);
+                Desktop.getDesktop().browse(new URI(DOWNLOAD_URL));
+            } catch (Exception e) {
+                Main.showErrorDialog("Error launching browser with URL " + DOWNLOAD_URL, e);
             }
             _notify("Updater Error", errorMessage);
         }
