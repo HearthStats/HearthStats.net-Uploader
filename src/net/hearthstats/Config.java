@@ -27,6 +27,8 @@ public class Config {
 
 	private static boolean _checkForUpdates;
 
+    private static boolean _useOsxNotifications;
+
 	private static boolean _showNotifications;
 
 	private static boolean _showHsFoundNotification;
@@ -72,6 +74,7 @@ public class Config {
 		setCheckForUpdates(true);
 		
 		// notifications
+        setUseOsxNotifications(isOsxNotificationsSupported());
 		setShowNotifications(true);
 		setShowHsFoundNotification(true);
 		setShowHsClosedNotification(true);
@@ -170,7 +173,11 @@ public class Config {
 	public static boolean minimizeToTray() {
 		return _getBooleanSetting("ui", "mintotray", true);
 	}
-	
+
+    public static boolean useOsxNotifications() {
+        return _getBooleanSetting("notifications", "osx", isOsxNotificationsSupported());
+    }
+
 	public static boolean showNotifications() {
 		return _getBooleanSetting("notifications", "enabled", true);
 	}
@@ -201,7 +208,31 @@ public class Config {
 		return getVersion() + '-' + os;
 	}
 
-	public static void setShowNotifications(boolean val) {
+    public static void setUseOsxNotifications(boolean val) {
+        _setBooleanValue("notifications", "osx", val);
+    }
+
+    private static Boolean isOsxNotificationsSupported() {
+        try {
+            if (Config.os == OS.OSX) {
+                String osVersion = Config.getSystemProperty("os.version");
+                String osVersionSplit[] = osVersion.split("\\.");
+                if (osVersionSplit[0].equals("10")) {
+                    // This is OS X
+                    int version = Integer.parseInt(osVersionSplit[1]);
+                    if (version >= 8) {
+                        // This is OS X 10.8 or later
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            debugLog.warn("Unable to determine if OS X notifications are supported, assuming false", ex);
+        }
+        return false;
+    }
+
+    public static void setShowNotifications(boolean val) {
 		_setBooleanValue("notifications", "enabled", val);
 	}
 	
@@ -309,6 +340,7 @@ public class Config {
 		setUserKey(_userkey);
 		setApiBaseUrl(_apiBaseUrl);
 		setCheckForUpdates(_checkForUpdates);
+        setUseOsxNotifications(_useOsxNotifications);
 		setShowNotifications(_showNotifications);
 		setShowHsFoundNotification(_showHsFoundNotification);
 		setShowHsClosedNotification(_showHsClosedNotification);
@@ -328,6 +360,7 @@ public class Config {
 		_userkey = getUserKey();
 		_apiBaseUrl = getApiBaseUrl();
 		_checkForUpdates = checkForUpdates();
+        _useOsxNotifications = useOsxNotifications();
 		_showNotifications = showNotifications();
 		_showHsFoundNotification = showHsFoundNotification();
 		_showHsClosedNotification = showHsClosedNotification();

@@ -1,20 +1,27 @@
 package net.hearthstats;
 
+import com.boxysystems.jgoogleanalytics.FocusPoint;
+import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
+import net.hearthstats.log.Log;
+import net.hearthstats.log.LogPane;
+import net.hearthstats.notification.DialogNotificationQueue;
+import net.hearthstats.notification.NotificationQueue;
+import net.hearthstats.notification.OsxNotificationQueue;
+import net.miginfocom.swing.MigLayout;
+import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkListener;
 import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.awt.event.WindowStateListener;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Observable;
@@ -26,35 +33,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkListener;
-
-import net.hearthstats.log.Log;
-import net.hearthstats.log.LogPane;
-import org.json.simple.JSONObject;
-
-import net.miginfocom.swing.MigLayout;
-
-import com.boxysystems.jgoogleanalytics.FocusPoint;
-import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer, WindowListener {
@@ -276,16 +254,16 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_tabbedPane.add(_createAboutUi(), t("tab.about"));
 		
 		_tabbedPane.addChangeListener(new ChangeListener() {
-	        public void stateChanged(ChangeEvent e) {
-	            if(_tabbedPane.getSelectedIndex() == 2)
-					try {
-						_updateDecksTab();
-					} catch (IOException e1) {
-						_notify(t("error.loading_decks.title"), t("error.loading_decks"));
+            public void stateChanged(ChangeEvent e) {
+                if (_tabbedPane.getSelectedIndex() == 2)
+                    try {
+                        _updateDecksTab();
+                    } catch (IOException e1) {
+                        _notify(t("error.loading_decks.title"), t("error.loading_decks"));
                         Log.warn(t("error.loading_decks"), e1);
-					}
-	        }
-	    });
+                    }
+            }
+        });
 		
 		_updateCurrentMatchUi();
 		
@@ -421,8 +399,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		// notes
 		panel.add(new JLabel(t("match.label.notes") + " "), "skip,wrap");
 		_currentNotesField = new JTextArea();
-		_currentNotesField.setBorder(BorderFactory.createMatteBorder( 1, 1, 1, 1, Color.black ));
-		_currentNotesField.setMinimumSize(new Dimension(350,150));
+		_currentNotesField.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.black));
+		_currentNotesField.setMinimumSize(new Dimension(350, 150));
 	    _currentNotesField.setBackground(Color.WHITE);
 	    _currentNotesField.addKeyListener(new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
@@ -437,16 +415,16 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    panel.add(new JLabel(t("match.label.previous_match") + " "), "skip,wrap");
 	    _lastMatchButton = new JButton("[n/a]");
 	    _lastMatchButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
                 String url = _lastMatch.getMode() == "Arena" ? "http://hearthstats.net/arenas/new" : _lastMatch.getEditUrl();
-				try {
-					Desktop.getDesktop().browse(new URI(url));
-				} catch (Exception e) {
-					Main.showErrorDialog("Error launching browser with URL " + url, e);
-				}
-			}
-		});
+                try {
+                    Desktop.getDesktop().browse(new URI(url));
+                } catch (Exception e) {
+                    Main.showErrorDialog("Error launching browser with URL " + url, e);
+                }
+            }
+        });
 	    _lastMatchButton.setEnabled(false);
 	    panel.add(_lastMatchButton, "skip,wrap,span");
 	    
@@ -765,7 +743,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	};
 
-	protected NotificationQueue _notificationQueue = new NotificationQueue();
+    protected NotificationQueue _notificationQueue = Config.useOsxNotifications() ? new OsxNotificationQueue() : new DialogNotificationQueue();
 	private Boolean _currentMatchEnabled = false;
 	private boolean _playingInMatch = false;
 
@@ -776,11 +754,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected void _notify(String header, String message) {
 		if (!Config.showNotifications())
 			return;	//Notifications disabled
-		
-		_notificationQueue.add(new net.hearthstats.Notification(header, message, false));
+
+		_notificationQueue.add(header, message, false);
 	}
 
-	protected void _updateTitle() {
+
+    protected void _updateTitle() {
 		 String title = "HearthStats.net Uploader";
 		if (_hearthstoneDetected) {
 			if (_analyzer.getScreen() != null) {

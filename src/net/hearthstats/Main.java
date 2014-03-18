@@ -2,6 +2,7 @@ package net.hearthstats;
 
 import net.hearthstats.log.Log;
 import net.hearthstats.log.LogPane;
+import net.hearthstats.notification.DialogNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,7 @@ public class Main extends JFrame {
 		
 		try {
 
-			Notification loadingNotification = new Notification("HearthStats.net Uploader", "Loading ...");
+			DialogNotification loadingNotification = new DialogNotification("HearthStats.net Uploader", "Loading ...");
 			loadingNotification.show();
 
 			Updater.cleanUp();
@@ -96,7 +97,7 @@ public class Main extends JFrame {
 
 			loadingNotification.close();
 
-			_monitor = new Monitor();
+            _monitor = new Monitor();
 			_monitor.start();
 			
 		} catch(Exception e) {
