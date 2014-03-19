@@ -212,7 +212,7 @@ public class Config {
         _setBooleanValue("notifications", "osx", val);
     }
 
-    private static Boolean isOsxNotificationsSupported() {
+    public static Boolean isOsxNotificationsSupported() {
         try {
             if (Config.os == OS.OSX) {
                 String osVersion = Config.getSystemProperty("os.version");

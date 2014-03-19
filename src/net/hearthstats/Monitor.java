@@ -77,6 +77,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JTextField _userKeyField;
 	private JCheckBox _checkUpdatesField;
 	private JCheckBox _notificationsEnabledField;
+    private JComboBox _notificationsFormat;
 	private JCheckBox _showHsFoundField;
 	private JCheckBox _showHsClosedField;
 	private JCheckBox _showScreenNotificationField;
@@ -550,8 +551,18 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             	_updateNotificationCheckboxes();
             }
         });
-		panel.add(_notificationsEnabledField, "wrap");
-		
+        panel.add(_notificationsEnabledField, "wrap");
+
+        // When running on Mac OS X 10.8 or later, the format of the notifications can be changed
+        if (Config.isOsxNotificationsSupported()) {
+            panel.add(new JLabel(""), "skip,right");
+            JLabel notificationsFormatLabel = new JLabel(t("options.label.notifyformat.label"));
+            panel.add(notificationsFormatLabel, "split 2, gapleft 27");
+            _notificationsFormat = new JComboBox(new String[]{ t("options.label.notifyformat.osx"), t("options.label.notifyformat.hearthstats")});
+            _notificationsFormat.setSelectedIndex(Config.useOsxNotifications() ? 0 : 1);
+            panel.add(_notificationsFormat, "wrap");
+        }
+
 		// show HS found notification
 		panel.add(new JLabel(""), "skip,right");
 		_showHsFoundField = new JCheckBox(t("options.notification.hs_found"));
@@ -644,6 +655,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	
 	private void _updateNotificationCheckboxes() {
 		boolean isEnabled = _notificationsEnabledField.isSelected();
+        _notificationsFormat.setEnabled(isEnabled);
 		_showHsFoundField.setEnabled(isEnabled);
 		_showHsClosedField.setEnabled(isEnabled);
 		_showScreenNotificationField.setEnabled(isEnabled);
@@ -1223,7 +1235,14 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		Config.setAnalyticsEnabled(_analyticsField.isSelected());
 		Config.setMinToTray(_minToTrayField.isSelected());
 		Config.setStartMinimized(_startMinimizedField.isSelected());
-		Config.save();
+
+        if (_notificationsFormat != null) {
+            // This control only appears on OS X machines, will be null on Windows machines
+            Config.setUseOsxNotifications(_notificationsFormat.getSelectedIndex() == 0);
+            _notificationQueue = Config.useOsxNotifications() ? new OsxNotificationQueue() : new DialogNotificationQueue();
+        }
+
+        Config.save();
 		JOptionPane.showMessageDialog(null, "Options Saved");
 	}
 	
