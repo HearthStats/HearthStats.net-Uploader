@@ -4,7 +4,6 @@ import com.boxysystems.jgoogleanalytics.FocusPoint;
 import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
 import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.notification.NotificationQueue;
-import net.hearthstats.notification.OsxNotificationQueue;
 
 import javax.swing.*;
 import java.awt.*;
@@ -274,7 +273,7 @@ public class Updater {
 		fos.close();
 	}
 
-    private static NotificationQueue _notificationQueue = Config.useOsxNotifications() ? new OsxNotificationQueue() : new DialogNotificationQueue();
+    private static NotificationQueue _notificationQueue = new DialogNotificationQueue();
 
 	private static void _notify(String header) {
 		_notify(header, "");

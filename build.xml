@@ -123,6 +123,7 @@
             <fileset dir="./build/osx"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/JGoogleAnalytics_0.4.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/slf4j-api-1.7.6.jar"/>
         </jar>
         <sleep milliseconds="1000"/>
 
