@@ -20,7 +20,7 @@ public class Main extends JFrame {
 
 	public static String getExtractionFolder() {
         if (Config.os == Config.OS.OSX) {
-            File libFolder = new File("/private/tmp/HearthStats.net-Uploader");
+            File libFolder = new File(Config.getSystemProperty("user.home") + "/Library/Application Support/HearthStatsUploader");
             libFolder.mkdir();
             return libFolder.getAbsolutePath();
 

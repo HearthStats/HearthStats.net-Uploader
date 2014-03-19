@@ -273,8 +273,23 @@ public class Config {
 	}
 	
 	private static void _createConfigIniIfNecessary() {
-		File configFile = new File("config.ini");
-		if(!configFile.exists()) {
+		File configFile = new File(getConfigPath());
+		if (!configFile.exists()) {
+            if (Config.os == OS.OSX) {
+                // The location has moved on Macs, so move the old config.ini to the new location if there is one
+                File oldConfigFile = new File("config.ini");
+                if (oldConfigFile.exists()) {
+                    debugLog.info("Found old config.ini file in {}, moving it to {}", oldConfigFile.getAbsolutePath(), configFile.getAbsolutePath());
+                    boolean renameSuccessful = oldConfigFile.renameTo(configFile);
+                    if (renameSuccessful) {
+                        debugLog.debug("Moved successfully");
+                        return;
+                    } else {
+                        debugLog.warn("Unable to move config.ini file to {}, creating a new file", configFile.getAbsolutePath());
+                    }
+                }
+            }
+
 			try {
 				configFile.createNewFile();
 			} catch (IOException e) {
@@ -282,6 +297,14 @@ public class Config {
 			}
 		}
 	}
+
+    private static String getConfigPath() {
+        if (Config.os == OS.OSX) {
+            return getSystemProperty("user.home") + "/Library/Preferences/net.hearthstats.HearthStatsUploader.ini";
+        } else {
+            return "config.ini";
+        }
+    }
 	
 	private static void _setStringValue(String group, String key, String val) {
 		_getIni().put(group, key, val);
@@ -313,7 +336,7 @@ public class Config {
 		if(_ini == null) {
 			_createConfigIniIfNecessary();
 			try {
-				_ini = new Wini(new File("config.ini"));
+				_ini = new Wini(new File(getConfigPath()));
 			} catch (Exception e) {
                 Log.warn("Error occurred while loading config.ini", e);
 			}

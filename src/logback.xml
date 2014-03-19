@@ -8,9 +8,9 @@
         </encoder>
     </appender>
 
-    <!-- Outputs logs to a file called log.txt -->
+    <!-- Outputs logs to a file called log.txt (may be overridden using JVM parameters) -->
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>log.txt</file>
+        <file>${LOG_FILE:-log.txt}</file>
         <append>false</append>
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%8.8thread] %-5level %20.20logger{20} - %msg%n</pattern>
