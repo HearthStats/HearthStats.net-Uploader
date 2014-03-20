@@ -123,12 +123,14 @@
             <fileset dir="./build/osx"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/JGoogleAnalytics_0.4.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/slf4j-api-1.7.6.jar"/>
         </jar>
         <sleep milliseconds="1000"/>
 
         <!-- Copy remaining resources, other than Windows-specific files like DLLs -->
         <copy preservelastmodified="true" todir="./build/osx">
             <fileset dir="./src">
+                <include name="**/*.css" />
                 <include name="**/*.properties" />
                 <include name="tessdata/**" />
                 <include name="uploader.jar" />
@@ -156,6 +158,8 @@
             <zipfileset excludes="META-INF/*.SF" src="./lib/jna.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/junit-4.10.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/logback-classic-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/logback-core-1.1.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-core-4.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-swing-4.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/rococoa-core-0.5.jar"/>
@@ -177,6 +181,7 @@
             <librarypath dir="./src/lib" includes="*.dylib"/>
             <option value="-Dapple.laf.useScreenMenuBar=true"/>
             <option value="-Djna.library.path=$APP_ROOT/Contents/MacOS"/>
+            <option value="-DLOG_FILE=${user.home}/Library/Application Support/HearthStatsUploader/log.txt"/>
             <option value="-Xdock:icon=Contents/Resources/${bundle.icon}"/>
             <option value="-Xms96m"/>
             <option value="-Xmx192m"/>

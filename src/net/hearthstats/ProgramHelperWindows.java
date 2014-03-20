@@ -17,6 +17,8 @@ import com.sun.jna.ptr.PointerByReference;
 import jna.extra.GDI32Extra;
 import jna.extra.User32Extra;
 import jna.extra.WinGDIExtra;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -26,6 +28,8 @@ import java.awt.image.BufferedImage;
  */
 public class ProgramHelperWindows extends ProgramHelper {
 
+    private final static Logger debugLog = LoggerFactory.getLogger(ProgramHelperWindows.class);
+
 	protected String _programName;
 	private String _processName;
 	private HWND _windowHandle = null;
@@ -34,7 +38,8 @@ public class ProgramHelperWindows extends ProgramHelper {
 	private static boolean _isMinimized = false;
 	
 	public ProgramHelperWindows(String processName) {
-		_processName = processName;
+        debugLog.debug("Initialising ProgramHelperWindows with {}", processName);
+        _processName = processName;
 	}
 
 	@Override

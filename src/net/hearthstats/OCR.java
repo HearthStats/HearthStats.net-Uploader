@@ -1,12 +1,8 @@
 package net.hearthstats;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-
-import javax.swing.JOptionPane;
-
 import net.sourceforge.tess4j.Tesseract;
-import net.sourceforge.tess4j.TesseractException;
+
+import java.awt.image.BufferedImage;
 
 public class OCR {
 	
@@ -31,7 +27,7 @@ public class OCR {
 			output += instance.doOCR(image);
 			output = output.trim();
 		} catch(Exception e) {
-			Main.logException(e);
+			Main.showErrorDialog("Error performing OCR", e);
 		}
 		return output;
 	}

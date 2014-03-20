@@ -10,6 +10,8 @@ import org.rococoa.Rococoa;
 import org.rococoa.cocoa.foundation.NSArray;
 import org.rococoa.cocoa.foundation.NSAutoreleasePool;
 import org.rococoa.cocoa.foundation.NSString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -21,6 +23,8 @@ import java.awt.image.WritableRaster;
  */
 public class ProgramHelperOsx extends ProgramHelper {
 
+    private final static Logger debugLog = LoggerFactory.getLogger(ProgramHelperOsx.class);
+
     private final String _bundleIdentifier;
 
     private int _pid;
@@ -30,6 +34,7 @@ public class ProgramHelperOsx extends ProgramHelper {
 
 
     public ProgramHelperOsx(String bundleIdentifier) {
+        debugLog.debug("Initialising ProgramHelperOsx with {}", bundleIdentifier);
         _bundleIdentifier = bundleIdentifier;
     }
 
@@ -44,6 +49,7 @@ public class ProgramHelperOsx extends ProgramHelper {
                 BufferedImage image = getWindowImage(_windowId);
                 if (image == null) {
                     // We seem to have lost the window?
+                    debugLog.debug("    Window not found, resetting _windowId and _pid to 0");
                     _windowId = 0;
                     _pid = 0;
                     return null;
@@ -56,10 +62,12 @@ public class ProgramHelperOsx extends ProgramHelper {
                 _windowId = findWindow(_pid);
                 if (_windowId == 0) {
                     // The window couldn't be found, so maybe the program has been closed. Reset the pid to force it to start from the start
+                    debugLog.debug("    Window not found, resetting _pid to 0");
                     _pid = 0;
 
                 } else {
                     // The program was found, so take an image
+                    debugLog.debug("    Window found, setting _windowId to {}", _windowId);
                     BufferedImage image = getWindowImage(_windowId);
                     return image;
                 }
@@ -105,6 +113,10 @@ public class ProgramHelperOsx extends ProgramHelper {
             int height = imageRep.pixelsHigh();
 
             int windowTitleHeight = determineWindowTitleHeight(height, width);
+
+            if (debugLog.isDebugEnabled()) {
+                debugLog.debug("    Window height={} width={} titleHeight={}", new Object[] { height, width, windowTitleHeight});
+            }
 
             int heightWithoutTitle = height - windowTitleHeight;
 
@@ -355,6 +367,7 @@ public class ProgramHelperOsx extends ProgramHelper {
 
         if (newPid != _pid) {
             // The process ID has changed, so reset the cached window ID (which was related to the old PID)
+            debugLog.debug("    _pid has changed from {} to {}", _pid, newPid);
             _pid = newPid;
             _windowId = 0;
         }

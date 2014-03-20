@@ -8,10 +8,14 @@ import java.io.InputStreamReader;
 
 import javax.swing.JOptionPane;
 
-import org.ini4j.InvalidFileFormatException;
+import net.hearthstats.log.Log;
 import org.ini4j.Wini;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Config {
+
+    private final static Logger debugLog = LoggerFactory.getLogger(Config.class);
 
     public static final OS os = _parseOperatingSystem();
 
@@ -22,6 +26,8 @@ public class Config {
 	private static String _userkey;
 
 	private static boolean _checkForUpdates;
+
+    private static boolean _useOsxNotifications;
 
 	private static boolean _showNotifications;
 
@@ -54,6 +60,7 @@ public class Config {
 	private static String _apiBaseUrl;
 	
 	public static void rebuild() {
+        debugLog.debug("Building config");
 
 		_storePreviousValues();
 
@@ -67,6 +74,7 @@ public class Config {
 		setCheckForUpdates(true);
 		
 		// notifications
+        setUseOsxNotifications(isOsxNotificationsSupported());
 		setShowNotifications(true);
 		setShowHsFoundNotification(true);
 		setShowHsClosedNotification(true);
@@ -165,7 +173,11 @@ public class Config {
 	public static boolean minimizeToTray() {
 		return _getBooleanSetting("ui", "mintotray", true);
 	}
-	
+
+    public static boolean useOsxNotifications() {
+        return _getBooleanSetting("notifications", "osx", isOsxNotificationsSupported());
+    }
+
 	public static boolean showNotifications() {
 		return _getBooleanSetting("notifications", "enabled", true);
 	}
@@ -196,7 +208,31 @@ public class Config {
 		return getVersion() + '-' + os;
 	}
 
-	public static void setShowNotifications(boolean val) {
+    public static void setUseOsxNotifications(boolean val) {
+        _setBooleanValue("notifications", "osx", val);
+    }
+
+    public static Boolean isOsxNotificationsSupported() {
+        try {
+            if (Config.os == OS.OSX) {
+                String osVersion = Config.getSystemProperty("os.version");
+                String osVersionSplit[] = osVersion.split("\\.");
+                if (osVersionSplit[0].equals("10")) {
+                    // This is OS X
+                    int version = Integer.parseInt(osVersionSplit[1]);
+                    if (version >= 8) {
+                        // This is OS X 10.8 or later
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            debugLog.warn("Unable to determine if OS X notifications are supported, assuming false", ex);
+        }
+        return false;
+    }
+
+    public static void setShowNotifications(boolean val) {
 		_setBooleanValue("notifications", "enabled", val);
 	}
 	
@@ -237,22 +273,45 @@ public class Config {
 	}
 	
 	private static void _createConfigIniIfNecessary() {
-		File configFile = new File("config.ini");
-		if(!configFile.exists()) {
+		File configFile = new File(getConfigPath());
+		if (!configFile.exists()) {
+            if (Config.os == OS.OSX) {
+                // The location has moved on Macs, so move the old config.ini to the new location if there is one
+                File oldConfigFile = new File("config.ini");
+                if (oldConfigFile.exists()) {
+                    debugLog.info("Found old config.ini file in {}, moving it to {}", oldConfigFile.getAbsolutePath(), configFile.getAbsolutePath());
+                    boolean renameSuccessful = oldConfigFile.renameTo(configFile);
+                    if (renameSuccessful) {
+                        debugLog.debug("Moved successfully");
+                        return;
+                    } else {
+                        debugLog.warn("Unable to move config.ini file to {}, creating a new file", configFile.getAbsolutePath());
+                    }
+                }
+            }
+
 			try {
 				configFile.createNewFile();
 			} catch (IOException e) {
-				Main.logException(e);
+                Log.warn("Error occurred while creating config.ini file", e);
 			}
 		}
 	}
+
+    private static String getConfigPath() {
+        if (Config.os == OS.OSX) {
+            return getSystemProperty("user.home") + "/Library/Preferences/net.hearthstats.HearthStatsUploader.ini";
+        } else {
+            return "config.ini";
+        }
+    }
 	
 	private static void _setStringValue(String group, String key, String val) {
 		_getIni().put(group, key, val);
 		try {
 			_getIni().store();
 		} catch (IOException e) {
-			Main.logException(e);
+            Log.warn("Error occurred while setting key " + key + " in config.ini", e);
 		}
 	}
 	
@@ -277,9 +336,9 @@ public class Config {
 		if(_ini == null) {
 			_createConfigIniIfNecessary();
 			try {
-				_ini = new Wini(new File("config.ini"));
+				_ini = new Wini(new File(getConfigPath()));
 			} catch (Exception e) {
-				Main.logException(e);
+                Log.warn("Error occurred while loading config.ini", e);
 			}
 		}
 		return _ini;
@@ -304,6 +363,7 @@ public class Config {
 		setUserKey(_userkey);
 		setApiBaseUrl(_apiBaseUrl);
 		setCheckForUpdates(_checkForUpdates);
+        setUseOsxNotifications(_useOsxNotifications);
 		setShowNotifications(_showNotifications);
 		setShowHsFoundNotification(_showHsFoundNotification);
 		setShowHsClosedNotification(_showHsClosedNotification);
@@ -323,6 +383,7 @@ public class Config {
 		_userkey = getUserKey();
 		_apiBaseUrl = getApiBaseUrl();
 		_checkForUpdates = checkForUpdates();
+        _useOsxNotifications = useOsxNotifications();
 		_showNotifications = showNotifications();
 		_showHsFoundNotification = showHsFoundNotification();
 		_showHsClosedNotification = showHsClosedNotification();
@@ -352,15 +413,15 @@ public class Config {
 	}
 
     public static String getJavaLibraryPath() {
-        return _getSystemProperty("java.library.path");
+        return getSystemProperty("java.library.path");
     }
 
-    private static String _getSystemProperty(String property) {
+    public static String getSystemProperty(String property) {
         try {
             return System.getProperty(property);
         } catch (SecurityException ex) {
             // Some system properties may not be available if the user has their security settings locked down
-            System.err.println("Caught a SecurityException reading the system property '" + property + "', defaulting to blank string.");
+            debugLog.warn("Caught a SecurityException reading the system property '" + property + "', defaulting to blank string.");
             return "";
         }
     }
@@ -371,7 +432,7 @@ public class Config {
      * @return The current OS
      */
     private static OS _parseOperatingSystem() {
-        String osString = _getSystemProperty("os.name");
+        String osString = getSystemProperty("os.name");
         if (osString == null) {
             return OS.UNSUPPORTED;
         } else if (osString.startsWith("Windows")) {

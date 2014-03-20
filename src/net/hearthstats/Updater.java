@@ -2,6 +2,8 @@ package net.hearthstats;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
 import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
+import net.hearthstats.notification.DialogNotificationQueue;
+import net.hearthstats.notification.NotificationQueue;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,8 +25,9 @@ public class Updater {
     private static final Set<String> FILES_TO_SKIP = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
         "instructions-osx.txt"
     )));
+    public static final String DOWNLOAD_URL = "http://hearthstats.net/uploader";
 
-	private static String _availableVersion;
+    private static String _availableVersion;
 	private static String _recentChanges;
 	private static String _savedUserKey;
 
@@ -133,9 +136,9 @@ public class Updater {
         if (errorMessage != null) {
             Main.showMessageDialog(errorMessage + "\n\nYou will now be taken to the download page.");
             try {
-                Desktop.getDesktop().browse(new URI("http://hearthstats.net/uploader"));
-            }catch (Exception e) {
-                Main.logException(e);
+                Desktop.getDesktop().browse(new URI(DOWNLOAD_URL));
+            } catch (Exception e) {
+                Main.showErrorDialog("Error launching browser with URL " + DOWNLOAD_URL, e);
             }
             _notify("Updater Error", errorMessage);
         }
@@ -270,7 +273,7 @@ public class Updater {
 		fos.close();
 	}
 
-	private static NotificationQueue _notificationQueue = new NotificationQueue();
+    private static NotificationQueue _notificationQueue = new DialogNotificationQueue();
 
 	private static void _notify(String header) {
 		_notify(header, "");
@@ -279,7 +282,7 @@ public class Updater {
 	private static void _notify(String header, String message) {
 		System.out.println(header);
 		System.out.println(message);
-		_notificationQueue.add(new Notification(header, message));
+		_notificationQueue.add(header, message, true);
 
 	}
 

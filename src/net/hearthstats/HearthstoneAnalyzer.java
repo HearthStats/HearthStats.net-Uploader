@@ -1,5 +1,8 @@
 package net.hearthstats;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -7,12 +10,13 @@ import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.RescaleOp;
 import java.io.File;
-import java.io.IOException;
 import java.util.Observable;
 
 import javax.imageio.ImageIO;
 
 public class HearthstoneAnalyzer extends Observable {
+
+    private final static Logger debugLog = LoggerFactory.getLogger(HearthstoneAnalyzer.class);
 
 	private BufferedImage _image;
 	private String _screen;
@@ -528,23 +532,23 @@ public class HearthstoneAnalyzer extends Observable {
 			RescaleOp rescaleOp = new RescaleOp(1.8f, -30, null);
 			rescaleOp.filter(newImage, newImage);  // Source and destination are the same.
 		} catch(Exception e) {
-			Main.logException(e);
-			_notifyObserversOfChangeTo("Exception trying to write opponent name image:\n" + e.getMessage());
+			Main.showErrorDialog("Error rescaling opponent name image", e);
+			_notifyObserversOfChangeTo("Error rescaling opponent name image:\n" + e.getMessage());
 		}
 		// save it to a file
 		File outputfile = new File(Main.getExtractionFolder() + "/" + output);
 		try {
 			ImageIO.write(newImage, "jpg", outputfile);
 		} catch (Exception e) {
-			Main.logException(e);
+            Main.showErrorDialog("Error writing opponent name image", e);
 		}
 		
 		try {
 			String ocrString = OCR.process(newImage);
 			return ocrString == null ? "" : ocrString.replaceAll("\\s+","");
 		} catch(Exception e) {
-			Main.logException(e);
-			_notifyObserversOfChangeTo("Exception trying to analyze opponent name image:\n" + e.getMessage());
+            Main.showErrorDialog("Error trying to analyze opponent name image", e);
+			_notifyObserversOfChangeTo("Error trying to analyze opponent name image:\n" + e.getMessage());
 		}
 		return null;
 	}
@@ -558,7 +562,7 @@ public class HearthstoneAnalyzer extends Observable {
 		int height = (int) (22 * _ratio);
 		
 		String rankStr = _performOcr(x, y, width, height, "ranklevel.jpg");
-		System.out.println("Rank str: " + rankStr);
+		debugLog.debug("Rank str: " + rankStr);
 		if(rankStr != null) {
 			rankStr = rankStr.replaceAll("l", "1");
 			rankStr = rankStr.replaceAll("I", "1");
@@ -568,14 +572,14 @@ public class HearthstoneAnalyzer extends Observable {
 			rankStr = rankStr.replaceAll("o", "0");
 			rankStr = rankStr.replaceAll("[^\\d.]", "");
 		}
-		System.out.println("Rank str parsed: " + rankStr);
+        debugLog.debug("Rank str parsed: " + rankStr);
 		
 		if(rankStr != null && !rankStr.isEmpty() && Integer.parseInt(rankStr) != 0 && Integer.parseInt(rankStr) < 26) 
 			_setRankLevel(Integer.parseInt(rankStr));
 		else 
-			if(_analyzeRankRetries < 10) {	// retry up to 5 times
+			if (_analyzeRankRetries < 10) {	// retry up to 5 times
 				_analyzeRankRetries++;
-				System.out.println("rank detection try #" + _analyzeRankRetries);
+                debugLog.debug("rank detection try #" + _analyzeRankRetries);
 				_analyzeRankLevel();
 			}
 		
