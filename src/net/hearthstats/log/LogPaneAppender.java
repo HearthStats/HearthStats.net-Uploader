@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import net.hearthstats.Main;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Marker;
 
 /**
@@ -12,6 +13,8 @@ import org.slf4j.Marker;
 public class LogPaneAppender extends AppenderBase<ILoggingEvent> {
 
     private Marker lastMarker = Log.WELCOME;
+
+    private FastDateFormat timestampFormat = FastDateFormat.getInstance("HH:mm:ss");
 
 
     @Override
@@ -54,6 +57,13 @@ public class LogPaneAppender extends AppenderBase<ILoggingEvent> {
             sb.append("<div class=\"");
             sb.append(cssClass);
             sb.append("\">");
+
+            // Add a timestamp to most log messages
+            if (marker != Log.WELCOME && marker != Log.HELP) {
+                sb.append("<span class=\"ts\">[");
+                sb.append(timestampFormat.format(eventObject.getTimeStamp()));
+                sb.append("]</span>&nbsp; ");
+            }
 
             String message = eventObject.getMessage().replaceAll("\n", "<br>");
             sb.append(message);
