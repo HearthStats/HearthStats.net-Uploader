@@ -25,6 +25,7 @@
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="./bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/commons-lang3-3.3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/ghost4j-0.3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/jai_imageio.jar"/>
@@ -51,6 +52,7 @@
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="./bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/commons-lang3-3.3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/ghost4j-0.3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/jai_imageio.jar"/>
@@ -143,6 +145,7 @@
             <fileset dir="./build/osx"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/asm-3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/cglib-2.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/commons-lang3-3.3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/ghost4j-0.3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./lib/jai_imageio.jar"/>
