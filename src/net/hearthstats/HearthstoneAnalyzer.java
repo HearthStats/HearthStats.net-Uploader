@@ -10,6 +10,7 @@ import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.RescaleOp;
 import java.io.File;
+import java.util.Date;
 import java.util.Observable;
 
 import javax.imageio.ImageIO;
@@ -38,10 +39,31 @@ public class HearthstoneAnalyzer extends Observable {
 	public HearthstoneAnalyzer() {
 	}
 
+    private int iterations = 0;
+
 	public void analyze(BufferedImage image) {
 		_image = image;
-		
-		_calculateResolutionRatios();
+
+        iterations++;
+        if (iterations % 4 == 0) {
+            Date now = new Date();
+            String filename = String.format("screen-%1$06d-%2$tH.%2$tM.%2$tS.png", iterations, now);
+            File outputfile = new File(Main.getExtractionFolder() + "/" + filename);
+            try {
+                ImageIO.write(image, "png", outputfile);
+            } catch (Exception e) {
+                debugLog.debug("Error writing image " + iterations, e);
+            }
+
+            int[][] tests = {
+                    { 403, 487, 201, 173, 94 }, // title bar
+                    { 946, 149, 203, 174, 96 } // bottom bar
+            };
+            debugLog.debug("Written image {} pixel test = {}", filename, (new PixelGroupTest(_image, tests)).passed());
+        }
+
+
+        _calculateResolutionRatios();
 		
 		if(getScreen() != "Main Menu" && getScreen() != "Playing") {
 			_testForMainMenuScreen();
