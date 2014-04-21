@@ -260,10 +260,10 @@ public class Updater {
 		String zipUrl = null;
 		switch(Config.os.toString()) {
 			case "WINDOWS":
-				 zipUrl = "https://github.com/JeromeDane/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "/HearthStats.net.Uploader.v" + getAvailableVersion() + ".zip";
+				 zipUrl = "https://github.com/HearthStats/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "/HearthStats.net.Uploader.v" + getAvailableVersion() + ".zip";
 				 break;
 			case "OSX":
-				zipUrl = "https://github.com/JeromeDane/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "-osx/HearthStats.net.Uploader.v" + getAvailableVersion() + "-osx.zip";
+				zipUrl = "https://github.com/HearthStats/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "-osx/HearthStats.net.Uploader.v" + getAvailableVersion() + "-osx.zip";
 				break;
 		}
 		website = new URL(zipUrl);
@@ -292,7 +292,7 @@ public class Updater {
 
 	public static String getAvailableVersion() {
 		if (_availableVersion == null) {
-			String url = "https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/version";
+			String url = "https://raw.github.com/HearthStats/HearthStats.net-Uploader/master/src/version";
 			if(Config.os.toString().equals("OSX"))
 				url += "-osx";
 			_availableVersion = _readRemoteFile(url);
@@ -301,7 +301,7 @@ public class Updater {
 	}
 	public static String getRecentChanges() {
 		if (_recentChanges == null) {
-			String url = "https://raw.github.com/JeromeDane/HearthStats.net-Uploader/master/src/recentchanges";
+			String url = "https://raw.github.com/HearthStats/HearthStats.net-Uploader/master/src/recentchanges";
 			if(Config.os.toString().equals("OSX"))
 				url += "-osx";
 			_recentChanges = _readRemoteFile(url);

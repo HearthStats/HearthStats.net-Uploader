@@ -2,11 +2,15 @@ package net.hearthstats;
 
 import com.boxysystems.jgoogleanalytics.FocusPoint;
 import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
+import net.hearthstats.analysis.AnalyserEvent;
+import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
 import net.hearthstats.log.LogPane;
 import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.notification.NotificationQueue;
 import net.hearthstats.notification.OsxNotificationQueue;
+import net.hearthstats.state.Screen;
+import net.hearthstats.state.ScreenGroup;
 import net.miginfocom.swing.MigLayout;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -23,10 +27,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
+import java.util.*;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,13 +43,15 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     private static final String DECKS_URL = "http://hearthstats.net/decks";
 	private static final int POLLING_INTERVAL_IN_MS = 100;
     private static final int MAX_THREADS = 5;
-    private static final int GC_FREQUENCY = 8;
+    private static final int GC_FREQUENCY = 20;
+
+    private static final EnumSet<Screen> DO_NOT_NOTIFY_SCREENS = EnumSet.of(Screen.COLLECTION, Screen.COLLECTION_ZOOM, Screen.MAIN_TODAYSQUESTS, Screen.TITLE);
 
     private static Logger debugLog = LoggerFactory.getLogger(Monitor.class);
     private static Logger perfLog = LoggerFactory.getLogger("net.hearthstats.performance");
 
     protected API _api = new API();
-	protected HearthstoneAnalyzer _analyzer = new HearthstoneAnalyzer();
+	protected HearthstoneAnalyser _analyzer = new HearthstoneAnalyser();
 	protected ProgramHelper _hsHelper;
 	
 	private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
@@ -68,7 +72,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JComboBox _deckSlot9Field;
 	private JComboBox _currentOpponentClassSelect;
 	private JComboBox _currentYourClassSelector;
-	
+
+    private int _numThreads = 0;
 	private int _pollIterations = 0;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
@@ -293,15 +298,17 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		text.setBackground(Color.WHITE);
 		text.setText("<html><body style=\"font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:10px;\">" +
 				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> " + t("Uploader") + " v" + Config.getVersion() + "</h2>" +
-				"<p><strong>" + t("Author") + ":</strong> Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>)</p>" + 
+				"<p><strong>" + t("Author") + ":</strong> " +
+                        "Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>), " +
+                        "Charles Gutjahr (<a href=\"http://charlesgutjahr.com\">Website</a>)</p>" +
 				"<p>" + t("about.utility_l1") + "<br>" +
 					t("about.utility_l2") + "<br>" +
 					t("about.utility_l3") + "</p>" +
 				"<p>" + t("about.open_source_l1") + "<br>" +
 					t("about.open_source_l2") + "</p>" +
-				"<p>&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/\">" + t("about.project_source") + "</a><br/>" +
-				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/releases\">" + t("about.releases_and_changelog") + "</a><br/>" +
-				"&bull; <a href=\"https://github.com/JeromeDane/HearthStats.net-Uploader/issues\">" + t("about.feedback_and_suggestions") + "</a><br/>" +
+				"<p>&bull; <a href=\"https://github.com/HearthStats/HearthStats.net-Uploader/\">" + t("about.project_source") + "</a><br/>" +
+				"&bull; <a href=\"https://github.com/HearthStats/HearthStats.net-Uploader/releases\">" + t("about.releases_and_changelog") + "</a><br/>" +
+				"&bull; <a href=\"https://github.com/HearthStats/HearthStats.net-Uploader/issues\">" + t("about.feedback_and_suggestions") + "</a><br/>" +
 				"&bull; <a href=\"http://redd.it/1wa4rc/\">Reddit thread</a> (please up-vote)</p>" +
 				"<p><strong>" + t("about.support_project") + ":</strong></p>" +
 				"</body></html>"
@@ -333,7 +340,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    contribtorsText.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
 				"<p><strong>Contributors</strong> (listed alphabetically):</p>" +
 				"<p>" +
-					"&bull; <a href=\"http://charlesgutjahr.com\">Charles Gutjahr</a> - Added OSx support and memory improvements<br>" +
+                    "&bull; <a href=\"https://github.com/JeromeDane\">Jerome Dane</a> - Original developer<br>" +
+                    "&bull; <a href=\"https://github.com/gtch\">Charles Gutjahr</a> - Added OS X support and new screen detection<br>" +
 					"&bull; <a href=\"https://github.com/sargonas\">J Eckert</a> - Fixed notifications spawning taskbar icons<br>" +
 					"&bull; <a href=\"https://github.com/nwalsh1995\">nwalsh1995</a> - Started turn detection development<br>" +
 					"&bull; <a href=\"https://github.com/remcoros\">Remco Ros</a> (<a href=\"http://hearthstonetracker.com/\">HearthstoneTracker</a>) - Provides advice & suggestins<br>" +
@@ -740,7 +748,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 
-	private int _numThreads = 0;
 	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(MAX_THREADS);
 
 	protected boolean _drawPaneAdded = false;
@@ -775,16 +782,19 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		 String title = "HearthStats.net Uploader";
 		if (_hearthstoneDetected) {
 			if (_analyzer.getScreen() != null) {
-				title += " - " + _analyzer.getScreen();
-				if (_analyzer.getScreen() == "Play" && _analyzer.getMode() != null) {
+				title += " - " + _analyzer.getScreen().title;
+//                if (_analyzer.getScreen() == "Play" && _analyzer.getMode() != null) {
+                if (_analyzer.getScreen() == Screen.PLAY_LOBBY && _analyzer.getMode() != null) {
 					title += " " + _analyzer.getMode();
 				}
-				if (_analyzer.getScreen() == "Finding Opponent") {
+				if (_analyzer.getScreen() == Screen.FINDING_OPPONENT) {
 					if (_analyzer.getMode() != null) {
 						title += " for " + _analyzer.getMode() + " Game";
 					}
 				}
-				if (_analyzer.getScreen() == "Match Start" || _analyzer.getScreen() == "Playing") {
+
+                // TODO: replace with enum values
+				if (_analyzer.getScreen().title == "Match Start" || _analyzer.getScreen().title == "Playing") {
 					title += " " + (_analyzer.getMode() == null ? "[undetected]" : _analyzer.getMode());
 					title += " " + (_analyzer.getCoin() ? "" : "No ") + "Coin";
 					title += " " + (_analyzer.getYourClass() == null ? "[undetected]" : _analyzer.getYourClass());
@@ -927,36 +937,42 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected void _pollHearthstone() {
         scheduledExecutorService.schedule(new Callable<Object>() {
 			public Object call() throws Exception {
-				_numThreads++;
-				
+                _numThreads++;
                 _pollIterations++;
 
                 // A copy of pollIterations is kept in localPollIterations
                 int currentPollIteration = _pollIterations;
-                debugLog.debug("--> Iteration {} started", currentPollIteration);
-				
-				if (_hsHelper.foundProgram()) {
-					_handleHearthstoneFound(currentPollIteration);
-                } else {
-                    debugLog.debug("  - Iteration {} did not find Hearthstone", currentPollIteration);
-					_handleHearthstoneNotFound(currentPollIteration);
+
+                try {
+                    debugLog.debug("--> Iteration {} started", currentPollIteration);
+
+                    if (_hsHelper.foundProgram()) {
+                        _handleHearthstoneFound(currentPollIteration);
+                    } else {
+                        debugLog.debug("  - Iteration {} did not find Hearthstone", currentPollIteration);
+                        _handleHearthstoneNotFound(currentPollIteration);
+                    }
+
+                    _updateTitle();
+
+                    _pollHearthstone();        // repeat the process
+
+                    // Keep memory usage down by telling the JVM to perform a garbage collection after every eighth poll (ie GC 1-2 times per second)
+                    if (_pollIterations % GC_FREQUENCY == 0 && Runtime.getRuntime().totalMemory() > 150000000) {
+                        debugLog.debug("  - Iteration {} triggers GC", currentPollIteration);
+                        System.gc();
+                    }
+
+                    _numThreads--;
+
+                } catch (Throwable ex) {
+                    debugLog.error("  - Iteration " + currentPollIteration + " caused exception which is being ignored:", ex);
+                } finally {
+                    debugLog.debug("<-- Iteration {} finished", currentPollIteration);
                 }
 
-				_updateTitle();
-				
-				_pollHearthstone();		// repeat the process
-
-                // Keep memory usage down by telling the JVM to perform a garbage collection after every eighth poll (ie GC 1-2 times per second)
-				if (_pollIterations % GC_FREQUENCY == 0 && Runtime.getRuntime().totalMemory() > 150000000) {
-                    debugLog.debug("  - Iteration {} triggers GC", currentPollIteration);
-                    System.gc();
-                }
-
-                debugLog.debug("<-- Iteration {} finished", currentPollIteration);
-
-                _numThreads--;
-				return "";
-			}
+                return "";
+            }
 		}, POLLING_INTERVAL_IN_MS, TimeUnit.MILLISECONDS);
 	}
 	
@@ -985,18 +1001,20 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 
-	private void _handleAnalyzerEvent(Object changed) throws IOException {
-		switch(changed.toString()) {
-			case "arenaEnd":
+	private void handleAnalyserEvent(AnalyserEvent changed) throws IOException {
+		switch(changed) {
+			case ARENA_END:
 				_notify("End of Arena Run Detected");
                 Log.info("End of Arena Run Detected");
 				_api.endCurrentArenaRun();
 				break;
-			case "coin":
+
+			case COIN:
 				_notify("Coin Detected");
                 Log.info("Coin Detected");
 				break;
-			case "deckSlot":
+
+			case DECK_SLOT:
 				JSONObject deck = DeckSlotUtils.getDeckFromSlot(_analyzer.getDeckSlot());
 				if (deck == null) {
 					_tabbedPane.setSelectedIndex(2);
@@ -1007,7 +1025,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				}
 				
 				break;
-			case "mode":
+
+			case MODE:
 				_playingInMatch = false;
 				_setCurrentMatchEnabledi(false);
 				if (Config.showModeNotification()) {
@@ -1022,31 +1041,36 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				else
                     Log.info(_analyzer.getMode() + " Mode Detected");
 				break;
-			case "newArena":
+
+			case NEW_ARENA:
 				if(_analyzer.isNewArena())
 					_notify("New Arena Run Detected");
                 Log.info("New Arena Run Detected");
 				break;
-			case "opponentClass":
+
+			case OPPONENT_CLASS:
 				_notify("Playing vs " + _analyzer.getOpponentClass());
                 Log.info("Playing vs " + _analyzer.getOpponentClass());
 				break;
-			case "opponentName":
+
+			case OPPONENT_NAME:
 				_notify("Opponent: " + _analyzer.getOpponentName());
                 Log.info("Opponent: " + _analyzer.getOpponentName());
 				break;
-			case "result":
+
+			case RESULT:
 				_playingInMatch = false;
 				_setCurrentMatchEnabledi(false);
 				_notify(_analyzer.getResult() + " Detected");
                 Log.info(_analyzer.getResult() + " Detected");
 				_submitMatchResult();
 				break;
-			case "screen":
-				
-				boolean inGameModeScreen = (_analyzer.getScreen() == "Arena" || _analyzer.getScreen() == "Play");
-				if(inGameModeScreen) {
-					if(_playingInMatch &&  _analyzer.getResult() == null) {
+
+			case SCREEN:
+
+				boolean inGameModeScreen = (_analyzer.getScreen() == Screen.ARENA_LOBBY || _analyzer.getScreen() == Screen.ARENA_END || _analyzer.getScreen() == Screen.PLAY_LOBBY);
+				if (inGameModeScreen) {
+					if (_playingInMatch &&  _analyzer.getResult() == null) {
 						_playingInMatch = false;
 						_notify("Detection Error", "Match result was not detected.");
                         Log.info("Detection Error: Match result was not detected.");
@@ -1055,38 +1079,54 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 					_playingInMatch = false;
 				} 
 				
-				if(_analyzer.getScreen() == "Finding Opponent") {
+				if (_analyzer.getScreen() == Screen.FINDING_OPPONENT) {
 					_resetMatchClassSelectors();
 				}
-				if(_analyzer.getScreen() == "Match Start") {
+
+				if (_analyzer.getScreen().group == ScreenGroup.MATCH_START) {
 					_setCurrentMatchEnabledi(true);
 					_playingInMatch = true;
-				} if(_analyzer.getScreen() != "Result" && Config.showScreenNotification()) {
-					if(_analyzer.getScreen() == "Practice")
-						_notify(_analyzer.getScreen() + " Screen Detected", "Results are not tracked in practice mode");
-					else
-						_notify(_analyzer.getScreen() + " Screen Detected");
 				}
-				if(_analyzer.getScreen() == "Practice")
-                    Log.info(_analyzer.getScreen() + " Screen Detected. Result tracking disabled.");
-				else {
-					if(_analyzer.getScreen() == "Match Start")
+
+                if (_analyzer.getScreen().group != ScreenGroup.MATCH_END && !DO_NOT_NOTIFY_SCREENS.contains(_analyzer.getScreen())
+                        && Config.showScreenNotification()) {
+					if (_analyzer.getScreen() == Screen.PRACTICE_LOBBY) {
+                        _notify(_analyzer.getScreen().title + " Screen Detected", "Results are not tracked in practice mode");
+                    } else {
+                        _notify(_analyzer.getScreen().title + " Screen Detected");
+                    }
+				}
+
+				if (_analyzer.getScreen() == Screen.PRACTICE_LOBBY) {
+                    Log.info(_analyzer.getScreen().title + " Screen Detected. Result tracking disabled.");
+                } else {
+					if (_analyzer.getScreen() == Screen.MATCH_VS) {
                         Log.divider();
-                    Log.info(_analyzer.getScreen() + " Screen Detected");
+                    }
+                    Log.info(_analyzer.getScreen().title + " Screen Detected");
 				}
 				break;
-			case "yourClass":
+
+			case YOUR_CLASS:
 				_notify("Playing as " + _analyzer.getYourClass());
                 Log.info("Playing as " + _analyzer.getYourClass());
 				break;
-			case "yourTurn":
-				if(Config.showYourTurnNotification())
-					_notify((_analyzer.isYourTurn() ? "Your" : "Opponent") + " turn detected");
+
+			case YOUR_TURN:
+				if (Config.showYourTurnNotification()) {
+                    _notify((_analyzer.isYourTurn() ? "Your" : "Opponent") + " turn detected");
+                }
                 Log.info((_analyzer.isYourTurn() ? "Your" : "Opponent") + " turn detected");
 				break;
+
+            case ERROR_ANALYSING_IMAGE:
+                _notify("Error analysing opponent name image");
+                Log.info("Error analysing opponent name image");
+                break;
+
 			default:
-				_notify(changed.toString());
-                Log.info(changed.toString());
+				_notify("Unhandled event");
+                Log.info("Unhandled event");
 		}
 		_updateCurrentMatchUi();
 	}
@@ -1130,13 +1170,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	
 	@Override
 	public void update(Observable dispatcher, Object changed) {
-		if(dispatcher.getClass().toString().matches(".*HearthstoneAnalyzer"))
+		if (dispatcher.getClass().isAssignableFrom(HearthstoneAnalyser.class))
 			try {
-				_handleAnalyzerEvent(changed);
+				handleAnalyserEvent((AnalyserEvent) changed);
 			} catch (IOException e) {
 				Main.showErrorDialog("Error handling analyzer event", e);
 			}
-		if(dispatcher.getClass().toString().matches(".*API"))
+		if(dispatcher.getClass().isAssignableFrom(API.class))
 			_handleApiEvent(changed);
 		
 		if(dispatcher.getClass().toString().matches(".*ProgramHelper(Windows|Osx)?"))
