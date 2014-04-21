@@ -59,7 +59,7 @@ public class ScreenAnalyserTest {
         Assert.assertFalse("No images found in " + IMAGE_PATH + ". Please make sure you've set the path to a folder that contains screenshots from Hearthstone", images.size() == 0);
 
         int page = 0;
-        int pageCount = images.size() / PAGE_SIZE;
+        int pageCount = (images.size() / PAGE_SIZE) + 1;
 
         while (page < pageCount) {
             page++;
