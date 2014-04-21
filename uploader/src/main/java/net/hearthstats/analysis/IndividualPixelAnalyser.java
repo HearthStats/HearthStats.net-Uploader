@@ -56,7 +56,7 @@ public class IndividualPixelAnalyser {
         }
 
         // No pixel texts failed, so this is a match
-        debugLog.debug("matched all pixels {}", uniquePixels);
+        debugLog.debug("matched all pixels {}", (Object[]) uniquePixels);
 
         return true;
     }
