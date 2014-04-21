@@ -10,16 +10,16 @@
     </taskdef>
 
 	<target name="check-update_jar">
-	    <available file="./src/updater.jar" property="update_jar.present"/>
+	    <available file="./uploader/src/main/resources/updater.jar" property="update_jar.present"/>
 	</target>
 
 	<target name="delete_updater_jar" depends="check-update_jar" if="update_jar.present">
-		<delete file="./src/updater.jar"/>
+		<delete file="./uploader/src/main/resources/updater.jar"/>
 	</target>
 
 	<target name="create_run_jar">
         <mkdir dir="./bin"/>
-	    <jar destfile="./src/updater.jar" filesetmanifest="mergewithoutmain">
+	    <jar destfile="./uploader/src/main/resources/updater.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="net.hearthstats.Updater"/>
                 <attribute name="Class-Path" value="."/>
@@ -97,7 +97,7 @@
                destdir="./build/osx"
                includeantruntime="false"
                failonerror="true" verbose="false">
-            <src path="./src" />
+            <src path="./uploader/src/main/java" />
             <classpath>
                 <fileset dir="./lib" includes="*.jar"/>
             </classpath>
@@ -105,14 +105,15 @@
 
         <!-- Copy resources shared by both the updater and the main program -->
         <copy preservelastmodified="true" todir="./build/osx">
-            <fileset dir="./src">
+            <fileset dir="./uploader/src/main/resources">
                 <include name="**/*.xml" />
                 <include name="**/*.gif" />
                 <include name="**/*.png" />
+                <exclude name="**/.DS_Store" />
+            </fileset>
+            <fileset dir="./src">
                 <include name="version" />
                 <include name="version-osx" />
-
-                <exclude name="**/.DS_Store" />
             </fileset>
         </copy>
 
@@ -131,7 +132,7 @@
 
         <!-- Copy remaining resources, other than Windows-specific files like DLLs -->
         <copy preservelastmodified="true" todir="./build/osx">
-            <fileset dir="./src">
+            <fileset dir="./uploader/src/main/resources">
                 <include name="**/*.css" />
                 <include name="**/*.properties" />
                 <include name="tessdata/**" />
@@ -178,10 +179,10 @@
                    identifier="net.hearthstats.HearthStatsUploader"
                    shortversion="${hearthstats.version}"
                    applicationCategory="public.app-category.games"
-                   icon="./src/images/icon.icns"
+                   icon="./uploader/src/main/resources/images/icon.icns"
                    mainclassname="net/hearthstats/Main">
             <classpath file="./build/HearthStatsUploader-OSX.jar" />
-            <librarypath dir="./src/lib" includes="*.dylib"/>
+            <librarypath dir="./uploader/src/main/resources/lib" includes="*.dylib"/>
             <option value="-Dapple.laf.useScreenMenuBar=true"/>
             <option value="-Djna.library.path=$APP_ROOT/Contents/MacOS"/>
             <option value="-DLOG_FILE=Library/Application Support/HearthStatsUploader/log.txt"/>
@@ -192,14 +193,14 @@
 
         <!-- Copy Tesseract data into the Resources folder of the bundle -->
         <copy preservelastmodified="true" todir="./build/HearthStats.app/Contents/Resources">
-            <fileset dir="./src">
+            <fileset dir="./uploader/src/main/resources">
                 <include name="tessdata/**" />
                 <exclude name="**/.DS_Store" />
             </fileset>
         </copy>
 
         <!-- Add extra settings to the Info.plist file to enable Retina mode on the app bundle -->
-        <xslt in="./build/HearthStats.app/Contents/Info.plist" out="./build/HearthStats.app/Contents/Info-updated.plist" style="build-osx-plist.xslt"  />
+        <xslt in="./build/HearthStats.app/Contents/Info.plist" out="./build/HearthStats.app/Contents/Info-updated.plist" style="./uploader/src/main/scripts/build-osx-plist.xslt"  />
         <delete file="./build/HearthStats.app/Contents/Info.plist" />
         <move file="./build/HearthStats.app/Contents/Info-updated.plist" tofile="./build/HearthStats.app/Contents/Info.plist" />
 
