@@ -241,7 +241,8 @@ public class HearthstoneAnalyser extends Observable {
                 analyzeRankRetries = 0;
                 setMode("Casual");
             }
-        } else {
+        }
+        if (!"Ranked".equals(getMode())) {
             // Last time we checked we were not in ranked mode, check if we are now
             debugLog.debug("Testing for ranked mode");
             if (imageShowsRankedPlaySelected(image)) {
