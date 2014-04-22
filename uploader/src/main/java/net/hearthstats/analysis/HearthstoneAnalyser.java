@@ -17,6 +17,7 @@ import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.RescaleOp;
 import java.io.File;
+import java.util.Date;
 import java.util.Observable;
 
 /**
@@ -46,11 +47,9 @@ public class HearthstoneAnalyser extends Observable {
     private int deckSlot;
     private Integer rankLevel;
     private int analyzeRankRetries = 0;
+    private int iterationsSinceFindingOpponent = 0;
     private long startTime;
 
-
-
-    public static Screen TEMP_TEMP_TEMP = null;
 
 
     public HearthstoneAnalyser() {
@@ -121,15 +120,6 @@ public class HearthstoneAnalyser extends Observable {
                     testForOpponentName(image);
                     break;
 
-                case FINDING_OPPONENT:
-                    match = new HearthstoneMatch();
-                    match.setMode(mode);
-                    match.setDeckSlot(deckSlot);
-                    match.setRankLevel(rankLevel);
-                    arenaRunEndDetected = false;
-                    isYourTurn = false;
-                    break;
-
             }
 
             if (!"Practice".equals(getMode())) {
@@ -176,23 +166,44 @@ public class HearthstoneAnalyser extends Observable {
         if (newScreen != null && newScreen != previousScreen) {
             debugLog.debug("Screen changed from {} to {}", previousScreen, newScreen);
 
-            switch (newScreen) {
-
-                case PLAY_LOBBY:
-                    if (imageShowsPlayBackground(image)) {
-                        // This isn't the real play screen, it's background image behind the 'Finding Opponent' screen
-                        // Skip this iteration because the screenshot isn't valid
+            if (newScreen == Screen.PLAY_LOBBY) {
+                // Hearthstone screenshots will sometimes display the play lobby instead of 'Finding Opponent' popup
+                // presumably because the screenshot catches Hearthstone before it's finished drawing the screen.
+                // The follow two methods attempt to detect this and ignore it.
+                if (imageShowsPlayBackground(image)) {
+                    // This isn't the real play screen because the hero buttons are missing. That confirms that it
+                    // is a background image behind the 'Finding Opponent' screen
+                    return false;
+                }
+                if (previousScreen == Screen.FINDING_OPPONENT) {
+                    // The last screen was 'Finding Opponent' so wait a couple of iterations to be sure this isn't
+                    // just Hearthstone briefly flashing the background image to us.
+                    if (iterationsSinceFindingOpponent < 5) {
+                        iterationsSinceFindingOpponent++;
                         return false;
+                    } else {
+                        // It has been the play screen for several iterations now so we probably are genuinely on the screen
+                        iterationsSinceFindingOpponent = 0;
                     }
-                    break;
+                }
+            } else {
+                iterationsSinceFindingOpponent = 0;
+            }
 
-                case ARENA_END:
-                    setArenaRunEnd();
-                    break;
-
+            if (newScreen == Screen.ARENA_END) {
+                setArenaRunEnd();
             }
 
             switch (newScreen.group) {
+
+                case MATCH_START:
+                    match = new HearthstoneMatch();
+                    match.setMode(mode);
+                    match.setDeckSlot(deckSlot);
+                    match.setRankLevel(rankLevel);
+                    arenaRunEndDetected = false;
+                    isYourTurn = false;
+                    break;
 
                 case MATCH_PLAYING:
                     startTimer();
@@ -785,8 +796,6 @@ public class HearthstoneAnalyser extends Observable {
 
     private void setScreen(Screen screen) {
         this.screen = screen;
-
-        TEMP_TEMP_TEMP = screen;
 
         notifyObserversOfChangeTo(AnalyserEvent.SCREEN);
     }
