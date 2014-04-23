@@ -2,7 +2,11 @@ package net.hearthstats.analysis;
 
 import net.hearthstats.HearthstoneMatch;
 import net.hearthstats.Main;
-import net.hearthstats.OCR;
+import net.hearthstats.log.Log;
+import net.hearthstats.ocr.OcrException;
+import net.hearthstats.ocr.OpponentNameRankedOcr;
+import net.hearthstats.ocr.OpponentNameUnrankedOcr;
+import net.hearthstats.ocr.RankLevelOcr;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.state.UniquePixel;
@@ -10,14 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ColorConvertOp;
-import java.awt.image.RescaleOp;
-import java.io.File;
-import java.util.Date;
 import java.util.Observable;
 
 /**
@@ -33,6 +30,10 @@ public class HearthstoneAnalyser extends Observable {
     private final ScreenAnalyser screenAnalyser;
     private final IndividualPixelAnalyser individualPixelAnalyser;
 
+    private final OpponentNameRankedOcr opponentNameRankedOcr = new OpponentNameRankedOcr();
+    private final OpponentNameUnrankedOcr opponentNameUnrankedOcr = new OpponentNameUnrankedOcr();
+    private final RankLevelOcr rankLevelOcr = new RankLevelOcr();
+
     private BufferedImage lastImage;
 
     private Screen screen = null;
@@ -46,7 +47,6 @@ public class HearthstoneAnalyser extends Observable {
     private String mode;
     private int deckSlot;
     private Integer rankLevel;
-    private int analyzeRankRetries = 0;
     private int iterationsSinceFindingOpponent = 0;
     private long startTime;
 
@@ -238,7 +238,6 @@ public class HearthstoneAnalyser extends Observable {
             debugLog.debug("Testing for casual mode");
             if (imageShowsCasualPlaySelected(image)) {
                 // Matched casual mode
-                analyzeRankRetries = 0;
                 setMode("Casual");
             }
         }
@@ -557,107 +556,40 @@ public class HearthstoneAnalyser extends Observable {
 
 
     private void analyzeRankLevel(BufferedImage image) {
-        float ratio = getRatio(image);
-        int xOffset = getXOffset(image, ratio);
 
-        int retryOffset = (analyzeRankRetries - 1) % 3;
-        int x = (int) ((875 + retryOffset) * ratio + xOffset);
-        int y = (int) (162 * ratio);
-        int width = (int) (32 * ratio);
-        int height = (int) (22 * ratio);
+        try {
+            Integer rankInteger = rankLevelOcr.processNumber(image);
 
-        String rankStr = performOcr(x, y, width, height, "ranklevel.jpg");
-        debugLog.debug("Rank str: " + rankStr);
-        if(rankStr != null) {
-            rankStr = rankStr.replaceAll("l", "1");
-            rankStr = rankStr.replaceAll("I", "1");
-            rankStr = rankStr.replaceAll("i", "1");
-            rankStr = rankStr.replaceAll("S", "5");
-            rankStr = rankStr.replaceAll("O", "0");
-            rankStr = rankStr.replaceAll("o", "0");
-            rankStr = rankStr.replaceAll("[^\\d.]", "");
+            if (rankInteger == null) {
+                Log.warn("Could not interpret rank, your rank may not be recorded correctly");
+            } else {
+                setRankLevel(rankInteger);
+            }
+
+        } catch (OcrException e) {
+            Main.showErrorDialog(e.getMessage(), e);
+            notifyObserversOfChangeTo(AnalyserEvent.ERROR_ANALYSING_IMAGE);
         }
-        debugLog.debug("Rank str parsed: " + rankStr);
 
-        if(rankStr != null && !rankStr.isEmpty() && Integer.parseInt(rankStr) != 0 && Integer.parseInt(rankStr) < 26) {
-            setRankLevel(Integer.parseInt(rankStr));
-        } else if (analyzeRankRetries < 5) {	// retry up to 5 times
-            analyzeRankRetries++;
-            debugLog.debug("rank detection try #" + analyzeRankRetries);
-            analyzeRankLevel(image);
-        }
     }
 
 
     private void analyseOpponentName(BufferedImage image) {
-        float ratio = getRatio(image);
+        String opponentName;
 
-        int x = (int) ((getMode() == "Ranked" ? 76 : 6) * ratio);
-        int y = (int) (34 * ratio);
-        int width = (int) (150 * ratio);
-        int height = (int) (19 * ratio);
-
-        OCR.setLang("eng");
-        setOpponentName(performOcr(x, y, width, height, "opponentname.jpg"));
-    }
-
-
-    private String performOcr(int x, int y, int width, int height, String output) {
-        int bigWidth = width * 3;
-        int bigHeight = height * 3;
-
-        // get cropped image of name
-        BufferedImage opponentNameImg = lastImage.getSubimage(x, y, width, height);
-
-        // to gray scale
-        BufferedImage grayscale = new BufferedImage(opponentNameImg.getWidth(), opponentNameImg.getHeight(), BufferedImage.TYPE_INT_RGB);
-        BufferedImageOp grayscaleConv =
-                new ColorConvertOp(opponentNameImg.getColorModel().getColorSpace(),
-                        grayscale.getColorModel().getColorSpace(), null);
-        grayscaleConv.filter(opponentNameImg, grayscale);
-
-        // blow it up for ocr
-        BufferedImage newImage = new BufferedImage(bigWidth, bigHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics g = newImage.createGraphics();
-        g.drawImage(grayscale, 0, 0, bigWidth, bigHeight, null);
-        g.dispose();
-
-        // invert image
-        for (x = 0; x < newImage.getWidth(); x++) {
-            for (y = 0; y < newImage.getHeight(); y++) {
-                int rgba = newImage.getRGB(x, y);
-                Color col = new Color(rgba, true);
-                col = new Color(255 - col.getRed(),
-                        255 - col.getGreen(),
-                        255 - col.getBlue());
-                newImage.setRGB(x, y, col.getRGB());
+        try {
+            if ("Ranked".equals(getMode())) {
+                opponentName = opponentNameRankedOcr.process(image);
+            } else {
+                opponentName = opponentNameUnrankedOcr.process(image);
             }
-        }
 
-        // increase contrast
-        try {
-            RescaleOp rescaleOp = new RescaleOp(1.8f, -30, null);
-            rescaleOp.filter(newImage, newImage);  // Source and destination are the same.
-        } catch(Exception e) {
-            Main.showErrorDialog("Error rescaling opponent name image", e);
+            setOpponentName(opponentName);
+
+        } catch (OcrException e) {
+            Main.showErrorDialog(e.getMessage(), e);
             notifyObserversOfChangeTo(AnalyserEvent.ERROR_ANALYSING_IMAGE);
         }
-        // save it to a file
-        File outputfile = new File(Main.getExtractionFolder() + "/" + output);
-        try {
-            ImageIO.write(newImage, "jpg", outputfile);
-        } catch (Exception e) {
-            Main.showErrorDialog("Error writing opponent name image", e);
-        }
-
-        try {
-            String ocrString = OCR.process(newImage);
-            return ocrString == null ? "" : ocrString.replaceAll("\\s+","");
-        } catch(Exception e) {
-            Main.showErrorDialog("Error trying to analyze opponent name image", e);
-            notifyObserversOfChangeTo(AnalyserEvent.ERROR_ANALYSING_IMAGE);
-        }
-        return null;
     }
 
 
@@ -669,7 +601,6 @@ public class HearthstoneAnalyser extends Observable {
     public void reset() {
         resetMatch();
         screen = null;
-        analyzeRankRetries = 0;
         isYourTurn = false;
         arenaRunEndDetected = false;
     }
@@ -762,10 +693,6 @@ public class HearthstoneAnalyser extends Observable {
             this.mode = mode;
             match.setMode(mode);
 
-            if ("Ranked".equals(mode)) {
-                analyzeRankLevel(lastImage);
-            }
-
             notifyObserversOfChangeTo(AnalyserEvent.MODE);
         }
     }
@@ -833,12 +760,12 @@ public class HearthstoneAnalyser extends Observable {
     }
 
 
-    static private float getRatio(BufferedImage image) {
+    static public float getRatio(BufferedImage image) {
         return image.getHeight() / (float) 768;
     }
 
 
-    static private int getXOffset(BufferedImage image, float ratio) {
+    static public int getXOffset(BufferedImage image, float ratio) {
         return (int) (((float) image.getWidth() - (ratio * 1024)) / 2);
     }
 
