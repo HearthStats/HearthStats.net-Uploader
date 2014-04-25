@@ -15,7 +15,13 @@ public class RankLevelOcr extends OcrBase {
             if (StringUtils.isEmpty(result)) {
                 return null;
             } else {
-                return Integer.valueOf(result);
+                int rank = Integer.valueOf(result);
+                if (rank < 0 || rank > 25) {
+                    debugLog.debug("Rank {} is invalid, rank detection has failed");
+                    return null;
+                } else {
+                    return rank;
+                }
             }
         } catch (NumberFormatException e) {
             debugLog.debug("Ignoring NumberFormatException parsing " + result);
