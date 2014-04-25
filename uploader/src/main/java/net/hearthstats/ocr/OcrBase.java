@@ -143,7 +143,7 @@ public abstract class OcrBase {
      * @param image An image to be processed by OCR. Should already be cropped and filtered.
      */
     protected void saveCopy(BufferedImage image, int iteration) {
-        File outputfile = new File(Main.getExtractionFolder() + "/" + getFilename() + "-" + System.currentTimeMillis() + ".png");
+        File outputfile = new File(Main.getExtractionFolder() + "/" + getFilename() + ".png");
         try {
             ImageIO.write(image, "png", outputfile);
         } catch (Exception e) {
