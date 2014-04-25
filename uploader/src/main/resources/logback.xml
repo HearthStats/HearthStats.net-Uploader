@@ -30,7 +30,7 @@
 
     <!-- Send all other logs to the log file and the console. -->
     <!-- Change the level to DEBUG to enable full log output. -->
-    <logger name="net.hearthstats" level="DEBUG"></logger>
+    <logger name="net.hearthstats" level="INFO"></logger>
 
 
     <root level="INFO">
