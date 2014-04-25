@@ -10,11 +10,16 @@ import net.hearthstats.ocr.RankLevelOcr;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.state.UniquePixel;
+import net.hearthstats.util.Coordinate;
+import net.hearthstats.util.MatchOutcome;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.Date;
 import java.util.Observable;
 
 /**
@@ -29,6 +34,7 @@ public class HearthstoneAnalyser extends Observable {
 
     private final ScreenAnalyser screenAnalyser;
     private final IndividualPixelAnalyser individualPixelAnalyser;
+    private final RelativePixelAnalyser relativePixelAnalyser;
 
     private final OpponentNameRankedOcr opponentNameRankedOcr = new OpponentNameRankedOcr();
     private final OpponentNameUnrankedOcr opponentNameUnrankedOcr = new OpponentNameUnrankedOcr();
@@ -55,6 +61,7 @@ public class HearthstoneAnalyser extends Observable {
     public HearthstoneAnalyser() {
         this.screenAnalyser = new ScreenAnalyser();
         this.individualPixelAnalyser = new IndividualPixelAnalyser();
+        this.relativePixelAnalyser = new RelativePixelAnalyser();
     }
 
 
@@ -130,8 +137,7 @@ public class HearthstoneAnalyser extends Observable {
                         break;
 
                     case MATCH_END:
-                        testForVictory(image);
-                        testForDefeat(image);
+                        testForVictoryOrDefeat(image);
                         break;
 
                 }
@@ -325,28 +331,23 @@ public class HearthstoneAnalyser extends Observable {
     }
 
 
-    private void testForVictory(BufferedImage image) {
-        debugLog.debug("Testing for victory");
+    private void testForVictoryOrDefeat(BufferedImage image) {
         if (!victoryOrDefeatDetected) {
-            if (imageShowsVictory(image)
-                    ) {
+            debugLog.debug("Testing for victory or defeat");
+
+            MatchOutcome result = imageShowsVictoryOrDefeat(image);
+
+            if (result == MatchOutcome.VICTORY) {
                 endTimer();
                 victoryOrDefeatDetected = true;     // Set to true to prevent match results being submitted multiple times
                 setResult("Victory");
-            }
-        }
-    }
-
-
-    private void testForDefeat(BufferedImage image) {
-        debugLog.debug("Testing for defeat");
-        if (!victoryOrDefeatDetected) {
-            if (imageShowsDefeat(image)) {
+            } else if (result == MatchOutcome.DEFEAT) {
                 endTimer();
                 victoryOrDefeatDetected = true;     // Set to true to prevent match results being submitted multiple times
                 setResult("Defeat");
             }
         }
+
     }
 
 
@@ -414,23 +415,45 @@ public class HearthstoneAnalyser extends Observable {
     }
 
 
-    boolean imageShowsVictory(BufferedImage image) {
-        return individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.VICTORY_1A, UniquePixel.VICTORY_1B, UniquePixel.VICTORY_1C })
-                || individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.VICTORY_2A, UniquePixel.VICTORY_2B, UniquePixel.VICTORY_2C })
-                || individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.VICTORY_3A, UniquePixel.VICTORY_3B, UniquePixel.VICTORY_3C });
-    }
+    MatchOutcome imageShowsVictoryOrDefeat(BufferedImage image) {
 
+        // Try to find the reference coordinate: the top of the horn on the left of the victory or defeat popup
+        Coordinate referenceCoordinate = relativePixelAnalyser.findRelativePixel(image, UniquePixel.VICTORY_DEFEAT_REFBOX_TL, UniquePixel.VICTORY_DEFEAT_REFBOX_BR, 8, 11);
 
-    boolean imageShowsDefeat(BufferedImage image) {
-        return individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.DEFEAT_1A, UniquePixel.DEFEAT_1B, UniquePixel.DEFEAT_1C})
-                || individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.DEFEAT_2A, UniquePixel.DEFEAT_2B, UniquePixel.DEFEAT_2C})
-                || individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.DEFEAT_3A, UniquePixel.DEFEAT_3B, UniquePixel.DEFEAT_3C});
+        // Only check if the top of the horn could be found
+        if (referenceCoordinate != null) {
+
+            // At least one of victory group 1 must match
+            int victory1Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate, new UniquePixel[] {
+                    UniquePixel.VICTORY_REL_1A, UniquePixel.VICTORY_REL_1B
+            });
+            // All three of victory group 2 must match
+            int victory2Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate, new UniquePixel[] {
+                    UniquePixel.VICTORY_REL_2A, UniquePixel.VICTORY_REL_2B, UniquePixel.VICTORY_REL_2C
+            });
+            // At least one of defeat group 1 must match
+            int defeat1Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate, new UniquePixel[] {
+                    UniquePixel.DEFEAT_REL_1A, UniquePixel.DEFEAT_REL_1B, UniquePixel.DEFEAT_REL_1C, UniquePixel.DEFEAT_REL_1D, UniquePixel.DEFEAT_REL_1E
+            });
+            // All of defeat group 2 must match
+            int defeat2Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate, new UniquePixel[] {
+                    UniquePixel.DEFEAT_REL_2A
+            });
+
+            boolean matchedVictory = victory1Matches > 0 && victory2Matches == 3 && defeat1Matches == 0  && defeat2Matches == 0;
+            boolean matchedDefeat = victory1Matches == 0 && victory2Matches == 0 && defeat1Matches > 0  && defeat2Matches == 1;
+
+            if (matchedVictory && matchedDefeat) {
+                // Shouldn't be possible, but just in case...
+                debugLog.warn("Matched both victory and defeat, which shouldn't be possible. Will try again next iteration.");
+            } else if (matchedVictory) {
+                return MatchOutcome.VICTORY;
+            } else if (matchedDefeat) {
+                return MatchOutcome.DEFEAT;
+            }
+        }
+
+        return null;
     }
 
 
