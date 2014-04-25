@@ -3,6 +3,7 @@ package net.hearthstats;
 import net.hearthstats.log.Log;
 import net.hearthstats.log.LogPane;
 import net.hearthstats.notification.DialogNotification;
+import net.sourceforge.tess4j.Tesseract;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,8 @@ import java.util.concurrent.ScheduledExecutorService;
 public class Main extends JFrame {
 
     private static Logger debugLog = LoggerFactory.getLogger(Main.class);
+
+    private static String ocrLanguage = "eng";
 
     private static Monitor _monitor;
 
@@ -73,7 +76,7 @@ public class Main extends JFrame {
 
             _logSystemInformation();
 
-			_extractTessData();
+			setupTesseract();
 
 			try {
                 switch (Config.os) {
@@ -121,7 +124,7 @@ public class Main extends JFrame {
         }
     }
 
-	private static void _extractTessData() {
+	public static void setupTesseract() {
         debugLog.debug("Extracting Tesseract data");
 		String outPath;
         if (Config.os == Config.OS.OSX) {
@@ -136,9 +139,11 @@ public class Main extends JFrame {
             copyFileFromJarTo("/tessdata/configs/hocr", outPath + "tessdata/configs/hocr");
         }
 
-		OCR.setTessdataPath(outPath + "tessdata");
+        Tesseract instance = Tesseract.getInstance();
+        instance.setDatapath(outPath + "tessdata");
+        instance.setLanguage(ocrLanguage);
 	}
-	
+
 	public static void copyFileFromJarTo(String jarPath, String outPath) {
 		InputStream stream = Main.class.getResourceAsStream(jarPath);
 	    if (stream == null) {

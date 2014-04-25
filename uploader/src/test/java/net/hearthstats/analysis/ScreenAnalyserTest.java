@@ -3,6 +3,7 @@ package net.hearthstats.analysis;
 import net.hearthstats.state.PixelLocation;
 import net.hearthstats.state.Screen;
 import net.hearthstats.util.Coordinate;
+import net.hearthstats.util.MatchOutcome;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -59,7 +60,7 @@ public class ScreenAnalyserTest {
         Assert.assertFalse("No images found in " + IMAGE_PATH + ". Please make sure you've set the path to a folder that contains screenshots from Hearthstone", images.size() == 0);
 
         int page = 0;
-        int pageCount = images.size() / PAGE_SIZE;
+        int pageCount = (images.size() / PAGE_SIZE) + 1;
 
         while (page < pageCount) {
             page++;
@@ -135,8 +136,9 @@ public class ScreenAnalyserTest {
                         }
                         if (primaryMatches.contains(Screen.MATCH_ORGRIMMAR_END) || primaryMatches.contains(Screen.MATCH_PANDARIA_END)
                                 || primaryMatches.contains(Screen.MATCH_STORMWIND_END) || primaryMatches.contains(Screen.MATCH_STRANGLETHORN_END)) {
-                            writeScreenSpecificTest(output, "victory", hearthstoneAnalyser.imageShowsVictory(bufferedImage));
-                            writeScreenSpecificTest(output, "defeat", hearthstoneAnalyser.imageShowsDefeat(bufferedImage));
+                            MatchOutcome matchOutcome = hearthstoneAnalyser.imageShowsVictoryOrDefeat(bufferedImage);
+                            writeScreenSpecificTest(output, "victory", matchOutcome == MatchOutcome.VICTORY);
+                            writeScreenSpecificTest(output, "defeat", matchOutcome == MatchOutcome.DEFEAT);
                         }
 
 
@@ -196,6 +198,8 @@ public class ScreenAnalyserTest {
 
                         // Blank row to make take up leftover space
                         output.write("<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>");
+
+                        bufferedImage.flush();
 
                     } catch (IOException e) {
                         log.warn("Cannot handle image " + image.getName() + " due to exception", e);

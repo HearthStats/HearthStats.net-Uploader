@@ -2,21 +2,21 @@ package net.hearthstats.analysis;
 
 import net.hearthstats.HearthstoneMatch;
 import net.hearthstats.Main;
-import net.hearthstats.OCR;
+import net.hearthstats.log.Log;
+import net.hearthstats.ocr.OcrException;
+import net.hearthstats.ocr.OpponentNameRankedOcr;
+import net.hearthstats.ocr.OpponentNameUnrankedOcr;
+import net.hearthstats.ocr.RankLevelOcr;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.state.UniquePixel;
+import net.hearthstats.util.Coordinate;
+import net.hearthstats.util.MatchOutcome;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ColorConvertOp;
-import java.awt.image.RescaleOp;
-import java.io.File;
 import java.util.Observable;
 
 /**
@@ -31,6 +31,11 @@ public class HearthstoneAnalyser extends Observable {
 
     private final ScreenAnalyser screenAnalyser;
     private final IndividualPixelAnalyser individualPixelAnalyser;
+    private final RelativePixelAnalyser relativePixelAnalyser;
+
+    private final OpponentNameRankedOcr opponentNameRankedOcr = new OpponentNameRankedOcr();
+    private final OpponentNameUnrankedOcr opponentNameUnrankedOcr = new OpponentNameUnrankedOcr();
+    private final RankLevelOcr rankLevelOcr = new RankLevelOcr();
 
     private BufferedImage lastImage;
 
@@ -45,17 +50,15 @@ public class HearthstoneAnalyser extends Observable {
     private String mode;
     private int deckSlot;
     private Integer rankLevel;
-    private int analyzeRankRetries = 0;
+    private int iterationsSinceFindingOpponent = 0;
     private long startTime;
 
-
-
-    public static Screen TEMP_TEMP_TEMP = null;
 
 
     public HearthstoneAnalyser() {
         this.screenAnalyser = new ScreenAnalyser();
         this.individualPixelAnalyser = new IndividualPixelAnalyser();
+        this.relativePixelAnalyser = new RelativePixelAnalyser();
     }
 
 
@@ -121,15 +124,6 @@ public class HearthstoneAnalyser extends Observable {
                     testForOpponentName(image);
                     break;
 
-                case FINDING_OPPONENT:
-                    match = new HearthstoneMatch();
-                    match.setMode(mode);
-                    match.setDeckSlot(deckSlot);
-                    match.setRankLevel(rankLevel);
-                    arenaRunEndDetected = false;
-                    isYourTurn = false;
-                    break;
-
             }
 
             if (!"Practice".equals(getMode())) {
@@ -140,8 +134,7 @@ public class HearthstoneAnalyser extends Observable {
                         break;
 
                     case MATCH_END:
-                        testForVictory(image);
-                        testForDefeat(image);
+                        testForVictoryOrDefeat(image);
                         break;
 
                 }
@@ -176,23 +169,44 @@ public class HearthstoneAnalyser extends Observable {
         if (newScreen != null && newScreen != previousScreen) {
             debugLog.debug("Screen changed from {} to {}", previousScreen, newScreen);
 
-            switch (newScreen) {
-
-                case PLAY_LOBBY:
-                    if (imageShowsPlayBackground(image)) {
-                        // This isn't the real play screen, it's background image behind the 'Finding Opponent' screen
-                        // Skip this iteration because the screenshot isn't valid
+            if (newScreen == Screen.PLAY_LOBBY) {
+                // Hearthstone screenshots will sometimes display the play lobby instead of 'Finding Opponent' popup
+                // presumably because the screenshot catches Hearthstone before it's finished drawing the screen.
+                // The follow two methods attempt to detect this and ignore it.
+                if (imageShowsPlayBackground(image)) {
+                    // This isn't the real play screen because the hero buttons are missing. That confirms that it
+                    // is a background image behind the 'Finding Opponent' screen
+                    return false;
+                }
+                if (previousScreen == Screen.FINDING_OPPONENT) {
+                    // The last screen was 'Finding Opponent' so wait a couple of iterations to be sure this isn't
+                    // just Hearthstone briefly flashing the background image to us.
+                    if (iterationsSinceFindingOpponent < 5) {
+                        iterationsSinceFindingOpponent++;
                         return false;
+                    } else {
+                        // It has been the play screen for several iterations now so we probably are genuinely on the screen
+                        iterationsSinceFindingOpponent = 0;
                     }
-                    break;
+                }
+            } else {
+                iterationsSinceFindingOpponent = 0;
+            }
 
-                case ARENA_END:
-                    setArenaRunEnd();
-                    break;
-
+            if (newScreen == Screen.ARENA_END) {
+                setArenaRunEnd();
             }
 
             switch (newScreen.group) {
+
+                case MATCH_START:
+                    match = new HearthstoneMatch();
+                    match.setMode(mode);
+                    match.setDeckSlot(deckSlot);
+                    match.setRankLevel(rankLevel);
+                    arenaRunEndDetected = false;
+                    isYourTurn = false;
+                    break;
 
                 case MATCH_PLAYING:
                     startTimer();
@@ -227,10 +241,10 @@ public class HearthstoneAnalyser extends Observable {
             debugLog.debug("Testing for casual mode");
             if (imageShowsCasualPlaySelected(image)) {
                 // Matched casual mode
-                analyzeRankRetries = 0;
                 setMode("Casual");
             }
-        } else {
+        }
+        if (!"Ranked".equals(getMode())) {
             // Last time we checked we were not in ranked mode, check if we are now
             debugLog.debug("Testing for ranked mode");
             if (imageShowsRankedPlaySelected(image)) {
@@ -314,28 +328,23 @@ public class HearthstoneAnalyser extends Observable {
     }
 
 
-    private void testForVictory(BufferedImage image) {
-        debugLog.debug("Testing for victory");
+    private void testForVictoryOrDefeat(BufferedImage image) {
         if (!victoryOrDefeatDetected) {
-            if (imageShowsVictory(image)
-                    ) {
+            debugLog.debug("Testing for victory or defeat");
+
+            MatchOutcome result = imageShowsVictoryOrDefeat(image);
+
+            if (result == MatchOutcome.VICTORY) {
                 endTimer();
                 victoryOrDefeatDetected = true;     // Set to true to prevent match results being submitted multiple times
                 setResult("Victory");
-            }
-        }
-    }
-
-
-    private void testForDefeat(BufferedImage image) {
-        debugLog.debug("Testing for defeat");
-        if (!victoryOrDefeatDetected) {
-            if (imageShowsDefeat(image)) {
+            } else if (result == MatchOutcome.DEFEAT) {
                 endTimer();
                 victoryOrDefeatDetected = true;     // Set to true to prevent match results being submitted multiple times
                 setResult("Defeat");
             }
         }
+
     }
 
 
@@ -403,23 +412,45 @@ public class HearthstoneAnalyser extends Observable {
     }
 
 
-    boolean imageShowsVictory(BufferedImage image) {
-        return individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.VICTORY_1A, UniquePixel.VICTORY_1B, UniquePixel.VICTORY_1C })
-                || individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.VICTORY_2A, UniquePixel.VICTORY_2B, UniquePixel.VICTORY_2C })
-                || individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.VICTORY_3A, UniquePixel.VICTORY_3B, UniquePixel.VICTORY_3C });
-    }
+    MatchOutcome imageShowsVictoryOrDefeat(BufferedImage image) {
 
+        // Try to find the reference coordinate: the top of the horn on the left of the victory or defeat popup
+        Coordinate referenceCoordinate = relativePixelAnalyser.findRelativePixel(image, UniquePixel.VICTORY_DEFEAT_REFBOX_TL, UniquePixel.VICTORY_DEFEAT_REFBOX_BR, 8, 11);
 
-    boolean imageShowsDefeat(BufferedImage image) {
-        return individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.DEFEAT_1A, UniquePixel.DEFEAT_1B, UniquePixel.DEFEAT_1C})
-                || individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.DEFEAT_2A, UniquePixel.DEFEAT_2B, UniquePixel.DEFEAT_2C})
-                || individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[]{
-                UniquePixel.DEFEAT_3A, UniquePixel.DEFEAT_3B, UniquePixel.DEFEAT_3C});
+        // Only check if the top of the horn could be found
+        if (referenceCoordinate != null) {
+
+            // At least one of victory group 1 must match
+            int victory1Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate, new UniquePixel[] {
+                    UniquePixel.VICTORY_REL_1A, UniquePixel.VICTORY_REL_1B
+            });
+            // All three of victory group 2 must match
+            int victory2Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate, new UniquePixel[] {
+                    UniquePixel.VICTORY_REL_2A, UniquePixel.VICTORY_REL_2B, UniquePixel.VICTORY_REL_2C
+            });
+            // At least one of defeat group 1 must match
+            int defeat1Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate, new UniquePixel[] {
+                    UniquePixel.DEFEAT_REL_1A, UniquePixel.DEFEAT_REL_1B, UniquePixel.DEFEAT_REL_1C, UniquePixel.DEFEAT_REL_1D, UniquePixel.DEFEAT_REL_1E
+            });
+            // All of defeat group 2 must match
+            int defeat2Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate, new UniquePixel[] {
+                    UniquePixel.DEFEAT_REL_2A
+            });
+
+            boolean matchedVictory = victory1Matches > 0 && victory2Matches == 3 && defeat1Matches == 0  && defeat2Matches == 0;
+            boolean matchedDefeat = victory1Matches == 0 && victory2Matches == 0 && defeat1Matches > 0  && defeat2Matches == 1;
+
+            if (matchedVictory && matchedDefeat) {
+                // Shouldn't be possible, but just in case...
+                debugLog.warn("Matched both victory and defeat, which shouldn't be possible. Will try again next iteration.");
+            } else if (matchedVictory) {
+                return MatchOutcome.VICTORY;
+            } else if (matchedDefeat) {
+                return MatchOutcome.DEFEAT;
+            }
+        }
+
+        return null;
     }
 
 
@@ -545,107 +576,40 @@ public class HearthstoneAnalyser extends Observable {
 
 
     private void analyzeRankLevel(BufferedImage image) {
-        float ratio = getRatio(image);
-        int xOffset = getXOffset(image, ratio);
 
-        int retryOffset = (analyzeRankRetries - 1) % 3;
-        int x = (int) ((875 + retryOffset) * ratio + xOffset);
-        int y = (int) (162 * ratio);
-        int width = (int) (32 * ratio);
-        int height = (int) (22 * ratio);
+        try {
+            Integer rankInteger = rankLevelOcr.processNumber(image);
 
-        String rankStr = performOcr(x, y, width, height, "ranklevel.jpg");
-        debugLog.debug("Rank str: " + rankStr);
-        if(rankStr != null) {
-            rankStr = rankStr.replaceAll("l", "1");
-            rankStr = rankStr.replaceAll("I", "1");
-            rankStr = rankStr.replaceAll("i", "1");
-            rankStr = rankStr.replaceAll("S", "5");
-            rankStr = rankStr.replaceAll("O", "0");
-            rankStr = rankStr.replaceAll("o", "0");
-            rankStr = rankStr.replaceAll("[^\\d.]", "");
+            if (rankInteger == null) {
+                Log.warn("Could not interpret rank, your rank may not be recorded correctly");
+            } else {
+                setRankLevel(rankInteger);
+            }
+
+        } catch (OcrException e) {
+            Main.showErrorDialog(e.getMessage(), e);
+            notifyObserversOfChangeTo(AnalyserEvent.ERROR_ANALYSING_IMAGE);
         }
-        debugLog.debug("Rank str parsed: " + rankStr);
 
-        if(rankStr != null && !rankStr.isEmpty() && Integer.parseInt(rankStr) != 0 && Integer.parseInt(rankStr) < 26) {
-            setRankLevel(Integer.parseInt(rankStr));
-        } else if (analyzeRankRetries < 5) {	// retry up to 5 times
-            analyzeRankRetries++;
-            debugLog.debug("rank detection try #" + analyzeRankRetries);
-            analyzeRankLevel(image);
-        }
     }
 
 
     private void analyseOpponentName(BufferedImage image) {
-        float ratio = getRatio(image);
+        String opponentName;
 
-        int x = (int) ((getMode() == "Ranked" ? 76 : 6) * ratio);
-        int y = (int) (34 * ratio);
-        int width = (int) (150 * ratio);
-        int height = (int) (19 * ratio);
-
-        OCR.setLang("eng");
-        setOpponentName(performOcr(x, y, width, height, "opponentname.jpg"));
-    }
-
-
-    private String performOcr(int x, int y, int width, int height, String output) {
-        int bigWidth = width * 3;
-        int bigHeight = height * 3;
-
-        // get cropped image of name
-        BufferedImage opponentNameImg = lastImage.getSubimage(x, y, width, height);
-
-        // to gray scale
-        BufferedImage grayscale = new BufferedImage(opponentNameImg.getWidth(), opponentNameImg.getHeight(), BufferedImage.TYPE_INT_RGB);
-        BufferedImageOp grayscaleConv =
-                new ColorConvertOp(opponentNameImg.getColorModel().getColorSpace(),
-                        grayscale.getColorModel().getColorSpace(), null);
-        grayscaleConv.filter(opponentNameImg, grayscale);
-
-        // blow it up for ocr
-        BufferedImage newImage = new BufferedImage(bigWidth, bigHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics g = newImage.createGraphics();
-        g.drawImage(grayscale, 0, 0, bigWidth, bigHeight, null);
-        g.dispose();
-
-        // invert image
-        for (x = 0; x < newImage.getWidth(); x++) {
-            for (y = 0; y < newImage.getHeight(); y++) {
-                int rgba = newImage.getRGB(x, y);
-                Color col = new Color(rgba, true);
-                col = new Color(255 - col.getRed(),
-                        255 - col.getGreen(),
-                        255 - col.getBlue());
-                newImage.setRGB(x, y, col.getRGB());
+        try {
+            if ("Ranked".equals(getMode())) {
+                opponentName = opponentNameRankedOcr.process(image);
+            } else {
+                opponentName = opponentNameUnrankedOcr.process(image);
             }
-        }
 
-        // increase contrast
-        try {
-            RescaleOp rescaleOp = new RescaleOp(1.8f, -30, null);
-            rescaleOp.filter(newImage, newImage);  // Source and destination are the same.
-        } catch(Exception e) {
-            Main.showErrorDialog("Error rescaling opponent name image", e);
+            setOpponentName(opponentName);
+
+        } catch (OcrException e) {
+            Main.showErrorDialog(e.getMessage(), e);
             notifyObserversOfChangeTo(AnalyserEvent.ERROR_ANALYSING_IMAGE);
         }
-        // save it to a file
-        File outputfile = new File(Main.getExtractionFolder() + "/" + output);
-        try {
-            ImageIO.write(newImage, "jpg", outputfile);
-        } catch (Exception e) {
-            Main.showErrorDialog("Error writing opponent name image", e);
-        }
-
-        try {
-            String ocrString = OCR.process(newImage);
-            return ocrString == null ? "" : ocrString.replaceAll("\\s+","");
-        } catch(Exception e) {
-            Main.showErrorDialog("Error trying to analyze opponent name image", e);
-            notifyObserversOfChangeTo(AnalyserEvent.ERROR_ANALYSING_IMAGE);
-        }
-        return null;
     }
 
 
@@ -657,7 +621,6 @@ public class HearthstoneAnalyser extends Observable {
     public void reset() {
         resetMatch();
         screen = null;
-        analyzeRankRetries = 0;
         isYourTurn = false;
         arenaRunEndDetected = false;
     }
@@ -750,10 +713,6 @@ public class HearthstoneAnalyser extends Observable {
             this.mode = mode;
             match.setMode(mode);
 
-            if ("Ranked".equals(mode)) {
-                analyzeRankLevel(lastImage);
-            }
-
             notifyObserversOfChangeTo(AnalyserEvent.MODE);
         }
     }
@@ -785,8 +744,6 @@ public class HearthstoneAnalyser extends Observable {
 
     private void setScreen(Screen screen) {
         this.screen = screen;
-
-        TEMP_TEMP_TEMP = screen;
 
         notifyObserversOfChangeTo(AnalyserEvent.SCREEN);
     }
@@ -823,12 +780,12 @@ public class HearthstoneAnalyser extends Observable {
     }
 
 
-    static private float getRatio(BufferedImage image) {
+    static public float getRatio(BufferedImage image) {
         return image.getHeight() / (float) 768;
     }
 
 
-    static private int getXOffset(BufferedImage image, float ratio) {
+    static public int getXOffset(BufferedImage image, float ratio) {
         return (int) (((float) image.getWidth() - (ratio * 1024)) / 2);
     }
 

@@ -112,23 +112,23 @@ public enum UniquePixel {
     DECK_SLOT_9A        ( 791,  775,  25, 130, 212,  66, 255, 255),
     DECK_SLOT_9B        ( 822,  775,  25, 130, 212,  66, 255, 255),
 
-    MODE_CASUAL_1A      (1088,  150,  70, 200, 230, 210, 255, 255),
-    MODE_CASUAL_1B      (1088,  250,  70, 200, 230, 210, 255, 255),
+    MODE_CASUAL_1A      (1088,  150,  60, 200, 230, 220, 255, 255),
+    MODE_CASUAL_1B      (1088,  250,  60, 200, 230, 220, 255, 255),
 
-    MODE_CASUAL_2A      (1093,  120,  70, 200, 230, 210, 255, 255),
-    MODE_CASUAL_2B      (1093,  200,  70, 200, 230, 210, 255, 255),
+    MODE_CASUAL_2A      (1093,  120,  60, 200, 230, 220, 255, 255),
+    MODE_CASUAL_2B      (1093,  200,  60, 200, 230, 220, 255, 255),
 
-    MODE_CASUAL_3A      (1099,  290,  70, 200, 230, 210, 255, 255),
-    MODE_CASUAL_3B      (1266,  290,  70, 200, 230, 210, 255, 255),
+    MODE_CASUAL_3A      (1099,  290,  60, 200, 230, 220, 255, 255),
+    MODE_CASUAL_3B      (1266,  290,  60, 200, 230, 220, 255, 255),
 
-    MODE_RANKED_1A      (1298,  150,  70, 200, 230, 210, 255, 255),
-    MODE_RANKED_1B      (1298,  250,  70, 200, 230, 210, 255, 255),
+    MODE_RANKED_1A      (1298,  150,  60, 200, 230, 220, 255, 255),
+    MODE_RANKED_1B      (1298,  250,  60, 200, 230, 220, 255, 255),
 
-    MODE_RANKED_2A      (1303,  120,  70, 200, 230, 210, 255, 255),
-    MODE_RANKED_2B      (1303,  200,  70, 200, 230, 210, 255, 255),
+    MODE_RANKED_2A      (1303,  120,  60, 200, 230, 220, 255, 255),
+    MODE_RANKED_2B      (1303,  200,  60, 200, 230, 220, 255, 255),
 
-    MODE_RANKED_3A      (1309,  290,  70, 200, 230, 210, 255, 255),
-    MODE_RANKED_3B      (1476,  290,  70, 200, 230, 210, 255, 255),
+    MODE_RANKED_3A      (1309,  290,  60, 200, 230, 220, 255, 255),
+    MODE_RANKED_3B      (1476,  290,  60, 200, 230, 220, 255, 255),
 
     NAME_OPPONENT_1A    ( 599,  182, 157, 117,  49, 217, 177, 109),
     NAME_OPPONENT_1B    ( 986,  168, 143, 100,  40, 203, 160, 100),
@@ -192,6 +192,29 @@ public enum UniquePixel {
     BACKGROUND_PLAY_7   ( 260,  927,   0,   0,   0,  30,  30,  30),
     BACKGROUND_PLAY_8   ( 526,  927,   0,   0,   0,  30,  30,  30),
     BACKGROUND_PLAY_9   ( 790,  927,   0,   0,   0,  30,  30,  30),
+
+    // The top-left (tl) and bottom-right (br) points to look for the reference pixel for victory or defeat
+    VICTORY_DEFEAT_REFBOX_TL ( 418, 218, 110, 80, 35, 200, 140, 60 ),
+    VICTORY_DEFEAT_REFBOX_BR ( 488, 328, 170, 130, 50, 230, 190, 100 ),
+
+    // At least one of 1A or 1B must match for a victory. Coordinates are relative to the reference pixel above
+    VICTORY_REL_1A ( 740, 5, 110, 80, 35, 230, 190, 90 ),  // Gold
+    VICTORY_REL_1B ( 745, -5, 110, 80, 35, 230, 190, 90 ),  // Gold
+
+    // All of 2A, 2B & 2C must match for a victory. Coordinates are relative to the reference pixel above
+    VICTORY_REL_2A ( 765, 50, 120, 90, 30, 235, 195, 90 ),  // Gold
+    VICTORY_REL_2B ( 680, 305, 40, 50, 90, 70, 80, 180),  // Dark blue
+    VICTORY_REL_2C (  43, 255, 40, 50, 90, 90, 110, 210),  // Dark blue
+
+    // At least one of 1A-1E must match for a defeat. Coordinates are relative to the reference pixel above
+    DEFEAT_REL_1A ( 760, 120, 60, 40, 20, 115, 95, 55 ),  // Dark gold
+    DEFEAT_REL_1B ( 766, 129, 60, 40, 20, 115, 95, 55 ),  // Dark gold
+    DEFEAT_REL_1C ( 773, 138, 60, 40, 20, 115, 95, 55 ),  // Dark gold
+    DEFEAT_REL_1D ( 779, 147, 60, 40, 20, 115, 95, 55 ),  // Dark gold
+    DEFEAT_REL_1E ( 786, 156, 60, 40, 20, 115, 95, 55 ),  // Dark gold
+
+    // 2A must match for a defeat. Coordinates are relative to the reference pixel above
+    DEFEAT_REL_2A ( 120, 315, 60, 70, 140, 140, 160, 250 ),  // blue
 
     ;
 
