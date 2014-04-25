@@ -30,7 +30,6 @@ public class ProgramHelperWindows extends ProgramHelper {
 
     private final static Logger debugLog = LoggerFactory.getLogger(ProgramHelperWindows.class);
 
-	protected String _programName;
 	private String _processName;
 	private HWND _windowHandle = null;
 	private String _windowHandleId = null;
@@ -88,7 +87,7 @@ public class ProgramHelperWindows extends ProgramHelper {
 	      	    	_windowHandle = hWnd;
 	      	    	if(_windowHandleId == null) {
 	      	    		_windowHandleId = _windowHandle.toString();
-	      	    		_notifyObserversOfChangeTo(_programName + " window found with process name " + _processName);
+	      	    		_notifyObserversOfChangeTo("Hearthstone window found with process name " + _processName);
 	      	    	}
 	      	    }
 	            return true;
@@ -97,7 +96,7 @@ public class ProgramHelperWindows extends ProgramHelper {
 		
 		// notify of window lost
 		if(_windowHandle == null && _windowHandleId != null) {
-			_notifyObserversOfChangeTo(_programName + " window with process name " + _processName + " closed");
+			_notifyObserversOfChangeTo("Hearthstone window with process name " + _processName + " closed");
 			_windowHandleId = null;
 		}
 		return _windowHandle;
@@ -135,13 +134,13 @@ public class ProgramHelperWindows extends ProgramHelper {
 		// check to make sure the window's not minimized
 		if(bounds.toRectangle().width >= 1024) {
 			if(_isMinimized) {
-				_notifyObserversOfChangeTo(_programName + " window restored");
+				_notifyObserversOfChangeTo("Hearthstone window restored");
 				_isMinimized = false;
 			}
 			
 			if(_isFullScreen(bounds.toRectangle())) {
 				if(!_isFullscreen) {
-					_notifyObserversOfChangeTo(_programName + " running in fullscreen");
+					_notifyObserversOfChangeTo("Hearthstone running in fullscreen");
 					_isFullscreen  = true;
 				}
 				return null;
@@ -176,7 +175,7 @@ public class ProgramHelperWindows extends ProgramHelper {
 			}
 		}
 		if(!_isMinimized) {
-			_notifyObserversOfChangeTo("Warning! " + _programName + " minimized. No detection possible.");
+			_notifyObserversOfChangeTo("Warning! Hearthstone minimized. No detection possible.");
 			_isMinimized = true;
 		}
 		return null;
