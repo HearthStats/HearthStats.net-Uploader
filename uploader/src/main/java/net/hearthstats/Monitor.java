@@ -663,7 +663,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	
 	private void _updateNotificationCheckboxes() {
 		boolean isEnabled = _notificationsEnabledField.isSelected();
-        _notificationsFormat.setEnabled(isEnabled);
+        if (_notificationsFormat != null) {
+            _notificationsFormat.setEnabled(isEnabled);
+        }
 		_showHsFoundField.setEnabled(isEnabled);
 		_showHsClosedField.setEnabled(isEnabled);
 		_showScreenNotificationField.setEnabled(isEnabled);
