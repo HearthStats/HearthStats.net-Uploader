@@ -1,6 +1,6 @@
 v0.16.0
 Major overhaul of the detection algorithms!
 * Much more reliable detection of screens means the dreaded [undetected] match result is now pretty unlikely
-* Faster detection of victory & defeat means HearthStats.net Uploader should still catch the result even when immediately dismiss your crushing defeat
+* Faster detection of victory & defeat means HearthStats.net Uploader should still catch the result even when you immediately dismiss your crushing defeat
 * Rank detection is more reliable and should detect higher ranks without trouble (not legendary yet, though?)
 * A small increase in the speed of detection
