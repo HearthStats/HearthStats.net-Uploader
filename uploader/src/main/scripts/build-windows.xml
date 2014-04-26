@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>..\..\..\..\build\HearthStatsUploader-Win.jar</jar>
+  <outfile>..\..\..\..\build\HearthStats.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl></supportUrl>
+  <stayAlive>false</stayAlive>
+  <manifest></manifest>
+  <icon>..\resources\images\icon.ico</icon>
+  <classPath>
+    <mainClass>net/hearthstats/Main</mainClass>
+  </classPath>
+  <jre>
+    <path></path>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <minVersion>1.7.0</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+    <opt>-Xms96m -Xmx192m</opt>
+  </jre>
+  <versionInfo>
+    <fileVersion>0.0.0.0</fileVersion>
+    <txtFileVersion>Unknown</txtFileVersion>
+    <fileDescription>HearthStats.net Uploader</fileDescription>
+    <copyright>See https://github.com/HearthStats/HearthStats.net-Uploader for license</copyright>
+    <productVersion>0.0.0.0</productVersion>
+    <txtProductVersion>Unknown</txtProductVersion>
+    <productName>HearthStats.net Uploader</productName>
+    <companyName></companyName>
+    <internalName>HearthStats</internalName>
+    <originalFilename>HearthStats.exe</originalFilename>
+  </versionInfo>
+</launch4jConfig>
