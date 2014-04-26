@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/slick/slick.png?branch=master)](https://travis-ci.org/slick/slick) [![Stories in Ready](https://badge.waffle.io/HearthStats/HearthStats.net-Uploader.png?label=1%20-%20Ready)](https://waffle.io/HearthStats/HearthStats.net-Uploader)
+
 HearthStats.net Uploader
 ========================
 
