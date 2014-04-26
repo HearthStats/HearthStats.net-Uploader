@@ -1,11 +1,6 @@
-v0.15.201403211
-* Fixed location of log file on OS X
-
-v0.15.201403201
-* Improved logging
-* Macs now use the inbuilt OS X Notification Centre
-  (bonus: you can click notification to switch out of Hearthstone even when Hearthstone locks you into fullscreen!)
-* Moved location of config and temp files on OS X to be more Mac-friendly
-
-v0.15.201403121
-* Fixed arena mode detection on Hearthstone v1.0.0.4944
+v0.16.0
+Major overhaul of the detection algorithms!
+* Much more reliable detection of screens means the dreaded [undetected] match result is now pretty unlikely
+* Faster detection of victory & defeat means HearthStats.net Uploader should still catch the result even when immediately dismiss your crushing defeat
+* Rank detection is more reliable and should detect higher ranks without trouble (not legendary yet, though?)
+* A small increase in the speed of detection
