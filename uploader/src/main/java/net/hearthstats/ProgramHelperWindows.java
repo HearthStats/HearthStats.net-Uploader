@@ -30,11 +30,17 @@ public class ProgramHelperWindows extends ProgramHelper {
 
     private final static Logger debugLog = LoggerFactory.getLogger(ProgramHelperWindows.class);
 
-	private String _processName;
+    /**
+     * The number of iterations to wait without a window until we assume that Hearthstone has been minimised
+     */
+    private static final int ITERATIONS_FOR_MINIMISE = 8;
+
+    private String _processName;
 	private HWND _windowHandle = null;
 	private String _windowHandleId = null;
-	private boolean _isFullscreen = false;
-	private static boolean _isMinimized = false;
+	private boolean isFullscreen = false;
+	private boolean isMinimised = false;
+    private int minimisedCount = 0;
 	
 	public ProgramHelperWindows(String processName) {
         debugLog.debug("Initialising ProgramHelperWindows with {}", processName);
@@ -133,15 +139,15 @@ public class ProgramHelperWindows extends ProgramHelper {
 		
 		// check to make sure the window's not minimized
 		if(bounds.toRectangle().width >= 1024) {
-			if(_isMinimized) {
+			if(isMinimised) {
 				_notifyObserversOfChangeTo("Hearthstone window restored");
-				_isMinimized = false;
+				isMinimised = false;
 			}
 			
 			if(_isFullScreen(bounds.toRectangle())) {
-				if(!_isFullscreen) {
+				if(!isFullscreen) {
 					_notifyObserversOfChangeTo("Hearthstone running in fullscreen");
-					_isFullscreen  = true;
+					isFullscreen = true;
 				}
 				return null;
 			} else {
@@ -174,9 +180,17 @@ public class ProgramHelperWindows extends ProgramHelper {
 				return image;
 			}
 		}
-		if(!_isMinimized) {
-			_notifyObserversOfChangeTo("Warning! Hearthstone minimized. No detection possible.");
-			_isMinimized = true;
+		if (!isMinimised) {
+            // Hearthstone has brief periods where its window is not displayed, such as during startup and when changing
+            // scree size. We don't want to show a warning for these, so we wait a couple of iterations before assuming
+            // that the window has been minimised.
+            if (minimisedCount < ITERATIONS_FOR_MINIMISE) {
+                minimisedCount++;
+            } else {
+                _notifyObserversOfChangeTo("Warning! Hearthstone minimized. No detection possible.");
+                isMinimised = true;
+                minimisedCount = 0;
+            }
 		}
 		return null;
 	}
