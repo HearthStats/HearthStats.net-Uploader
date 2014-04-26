@@ -5,10 +5,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.recovery.ResilientFileOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
+import org.slf4j.*;
 
 import java.io.File;
 import java.util.Iterator;
@@ -107,25 +104,34 @@ public class Log {
      * @return The location of the log file, including full path if available. Returns null if the standard file logger could not be found.
      */
     public static String getLogFileLocation() {
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        for (ch.qos.logback.classic.Logger logger : context.getLoggerList()) {
-            for (Iterator<Appender<ILoggingEvent>> index = logger.iteratorForAppenders(); index.hasNext();) {
-                Appender<ILoggingEvent> appender = index.next();
-                if (appender != null && "FILE".equals(appender.getName())) {
-                    // This is our standard file logger
-                    if (appender instanceof FileAppender) {
-                        FileAppender<ILoggingEvent> fileAppender = (FileAppender<ILoggingEvent>) appender;
-                        if (fileAppender.getOutputStream() != null && fileAppender.getOutputStream() instanceof ResilientFileOutputStream) {
-                            // We have an output stream, so we can get the full filename including path
-                            File file = ((ResilientFileOutputStream) fileAppender.getOutputStream()).getFile();
-                            return file.getAbsolutePath();
-                        } else {
-                            // We don't have an output stream, so just get the filename as configured in the logback configuration file
-                            return fileAppender.getFile();
+        try {
+            ILoggerFactory contextObject = LoggerFactory.getILoggerFactory();
+            if (contextObject != null && contextObject instanceof LoggerContext) {
+                LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+                for (ch.qos.logback.classic.Logger logger : context.getLoggerList()) {
+                    for (Iterator<Appender<ILoggingEvent>> index = logger.iteratorForAppenders(); index.hasNext();) {
+                        Appender<ILoggingEvent> appender = index.next();
+                        if (appender != null && "FILE".equals(appender.getName())) {
+                            // This is our standard file logger
+                            if (appender instanceof FileAppender) {
+                                FileAppender<ILoggingEvent> fileAppender = (FileAppender<ILoggingEvent>) appender;
+                                if (fileAppender.getOutputStream() != null && fileAppender.getOutputStream() instanceof ResilientFileOutputStream) {
+                                    // We have an output stream, so we can get the full filename including path
+                                    File file = ((ResilientFileOutputStream) fileAppender.getOutputStream()).getFile();
+                                    return file.getAbsolutePath();
+                                } else {
+                                    // We don't have an output stream, so just get the filename as configured in the logback configuration file
+                                    return fileAppender.getFile();
+                                }
+                            }
                         }
                     }
                 }
             }
+        } catch (Exception e) {
+            // Ignore exceptions when getting the log file location, they don't really matter
+            // (and we may not have anywhere to log them!)
+            System.out.println("Ignoring exception looking up log file: " + e.getMessage());
         }
         // The standard file logger was found
         return null;
