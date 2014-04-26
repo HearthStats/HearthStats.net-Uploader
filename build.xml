@@ -3,9 +3,19 @@
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
 
+
+    <!-- OS X app bundler -->
     <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask">
         <classpath>
-            <pathelement location="./lib/build/appbundler-1.0.jar"/>
+            <pathelement location="./lib/build/appbundler-1.0.jar" />
+        </classpath>
+    </taskdef>
+
+    <!-- Windows app bundler -->
+    <taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask">
+        <classpath>
+            <pathelement location="./lib/build/launch4j/launch4j.jar" />
+            <pathelement location="./lib/build/launch4j/xstream.jar" />
         </classpath>
     </taskdef>
 
@@ -74,6 +84,7 @@
 		<antcall target="delete_updater_jar" />
     </target>
 
+
     <target name="clean_osx">
         <echo>Cleaning OS X build folder</echo>
         <delete failonerror="false" includeemptydirs="true" quiet="false">
@@ -81,6 +92,16 @@
             <fileset dir="./build/HearthStats.app" />
         </delete>
     </target>
+
+
+    <target name="clean_windows">
+        <echo>Cleaning Windows build folder</echo>
+        <delete failonerror="false" includeemptydirs="true" quiet="false">
+            <fileset dir="./build/win" />
+            <fileset dir="./build/HearthStats.exe" />
+        </delete>
+    </target>
+
 
     <target name="build_osx" depends="clean_osx">
         <mkdir dir="./build/osx" />
@@ -204,6 +225,109 @@
         <delete file="./build/HearthStats.app/Contents/Info.plist" />
         <move file="./build/HearthStats.app/Contents/Info-updated.plist" tofile="./build/HearthStats.app/Contents/Info.plist" />
 
+
+    </target>
+
+
+
+    <target name="build_windows" depends="clean_windows">
+        <mkdir dir="./build/win" />
+
+        <!-- Load the version number from the version file -->
+        <loadfile property="hearthstats.version"
+                  srcFile="./src/version" />
+
+        <echo>Building Windows version ${hearthstats.version}</echo>
+
+        <!-- Compile the code -->
+        <javac debug="true" deprecation="false"
+               encoding="UTF-8"
+               destdir="./build/win"
+               includeantruntime="false"
+               failonerror="true" verbose="false">
+            <src path="./uploader/src/main/java" />
+            <classpath>
+                <fileset dir="./lib" includes="*.jar"/>
+            </classpath>
+        </javac>
+
+        <!-- Copy resources shared by both the updater and the main program -->
+        <copy preservelastmodified="true" todir="./build/win">
+            <fileset dir="./uploader/src/main/resources">
+                <include name="**/*.xml" />
+                <include name="**/*.gif" />
+                <include name="**/*.png" />
+            </fileset>
+            <fileset dir="./src">
+                <include name="version" />
+                <include name="version-osx" />
+            </fileset>
+        </copy>
+
+        <!-- Build the updater jar -->
+        <jar destfile="./build/win/updater.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="net.hearthstats.Updater"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="./build/win"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/JGoogleAnalytics_0.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/slf4j-api-1.7.6.jar"/>
+        </jar>
+        <sleep milliseconds="1000"/>
+
+        <!-- Copy remaining resources, other than OS-X-specific files like Dylibs -->
+        <copy preservelastmodified="true" todir="./build/win">
+            <fileset dir="./uploader/src/main/resources">
+                <include name="**/*.css" />
+                <include name="**/*.dll" />
+                <include name="**/*.properties" />
+                <include name="tessdata/**" />
+                <include name="uploader.jar" />
+
+                <exclude name="**/*.dylib" />
+            </fileset>
+        </copy>
+        <!-- Build a JAR -->
+        <jar destfile="./build/HearthStatsUploader-Win.jar">
+            <fileset dir="./build/win"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/asm-3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/cglib-2.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/commons-lang3-3.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/ghost4j-0.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jai_imageio.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-core-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-awt-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-cluster-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-fir-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-moment-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/javaocr-plugin-morphology-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/JGoogleAnalytics_0.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jna-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jna-platform-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/jna.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/junit-4.10.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/logback-classic-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/logback-core-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-core-4.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/miglayout-swing-4.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./lib/slf4j-api-1.7.6.jar"/>
+        </jar>
+
+        <antcall target="delete_updater_jar" />
+
+        <!-- Build a Windows application bundle using launch4j -->
+        <launch4j
+                configFile="./uploader/src/main/scripts/build-windows.xml"
+                outfile="./build/HearthStats.exe"
+                fileVersion="${hearthstats.version}.0"
+                txtFileVersion="${hearthstats.version}"
+                productVersion="${hearthstats.version}.0"
+                txtProductVersion="${hearthstats.version}"
+                />
 
     </target>
 
