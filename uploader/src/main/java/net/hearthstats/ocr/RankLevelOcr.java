@@ -1,6 +1,7 @@
 package net.hearthstats.ocr;
 
 import net.hearthstats.analysis.HearthstoneAnalyser;
+import net.sourceforge.tess4j.TessAPI;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
@@ -33,28 +34,34 @@ public class RankLevelOcr extends OcrBase {
 
     @Override
     protected BufferedImage crop(BufferedImage image, int iteration) {
+        debugLog.debug("rank detection try #" + (iteration + 1));
+
         float ratio = HearthstoneAnalyser.getRatio(image);
         int xOffset = HearthstoneAnalyser.getXOffset(image, ratio);
 
         int retryOffset = (iteration - 1) % 3;
-        int x = (int) ((877 + retryOffset) * ratio + xOffset);
-        int y = (int) (161 * ratio);
-        int width = (int) (32 * ratio);
-        int height = (int) (22 * ratio);
+        int x = (int) ((876 + retryOffset) * ratio + xOffset);
+        int y = (int) (160 * ratio);
+        int width = (int) (34 * ratio);
+        int height = (int) (24 * ratio);
 
         return image.getSubimage(x, y, width, height);
     }
 
 
     @Override
-    protected String parseString(String ocrResult, int iteration) {
-        if (ocrResult != null) {
+    protected String parseString(String input, int iteration) {
+        if (input == null) {
+            return null;
+        } else {
             // Change easily-mistaken letters into numbers
-            ocrResult = StringUtils.replaceChars(ocrResult, "lIiSsOo", "1115500");
+            String output = StringUtils.replaceChars(input, "lIiSsOo", "1115500");
             // Remove all other unknown letters
-            ocrResult = ocrResult.replaceAll("[^\\d]", "");
+            output = output.replaceAll("[^\\d]", "");
+
+            debugLog.debug("Parse of rank \"{}\" is \"{}\"", input, output);
+            return output;
         }
-        return ocrResult;
     }
 
 
@@ -72,7 +79,6 @@ public class RankLevelOcr extends OcrBase {
 
         if (iteration <= 5) {
             // Rank level needs multiple iterations to try slightly shifted each time, so try five times
-            debugLog.debug("rank detection try #" + iteration);
             return true;
         } else {
             // Hasn't matched after five tries, so give up
@@ -85,21 +91,23 @@ public class RankLevelOcr extends OcrBase {
     protected BufferedImage filter(BufferedImage image, int iteration) throws OcrException {
         int width = image.getWidth();
         int height = image.getHeight();
-        int bigWidth = width * 3;
-        int bigHeight = height * 3;
+        int bigWidth = width * 2;
+        int bigHeight = height * 2;
 
         // Extract only the black & white parts of the image, removing any coloured parts. This results in just the
-        // rank number being left... all the backgroun magically disappears.
+        // rank number being left... all the background magically disappears.
         // Note that this change is being done directly on the source image for efficiency, which is OK because the
         // source image is thrown out. However if the caller needs to reuse the source image then the following code
         // should be changed to work on a copy of the image instead of the original.
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                int rgba = image.getRGB(x, y);
-                int red = (rgba >> 16) & 0xFF;
-                int green = (rgba >> 8) & 0xFF;
-                int blue = (rgba >> 0) & 0xFF;
+                // Get the individual components of this pixel
+                int inputRgba = image.getRGB(x, y);
+                int red = (inputRgba >> 16) & 0xFF;
+                int green = (inputRgba >> 8) & 0xFF;
+                int blue = (inputRgba >> 0) & 0xFF;
 
+                // If the pixel is coloured, set it to white instead
                 int invertedGatedLevel;
                 if (Math.abs(red - green) > 3 || Math.abs(red - blue) > 3 || Math.abs(green - blue) > 3) {
                     invertedGatedLevel = 255;
@@ -107,8 +115,12 @@ public class RankLevelOcr extends OcrBase {
                     invertedGatedLevel = 255 - blue;
                 }
 
-                Color col = new Color(invertedGatedLevel, invertedGatedLevel, invertedGatedLevel);
-                image.setRGB(x, y, col.getRGB());
+                // Replace the pixel with the new value
+                int outputRgba = ((255 & 0xFF) << 24) |
+                        ((invertedGatedLevel & 0xFF) << 16) |
+                        ((invertedGatedLevel & 0xFF) << 8)  |
+                        ((invertedGatedLevel & 0xFF) << 0);
+                image.setRGB(x, y, outputRgba);
             }
         }
 
@@ -124,5 +136,10 @@ public class RankLevelOcr extends OcrBase {
     @Override
     protected String getFilename() {
         return "ranklevel";
+    }
+
+    @Override
+    protected int getTesseractPageSegMode(int iteration) {
+        return TessAPI.TessPageSegMode.PSM_SINGLE_WORD;
     }
 }

@@ -1,5 +1,6 @@
 package net.hearthstats.analysis;
 
+import net.hearthstats.ocr.RankLevelOcr;
 import net.hearthstats.state.PixelLocation;
 import net.hearthstats.state.Screen;
 import net.hearthstats.util.Coordinate;
@@ -44,6 +45,7 @@ public class ScreenAnalyserTest {
 
         ScreenAnalyser analyser = new ScreenAnalyser();
         HearthstoneAnalyser hearthstoneAnalyser = new HearthstoneAnalyser();
+        RankLevelOcr rankLevelOcr = new RankLevelOcr();
 
         File imageFolder = new File(IMAGE_PATH);
         File[] imageArray = imageFolder.listFiles();
@@ -120,6 +122,7 @@ public class ScreenAnalyserTest {
                             writeScreenSpecificTest(output, "casual", hearthstoneAnalyser.imageShowsCasualPlaySelected(bufferedImage));
                             writeScreenSpecificTest(output, "ranked", hearthstoneAnalyser.imageShowsRankedPlaySelected(bufferedImage));
                             writeScreenSpecificTest(output, "deckSlot", hearthstoneAnalyser.imageIdentifyDeckSlot(bufferedImage));
+                            writeScreenSpecificTest(output, "rankLevel", rankLevelOcr.processNumber(bufferedImage));
                         }
                         if (primaryMatches.contains(Screen.MATCH_VS) || primaryMatches.contains(Screen.MATCH_STARTINGHAND)) {
                             writeScreenSpecificTest(output, "coin", hearthstoneAnalyser.imageShowsCoin(bufferedImage));
