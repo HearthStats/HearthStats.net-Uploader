@@ -43,7 +43,7 @@ public class Main extends JFrame {
         }
     }
 
-	public static void showErrorDialog(String message, Exception e) {
+	public static void showErrorDialog(String message, Throwable e) {
         debugLog.error(message, e);
         JFrame frame = new JFrame();
         frame.setFocusableWindowState(true);
@@ -97,14 +97,13 @@ public class Main extends JFrame {
 				JOptionPane.showMessageDialog(null, "Unable to read required libraries.\nIs the app already running?\n\nExiting ...");
 				System.exit(0);
 			}
-			//debugLog.debug(OCR.process("opponentname.jpg"));
 
 			loadingNotification.close();
 
             _monitor = new Monitor();
 			_monitor.start();
 			
-		} catch(Exception e) {
+		} catch (Throwable e) {
 			Main.showErrorDialog("Error in Main", e);
 			System.exit(1);
 		}

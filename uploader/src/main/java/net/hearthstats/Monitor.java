@@ -381,7 +381,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     			// Browse a URL, say google.com
     			try {
     				d.browse(new URI("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UJFTUHZF6WPDS"));
-    			} catch (Exception e1) {
+    			} catch (Throwable e1) {
     				Main.showErrorDialog("Error launching browser with donation URL", e1);
     			}
 	    	}
@@ -485,7 +485,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
                 String url = "Arena".equals(_lastMatch.getMode()) ? "http://hearthstats.net/arenas/new" : _lastMatch.getEditUrl();
                 try {
                     Desktop.getDesktop().browse(new URI(url));
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     Main.showErrorDialog("Error launching browser with URL " + url, e);
                 }
             }
@@ -576,7 +576,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Desktop.getDesktop().browse(new URI(DECKS_URL));
-				} catch (Exception e1) {
+				} catch (Throwable e1) {
 					Main.showErrorDialog("Error launching browser with URL" + DECKS_URL, e1);
 				}
 			}
@@ -804,7 +804,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				} else {
                     Log.warn("Unable to determine latest available version");
 				}
-			} catch(Exception e) {
+			} catch (Throwable e) {
                 e.printStackTrace(System.err);
 				_notify("Update Checking Error", "Unable to determine the latest available version");
 			}
@@ -1328,7 +1328,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			);
 			Main.showMessageDialog(this, _api.getMessage());
 			_updateDecksTab();
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			Main.showErrorDialog("Error saving deck slots", e);
 		}
 	}
