@@ -175,7 +175,12 @@ public class Config {
 	}
 
     public static boolean useOsxNotifications() {
-        return _getBooleanSetting("notifications", "osx", isOsxNotificationsSupported());
+        try {
+            return _getBooleanSetting("notifications", "osx", isOsxNotificationsSupported());
+        } catch (Exception e) {
+            debugLog.warn("Ignoring exception reading OS X notifications settings, assuming they are disabled", e);
+            return false;
+        }
     }
 
 	public static boolean showNotifications() {
