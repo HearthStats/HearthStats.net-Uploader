@@ -121,7 +121,7 @@ public class ScreenAnalyser {
                     maxUnmatchedCount = partialResult.unmatchedCount;
                 }
 
-                log.debug("Test of screen {} matched={} unmatched={}", new Object[] { screen, partialResult.matchedCount, partialResult.unmatchedCount });
+                log.debug("Test of screen {} matched={} unmatched={}", screen, partialResult.matchedCount, partialResult.unmatchedCount );
                 screenMatchesMap.put(screen, partialResult);
             }
 
@@ -144,12 +144,12 @@ public class ScreenAnalyser {
                         PartialResult currentResult = screenMatchesMap.get(screen);
                         if (bestMatchResult.matchedCount <= currentResult.matchedCount) {
                             log.debug("Partial match failed because best match {} has {} matched pixels whereas {} has {}",
-                                    new Object[] { bestMatch, bestMatchResult.matchedCount, screen, currentResult.matchedCount });
+                                    bestMatch, bestMatchResult.matchedCount, screen, currentResult.matchedCount );
                             acceptBestMatch = false;
                             break;
                         } else if (bestMatchResult.unmatchedCount >= currentResult.unmatchedCount) {
                             log.debug("Partial match failed because best match {} has {} unmatched pixels whereas {} has {}",
-                                    new Object[] { bestMatch, bestMatchResult.unmatchedCount, screen, currentResult.unmatchedCount });
+                                    bestMatch, bestMatchResult.unmatchedCount, screen, currentResult.unmatchedCount );
                             acceptBestMatch = false;
                             break;
                         }
@@ -202,7 +202,7 @@ public class ScreenAnalyser {
                 xOffset = 0;
             }
 
-            log.debug("ratio={} screenRatio={}, xOffset={}", new Object[]{ratio, screenRatio, xOffset});
+            log.debug("ratio={} screenRatio={}, xOffset={}", ratio, screenRatio, xOffset );
 
             result = new HashMap<>();
             for (PixelLocation pixelLocation : PixelLocation.values()) {
@@ -221,6 +221,7 @@ public class ScreenAnalyser {
 
 
 
+    @SuppressWarnings("unchecked")
     EnumSet<Screen>[] matchScreensForTesting(BufferedImage image) {
 
         if (expectedWidth != image.getWidth() || expectedHeight != image.getHeight()) {

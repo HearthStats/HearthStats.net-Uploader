@@ -61,15 +61,15 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JTextArea _currentNotesField;
 	private JButton _lastMatchButton;
 	private HearthstoneMatch _lastMatch;
-	private JComboBox _deckSlot1Field;
-	private JComboBox _deckSlot2Field;
-	private JComboBox _deckSlot3Field;
-	private JComboBox _deckSlot4Field;
-	private JComboBox _deckSlot5Field;
-	private JComboBox _deckSlot6Field;
-	private JComboBox _deckSlot7Field;
-	private JComboBox _deckSlot8Field;
-	private JComboBox _deckSlot9Field;
+	private JComboBox<String> _deckSlot1Field;
+	private JComboBox<String> _deckSlot2Field;
+	private JComboBox<String> _deckSlot3Field;
+	private JComboBox<String> _deckSlot4Field;
+	private JComboBox<String> _deckSlot5Field;
+	private JComboBox<String> _deckSlot6Field;
+	private JComboBox<String> _deckSlot7Field;
+	private JComboBox<String> _deckSlot8Field;
+	private JComboBox<String> _deckSlot9Field;
 	private JComboBox _currentOpponentClassSelect;
 	private JComboBox _currentYourClassSelector;
 
@@ -218,7 +218,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			JTextField txt = new JTextField(10);
 			panel.add(lbl);
 			panel.add(txt);
-			int selectedOption = JOptionPane.showOptionDialog(null, panel, t("enter_your_userkey"), JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
+			int selectedOption = JOptionPane.showOptionDialog(null, panel, t("enter_your_userkey"), JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 			if(selectedOption == 0) {
 			    String userkey = txt.getText();
 			    if(userkey.isEmpty()) {
@@ -374,12 +374,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		// your class
 		panel.add(new JLabel(t("match.label.your_class") + " "), "skip,right");
-		_currentYourClassSelector = new JComboBox(localizedClassOptions);
+		_currentYourClassSelector = new JComboBox<>(localizedClassOptions);
 		panel.add(_currentYourClassSelector, "wrap");
 		
 		// opponent class
 		panel.add(new JLabel(t("match.label.opponents_class") + " "), "skip,right");
-		_currentOpponentClassSelect = new JComboBox(localizedClassOptions);
+		_currentOpponentClassSelect = new JComboBox<>(localizedClassOptions);
 		panel.add(_currentOpponentClassSelect, "wrap"); 
 		
 		// Opponent name
@@ -426,7 +426,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    _lastMatchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                String url = _lastMatch.getMode() == "Arena" ? "http://hearthstats.net/arenas/new" : _lastMatch.getEditUrl();
+                String url = "Arena".equals(_lastMatch.getMode()) ? "http://hearthstats.net/arenas/new" : _lastMatch.getEditUrl();
                 try {
                     Desktop.getDesktop().browse(new URI(url));
                 } catch (Exception e) {
@@ -453,11 +453,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(new JLabel(t("deck_slot.label_2")), ""); 
 		panel.add(new JLabel(t("deck_slot.label_3")), "wrap");
 		
-		_deckSlot1Field = new JComboBox();
+		_deckSlot1Field = new JComboBox<>();
 		panel.add(_deckSlot1Field, "skip"); 
-		_deckSlot2Field = new JComboBox();
+		_deckSlot2Field = new JComboBox<>();
 		panel.add(_deckSlot2Field, ""); 
-		_deckSlot3Field = new JComboBox();
+		_deckSlot3Field = new JComboBox<>();
 		panel.add(_deckSlot3Field, "wrap");
 		
 		panel.add(new JLabel(" "), "wrap");
@@ -466,11 +466,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(new JLabel(t("deck_slot.label_5")), ""); 
 		panel.add(new JLabel(t("deck_slot.label_6")), "wrap");
 		
-		_deckSlot4Field = new JComboBox();
+		_deckSlot4Field = new JComboBox<>();
 		panel.add(_deckSlot4Field, "skip"); 
-		_deckSlot5Field = new JComboBox();
+		_deckSlot5Field = new JComboBox<>();
 		panel.add(_deckSlot5Field, ""); 
-		_deckSlot6Field = new JComboBox();
+		_deckSlot6Field = new JComboBox<>();
 		panel.add(_deckSlot6Field, "wrap");
 		
 		panel.add(new JLabel(" "), "wrap");
@@ -479,11 +479,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(new JLabel(t("deck_slot.label_8")), ""); 
 		panel.add(new JLabel(t("deck_slot.label_9")), "wrap");
 		
-		_deckSlot7Field = new JComboBox();
+		_deckSlot7Field = new JComboBox<>();
 		panel.add(_deckSlot7Field, "skip"); 
-		_deckSlot8Field = new JComboBox();
+		_deckSlot8Field = new JComboBox<>();
 		panel.add(_deckSlot8Field, ""); 
-		_deckSlot9Field = new JComboBox();
+		_deckSlot9Field = new JComboBox<>();
 		panel.add(_deckSlot9Field, "wrap");
 		
 		panel.add(new JLabel(" "), "wrap");
@@ -566,7 +566,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             panel.add(new JLabel(""), "skip,right");
             JLabel notificationsFormatLabel = new JLabel(t("options.label.notifyformat.label"));
             panel.add(notificationsFormatLabel, "split 2, gapleft 27");
-            _notificationsFormat = new JComboBox(new String[]{ t("options.label.notifyformat.osx"), t("options.label.notifyformat.hearthstats")});
+            _notificationsFormat = new JComboBox<>(new String[]{ t("options.label.notifyformat.osx"), t("options.label.notifyformat.hearthstats")});
             _notificationsFormat.setSelectedIndex(Config.useOsxNotifications() ? 0 : 1);
             panel.add(_notificationsFormat, "wrap");
         }
@@ -672,7 +672,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_showModeNotificationField.setEnabled(isEnabled);
 		_showDeckNotificationField.setEnabled(isEnabled);
 	}
-	private void _applyDecksToSelector(JComboBox selector, Integer slotNum) {
+	private void _applyDecksToSelector(JComboBox<String> selector, Integer slotNum) {
 		
 		selector.setMaximumSize(new Dimension(145, selector.getSize().height));
 		selector.removeAllItems();
@@ -796,7 +796,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				}
 
                 // TODO: replace with enum values
-				if (_analyzer.getScreen().title == "Match Start" || _analyzer.getScreen().title == "Playing") {
+				if ("Match Start".equals(_analyzer.getScreen().title)  || "Playing".equals(_analyzer.getScreen().title)) {
 					title += " " + (_analyzer.getMode() == null ? "[undetected]" : _analyzer.getMode());
 					title += " " + (_analyzer.getCoin() ? "" : "No ") + "Coin";
 					title += " " + (_analyzer.getYourClass() == null ? "[undetected]" : _analyzer.getYourClass());
@@ -810,9 +810,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 	private int _getClassOptionIndex(String cName) {
-		for(int i = 0; i < _hsClassOptions.length; i++) {
-			if(_hsClassOptions[i] == cName)
-				return i;
+		for (int i = 0; i < _hsClassOptions.length; i++) {
+			if (_hsClassOptions[i].equals(cName)) {
+                return i;
+            }
 		}
 		return 0;
 	}
@@ -859,7 +860,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_updateMatchClassSelectorsIfSet();
 		
 		// check for new arena run
-		if(hsMatch.getMode() == "Arena" && _analyzer.isNewArena()) {
+		if ("Arena".equals(hsMatch.getMode()) && _analyzer.isNewArena()) {
 			ArenaRun run = new ArenaRun();
 			run.setUserClass(hsMatch.getUserClass());
             Log.info("Creating new " + run.getUserClass() + "arena run");
@@ -1033,16 +1034,18 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_setCurrentMatchEnabledi(false);
 				if (Config.showModeNotification()) {
                     debugLog.debug(_analyzer.getMode() + " level " + _analyzer.getRankLevel());
-					if(_analyzer.getMode() == "Ranked")
-						_notify(_analyzer.getMode() + " Mode Detected", "Rank Level " + _analyzer.getRankLevel());
-					else
-						_notify(_analyzer.getMode() + " Mode Detected");
+					if ("Ranked".equals(_analyzer.getMode())) {
+                        _notify(_analyzer.getMode() + " Mode Detected", "Rank Level " + _analyzer.getRankLevel());
+                    } else {
+                        _notify(_analyzer.getMode() + " Mode Detected");
+                    }
 				}
-				if (_analyzer.getMode() == "Ranked")
+				if ("Ranked".equals(_analyzer.getMode())) {
                     Log.info(_analyzer.getMode() + " Mode Detected - Level " + _analyzer.getRankLevel());
-				else
+                } else {
                     Log.info(_analyzer.getMode() + " Mode Detected");
-				break;
+                }
+                break;
 
 			case NEW_ARENA:
 				if(_analyzer.isNewArena())

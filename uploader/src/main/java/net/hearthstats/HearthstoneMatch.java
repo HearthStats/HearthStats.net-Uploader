@@ -106,7 +106,7 @@ public class HearthstoneMatch {
 		JSONObject deck = DeckSlotUtils.getDeckFromSlot(getDeckSlot());
 		
 		return _propertyOrUnknown(getMode()) + 
-				(getMode() == "Ranked" ? " level " + getRankLevel() : "") +
+				("Ranked".equals(getMode()) ? " level " + getRankLevel() : "") +
 				" " +
 				(hasCoin() ? "" : "no ") + "coin " + 
 				_propertyOrUnknown(getUserClass()) + " vs. " +
