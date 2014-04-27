@@ -1,3 +1,8 @@
+v0.16.1
+* Now detects ranks 1-9 correctly
+* More reliable detection of your class at the start of a match
+* Now displays an error popup if something goes wrong during startup
+
 v0.16.0
 Major overhaul of the detection algorithms!
 * Much more reliable detection of screens means the dreaded [undetected] match result is now pretty unlikely
