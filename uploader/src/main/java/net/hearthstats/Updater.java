@@ -134,7 +134,7 @@ public class Updater {
         }
 
         if (errorMessage != null) {
-            Main.showMessageDialog(errorMessage + "\n\nYou will now be taken to the download page.");
+            Main.showMessageDialog(null, errorMessage + "\n\nYou will now be taken to the download page.");
             try {
                 Desktop.getDesktop().browse(new URI(DOWNLOAD_URL));
             } catch (Exception e) {

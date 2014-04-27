@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -46,12 +47,12 @@ public class Main extends JFrame {
         debugLog.error(message, e);
         JFrame frame = new JFrame();
         frame.setFocusableWindowState(true);
-        Main.showMessageDialog(message + "\n" + e.getMessage() + "\n\nSee log.txt for details");
+        Main.showMessageDialog(null, message + "\n" + e.getMessage() + "\n\nSee log.txt for details");
 	}
 
-	public static void showMessageDialog(String message) {
-		JOptionPane op = new JOptionPane(message,JOptionPane.INFORMATION_MESSAGE);
-		JDialog dialog = op.createDialog("HearthStats.net");
+	public static void showMessageDialog(Component parentComponent, String message) {
+		JOptionPane op = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE);
+		JDialog dialog = op.createDialog(parentComponent, "HearthStats.net");
 		dialog.setAlwaysOnTop(true);
 		dialog.setModal(true);
 		dialog.setFocusableWindowState(true);
@@ -148,7 +149,7 @@ public class Main extends JFrame {
 		InputStream stream = Main.class.getResourceAsStream(jarPath);
 	    if (stream == null) {
             Log.error("Exception: Unable to load file from JAR: " + jarPath);
-	    	Main.showMessageDialog("Exception: Unable to find " + jarPath + " in .jar file\n\nSee log.txt for details");
+	    	Main.showMessageDialog(null, "Exception: Unable to find " + jarPath + " in .jar file\n\nSee log.txt for details");
 	    	System.exit(1);
 	    } else {
 		    OutputStream resStreamOut = null;

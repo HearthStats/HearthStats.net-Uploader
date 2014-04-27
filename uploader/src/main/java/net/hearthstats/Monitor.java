@@ -197,8 +197,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private boolean _checkForUserKey() {
 		if(Config.getUserKey().equals("your_userkey_here")) {
             Log.warn(t("error.userkey_not_entered"));
-			
-			JOptionPane.showMessageDialog(null, 
+
+            bringWindowToFront();
+
+			JOptionPane.showMessageDialog(this,
 					"HearthStats.net " + t("error.title") + ":\n\n" +
 					t("you_need_to_enter_userkey") + "\n\n" +
 					t("get_it_at_hsnet_profiles"));
@@ -211,14 +213,15 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			} catch (IOException | URISyntaxException e) {
                 Log.warn("Error launching browser with URL " + PROFILES_URL, e);
 			}
-			
+
 			String[] options = {t("button.ok"), t("button.cancel")};
 			JPanel panel = new JPanel();
 			JLabel lbl = new JLabel(t("UserKey"));
 			JTextField txt = new JTextField(10);
 			panel.add(lbl);
 			panel.add(txt);
-			int selectedOption = JOptionPane.showOptionDialog(null, panel, t("enter_your_userkey"), JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+
+			int selectedOption = JOptionPane.showOptionDialog(this, panel, t("enter_your_userkey"), JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 			if(selectedOption == 0) {
 			    String userkey = txt.getText();
 			    if(userkey.isEmpty()) {
@@ -237,7 +240,60 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 		return true;
 	}
-	
+
+
+    /**
+     * Brings the monitor window to the front of other windows. Should only be used for important events like a
+     * modal dialog or error that we want the user to see immediately.
+     */
+    private void bringWindowToFront() {
+        final Monitor frame = this;
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                frame.setVisible(true);
+            }
+        });
+    }
+
+
+    /**
+     * Overridden version of setVisible based on http://stackoverflow.com/questions/309023/how-to-bring-a-window-to-the-front
+     * that should ensure the window is brought to the front for important things like modal dialogs.
+     */
+    @Override
+    public void setVisible(final boolean visible) {
+        // let's handle visibility...
+        if (!visible || !isVisible()) { // have to check this condition simply because super.setVisible(true) invokes toFront if frame was already visible
+            super.setVisible(visible);
+        }
+        // ...and bring frame to the front.. in a strange and weird way
+        if (visible) {
+            int state = super.getExtendedState();
+            state &= ~JFrame.ICONIFIED;
+            super.setExtendedState(state);
+            super.setAlwaysOnTop(true);
+            super.toFront();
+            super.requestFocus();
+            super.setAlwaysOnTop(false);
+        }
+    }
+
+
+    @Override
+    public void toFront() {
+        super.setVisible(true);
+        int state = super.getExtendedState();
+        state &= ~JFrame.ICONIFIED;
+        super.setExtendedState(state);
+        super.setAlwaysOnTop(true);
+        super.toFront();
+        super.requestFocus();
+        super.setAlwaysOnTop(false);
+    }
+
+
+
 	private void _createAndShowGui() {
         debugLog.debug("Creating GUI");
 
@@ -624,11 +680,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		// analytics
 		panel.add(new JLabel("Analytics: "), "skip,right");
 		_analyticsField = new JCheckBox(t("options.submit_stats"));
+
+        final Monitor frame = this;
 		_analyticsField.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(!_analyticsField.isSelected()) {
-					int dialogResult = JOptionPane.showConfirmDialog(null, 
+					int dialogResult = JOptionPane.showConfirmDialog(frame,
 							"A lot of work has gone into this uploader.\n" +
 							"It is provided for free, and all we ask in return\n" +
 							"is that you let us track basic, anonymous statistics\n" +
@@ -637,7 +695,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 							,
 							"Please reconsider ...",
 							JOptionPane.YES_NO_OPTION);		
-					if(dialogResult == JOptionPane.NO_OPTION){
+					if (dialogResult == JOptionPane.NO_OPTION){
 						_analyticsField.setSelected(true);
 					}
 				}
@@ -704,19 +762,22 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             Log.info(t("checking_for_updates..."));
 			try {
 				String availableVersion = Updater.getAvailableVersion();
-				if(availableVersion != null) {
+				if (availableVersion != null) {
                     Log.info(t("latest_v_available") + " " + availableVersion);
 					
-					if(!availableVersion.matches(Config.getVersion())) {
+					if (!availableVersion.matches(Config.getVersion())) {
+
+                        bringWindowToFront();
+
 						int dialogButton = JOptionPane.YES_NO_OPTION;
-						int dialogResult = JOptionPane.showConfirmDialog(null, 
+						int dialogResult = JOptionPane.showConfirmDialog(this,
 								"A new version of this uploader is available\n\n" +
 								Updater.getRecentChanges() +
 								"\n\n" + t("would_u_like_to_install_update")
 								,
 								"HearthStats.net " + t("uploader_updates_avail"),
 								dialogButton);		
-						if(dialogResult == JOptionPane.YES_OPTION){
+						if (dialogResult == JOptionPane.YES_OPTION){
 							/*
 							// Create Desktop object
 							Desktop d = Desktop.getDesktop();
@@ -726,7 +787,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 							*/
 							Updater.run();
 						} else {
-							dialogResult = JOptionPane.showConfirmDialog(null, 
+							dialogResult = JOptionPane.showConfirmDialog(null,
 									t("would_you_like_to_disable_updates"),
 									t("disable_update_checking"),
 									dialogButton);
@@ -735,7 +796,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 								JPanel panel = new JPanel();
 								JLabel lbl = new JLabel(t("reenable_updates_any_time"));
 								panel.add(lbl);
-								JOptionPane.showOptionDialog(null, panel, t("updates_disabled_msg"), JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
+								JOptionPane.showOptionDialog(this, panel, t("updates_disabled_msg"), JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options , options[0]);
 								Config.setCheckForUpdates(false);
 							}
 						}
@@ -987,12 +1048,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				"to recognize the victory and defeat banners.\n\n" +
 				"What was the result of your last match?";
 		String title = "Match Result Not Detected";
-		int dialogResult = JOptionPane.showOptionDialog(null, message, title,
+        bringWindowToFront();
+		int dialogResult = JOptionPane.showOptionDialog(this, message, title,
 				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, 
 				null, options, null);
-		if(dialogResult == JOptionPane.YES_OPTION){
+		if (dialogResult == JOptionPane.YES_OPTION){
 			_analyzer.getMatch().setResult("Victory");
-		} else if(dialogResult == JOptionPane.NO_OPTION){
+		} else if (dialogResult == JOptionPane.NO_OPTION){
 			_analyzer.getMatch().setResult("Defeat");
 		} else {
 			_analyzer.getMatch().setResult("Draw");
@@ -1021,7 +1083,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				JSONObject deck = DeckSlotUtils.getDeckFromSlot(_analyzer.getDeckSlot());
 				if (deck == null) {
 					_tabbedPane.setSelectedIndex(2);
-					Main.showMessageDialog("Unable to determine what deck you have in slot #" + _analyzer.getDeckSlot() + "\n\nPlease set your decks in the \"Decks\" tab.");
+                    bringWindowToFront();
+                    Main.showMessageDialog(this, "Unable to determine what deck you have in slot #" + _analyzer.getDeckSlot() + "\n\nPlease set your decks in the \"Decks\" tab.");
 				} else {
 					_notify("Deck Detected", deck.get("name").toString());
                     Log.info("Deck Detected: " + deck.get("name") + " Detected");
@@ -1145,7 +1208,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			case "error":
 				_notify("API Error", _api.getMessage());
 				Log.error("API Error: " + _api.getMessage());
-				Main.showMessageDialog("API Error: " + _api.getMessage());
+				Main.showMessageDialog(this, "API Error: " + _api.getMessage());
 				break;
 			case "result":
 				Log.info("API Result: " + _api.getMessage());
@@ -1165,12 +1228,15 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	
 	private void _handleProgramHelperEvent(Object changed) {
         Log.info(changed.toString());
-		if(changed.toString().matches(".*minimized.*")) 
-			_notify("Hearthstone Minimized", "Warning! No detection possible while minimized.");
-		if(changed.toString().matches(".*fullscreen.*")) 
-			JOptionPane.showMessageDialog(null, "Hearthstats.net Uploader Warning! \n\nNo detection possible while Hearthstone is in fullscreen mode.\n\nPlease set Hearthstone to WINDOWED mode and close and RESTART Hearthstone.\n\nSorry for the inconvenience.");
-		if(changed.toString().matches(".*restored.*")) 
-			_notify("Hearthstone Restored", "Resuming detection ...");
+		if (changed.toString().matches(".*minimized.*")) {
+            _notify("Hearthstone Minimized", "Warning! No detection possible while minimized.");
+        }
+		if (changed.toString().matches(".*fullscreen.*")) {
+            JOptionPane.showMessageDialog(this, "Hearthstats.net Uploader Warning! \n\nNo detection possible while Hearthstone is in fullscreen mode.\n\nPlease set Hearthstone to WINDOWED mode and close and RESTART Hearthstone.\n\nSorry for the inconvenience.");
+        }
+        if (changed.toString().matches(".*restored.*")) {
+            _notify("Hearthstone Restored", "Resuming detection ...");
+        }
 	}
 	
 	@Override
@@ -1260,7 +1326,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_getDeckSlotDeckId(_deckSlot8Field),
 				_getDeckSlotDeckId(_deckSlot9Field)
 			);
-			Main.showMessageDialog(_api.getMessage());
+			Main.showMessageDialog(this, _api.getMessage());
 			_updateDecksTab();
 		} catch (Exception e) {
 			Main.showErrorDialog("Error saving deck slots", e);
@@ -1288,7 +1354,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         }
 
         Config.save();
-		JOptionPane.showMessageDialog(null, "Options Saved");
+		JOptionPane.showMessageDialog(this, "Options Saved");
 	}
 	
 	private void _setCurrentMatchEnabledi(Boolean enabled){
