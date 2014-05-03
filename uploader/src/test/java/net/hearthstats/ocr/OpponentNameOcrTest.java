@@ -40,19 +40,41 @@ public class OpponentNameOcrTest {
 
     @Test
     public void testPerformOcr() throws Exception {
+        debugLog.info("Performing OCR test on opponent names");
+        testOpponentName("opponentname-ADIZZLE23.jpg", "ADIZZLE23");
+        testOpponentName("opponentname-BORTHOX.png", "BORTHOX");
         testOpponentName("opponentname-Baitt.jpg", "Baitt");
+        testOpponentName("opponentname-Besant.jpg", "Besant");
+        testOpponentName("opponentname-CABJ18.jpg", "CABJ18");
+        testOpponentName("opponentname-Clarendon.png", "Clarendon");
         testOpponentName("opponentname-Dada.jpg", "Dada");
+        testOpponentName("opponentname-danutsio.jpg", "danutsio");
+        testOpponentName("opponentname-Darn.png", "Darn");
+        testOpponentName("opponentname-Ehamar.png", "Ehamar");
+        testOpponentName("opponentname-EternalVoid.png", "EternalVoid");
+        testOpponentName("opponentname-FREGON989.png", "FREGON989");
+        testOpponentName("opponentname-Fauzy.png", "Fauzy");
         testOpponentName("opponentname-Fiizz01.jpg", "Fiizz01");
         testOpponentName("opponentname-ForTheHorde.jpg", "ForTheHorde");
+        testOpponentName("opponentname-Freewilly.png", "Freewilly");
+        testOpponentName("opponentname-Fritcheous.png", "Fritcheous");
+        testOpponentName("opponentname-Highlander.png", "Highlander");
         testOpponentName("opponentname-humdeabril.jpg", "humdeabril");
         testOpponentName("opponentname-Icekicker.jpg", "Icekicker");
         testOpponentName("opponentname-Kazbec.jpg", "Kazbec");
         testOpponentName("opponentname-Kritterkilla.jpg", "Kritterkilla");
+        testOpponentName("opponentname-Manic.png", "Manic");
         testOpponentName("opponentname-Mka.jpg", "Mka");
+        testOpponentName("opponentname-NeilPogi.png", "NeilPogi");
         testOpponentName("opponentname-Numenor.jpg", "Numenor");
+        testOpponentName("opponentname-redrebel.jpg", "redrebel");
+        testOpponentName("opponentname-Renflex.png", "Renflex");
         testOpponentName("opponentname-Skorn57.jpg", "Skorn57");
+        testOpponentName("opponentname-sLimer.jpg", "sLimer");
         testOpponentName("opponentname-StarK.jpg", "StarK");
         testOpponentName("opponentname-Veon.jpg", "Veon");
+        testOpponentName("opponentname-YouInTheNuts.png", "YouInTheNuts");
+        testOpponentName("opponentname-zeus.png", "zeus");
     }
 
 
