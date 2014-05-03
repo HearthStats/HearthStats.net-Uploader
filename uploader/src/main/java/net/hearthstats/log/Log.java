@@ -76,7 +76,7 @@ public class Log {
      * @param logMessage The message to log.
      * @param ex The exception that triggered this warning message.
      */
-    public static void warn(String logMessage, Exception ex) {
+    public static void warn(String logMessage, Throwable ex) {
         appLog.warn(logMessage, ex);
     }
 
@@ -93,7 +93,7 @@ public class Log {
      * @param logMessage The message to log.
      * @param ex The exception that triggered this error message.
      */
-    public static void error(String logMessage, Exception ex) {
+    public static void error(String logMessage, Throwable ex) {
         appLog.error(logMessage, ex);
     }
 

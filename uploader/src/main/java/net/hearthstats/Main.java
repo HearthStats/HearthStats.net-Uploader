@@ -92,10 +92,10 @@ public class Main extends JFrame {
                     default:
                         throw new UnsupportedOperationException("HearthStats.net Uploader only supports Windows and Mac OS X");
                 }
-			} catch(Exception e) {
-                debugLog.error("Error loading required libraries", e);
-				JOptionPane.showMessageDialog(null, "Unable to read required libraries.\nIs the app already running?\n\nExiting ...");
-				System.exit(0);
+			} catch (Throwable e) {
+                Log.error("Error loading libraries", e);
+                showLibraryErrorMessage(e);
+                System.exit(0);
 			}
 
 			loadingNotification.close();
@@ -110,6 +110,51 @@ public class Main extends JFrame {
 		
 	}
 
+
+    private static void showLibraryErrorMessage(Throwable e) {
+        String title;
+        Object[] message;
+        if (e instanceof UnsatisfiedLinkError) {
+            // A library that Tesseract or Leptonica expects to find on this system isn't there
+            title = "Expected libraries are not installed";
+            if (Config.os == Config.OS.WINDOWS && "amd64".equals(Config.getSystemProperty("os.arch"))) {
+                // This is the most common scenario - the user is using 64-bit Windows and there is no 64-bit library installed by default
+                message = new Object[] {
+                        new JLabel("The HearthStats Uploader requires the Visual C++ Redistributable to be installed."),
+                        new JLabel("Please download the 64-bit installer (vcredist_x64.exe) from"),
+                        HyperLinkHandler.getUrlLabel("http://www.microsoft.com/en-US/download/details.aspx?id=30679"),
+                        new JLabel("and install it before using the HearthStats Uploader.")
+                };
+            } else if (Config.os == Config.OS.WINDOWS) {
+                // There is no known problem with other variants of Windows, but just in case this does occur we show a similar message
+                message = new Object[] {
+                        new JLabel("The HearthStats Uploader requires the Visual C++ Redistributable to be installed."),
+                        new JLabel("Please download the installer from"),
+                        HyperLinkHandler.getUrlLabel("http://www.microsoft.com/en-US/download/details.aspx?id=30679"),
+                        new JLabel("and install it before using the HearthStats Uploader.")
+                };
+            } else {
+                message = new Object[] {
+                        new JLabel("The HearthStats Uploader was unable to start because expected system libraries were not found."),
+                        new JLabel("Please check your log.txt file for details."),
+                        new JLabel(" "),
+                        new JLabel("Exiting...")
+                };
+            }
+        } else {
+            title = e.getMessage();
+            message = new Object[] {
+                    new JLabel("The HearthStats Uploader was unable to start because the OCR libraries could not be read."),
+                    new JLabel("Is the app already running?"),
+                    new JLabel(" "),
+                    new JLabel("Exiting...")
+            };
+        }
+
+        JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
+    }
+
+
     private static void _logSystemInformation() {
         if (debugLog.isInfoEnabled()) {
             debugLog.info("**********************************************************************");
@@ -123,6 +168,7 @@ public class Main extends JFrame {
             debugLog.info("**********************************************************************");
         }
     }
+
 
 	public static void setupTesseract() {
         debugLog.debug("Extracting Tesseract data");
@@ -172,7 +218,7 @@ public class Main extends JFrame {
 	    }
 	}
 	
-	private static void _loadJarDll(String name) throws FileNotFoundException {
+	private static void _loadJarDll(String name) throws FileNotFoundException, UnsatisfiedLinkError {
         debugLog.debug("Loading DLL {}", name);
 		String resourcePath = "/lib/" + name + "_" + System.getProperty("sun.arch.data.model") + ".dll";
 	    InputStream in = Main.class.getResourceAsStream(resourcePath);
@@ -200,8 +246,11 @@ public class Main extends JFrame {
                 debugLog.error("Error copying DLL " + name, e);
 			}
 		    try {
-		    	System.loadLibrary(outPath + name);
-		    } catch(Exception e) {
+                System.loadLibrary(outPath + name);
+            } catch (UnsatisfiedLinkError e) {
+                debugLog.error("UnsatisfiedLinkError loading DLL " + name, e);
+                throw e;
+		    } catch (Exception e) {
                 debugLog.error("Error loading DLL " + name, e);
 		    }
 	    } else {
@@ -210,12 +259,15 @@ public class Main extends JFrame {
 	}
 
 
-    private static void _loadOsxDylib(String name) {
+    private static void _loadOsxDylib(String name) throws UnsatisfiedLinkError {
         debugLog.debug("Loading dylib {}", name);
 
        try {
            System.loadLibrary(name);
-       } catch(Exception e) {
+       } catch (UnsatisfiedLinkError e) {
+           debugLog.error("UnsatisfiedLinkError loading DLL " + name, e);
+           throw e;
+       } catch (Exception e) {
            debugLog.error("Error loading dylib " + name, e);
        }
 
