@@ -23,6 +23,7 @@ Features
 * Tracks number of rounds played and match duration
 * Add notes to your matches directly from the uploader
 
+See the [Development Status](https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Development-Status) wiki page for more detail about what is currently supported.
 
 
 Running Beta Builds
