@@ -1,5 +1,6 @@
 package net.hearthstats.ocr;
 
+import net.hearthstats.BackgroundImageSave;
 import net.hearthstats.Main;
 import net.sourceforge.tess4j.Tesseract;
 import org.slf4j.Logger;
@@ -155,13 +156,7 @@ public abstract class OcrBase {
      * @param image An image to be processed by OCR. Should already be cropped and filtered.
      */
     protected void saveCopy(BufferedImage image, int iteration) {
-        File outputfile = new File(Main.getExtractionFolder() + "/" + getFilename() + ".png");
-        try {
-            ImageIO.write(image, "png", outputfile);
-        } catch (Exception e) {
-            debugLog.warn("Error writing OCR image " + getFilename(), e);
-        }
-
+        BackgroundImageSave.savePngImage(image, getFilename());
     }
 
 

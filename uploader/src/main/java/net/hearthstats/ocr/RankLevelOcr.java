@@ -40,10 +40,10 @@ public class RankLevelOcr extends OcrBase {
         int xOffset = HearthstoneAnalyser.getXOffset(image, ratio);
 
         int retryOffset = (iteration - 1) % 3;
-        int x = (int) ((876 + retryOffset) * ratio + xOffset);
-        int y = (int) (160 * ratio);
-        int width = (int) (34 * ratio);
-        int height = (int) (24 * ratio);
+        int x = (int) ((1369 + retryOffset) * ratio + xOffset);
+        int y = (int) (250 * ratio);
+        int width = (int) (52 * ratio);
+        int height = (int) (38 * ratio);
 
         return image.getSubimage(x, y, width, height);
     }

@@ -1,5 +1,6 @@
 package net.hearthstats.analysis;
 
+import net.hearthstats.BackgroundImageSave;
 import net.hearthstats.HearthstoneMatch;
 import net.hearthstats.Main;
 import net.hearthstats.log.Log;
@@ -7,6 +8,7 @@ import net.hearthstats.ocr.OcrException;
 import net.hearthstats.ocr.OpponentNameRankedOcr;
 import net.hearthstats.ocr.OpponentNameUnrankedOcr;
 import net.hearthstats.ocr.RankLevelOcr;
+import net.hearthstats.state.PixelLocation;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.state.UniquePixel;
@@ -50,9 +52,10 @@ public class HearthstoneAnalyser extends Observable {
     private String mode;
     private int deckSlot;
     private Integer rankLevel;
-    private int iterationsSinceFindingOpponent = 0;
     private long startTime;
 
+    private int iterationsSinceFindingOpponent = 0;
+    private int iterationsSinceClassCheckingStarted = 0;
 
 
     public HearthstoneAnalyser() {
@@ -117,6 +120,7 @@ public class HearthstoneAnalyser extends Observable {
                     testForOpponentClass(image);
                     testForCoin(image);
                     testForOpponentName(image);
+                    iterationsSinceClassCheckingStarted++;
                     break;
 
                 case MATCH_STARTINGHAND:
@@ -206,6 +210,7 @@ public class HearthstoneAnalyser extends Observable {
                     match.setRankLevel(rankLevel);
                     arenaRunEndDetected = false;
                     isYourTurn = false;
+                    iterationsSinceClassCheckingStarted = 0;
                     break;
 
                 case MATCH_PLAYING:
@@ -275,6 +280,14 @@ public class HearthstoneAnalyser extends Observable {
             if (newClass != null) {
                 setYourClass(newClass);
             }
+
+            if (iterationsSinceClassCheckingStarted > 3 && ((iterationsSinceClassCheckingStarted & 3) == 0)) {
+                // There have been four iterations since checking for the class, and no class was detected
+                // so save a screenshot of every fourths iteration that the user can send us for review
+                String filename = "class-yours-" + ((iterationsSinceClassCheckingStarted >> 2));
+
+                BackgroundImageSave.saveCroppedPngImage(image, filename, 204, 600, 478, 530);
+            }
         }
     }
 
@@ -286,7 +299,15 @@ public class HearthstoneAnalyser extends Observable {
             if (newClass != null) {
                 setOpponentClass(newClass);
             }
+
+            if (iterationsSinceClassCheckingStarted > 3 && ((iterationsSinceClassCheckingStarted & 3) == 0)) {
+                // There have been four iterations since checking for the class, and no class was detected
+                // so save a screenshot of every fourth iteration that the user can send us for review
+                String filename = "class-opponent-" + ((iterationsSinceClassCheckingStarted >> 2));
+                BackgroundImageSave.saveCroppedPngImage(image, filename, 1028, 28, 478, 530);
+            }
         }
+
     }
 
 
@@ -781,12 +802,12 @@ public class HearthstoneAnalyser extends Observable {
 
 
     static public float getRatio(BufferedImage image) {
-        return image.getHeight() / (float) 768;
+        return image.getHeight() / (float) PixelLocation.REFERENCE_SIZE.y;
     }
 
 
     static public int getXOffset(BufferedImage image, float ratio) {
-        return (int) (((float) image.getWidth() - (ratio * 1024)) / 2);
+        return (int) (((float) image.getWidth() - (ratio * PixelLocation.REFERENCE_SIZE.x)) / 2);
     }
 
 

@@ -75,7 +75,9 @@ public class Main extends JFrame {
 			Updater.cleanUp();
 			Config.rebuild();
 
-            _logSystemInformation();
+            logSystemInformation();
+
+            cleanupDebugFiles();
 
 			setupTesseract();
 
@@ -155,7 +157,7 @@ public class Main extends JFrame {
     }
 
 
-    private static void _logSystemInformation() {
+    private static void logSystemInformation() {
         if (debugLog.isInfoEnabled()) {
             debugLog.info("**********************************************************************");
             debugLog.info("  Starting HearthStats.net Uploader {} on {}", Config.getVersion(), Config.os);
@@ -166,6 +168,24 @@ public class Main extends JFrame {
             debugLog.info("  java.class.path={}", Config.getSystemProperty("java.class.path"));
             debugLog.info("  user.language={}", Config.getSystemProperty("user.language"));
             debugLog.info("**********************************************************************");
+        }
+    }
+
+
+    private static void cleanupDebugFiles() {
+        try {
+            File folder = new File(Main.getExtractionFolder());
+            if (folder.exists()) {
+                File[] files = folder.listFiles();
+                for (File file : files) {
+                    if (file.isFile() && file.getName().startsWith("class-") && file.getName().endsWith(".png")) {
+                        // This is a hero/class image used for debugging, so it should be deleted
+                        file.delete();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            debugLog.warn("Ignoring exception when cleaning up debug files", e);
         }
     }
 

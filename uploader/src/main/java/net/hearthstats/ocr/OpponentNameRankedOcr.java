@@ -14,10 +14,10 @@ public class OpponentNameRankedOcr extends OpponentNameOcr {
     protected BufferedImage crop(BufferedImage image, int iteration) {
         float ratio = HearthstoneAnalyser.getRatio(image);
 
-        int x = (int) (76 * ratio);
-        int y = (int) (34 * ratio);
-        int width = (int) (150 * ratio);
-        int height = (int) (19 * ratio);
+        int x = (int) (118 * ratio);
+        int y = (int) (53 * ratio);
+        int width = (int) (236 * ratio);
+        int height = (int) (30 * ratio);
 
         return image.getSubimage(x, y, width, height);
     }
