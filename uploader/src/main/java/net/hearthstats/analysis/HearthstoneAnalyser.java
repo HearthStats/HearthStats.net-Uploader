@@ -535,6 +535,9 @@ public class HearthstoneAnalyser extends Observable {
                 UniquePixel.YOUR_HUNTER_1, UniquePixel.YOUR_HUNTER_2, UniquePixel.YOUR_HUNTER_3})) {
             return "Hunter";
         } else if (individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[] {
+                UniquePixel.YOUR_HUNTER_GOLDEN_1, UniquePixel.YOUR_HUNTER_GOLDEN_2, UniquePixel.YOUR_HUNTER_GOLDEN_3})) {
+            return "Hunter";
+        } else if (individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[] {
                 UniquePixel.YOUR_MAGE_1, UniquePixel.YOUR_MAGE_2, UniquePixel.YOUR_MAGE_3})) {
             return "Mage";
         } else if (individualPixelAnalyser.testAllPixelsMatch(image, new UniquePixel[] {

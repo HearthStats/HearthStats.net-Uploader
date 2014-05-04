@@ -46,7 +46,7 @@ public class IndividualPixelAnalyserTest {
 
         List<File> images = new ArrayList<>(imageArray.length);
         for (File image : imageArray) {
-            if (image.getName().endsWith(".png") && image.getName().startsWith("hs-play-vs-")) {
+            if (image.getName().endsWith(".png")) {
                 // Determine if this is a match end image
                 BufferedImage bufferedImage = ImageIO.read(image);
 
@@ -97,6 +97,11 @@ public class IndividualPixelAnalyserTest {
                         boolean hunterPartial = individualPixelAnalyser.testAnyPixelsMatch(bufferedImage, new UniquePixel[] {
                                 UniquePixel.YOUR_HUNTER_1, UniquePixel.YOUR_HUNTER_2, UniquePixel.YOUR_HUNTER_3});
 
+                        boolean hunterGoldenFull = individualPixelAnalyser.testAllPixelsMatch(bufferedImage, new UniquePixel[] {
+                                UniquePixel.YOUR_HUNTER_GOLDEN_1, UniquePixel.YOUR_HUNTER_GOLDEN_2, UniquePixel.YOUR_HUNTER_GOLDEN_3});
+                        boolean hunterGoldenPartial = individualPixelAnalyser.testAnyPixelsMatch(bufferedImage, new UniquePixel[] {
+                                UniquePixel.YOUR_HUNTER_GOLDEN_1, UniquePixel.YOUR_HUNTER_GOLDEN_2, UniquePixel.YOUR_HUNTER_GOLDEN_3});
+
                         boolean mageFull = individualPixelAnalyser.testAllPixelsMatch(bufferedImage, new UniquePixel[] {
                                 UniquePixel.YOUR_MAGE_1, UniquePixel.YOUR_MAGE_2, UniquePixel.YOUR_MAGE_3});
                         boolean magePartial = individualPixelAnalyser.testAnyPixelsMatch(bufferedImage, new UniquePixel[] {
@@ -137,6 +142,7 @@ public class IndividualPixelAnalyserTest {
 
                         if (druidFull) fullMatches.add("Druid");
                         if (hunterFull) fullMatches.add("Hunter");
+                        if (hunterGoldenFull) fullMatches.add("Golden Hunter");
                         if (mageFull) fullMatches.add("Mage");
                         if (paladinFull) fullMatches.add("Paladin");
                         if (priestFull) fullMatches.add("Priest");
@@ -147,6 +153,7 @@ public class IndividualPixelAnalyserTest {
 
                         if (druidPartial) partialMatches.add("Druid");
                         if (hunterPartial) partialMatches.add("Hunter");
+                        if (hunterGoldenPartial) partialMatches.add("Golden Hunter");
                         if (magePartial) partialMatches.add("Mage");
                         if (paladinPartial) partialMatches.add("Paladin");
                         if (priestPartial) partialMatches.add("Priest");
@@ -175,6 +182,11 @@ public class IndividualPixelAnalyserTest {
                             pixelA = UniquePixel.YOUR_HUNTER_1;
                             pixelB = UniquePixel.YOUR_HUNTER_2;
                             pixelC = UniquePixel.YOUR_HUNTER_3;
+                        } else if (hunterGoldenFull) {
+                            primaryMatch = "Golden Hunter";
+                            pixelA = UniquePixel.YOUR_HUNTER_GOLDEN_1;
+                            pixelB = UniquePixel.YOUR_HUNTER_GOLDEN_2;
+                            pixelC = UniquePixel.YOUR_HUNTER_GOLDEN_3;
                         } else if (mageFull) {
                             primaryMatch = "Mage";
                             pixelA = UniquePixel.YOUR_MAGE_1;
@@ -220,6 +232,11 @@ public class IndividualPixelAnalyserTest {
                             pixelA = UniquePixel.YOUR_HUNTER_1;
                             pixelB = UniquePixel.YOUR_HUNTER_2;
                             pixelC = UniquePixel.YOUR_HUNTER_3;
+                        } else if (hunterGoldenPartial) {
+                            primaryMatch = "Golden Hunter (Partial)";
+                            pixelA = UniquePixel.YOUR_HUNTER_GOLDEN_1;
+                            pixelB = UniquePixel.YOUR_HUNTER_GOLDEN_2;
+                            pixelC = UniquePixel.YOUR_HUNTER_GOLDEN_3;
                         } else if (magePartial) {
                             primaryMatch = "Mage (Partial)";
                             pixelA = UniquePixel.YOUR_MAGE_1;
