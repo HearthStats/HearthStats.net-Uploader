@@ -14,6 +14,7 @@ import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.state.UniquePixel;
 import net.hearthstats.util.Coordinate;
 import net.hearthstats.util.MatchOutcome;
+import net.hearthstats.util.Rank;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public class HearthstoneAnalyser extends Observable {
     private HearthstoneMatch match = new HearthstoneMatch();
     private String mode;
     private int deckSlot;
-    private Integer rankLevel;
+    private Rank rankLevel;
     private long startTime;
 
     private int iterationsSinceFindingOpponent = 0;
@@ -602,12 +603,12 @@ public class HearthstoneAnalyser extends Observable {
     private void analyzeRankLevel(BufferedImage image) {
 
         try {
-            Integer rankInteger = rankLevelOcr.processNumber(image);
+            Rank rank = Rank.fromInt(rankLevelOcr.processNumber(image));
 
-            if (rankInteger == null) {
+            if (rank == null) {
                 Log.warn("Could not interpret rank, your rank may not be recorded correctly");
             } else {
-                setRankLevel(rankInteger);
+                setRankLevel(rank);
             }
 
         } catch (OcrException e) {
@@ -680,7 +681,7 @@ public class HearthstoneAnalyser extends Observable {
     }
 
 
-    public Integer getRankLevel() {
+    public Rank getRankLevel() {
         return match.getRankLevel();
     }
 
@@ -748,7 +749,7 @@ public class HearthstoneAnalyser extends Observable {
     }
 
 
-    private void setRankLevel(Integer rankLevel) {
+    private void setRankLevel(Rank rankLevel) {
         this.rankLevel = rankLevel;
         match.setRankLevel(rankLevel);
     }

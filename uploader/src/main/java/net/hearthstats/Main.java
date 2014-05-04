@@ -84,12 +84,12 @@ public class Main extends JFrame {
 			try {
                 switch (Config.os) {
                     case WINDOWS:
-                        _loadJarDll("liblept168");
-                        _loadJarDll("libtesseract302");
+                        loadJarDll("liblept168");
+                        loadJarDll("libtesseract302");
                         break;
                     case OSX:
-                        _loadOsxDylib("lept");
-                        _loadOsxDylib("tesseract");
+                        loadOsxDylib("lept");
+                        loadOsxDylib("tesseract");
                         break;
                     default:
                         throw new UnsupportedOperationException("HearthStats.net Uploader only supports Windows and Mac OS X");
@@ -166,6 +166,7 @@ public class Main extends JFrame {
             debugLog.info("  os.arch={}", Config.getSystemProperty("os.arch"));
             debugLog.info("  java.runtime.version={}", Config.getSystemProperty("java.runtime.version"));
             debugLog.info("  java.class.path={}", Config.getSystemProperty("java.class.path"));
+            debugLog.info("  java.library.path={}", Config.getSystemProperty("java.library.path"));
             debugLog.info("  user.language={}", Config.getSystemProperty("user.language"));
             debugLog.info("**********************************************************************");
         }
@@ -238,7 +239,7 @@ public class Main extends JFrame {
 	    }
 	}
 	
-	private static void _loadJarDll(String name) throws FileNotFoundException, UnsatisfiedLinkError {
+	private static void loadJarDll(String name) throws FileNotFoundException, UnsatisfiedLinkError {
         debugLog.debug("Loading DLL {}", name);
 		String resourcePath = "/lib/" + name + "_" + System.getProperty("sun.arch.data.model") + ".dll";
 	    InputStream in = Main.class.getResourceAsStream(resourcePath);
@@ -279,13 +280,13 @@ public class Main extends JFrame {
 	}
 
 
-    private static void _loadOsxDylib(String name) throws UnsatisfiedLinkError {
+    private static void loadOsxDylib(String name) throws UnsatisfiedLinkError {
         debugLog.debug("Loading dylib {}", name);
 
        try {
            System.loadLibrary(name);
        } catch (UnsatisfiedLinkError e) {
-           debugLog.error("UnsatisfiedLinkError loading DLL " + name, e);
+           debugLog.error("UnsatisfiedLinkError loading dylib " + name, e);
            throw e;
        } catch (Exception e) {
            debugLog.error("Error loading dylib " + name, e);

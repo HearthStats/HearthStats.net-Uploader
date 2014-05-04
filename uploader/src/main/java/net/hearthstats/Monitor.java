@@ -11,6 +11,8 @@ import net.hearthstats.notification.NotificationQueue;
 import net.hearthstats.notification.OsxNotificationQueue;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
+import net.hearthstats.ui.MatchEndPopup;
+import net.hearthstats.util.Rank;
 import net.miginfocom.swing.MigLayout;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -49,6 +51,19 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 
     private static Logger debugLog = LoggerFactory.getLogger(Monitor.class);
     private static Logger perfLog = LoggerFactory.getLogger("net.hearthstats.performance");
+
+    public static final String[] hsClassOptions = {
+            "- undetected -",
+            "Druid",
+            "Hunter",
+            "Mage",
+            "Paladin",
+            "Priest",
+            "Rogue",
+            "Shaman",
+            "Warlock",
+            "Warrior"
+    };
 
     protected API _api = new API();
 	protected HearthstoneAnalyser _analyzer = new HearthstoneAnalyser();
@@ -94,19 +109,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JCheckBox _showYourTurnNotificationField;
 	private JTabbedPane _tabbedPane;
 	private ResourceBundle _bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
-	private String[] _hsClassOptions = { 
-			"- " + t("undetected") + " -",
-			"Druid",
-			"Hunter",
-			"Mage",
-			"Paladin",
-			"Priest",
-			"Rogue",
-			"Shaman",
-			"Warlock",
-			"Warrior" 
-		};
-
 
     public Monitor() throws HeadlessException {
     	
@@ -159,8 +161,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_api.addObserver(this);
 		_analyzer.addObserver(this);
 		_hsHelper.addObserver(this);
-		
-		
+
+
 		if(_checkForUserKey()) {
 			_pollHearthstone();
 		}
@@ -171,7 +173,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             Log.info(t("waiting_for_hs_windowed"));
         }
 	}
-	
+
+
 	private void _showWelcomeLog() {
         debugLog.debug("Showing welcome log messages");
 
@@ -193,6 +196,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         }
 
     }
+
 	
 	private boolean _checkForUserKey() {
 		if(Config.getUserKey().equals("your_userkey_here")) {
@@ -427,10 +431,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		panel.add(new JLabel(" "), "wrap");
 		
-		String[] localizedClassOptions = new String[_hsClassOptions.length];
+		String[] localizedClassOptions = new String[hsClassOptions.length];
 		localizedClassOptions[0] = "- " + t("undetected") + " -";
 		for(int i = 1; i < localizedClassOptions.length; i++)
-			localizedClassOptions[i] = t(_hsClassOptions[i]);
+			localizedClassOptions[i] = t(hsClassOptions[i]);
 		
 		// your class
 		panel.add(new JLabel(t("match.label.your_class") + " "), "skip,right");
@@ -468,7 +472,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		// notes
 		panel.add(new JLabel(t("match.label.notes") + " "), "skip,wrap");
 		_currentNotesField = new JTextArea();
-		_currentNotesField.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.black));
+        _currentNotesField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 1, 1, 1, Color.black),
+                BorderFactory.createEmptyBorder(3, 6, 3, 6)));
 		_currentNotesField.setMinimumSize(new Dimension(350, 150));
 	    _currentNotesField.setBackground(Color.WHITE);
 	    _currentNotesField.addKeyListener(new KeyAdapter() {
@@ -875,8 +881,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 	private int _getClassOptionIndex(String cName) {
-		for (int i = 0; i < _hsClassOptions.length; i++) {
-			if (_hsClassOptions[i].equals(cName)) {
+		for (int i = 0; i < hsClassOptions.length; i++) {
+			if (hsClassOptions[i].equals(cName)) {
                 return i;
             }
 		}
@@ -952,9 +958,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 	private void _updateMatchClassSelectorsIfSet() {
 		if(_currentYourClassSelector.getSelectedIndex() > 0)
-			_analyzer.getMatch().setUserClass(_hsClassOptions[_currentYourClassSelector.getSelectedIndex()]);
+			_analyzer.getMatch().setUserClass(hsClassOptions[_currentYourClassSelector.getSelectedIndex()]);
 		if(_currentOpponentClassSelect.getSelectedIndex() > 0)
-			_analyzer.getMatch().setOpponentClass(_hsClassOptions[_currentOpponentClassSelect.getSelectedIndex()]);
+			_analyzer.getMatch().setOpponentClass(hsClassOptions[_currentOpponentClassSelect.getSelectedIndex()]);
 	}
 
 	protected void _handleHearthstoneFound(int currentPollIteration) {

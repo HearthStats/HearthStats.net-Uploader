@@ -1,5 +1,6 @@
 package net.hearthstats;
 
+import net.hearthstats.util.Rank;
 import org.json.simple.JSONObject;
 
 public class HearthstoneMatch {
@@ -11,7 +12,7 @@ public class HearthstoneMatch {
 	private String _result;
 	private int _deckSlot;
 	private String _opponentName;
-	private Integer _rankLeve;
+	private Rank rankLevel;
 	private int _numTurns = 0;
 	private int _duration;
 	private String _notes;
@@ -84,15 +85,15 @@ public class HearthstoneMatch {
 		_duration = duration;
 	}
 
-	public Integer getRankLevel() {
-		return _rankLeve;
+	public Rank getRankLevel() {
+		return rankLevel;
 	}
 	public String getResult() {
 		return _result;
 	}
 
-	public void setRankLevel(Integer rankLevel) {
-		_rankLeve = rankLevel;
+	public void setRankLevel(Rank rankLevel) {
+		this.rankLevel = rankLevel;
 	}
 	
 	public void setResult(String result) {
@@ -133,15 +134,24 @@ public class HearthstoneMatch {
 				break;
 		}
 		JSONObject obj = new JSONObject();
+
 		obj.put("mode", getMode());
+        if ("Ranked".equals(getMode())) {
+            if (getRankLevel() == Rank.LEGEND) {
+                obj.put("legend", "true");
+            } else {
+                obj.put("ranklvl", getRankLevel().number);
+                obj.put("legend", "false");
+            }
+        }
+
+        obj.put("slot", getDeckSlot());
 		obj.put("class", getUserClass());
 		obj.put("oppclass", getOpponentClass());
 		obj.put("oppname", getOpponentName());
-		obj.put("result", result);
 		obj.put("coin", hasCoin() ? "true" : "false");
-		obj.put("slot", getDeckSlot());
+        obj.put("result", result);
 		obj.put("notes", getNotes());
-		obj.put("ranklvl", getRankLevel());
 		obj.put("numturns", getNumTurns());
 		obj.put("duration", getDuration());
 		
