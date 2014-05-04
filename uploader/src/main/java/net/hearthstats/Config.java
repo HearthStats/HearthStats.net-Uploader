@@ -96,8 +96,12 @@ public class Config {
 		
 		_restorePreviousValues();
 		
-		save();
-		
+        try {
+            save();
+        } catch (Throwable e) {
+            Log.warn("Error occurred trying to write settings file, your settings may not be saved", e);
+        }
+
 	}
 
 	public static String getApiBaseUrl() {
@@ -343,7 +347,7 @@ public class Config {
 			try {
 				_ini = new Wini(new File(getConfigPath()));
 			} catch (Exception e) {
-                Log.warn("Error occurred while loading config.ini", e);
+                Log.warn("Error occurred trying to read settings file, your settings may not be loaded correctly", e);
 			}
 		}
 		return _ini;
@@ -408,13 +412,8 @@ public class Config {
 		_getIni().put(group, key, val + "");
 	}
 	
-	public static void save() {
-		try {
-			_getIni().store();
-		} catch (IOException e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Unable to write to config.ini while trying to save settings");
-		}
+	public static void save() throws IOException {
+        _getIni().store();
 	}
 
     public static String getJavaLibraryPath() {

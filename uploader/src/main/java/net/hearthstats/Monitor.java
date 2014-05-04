@@ -228,7 +228,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			    	_checkForUserKey();
 			    } else {
 			    	Config.setUserKey(userkey);
-			    	Config.save();
+                    try {
+                        Config.save();
+                    } catch (Throwable e) {
+                        Log.warn("Error occurred trying to write settings file, your settings may not be saved", e);
+                    }
 			    	_userKeyField.setText(userkey);
                     Log.info(t("UserkeyStored"));
 			    	_pollHearthstone();
@@ -1274,7 +1278,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		Dimension rect = getSize();
 		Config.setWidth((int) rect.getWidth());
 		Config.setHeight((int) rect.getHeight());
-		Config.save();
+        try {
+            Config.save();
+        } catch (Throwable t) {
+            Log.warn("Error occurred trying to write settings file, your settings may not be saved", t);
+        }
 		System.exit(0);
 	}
 
@@ -1353,8 +1361,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             _notificationQueue = Config.useOsxNotifications() ? new OsxNotificationQueue() : new DialogNotificationQueue();
         }
 
-        Config.save();
-		JOptionPane.showMessageDialog(this, "Options Saved");
+        try {
+            Config.save();
+            JOptionPane.showMessageDialog(this, "Options Saved");
+        } catch (Throwable e) {
+            Log.warn("Error occurred trying to write settings file, your settings may not be saved", e);
+            JOptionPane.showMessageDialog(null, "Error occurred trying to write settings file, your settings may not be saved");
+        }
 	}
 	
 	private void _setCurrentMatchEnabledi(Boolean enabled){
