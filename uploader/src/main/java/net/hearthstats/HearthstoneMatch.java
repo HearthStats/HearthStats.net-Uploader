@@ -138,6 +138,7 @@ public class HearthstoneMatch {
 		obj.put("mode", getMode());
         if ("Ranked".equals(getMode())) {
             if (getRankLevel() == Rank.LEGEND) {
+                obj.put("ranklvl", 26);     // 26 currently represents legend on HearthStats
                 obj.put("legend", "true");
             } else {
                 obj.put("ranklvl", getRankLevel().number);
