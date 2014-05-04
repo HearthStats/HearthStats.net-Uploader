@@ -209,7 +209,7 @@
             <option value="-DLOG_FILE=Library/Application Support/HearthStatsUploader/log.txt"/>
             <option value="-Xdock:icon=Contents/Resources/${bundle.icon}"/>
             <option value="-Xms96m"/>
-            <option value="-Xmx192m"/>
+            <option value="-Xmx256m"/>
         </bundleapp>
 
         <!-- Copy Tesseract data into the Resources folder of the bundle -->

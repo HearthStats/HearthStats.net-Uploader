@@ -23,7 +23,7 @@
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64/32</runtimeBits>
-    <opt>-Xms96m -Xmx192m</opt>
+    <opt>-Xms96m -Xmx384m</opt>
   </jre>
   <versionInfo>
     <fileVersion>0.0.0.0</fileVersion>
