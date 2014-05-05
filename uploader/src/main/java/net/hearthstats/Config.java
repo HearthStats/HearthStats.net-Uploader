@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.EnumSet;
 
 import javax.swing.JOptionPane;
 
 import net.hearthstats.log.Log;
+import org.apache.commons.lang3.StringUtils;
 import org.ini4j.Wini;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +19,7 @@ public class Config {
 
     private final static Logger debugLog = LoggerFactory.getLogger(Config.class);
 
-    public static final OS os = _parseOperatingSystem();
+    public static final OS os = parseOperatingSystem();
 
 	private static String _version;
 	
@@ -41,6 +43,8 @@ public class Config {
 
 	private static boolean _showDeckNotification;
 
+    private static MatchPopup showMatchPopup;
+
 	private static boolean _analyticsEnabled;
 
 	private static boolean _minToTray;
@@ -62,9 +66,9 @@ public class Config {
 	public static void rebuild() {
         debugLog.debug("Building config");
 
-		_storePreviousValues();
+		storePreviousValues();
 
-		_getIni().clear();
+		getIni().clear();
 
 		// api
 		setUserKey("your_userkey_here");
@@ -94,7 +98,7 @@ public class Config {
 		setWidth(600);
 		setHeight(700);
 		
-		_restorePreviousValues();
+		restorePreviousValues();
 		
         try {
             save();
@@ -105,82 +109,82 @@ public class Config {
 	}
 
 	public static String getApiBaseUrl() {
-		return _getStringSetting("API", "baseurl", _defaultApiBaseUrl);
+		return getStringSetting("API", "baseurl", _defaultApiBaseUrl);
 	}
 	private static void setApiBaseUrl(String baseUrl) {
-		_setStringValue("API", "baseurl", baseUrl);
+		setStringValue("API", "baseurl", baseUrl);
 	}
 
 	public static String getUserKey() {
-		return _getStringSetting("API", "userkey", "your_userkey_here");
+		return getStringSetting("API", "userkey", "your_userkey_here");
 	}
 	
 	public static int getX() {
-		return _getIntegerSetting("ui", "x", 0);
+		return getIntegerSetting("ui", "x", 0);
 	}
 	
 	public static int getY() {
-		return _getIntegerSetting("ui", "y", 0);
+		return getIntegerSetting("ui", "y", 0);
 	}
 	
 	public static int getWidth() {
-		return _getIntegerSetting("ui", "width", 600);
+		return getIntegerSetting("ui", "width", 600);
 	}
 	
 	public static int getHeight() {
-		return _getIntegerSetting("ui", "height", 700);
+		return getIntegerSetting("ui", "height", 700);
 	}
 
 	public static boolean startMinimized() {
-		return _getBooleanSetting("ui", "startminimized", false);
+		return getBooleanSetting("ui", "startminimized", false);
 	}
 	
 	public static boolean analyticsEnabled() {
-		return _getBooleanSetting("analytics", "enabled", true);
+		return getBooleanSetting("analytics", "enabled", true);
 	}
 	
 	public static boolean showEventLog() {
-		return _getBooleanSetting("ui", "eventlog", true);
+		return getBooleanSetting("ui", "eventlog", true);
 	}
 	
 	public static boolean mirrorGameImage() {
-		return _getBooleanSetting("ui", "mirrorgame", false);
+		return getBooleanSetting("ui", "mirrorgame", false);
 	}
 	
 	public static boolean checkForUpdates() {
-		return _getBooleanSetting("updates", "check", true);
+		return getBooleanSetting("updates", "check", true);
 	}
 	
 	public static boolean showDeckNotification() {
-		return _getBooleanSetting("notifications", "deck", true);
+		return getBooleanSetting("notifications", "deck", true);
 	}
 	
 	public static boolean showScreenNotification() {
-		return _getBooleanSetting("notifications", "screen", true);
+		return getBooleanSetting("notifications", "screen", true);
 	}
 	
 	public static boolean showHsFoundNotification() {
-		return _getBooleanSetting("notifications", "hsfound", true);
+		return getBooleanSetting("notifications", "hsfound", true);
 	}
 	
 	public static boolean showModeNotification() {
-		return _getBooleanSetting("notifications", "mode", true);
+		return getBooleanSetting("notifications", "mode", true);
 	}
 	public static boolean showYourTurnNotification() {
-		return _getBooleanSetting("notifications", "yourturn", true);
+		return getBooleanSetting("notifications", "yourturn", true);
 	}
 	
 	public static boolean showHsClosedNotification() {
-		return _getBooleanSetting("notifications", "hsclosed", true);
+		return getBooleanSetting("notifications", "hsclosed", true);
 	}
 	
 	public static boolean minimizeToTray() {
-		return _getBooleanSetting("ui", "mintotray", true);
+		return getBooleanSetting("ui", "mintotray", true);
 	}
 
     public static boolean useOsxNotifications() {
         try {
-            return _getBooleanSetting("notifications", "osx", isOsxNotificationsSupported());
+            return getBooleanSetting("notifications", "osx", isOsxNotificationsSupported());
         } catch (Exception e) {
             debugLog.warn("Ignoring exception reading OS X notifications settings, assuming they are disabled", e);
             return false;
@@ -188,10 +192,25 @@ public class Config {
     }
 
 	public static boolean showNotifications() {
-		return _getBooleanSetting("notifications", "enabled", true);
+		return getBooleanSetting("notifications", "enabled", true);
 	}
-	
-	public static String getVersion() {
+
+
+    public static MatchPopup showMatchPopup() {
+        String stringValue = getStringSetting("ui", "matchpopup", MatchPopup.getDefault().name());
+        if (StringUtils.isBlank(stringValue)) {
+            return MatchPopup.getDefault();
+        } else {
+            try {
+                return MatchPopup.valueOf(stringValue);
+            } catch (IllegalArgumentException e) {
+                debugLog.debug("Could not parse matchpopup value \"{}\", using default instead", stringValue);
+                return MatchPopup.getDefault();
+            }
+        }
+    }
+
+    public static String getVersion() {
 		if(_version == null) {
 			_version = "";
 			String versionFile = "/version";
@@ -218,7 +237,7 @@ public class Config {
 	}
 
     public static void setUseOsxNotifications(boolean val) {
-        _setBooleanValue("notifications", "osx", val);
+        setBooleanValue("notifications", "osx", val);
     }
 
     public static Boolean isOsxNotificationsSupported() {
@@ -242,46 +261,50 @@ public class Config {
     }
 
     public static void setShowNotifications(boolean val) {
-		_setBooleanValue("notifications", "enabled", val);
+		setBooleanValue("notifications", "enabled", val);
 	}
 	
 	public static void setAnalyticsEnabled(boolean val) {
-		_setBooleanValue("analytics", "enabled", val);
+		setBooleanValue("analytics", "enabled", val);
 	}
 	public static void setShowHsFoundNotification(boolean val) {
-		_setBooleanValue("notifications", "hsfound", val);
+		setBooleanValue("notifications", "hsfound", val);
 	}
 	public static void setShowHsClosedNotification(boolean val) {
-		_setBooleanValue("notifications", "hsclosed", val);
+		setBooleanValue("notifications", "hsclosed", val);
 	}
 	public static void setShowScreenNotification(boolean val) {
-		_setBooleanValue("notifications", "screen", val);
+		setBooleanValue("notifications", "screen", val);
 	}
 	public static void setShowYourTurnNotification(boolean val) {
-		_setBooleanValue("notifications", "yourturn", val);
+		setBooleanValue("notifications", "yourturn", val);
 	}
 	public static void setShowModeNotification(boolean val) {
-		_setBooleanValue("notifications", "mode", val);
+		setBooleanValue("notifications", "mode", val);
 	}
 	public static void setShowDeckNotification(boolean val) {
-		_setBooleanValue("notifications", "deck", val);
+		setBooleanValue("notifications", "deck", val);
 	}
-	
-	public static void setCheckForUpdates(boolean val) {
-		_setBooleanValue("updates", "check", val);
+
+    public static void setShowMatchPopup(MatchPopup showMatchPopup) {
+        setStringValue("ui", "matchpopup", showMatchPopup == null ? "" : showMatchPopup.name());
+    }
+
+    public static void setCheckForUpdates(boolean val) {
+		setBooleanValue("updates", "check", val);
 	}
 	public static void setMinToTray(boolean val) {
-		_setBooleanValue("ui", "mintotray", val);
+		setBooleanValue("ui", "mintotray", val);
 	}
 	public static void setStartMinimized(boolean val) {
-		_setBooleanValue("ui", "startminimized", val);
+		setBooleanValue("ui", "startminimized", val);
 	}
 	
 	public static void setUserKey(String userkey) {
-		_setStringValue("API", "userkey", userkey);
+		setStringValue("API", "userkey", userkey);
 	}
 	
-	private static void _createConfigIniIfNecessary() {
+	private static void createConfigIniIfNecessary() {
 		File configFile = new File(getConfigPath());
 		if (!configFile.exists()) {
             if (Config.os == OS.OSX) {
@@ -315,35 +338,35 @@ public class Config {
         }
     }
 	
-	private static void _setStringValue(String group, String key, String val) {
-		_getIni().put(group, key, val);
+	private static void setStringValue(String group, String key, String val) {
+		getIni().put(group, key, val);
 		try {
-			_getIni().store();
+			getIni().store();
 		} catch (IOException e) {
             Log.warn("Error occurred while setting key " + key + " in config.ini", e);
 		}
 	}
 	
-	private static void _setBooleanValue(String group, String key, boolean val) {
-		_getIni().put(group, key, val);
+	private static void setBooleanValue(String group, String key, boolean val) {
+		getIni().put(group, key, val);
 	}
 	
 	public static void setX(int val) {
-		_setIntVal("ui", "x", val);
+		setIntVal("ui", "x", val);
 	}
 	public static void setY(int val) {
-		_setIntVal("ui", "y", val);
+		setIntVal("ui", "y", val);
 	}
 	public static void setWidth(int val) {
-		_setIntVal("ui", "width", val);
+		setIntVal("ui", "width", val);
 	}
 	public static void setHeight(int val) {
-		_setIntVal("ui", "height", val);
+		setIntVal("ui", "height", val);
 	}
 	
-	private static Wini _getIni() {
+	private static Wini getIni() {
 		if(_ini == null) {
-			_createConfigIniIfNecessary();
+			createConfigIniIfNecessary();
 			try {
 				_ini = new Wini(new File(getConfigPath()));
 			} catch (Exception e) {
@@ -353,22 +376,22 @@ public class Config {
 		return _ini;
 	}
 	
-	private static boolean _getBooleanSetting(String group, String key, boolean deflt) {
-		String setting = _getIni().get(group, key);
+	private static boolean getBooleanSetting(String group, String key, boolean deflt) {
+		String setting = getIni().get(group, key);
 		return setting == null ? deflt : setting.equals("true");
 	}
 	
-	private static int _getIntegerSetting(String group, String key, int deflt) {
-		String setting = _getIni().get(group, key);
+	private static int getIntegerSetting(String group, String key, int deflt) {
+		String setting = getIni().get(group, key);
 		return setting == null ? deflt : Integer.parseInt(setting); 
 	}
 	
-	private static String _getStringSetting(String group, String key, String deflt) {
-		String setting = _getIni().get(group, key);
+	private static String getStringSetting(String group, String key, String deflt) {
+		String setting = getIni().get(group, key);
 		return setting == null ? deflt : setting;
 	}
-	
-	private static void _restorePreviousValues() {
+
+	private static void restorePreviousValues() {
 		setUserKey(_userkey);
 		setApiBaseUrl(_apiBaseUrl);
 		setCheckForUpdates(_checkForUpdates);
@@ -379,6 +402,7 @@ public class Config {
 		setShowScreenNotification(_showScreenNotification);
 		setShowModeNotification(_showModeNotification);
 		setShowDeckNotification(_showDeckNotification);
+        setShowMatchPopup(showMatchPopup);
 		setAnalyticsEnabled(_analyticsEnabled);
 		setMinToTray(_minToTray);
 		setStartMinimized(_startMinimized);
@@ -388,7 +412,7 @@ public class Config {
 		setHeight(_height);
 	}
 	
-	private static void _storePreviousValues() {
+	private static void storePreviousValues() {
 		_userkey = getUserKey();
 		_apiBaseUrl = getApiBaseUrl();
 		_checkForUpdates = checkForUpdates();
@@ -399,6 +423,7 @@ public class Config {
 		_showScreenNotification = showScreenNotification();
 		_showModeNotification = showModeNotification();
 		_showDeckNotification = showDeckNotification();
+        showMatchPopup = showMatchPopup();
 		_analyticsEnabled = analyticsEnabled();
 		_minToTray = minimizeToTray();
 		_startMinimized = startMinimized();
@@ -408,12 +433,12 @@ public class Config {
 		_height = getHeight();
 	}
 	
-	private static void _setIntVal(String group, String key, int val) {
-		_getIni().put(group, key, val + "");
+	private static void setIntVal(String group, String key, int val) {
+		getIni().put(group, key, val + "");
 	}
 	
 	public static void save() throws IOException {
-        _getIni().store();
+        getIni().store();
 	}
 
     public static String getJavaLibraryPath() {
@@ -435,7 +460,7 @@ public class Config {
      * This method is private because you should use the cached version {@link Config#os)} which is faster.
      * @return The current OS
      */
-    private static OS _parseOperatingSystem() {
+    private static OS parseOperatingSystem() {
         String osString = getSystemProperty("os.name");
         if (osString == null) {
             return OS.UNSUPPORTED;
@@ -450,5 +475,13 @@ public class Config {
 
     public static enum OS {
         WINDOWS, OSX, UNSUPPORTED;
+    }
+
+    public static enum MatchPopup {
+        ALWAYS, INCOMPLETE, NEVER;
+
+        static MatchPopup getDefault() {
+            return INCOMPLETE;
+        }
     }
 }

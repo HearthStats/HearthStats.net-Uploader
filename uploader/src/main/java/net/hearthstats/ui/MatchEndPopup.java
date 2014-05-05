@@ -1,10 +1,12 @@
 package net.hearthstats.ui;
 
+import net.hearthstats.DeckSlotUtils;
 import net.hearthstats.HearthstoneMatch;
 import net.hearthstats.Monitor;
 import net.hearthstats.util.Rank;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +48,7 @@ public class MatchEndPopup extends JPanel {
     private JTextField opponentNameField;
     private JComboBox opponentClassComboBox;
     private JComboBox yourClassComboBox;
+    private JComboBox yourDeckComboBox;
     private JCheckBox coinCheckBox;
     private JTextArea notesTextArea;
     private JRadioButton resultVictory;
@@ -62,6 +65,37 @@ public class MatchEndPopup extends JPanel {
 
         initComponents();
     }
+
+
+    public static enum Button {
+        SUBMIT, CANCEL
+    }
+
+
+
+    public static Button showPopup(Component parentComponent, HearthstoneMatch match, String infoMessage) {
+        MatchEndPopup popup = new MatchEndPopup(match, infoMessage);
+
+        int value = JOptionPane.showOptionDialog(parentComponent, popup, "Submit Match Result to HearthStats",
+                JOptionPane.INFORMATION_MESSAGE, JOptionPane.YES_NO_OPTION, null,
+                new String[] { "Submit", "Cancel" }, "Submit");
+
+        Button result;
+        switch (value) {
+            case 0:
+                result = Button.SUBMIT;
+                break;
+            case 1:
+                result = Button.CANCEL;
+                break;
+            default:
+                result = Button.CANCEL;
+                break;
+        }
+
+        return result;
+    }
+
 
 
     private List<String> determineErrors(HearthstoneMatch match) {
@@ -87,19 +121,20 @@ public class MatchEndPopup extends JPanel {
     }
 
 
-    private void initComponents(){
+    private void initComponents() {
 
         // Increase the site of the panel if there are error messages to display
-        int preferredHeight = 350 + (30 * errorMessages.size());
+        int preferredHeight = 380 + (30 * errorMessages.size());
 
         setLayout(layout);
-        setMinimumSize(new Dimension(600, 350));
-        setPreferredSize(new Dimension(600, preferredHeight));
-        setMaximumSize(new Dimension(600, preferredHeight + 200));
+        setMinimumSize(new Dimension(660, 380));
+        setPreferredSize(new Dimension(660, preferredHeight));
+        setMaximumSize(new Dimension(660, preferredHeight + 200));
+
 
         //// Row 1 ////
 
-        JLabel heading = new JLabel("Match Result");
+        JLabel heading = new JLabel(match.getMode() == null ? "Match Result" : match.getMode() + " Match Result");
         Font headingFont = heading.getFont().deriveFont(20f);
         heading.setFont(headingFont);
         add(heading, "span");
@@ -141,8 +176,14 @@ public class MatchEndPopup extends JPanel {
         if ("Ranked".equals(match.getMode())) {
             rankComboBox = new JComboBox<>(Rank.values());
             rankComboBox.setSelectedIndex(25 - match.getRankLevel().number);
-            rankComboBox.setMinimumSize(new Dimension(150, 27));
+            rankComboBox.setMinimumSize(new Dimension(180, 27));
             rankComboBox.setPreferredSize(new Dimension(200, 28));
+            rankComboBox.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    match.setRankLevel((Rank) rankComboBox.getSelectedItem());
+                }
+            });
             add(rankComboBox, "");
         } else {
             String rankMessage;
@@ -163,7 +204,7 @@ public class MatchEndPopup extends JPanel {
         add(new JLabel(t("match.label.opponent_name")), "right");
 
         opponentNameField = new JTextField();
-        opponentNameField.setMinimumSize(new Dimension(150, 27));
+        opponentNameField.setMinimumSize(new Dimension(180, 27));
         opponentNameField.setPreferredSize(new Dimension(200, 28));
         opponentNameField.setText(match.getOpponentName());
         opponentNameField.addKeyListener(new KeyAdapter() {
@@ -186,7 +227,7 @@ public class MatchEndPopup extends JPanel {
         add(new JLabel(t("match.label.your_class")), "right");
 
         yourClassComboBox = new JComboBox<>(localizedClassOptions);
-        yourClassComboBox.setMinimumSize(new Dimension(150, 27));
+        yourClassComboBox.setMinimumSize(new Dimension(180, 27));
         yourClassComboBox.setPreferredSize(new Dimension(200, 28));
         if (match.getUserClass() == null) {
             yourClassComboBox.setSelectedIndex(0);
@@ -196,7 +237,9 @@ public class MatchEndPopup extends JPanel {
         yourClassComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (yourClassComboBox.getSelectedIndex() > 0) {
+                if (yourClassComboBox.getSelectedIndex() == 0) {
+                    match.setUserClass(null);
+                } else {
                     match.setUserClass(Monitor.hsClassOptions[yourClassComboBox.getSelectedIndex()]);
                 }
             }
@@ -206,7 +249,7 @@ public class MatchEndPopup extends JPanel {
         add(new JLabel(t("match.label.opponents_class")), "right");
 
         opponentClassComboBox = new JComboBox<>(localizedClassOptions);
-        opponentClassComboBox.setMinimumSize(new Dimension(150, 27));
+        opponentClassComboBox.setMinimumSize(new Dimension(180, 27));
         opponentClassComboBox.setPreferredSize(new Dimension(200, 28));
         if (match.getOpponentClass() == null) {
             opponentClassComboBox.setSelectedIndex(0);
@@ -216,7 +259,9 @@ public class MatchEndPopup extends JPanel {
         opponentClassComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (opponentClassComboBox.getSelectedIndex() > 0) {
+                if (opponentClassComboBox.getSelectedIndex() == 0) {
+                    match.setOpponentClass(null);
+                } else {
                     match.setOpponentClass(Monitor.hsClassOptions[opponentClassComboBox.getSelectedIndex()]);
                 }
             }
@@ -224,9 +269,58 @@ public class MatchEndPopup extends JPanel {
         add(opponentClassComboBox, "wrap");
 
 
+
         //// Row 6 ////
 
+        add(new JLabel(t("match.label.your_deck")), "right");
+
+        if ("Ranked".equals(match.getMode()) || "Casual".equals(match.getMode())) {
+
+            String[] deckSlotList = new String[10];
+            deckSlotList[0] = "- " + t("undetected") + " -";
+            for (int i = 1; i <= 9; i++) {
+                JSONObject deck =  DeckSlotUtils.getDeckFromSlot(i);
+                StringBuilder sb = new StringBuilder();
+                sb.append(t("deck_slot.label_" + i));
+                sb.append(" ");
+                if (deck == null) {
+                    sb.append(t("undetected"));
+                } else {
+                    sb.append(deck.get("name"));
+                }
+                deckSlotList[i] = sb.toString();
+            }
+
+            yourDeckComboBox = new JComboBox<>(deckSlotList);
+            yourDeckComboBox.setMinimumSize(new Dimension(180, 27));
+            yourDeckComboBox.setPreferredSize(new Dimension(200, 28));
+            yourDeckComboBox.setSelectedIndex(match.getDeckSlot());
+            yourDeckComboBox.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    match.setDeckSlot(yourDeckComboBox.getSelectedIndex());
+                }
+            });
+            add(yourDeckComboBox, "wrap");
+
+        } else {
+            String deckMessage;
+            if ("Arena".equals(match.getMode())) {
+                deckMessage = "N/A: Arena Mode";
+            } else {
+                deckMessage = "N/A";
+            }
+            JLabel rankNotApplicable = new JLabel(deckMessage);
+            rankNotApplicable.setFont(rankNotApplicable.getFont().deriveFont(Font.ITALIC));
+            rankNotApplicable.setEnabled(false);
+            add(rankNotApplicable, "wrap");
+        }
+
+
+        //// Row 7 ////
+
         add(new JLabel(t("match.label.coin")), "right");
+
         coinCheckBox = new JCheckBox(t("match.coin"));
         coinCheckBox.setSelected(match.hasCoin());
         coinCheckBox.addChangeListener(new ChangeListener() {
@@ -237,11 +331,11 @@ public class MatchEndPopup extends JPanel {
         add(coinCheckBox, "wrap");
 
 
-        //// Row 7 ////
+        //// Row 8 ////
 
         add(new JLabel("Result:"), "right, gapy 20px 20px");
 
-        JPanel resultPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JPanel resultPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 1, 1));
 
         resultVictory = new JRadioButton(t("match.label.result_victory"));
         resultVictory.setMnemonic(KeyEvent.VK_V);
@@ -299,17 +393,16 @@ public class MatchEndPopup extends JPanel {
         add(resultPanel, "span 3, wrap");
 
 
-
-        //// Row 8 ////
+        //// Row 9 ////
 
         add(new JLabel(t("match.label.notes")), "right");
         notesTextArea = new JTextArea();
         notesTextArea.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(1, 1, 1, 1, Color.black),
                 BorderFactory.createEmptyBorder(3, 6, 3, 6)));
-        notesTextArea.setMinimumSize(new Dimension(400, 100));
-        notesTextArea.setPreferredSize(new Dimension(540, 150));
-        notesTextArea.setMaximumSize(new Dimension(540, 200));
+        notesTextArea.setMinimumSize(new Dimension(550, 100));
+        notesTextArea.setPreferredSize(new Dimension(550, 150));
+        notesTextArea.setMaximumSize(new Dimension(550, 200));
         notesTextArea.setBackground(Color.WHITE);
         notesTextArea.setText(match.getNotes());
         notesTextArea.addKeyListener(new KeyAdapter() {

@@ -103,6 +103,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JCheckBox _showScreenNotificationField;
 	private JCheckBox _showModeNotificationField;
 	private JCheckBox _showDeckNotificationField;
+    private JComboBox showMatchPopupField;
 	private JCheckBox _analyticsField;
 	private JCheckBox _minToTrayField;
 	private JCheckBox _startMinimizedField;
@@ -674,8 +675,16 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		panel.add(_showYourTurnNotificationField, "wrap");
 		
 		_updateNotificationCheckboxes();
-		
-		// minimize to tray
+
+
+        panel.add(new JLabel(t("options.label.matchpopup")), "skip,right");
+
+        showMatchPopupField = new JComboBox<>(new String[]{ t("options.label.matchpopup.always"), t("options.label.matchpopup.incomplete"), t("options.label.matchpopup.never")});
+        showMatchPopupField.setSelectedIndex(Config.showMatchPopup().ordinal());
+        panel.add(showMatchPopupField, "wrap");
+
+
+        // minimize to tray
 		panel.add(new JLabel("Interface: "), "skip,right");
 		_minToTrayField = new JCheckBox(t("options.notification.min_to_tray"));
 		_minToTrayField.setSelected(Config.checkForUpdates());
@@ -889,8 +898,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		return 0;
 	}
 	private void _updateCurrentMatchUi() {
-		_updateMatchClassSelectorsIfSet();
-		HearthstoneMatch match = _analyzer.getMatch();
+        HearthstoneMatch match = _analyzer.getMatch();
+		_updateMatchClassSelectorsIfSet(match);
 		if(_currentMatchEnabled)
 			_currentMatchLabel.setText(match.getMode() + " Match - " + " Turn " + match.getNumTurns());
 		else 
@@ -925,11 +934,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		repaint();
 	}
 
-	private void _submitMatchResult() throws IOException {
-		HearthstoneMatch hsMatch = _analyzer.getMatch();
-		
-		_updateMatchClassSelectorsIfSet();
-		
+	private void _submitMatchResult(HearthstoneMatch hsMatch) throws IOException {
 		// check for new arena run
 		if ("Arena".equals(hsMatch.getMode()) && _analyzer.isNewArena()) {
 			ArenaRun run = new ArenaRun();
@@ -956,11 +961,14 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_currentYourClassSelector.setSelectedIndex(0);	
 		_currentOpponentClassSelect.setSelectedIndex(0);	
 	}
-	private void _updateMatchClassSelectorsIfSet() {
-		if(_currentYourClassSelector.getSelectedIndex() > 0)
-			_analyzer.getMatch().setUserClass(hsClassOptions[_currentYourClassSelector.getSelectedIndex()]);
-		if(_currentOpponentClassSelect.getSelectedIndex() > 0)
-			_analyzer.getMatch().setOpponentClass(hsClassOptions[_currentOpponentClassSelect.getSelectedIndex()]);
+
+	private void _updateMatchClassSelectorsIfSet(HearthstoneMatch hsMatch) {
+		if (_currentYourClassSelector.getSelectedIndex() > 0) {
+            hsMatch.setUserClass(hsClassOptions[_currentYourClassSelector.getSelectedIndex()]);
+        }
+		if (_currentOpponentClassSelect.getSelectedIndex() > 0) {
+            hsMatch.setOpponentClass(hsClassOptions[_currentOpponentClassSelect.getSelectedIndex()]);
+        }
 	}
 
 	protected void _handleHearthstoneFound(int currentPollIteration) {
@@ -1049,32 +1057,82 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             }
 		}, POLLING_INTERVAL_IN_MS, TimeUnit.MILLISECONDS);
 	}
-	
-	private void _promptForResult() {
-		Object[] options = { "Victory", "Defeat", "Draw" };
-		String message = "The result of your previous match was not detected.\n\n" +
-				"This often happens if you click away the result banner\n" +
-				"in the game before giving the uploader a second or two\n" +
-				"to recognize the victory and defeat banners.\n\n" +
-				"What was the result of your last match?";
-		String title = "Match Result Not Detected";
-        bringWindowToFront();
-		int dialogResult = JOptionPane.showOptionDialog(this, message, title,
-				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, 
-				null, options, null);
-		if (dialogResult == JOptionPane.YES_OPTION){
-			_analyzer.getMatch().setResult("Victory");
-		} else if (dialogResult == JOptionPane.NO_OPTION){
-			_analyzer.getMatch().setResult("Defeat");
-		} else {
-			_analyzer.getMatch().setResult("Draw");
-		}
-		try {
-			_submitMatchResult();
-		} catch (IOException e) {
-			Main.showErrorDialog("Error submitting match result", e);
-		}
+
+
+    /**
+     * Checks whether the match result is complete, showing a popup if necessary to fix the match data,
+     * and then submits the match when ready.
+     *
+     * @param match The match to check and submit.
+     */
+	private void checkMatchResult(final HearthstoneMatch match) {
+
+        _updateMatchClassSelectorsIfSet(match);
+
+        final Config.MatchPopup matchPopup = Config.showMatchPopup();
+        final boolean showPopup;
+
+        switch (matchPopup) {
+            case ALWAYS:
+                showPopup = true;
+                break;
+            case INCOMPLETE:
+                showPopup = !match.isDataComplete();
+                break;
+            case NEVER:
+                showPopup = false;
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown config option " + Config.showMatchPopup());
+        }
+
+        if (showPopup) {
+            // Show a popup allowing the user to edit their match before submitting
+            final Monitor monitor = this;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                       boolean matchHasValidationErrors = !match.isDataComplete();
+                       String infoMessage = null;
+                       do {
+                           if (infoMessage == null) {
+                               infoMessage = (matchPopup == Config.MatchPopup.INCOMPLETE)
+                                       ? "Some match information couldn't be detected.<br>Please update these details then click Submit to submit the match to HearthStats:"
+                                       : "The end of the match has been detected.<br>Please check these details then submit the match to HearthStats:";
+                           }
+                           bringWindowToFront();
+                           MatchEndPopup.Button buttonPressed = MatchEndPopup.showPopup(monitor, match, infoMessage);
+                           matchHasValidationErrors = !match.isDataComplete();
+                           switch (buttonPressed) {
+                               case SUBMIT:
+                                   if (matchHasValidationErrors) {
+                                       infoMessage = "Some match information is incomplete.<br>Please update these details then click Submit to submit the match to HearthStats:";
+                                   } else {
+                                       _submitMatchResult(match);
+                                   }
+                                   break;
+                               case CANCEL:
+                                   return;
+                           }
+
+                       } while (matchHasValidationErrors);
+                    } catch (IOException e) {
+                       Main.showErrorDialog("Error submitting match result", e);
+                    }
+                }
+            });
+
+        } else {
+            // Don't show a popup, submit the match directly
+            try {
+                _submitMatchResult(match);
+            } catch (IOException e) {
+                Main.showErrorDialog("Error submitting match result", e);
+            }
+        }
 	}
+
 
 	private void handleAnalyserEvent(AnalyserEvent changed) throws IOException {
 		switch(changed) {
@@ -1141,7 +1199,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_setCurrentMatchEnabledi(false);
 				_notify(_analyzer.getResult() + " Detected");
                 Log.info(_analyzer.getResult() + " Detected");
-				_submitMatchResult();
+				checkMatchResult(_analyzer.getMatch());
 				break;
 
 			case SCREEN:
@@ -1152,7 +1210,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 						_playingInMatch = false;
 						_notify("Detection Error", "Match result was not detected.");
                         Log.info("Detection Error: Match result was not detected.");
-						_promptForResult();
+						checkMatchResult(_analyzer.getMatch());
 					}
 					_playingInMatch = false;
 				} 
@@ -1348,6 +1406,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 	
 	private void _saveOptions() {
+        debugLog.debug("Saving options...");
+
 		Config.setUserKey(_userKeyField.getText());
 		Config.setCheckForUpdates(_checkUpdatesField.isSelected());
 		Config.setShowNotifications(_notificationsEnabledField.isSelected());
@@ -1357,6 +1417,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		Config.setShowModeNotification(_showModeNotificationField.isSelected());
 		Config.setShowDeckNotification(_showDeckNotificationField.isSelected());
 		Config.setShowYourTurnNotification(_showYourTurnNotificationField.isSelected());
+        Config.setShowMatchPopup(Config.MatchPopup.values()[showMatchPopupField.getSelectedIndex()]);
 		Config.setAnalyticsEnabled(_analyticsField.isSelected());
 		Config.setMinToTray(_minToTrayField.isSelected());
 		Config.setStartMinimized(_startMinimizedField.isSelected());
@@ -1369,6 +1430,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 
         try {
             Config.save();
+            debugLog.debug("...save complete");
             JOptionPane.showMessageDialog(this, "Options Saved");
         } catch (Throwable e) {
             Log.warn("Error occurred trying to write settings file, your settings may not be saved", e);

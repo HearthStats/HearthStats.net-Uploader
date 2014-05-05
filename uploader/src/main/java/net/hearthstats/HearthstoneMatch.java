@@ -1,6 +1,7 @@
 package net.hearthstats;
 
 import net.hearthstats.util.Rank;
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 
 public class HearthstoneMatch {
@@ -158,6 +159,39 @@ public class HearthstoneMatch {
 		
 		return obj;
 	}
+
+    /**
+     * Determines if the data for this match is complete.
+     *
+     * @return true if there is enough data to submit the match, false if some data is missing
+     */
+    public boolean isDataComplete() {
+        if (getMode() == null) {
+            return false;
+        } else if (getResult() == null) {
+            return false;
+        } else if (getUserClass() == null) {
+            return false;
+        } else if (getOpponentClass() == null) {
+            return false;
+        } else if (StringUtils.isBlank(getOpponentName())) {
+            return false;
+        }
+
+        if (getMode().equals("Ranked")) {
+            if (getRankLevel() == null) {
+                return false;
+            } else if (getDeckSlot() < 1 || getDeckSlot() > 9) {
+                return false;
+            }
+        } else if (getMode().equals("Casual")) {
+            if (getDeckSlot() < 1 || getDeckSlot() > 9) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
 	public String getNotes() {
 		return _notes;
