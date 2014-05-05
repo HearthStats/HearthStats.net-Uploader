@@ -18,7 +18,7 @@ package net.sourceforge.vietocr;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
-import net.sf.ghost4j.*;
+import org.ghost4j.*;
 
 public class PdfUtilities {
 

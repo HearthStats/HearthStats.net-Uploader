@@ -1,7 +1,6 @@
 package net.hearthstats;
 
-import com.boxysystems.jgoogleanalytics.FocusPoint;
-import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
+
 import net.hearthstats.analysis.AnalyserEvent;
 import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
@@ -14,14 +13,18 @@ import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.ui.MatchEndPopup;
 import net.hearthstats.util.Rank;
 import net.miginfocom.swing.MigLayout;
+
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkListener;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -150,8 +153,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     public void start() throws IOException {
 		if (Config.analyticsEnabled()) {
             debugLog.debug("Enabling analytics");
-			_analytics = new JGoogleAnalyticsTracker("HearthStats.net " + t("Uploader"), Config.getVersionWithOs(), "UA-45442103-3");
-			_analytics.trackAsynchronously(new FocusPoint("AppStart"));
+			_analytics = AnalyticsTracker.tracker();
+			_analytics.trackEvent("app","AppStart");
 		}
 		addWindowListener(this);
 		
@@ -951,7 +954,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         Log.matchResult(header + ": " + message);
 
 		if(Config.analyticsEnabled()) {
-			_analytics.trackAsynchronously(new FocusPoint("Submit" + hsMatch.getMode() + "Match"));
+			_analytics.trackEvent("app", "Submit" + hsMatch.getMode() + "Match");
 		}
 		
 		_api.createMatch(hsMatch);

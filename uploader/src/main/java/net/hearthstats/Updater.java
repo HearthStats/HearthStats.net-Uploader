@@ -1,11 +1,14 @@
 package net.hearthstats;
 
-import com.boxysystems.jgoogleanalytics.FocusPoint;
-import com.boxysystems.jgoogleanalytics.JGoogleAnalyticsTracker;
 import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.notification.NotificationQueue;
 
 import javax.swing.*;
+
+import com.dmurph.tracking.AnalyticsConfigData;
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
+
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -39,8 +42,9 @@ public class Updater {
 	public static void main(String[] args) {
 
 		if (Config.analyticsEnabled()) {
-			_analytics = new JGoogleAnalyticsTracker("HearthStats.net Uploader", Config.getVersionWithOs(), "UA-45442103-3");
-			_analytics.trackAsynchronously(new FocusPoint("UpdateStart"));
+			_analytics = AnalyticsTracker.tracker();
+//			,"HearthStats.net Uploader", Config.getVersionWithOs(), "UA-45442103-3");
+			_analytics.trackEvent("update","UpdateStart");
 		}
 
 		_saveSettings();
