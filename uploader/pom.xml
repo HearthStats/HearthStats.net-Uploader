@@ -170,6 +170,24 @@
 					</execution>
 				</executions>
 			</plugin>
+			 <plugin>
+			 <!--  Note that this will required a JDK to run -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>osxappbundle-maven-plugin</artifactId>
+                <version>1.0-alpha-1</version>
+                <configuration>
+                    <mainClass>${main.class}</mainClass>
+                    <javaApplicationStub>${basedir}/src/main/app-resources/JavaApplicationStub</javaApplicationStub>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
+                    </execution>
+               </executions>
+           </plugin>
 			<plugin>
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
 				<artifactId>launch4j-maven-plugin</artifactId>
