@@ -86,6 +86,7 @@
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
 			<version>1.1.1</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -144,6 +145,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
 				<configuration>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
@@ -170,6 +172,41 @@
 					</execution>
 				</executions>
 			</plugin>
+			 <plugin>
+                <groupId>com.github.wvengen</groupId>
+                <artifactId>proguard-maven-plugin</artifactId>
+                <version>2.0.6</version>
+                <executions>
+                   <execution>
+                       <phase>package</phase>
+                       <goals><goal>proguard</goal></goals>
+                   </execution>
+                </executions>
+                <configuration>
+                 	<proguardVersion>4.9</proguardVersion>
+                	<obfuscate>false</obfuscate>
+                    <injar>${project.build.finalName}.jar</injar>
+                    <outjar>${project.build.finalName}.jar</outjar>
+                    <includeDependency>false</includeDependency>
+                    <options>
+                        <option>-allowaccessmodification</option>
+                        <option>-dontwarn</option>
+                        <option>-keep public class net.hearthstats.Main { *; }</option>
+                        <option>-keep public class net.hearthstats.Updater { *; }</option>
+                    </options>
+                    <libs>
+                        <lib>${java.home}/lib/rt.jar</lib>
+                    </libs>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sf.proguard</groupId>
+                        <artifactId>proguard-base</artifactId>
+	                        <version>4.9</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+            </plugin>
 			 <plugin>
 			 <!--  Note that this will required a JDK to run -->
                 <groupId>org.codehaus.mojo</groupId>
