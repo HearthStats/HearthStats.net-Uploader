@@ -7,12 +7,15 @@
 	<artifactId>uploader</artifactId>
 	<version>0.16.1</version>
 
-
 	<packaging>jar</packaging>
 	<name>Hearthstats Uploader</name>
 	<url>http://hearthstats.net/uploader</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.longVersion>${project.version}.0</project.longVersion>
+		<java.version>1.7</java.version>
+		<main.class>net.hearthstats.Main</main.class>
+		<product.name>HearthStats.net Uploader</product.name>
 	</properties>
 
 	<dependencies>
@@ -110,6 +113,16 @@
 		</dependency>
 	</dependencies>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>1.7.6</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<repositories>
 		<repository>
 			<id>org.ghost4j.repository.releases</id>
@@ -132,8 +145,8 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -150,7 +163,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>net.hearthstats.Main</mainClass>
+									<mainClass>${main.class}</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
@@ -160,6 +173,7 @@
 			<plugin>
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
 				<artifactId>launch4j-maven-plugin</artifactId>
+				<version>1.5.2</version>
 				<executions>
 					<execution>
 						<id>l4j-clui</id>
@@ -170,22 +184,21 @@
 						<configuration>
 							<headerType>gui</headerType>
 							<outfile>target/HearthStats.exe</outfile>
-							<!-- <errTitle>encc</errTitle> -->
 							<classPath>
-								<mainClass>net.hearthstats.Main</mainClass>
+								<mainClass>${main.class}</mainClass>
 								<addDependencies>true</addDependencies>
 								<preCp>anything</preCp>
 							</classPath>
 							<jre>
-								<minVersion>1.7.0</minVersion>
+								<minVersion>${java.version}.0</minVersion>
 							</jre>
 							<versionInfo>
-								<fileVersion>0.16.1.0</fileVersion>
-								<txtFileVersion>0.16.1</txtFileVersion>
-    							<fileDescription>HearthStats.net Uploader</fileDescription>
-								<productVersion>0.16.1.0</productVersion>
-								<txtProductVersion>0.16.1</txtProductVersion>
-								<productName>HearthStats.net Uploader</productName>
+								<fileVersion>${project.longVersion}</fileVersion>
+								<txtFileVersion>${project.version}</txtFileVersion>
+								<fileDescription>${product.name}</fileDescription>
+								<productVersion>${project.longVersion}</productVersion>
+								<txtProductVersion>${project.version}</txtProductVersion>
+								<productName>${product.name}</productName>
 								<copyright>See https://github.com/HearthStats/HearthStats.net-Uploader for license</copyright>
 								<internalName>HearthStats</internalName>
 								<originalFilename>HearthStats.exe</originalFilename>
@@ -197,13 +210,5 @@
 		</plugins>
 	</build>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>1.7.6</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+
 </project>
