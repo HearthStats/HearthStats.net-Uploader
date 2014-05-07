@@ -62,6 +62,8 @@ public class HearthstoneAnalyser extends Observable {
     private int iterationsSinceFindingOpponent = 0;
     private int iterationsSinceClassCheckingStarted = 0;
     private int iterationsSinceScreenMatched = 0;
+    private int iterationsSinceYourTurn = 0;
+    private int iterationsSinceOpponentTurn = 0;
 
 
     public HearthstoneAnalyser() {
@@ -228,11 +230,14 @@ public class HearthstoneAnalyser extends Observable {
                     arenaRunEndDetected = false;
                     isYourTurn = false;
                     iterationsSinceClassCheckingStarted = 0;
+                    iterationsSinceYourTurn = 0;
+                    iterationsSinceOpponentTurn = 0;
                     break;
 
                 case MATCH_PLAYING:
                     startTimer();
-                    if (match.getOpponentClass() == null || match.getUserClass() == null) {
+                    if ((previousScreen != null && previousScreen.group == ScreenGroup.MATCH_START) && (match.getOpponentClass() == null || match.getUserClass() == null)) {
+                        // Failed to detect classes, so ask the user to submit screenshots of the problem
                         Log.warn(t("warning.classdetection", Main.getExtractionFolder()));
                     }
                     break;
@@ -357,13 +362,27 @@ public class HearthstoneAnalyser extends Observable {
             // Last time we checked it was your turn, check whether it's now the opponent's turn
             debugLog.debug("Testing for opponent turn");
             if (imageShowsOpponentTurn(image)) {
-                setYourTurn(false);
+                iterationsSinceYourTurn++;
+                // Skip two iterations before actually switching, to reduce false detection as a card flies over the turn button
+                if (iterationsSinceYourTurn > 2) {
+                    setYourTurn(false);
+                    iterationsSinceYourTurn = 0;
+                }
+            } else {
+                iterationsSinceYourTurn = 0;
             }
         } else {
             // Last time we checked it was the opponent's turn, check whether it's now your turn
             debugLog.debug("Testing for your turn");
             if (imageShowsYourTurn(image)) {
-                setYourTurn(true);
+                iterationsSinceOpponentTurn++;
+                // Skip two iterations before actually switching, to reduce false detection as a card flies over the turn button
+                if (iterationsSinceOpponentTurn > 2) {
+                    setYourTurn(true);
+                    iterationsSinceOpponentTurn = 0;
+                }
+            } else {
+                iterationsSinceOpponentTurn = 0;
             }
         }
     }
