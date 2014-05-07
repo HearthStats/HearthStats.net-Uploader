@@ -20,7 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
+import java.text.MessageFormat;
 import java.util.Observable;
+import java.util.ResourceBundle;
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
@@ -31,6 +33,8 @@ import java.util.Observable;
 public class HearthstoneAnalyser extends Observable {
 
     private final static Logger debugLog = LoggerFactory.getLogger(HearthstoneAnalyser.class);
+
+    private final ResourceBundle bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
 
     private final ScreenAnalyser screenAnalyser;
     private final IndividualPixelAnalyser individualPixelAnalyser;
@@ -228,6 +232,9 @@ public class HearthstoneAnalyser extends Observable {
 
                 case MATCH_PLAYING:
                     startTimer();
+                    if (match.getOpponentClass() == null || match.getUserClass() == null) {
+                        Log.warn(t("warning.classdetection", Main.getExtractionFolder()));
+                    }
                     break;
 
                 case MATCH_END:
@@ -814,6 +821,11 @@ public class HearthstoneAnalyser extends Observable {
     private void notifyObserversOfChangeTo(AnalyserEvent property) {
         setChanged();
         notifyObservers(property);
+    }
+
+    private String t(String key, String value0) {
+        String message = bundle.getString(key);
+        return MessageFormat.format(message, value0);
     }
 
 
