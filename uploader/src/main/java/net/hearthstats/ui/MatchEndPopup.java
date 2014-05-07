@@ -55,8 +55,6 @@ public class MatchEndPopup extends JPanel {
     private JRadioButton resultDefeat;
     private JRadioButton resultDraw;
 
-    private JButton swingButton;
-
 
     public MatchEndPopup(HearthstoneMatch match, String infoMessage) {
         this.match = match;
@@ -73,10 +71,10 @@ public class MatchEndPopup extends JPanel {
 
 
 
-    public static Button showPopup(Component parentComponent, HearthstoneMatch match, String infoMessage) {
+    public static Button showPopup(Component parentComponent, HearthstoneMatch match, String infoMessage, String title) {
         MatchEndPopup popup = new MatchEndPopup(match, infoMessage);
 
-        int value = JOptionPane.showOptionDialog(parentComponent, popup, "Submit Match Result to HearthStats",
+        int value = JOptionPane.showOptionDialog(parentComponent, popup, title,
                 JOptionPane.INFORMATION_MESSAGE, JOptionPane.YES_NO_OPTION, null,
                 new String[] { "Submit", "Cancel" }, "Submit");
 
@@ -102,19 +100,19 @@ public class MatchEndPopup extends JPanel {
         List<String> result = new ArrayList<>();
 
         if (match.getRankLevel() == null && "Ranked".equals(match.getMode())) {
-            result.add("Your rank not detected");
+            result.add(t("match.popup.error.rank"));
         }
         if (match.getUserClass() == null) {
-            result.add("Your class not detected");
+            result.add(t("match.popup.error.yourclass"));
         }
         if (StringUtils.isBlank(match.getOpponentName())) {
-            result.add("Opponent name not detected");
+            result.add(t("match.popup.error.opponentname"));
         }
         if (match.getOpponentClass() == null) {
-            result.add("Opponent class not detected");
+            result.add(t("match.popup.error.opponentclass"));
         }
         if (match.getResult() == null) {
-            result.add("Result not detected");
+            result.add(t("match.popup.error.result"));
         }
 
         return result;
@@ -134,7 +132,7 @@ public class MatchEndPopup extends JPanel {
 
         //// Row 1 ////
 
-        JLabel heading = new JLabel(match.getMode() == null ? "Match Result" : match.getMode() + " Match Result");
+        JLabel heading = new JLabel(match.getMode() == null ? t("match.popup.heading") : match.getMode() + " " + t("match.popup.heading"));
         Font headingFont = heading.getFont().deriveFont(20f);
         heading.setFont(headingFont);
         add(heading, "span");

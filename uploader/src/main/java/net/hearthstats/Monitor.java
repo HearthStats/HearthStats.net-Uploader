@@ -1099,11 +1099,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
                        do {
                            if (infoMessage == null) {
                                infoMessage = (matchPopup == Config.MatchPopup.INCOMPLETE)
-                                       ? "Some match information couldn't be detected.<br>Please update these details then click Submit to submit the match to HearthStats:"
-                                       : "The end of the match has been detected.<br>Please check these details then submit the match to HearthStats:";
+                                       ? t("match.popup.message.incomplete")
+                                       : t("match.popup.message.always");
                            }
                            bringWindowToFront();
-                           MatchEndPopup.Button buttonPressed = MatchEndPopup.showPopup(monitor, match, infoMessage);
+                           MatchEndPopup.Button buttonPressed = MatchEndPopup.showPopup(monitor, match, infoMessage, t("match.popup.title"));
                            matchHasValidationErrors = !match.isDataComplete();
                            switch (buttonPressed) {
                                case SUBMIT:
