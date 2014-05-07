@@ -1,11 +1,5 @@
-v0.16.1
-* Now detects ranks 1-9 correctly
-* More reliable detection of your class at the start of a match
-* Now displays an error popup if something goes wrong during startup
-
-v0.16.0
-Major overhaul of the detection algorithms!
-* Much more reliable detection of screens means the dreaded [undetected] match result is now pretty unlikely
-* Faster detection of victory & defeat means HearthStats.net Uploader should still catch the result even when you immediately dismiss your crushing defeat
-* Rank detection is more reliable and should detect higher ranks without trouble (not legendary yet, though?)
-* A small increase in the speed of detection
+v0.17
+* New match result popup lets you fix any detection errors before submitting your match
+* More robust turn detection shouldn't be tricked by cards flying over the turn button
+* More forgiving match end detection makes it less likely detection will get stuck
+* Russian translation, thanks to jcrka!
