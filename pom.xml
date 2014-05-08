@@ -122,6 +122,7 @@
 			<artifactId>junit</artifactId>
 			<groupId>junit</groupId>
 			<version>4.10</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -173,6 +174,11 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
+							<artifactSet>
+								<excludes>
+									<exclude>*:*:*:test</exclude>
+								</excludes>
+							</artifactSet>
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
