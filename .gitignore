@@ -1,18 +1,15 @@
-/.classpath
-/.idea
-/.project
-/.settings
-/bin
+temp/
+tmp/
+target/
+.settings/
 
-/log.txt
+.classpath
+.idea
+.project
+config.ini
+log.txt
+dependency-reduced-pom.xml
+HearthStats.exe
 
-/build
-/temp
-/tmp
-/out
-/opponentname.jpg
-/log.txt
-.settings/org.eclipse.core.resources.prefs
-/config.ini
-/HearthStatsUploader.jar
-/*.iml
+*~
+*.iml
