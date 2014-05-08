@@ -272,7 +272,7 @@ public class ProgramHelperOsx extends ProgramHelper {
 
         if (!_warningWindowSize) {
             // This is an unknown window size and we haven't logged a warning yet
-            System.err.println("Encountered unknown window size " + width + "x" + height + " - may not be able to correctly determine whether this window is full-screen.");
+            debugLog.debug("Encountered unknown window size {}x{} - may not be able to correctly determine whether this window is full-screen.", width, height);
             _warningWindowSize = true;
         }
 
