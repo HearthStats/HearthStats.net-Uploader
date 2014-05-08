@@ -1,13 +1,12 @@
 package net.hearthstats;
 
+import net.hearthstats.Config.OS;
 import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.notification.NotificationQueue;
 
 import javax.swing.*;
 
-import com.dmurph.tracking.AnalyticsConfigData;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
-import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 
 import java.awt.*;
 import java.io.*;
@@ -25,26 +24,30 @@ import java.util.zip.ZipInputStream;
 
 public final class Updater {
 	private Updater() {} // never instanciated
+	
+	private static String RAW_GITHUB_URL = "https://raw.github.com/";
+	private static String GITHUB_URL = "https://github.com/";
+	private static String PROJECT="HearthStats/HearthStats.net-Uploader";
+	private static String SRC_URL = RAW_GITHUB_URL + PROJECT + "/master/src/";
+	private static String RELEASE_URL = GITHUB_URL + PROJECT+ "/releases/download/v";
+	public static final String DOWNLOAD_URL = "http://hearthstats.net/uploader";
 
     private static final Set<String> FILES_TO_SKIP = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
         "instructions-osx.txt"
     )));
-    public static final String DOWNLOAD_URL = "http://hearthstats.net/uploader";
 
     private static String _availableVersion;
 	private static String _recentChanges;
 	private static String _savedUserKey;
+	
+	private static String hearthstatsLocation;
 
 	private static JGoogleAnalyticsTracker _analytics;
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
+	private static void doUpdate() {
 
 		if (Config.analyticsEnabled()) {
 			_analytics = AnalyticsTracker.tracker();
-//			,"HearthStats.net Uploader", Config.getVersionWithOs(), "UA-45442103-3");
 			_analytics.trackEvent("update","UpdateStart");
 		}
 
@@ -82,74 +85,36 @@ public final class Updater {
 	}
 
 	public static void run() {
-
 		System.out.println("trying to run updater");
-
 		_notify("Performing Update", "Extracting and running updater ...");
-
-        String errorMessage = null;
-
-        if (Config.os == Config.OS.WINDOWS) {
-
-            File updaterFile = new File("updater.jar");
-            Main.copyFileFromJarTo("/" + updaterFile.getPath(), updaterFile.getPath());
-            if (updaterFile.exists()) {
-                System.out.println("found updater.jar");
-                try {
-                    Runtime.getRuntime().exec("java -jar " + updaterFile.getPath());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    _notifyException(e);
-                }
-            } else {
-                errorMessage = "Unable to locate " + updaterFile.getPath();
-            }
-
-        } else if (Config.os == Config.OS.OSX) {
-
-            File updaterFile = new File(Main.getExtractionFolder() + "/updater.jar");
-            Main.copyFileFromJarTo("/updater.jar", updaterFile.getPath());
-
-            if (updaterFile.exists()) {
-                System.out.println("found updater.jar");
-
-                // The Java library path is /<folder>/HearthStats.app/Contents/MacOS
-                File javaLibraryPath = new File(Config.getJavaLibraryPath());
-                // The bundle path is the folder where the bundle is stored, ie /<folder> (not including the HearthStats.app folder)
-                File bundlePath = javaLibraryPath.getParentFile().getParentFile().getParentFile();
-
-                String javaHome = System.getProperty("java.home");
-                String[] command = new String[] {
-                        javaHome + "/bin/java",
-                        "-Dhearthstats.location=" + bundlePath.getAbsolutePath(),
-                        "-jar",
-                        updaterFile.getPath()
-                };
-
-                try {
-                    Runtime.getRuntime().exec(command);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    _notifyException(e);
-                }
-            } else {
-                errorMessage = "Unable to locate " + updaterFile.getPath();
-            }
-
-        }
-
-        if (errorMessage != null) {
-            Main.showMessageDialog(null, errorMessage + "\n\nYou will now be taken to the download page.");
-            try {
-                Desktop.getDesktop().browse(new URI(DOWNLOAD_URL));
-            } catch (Exception e) {
-                Main.showErrorDialog("Error launching browser with URL " + DOWNLOAD_URL, e);
-            }
-            _notify("Updater Error", errorMessage);
-        }
-
-        System.exit(0);
-    }
+		try {
+			if (Config.os == Config.OS.WINDOWS) {
+				doUpdate();
+			} else if (Config.os == Config.OS.OSX) {
+				// The Java library path is
+				// /<folder>/HearthStats.app/Contents/MacOS
+				File javaLibraryPath = new File(Config.getJavaLibraryPath());
+				// The bundle path is the folder where the bundle is stored, ie
+				// /<folder> (not including the HearthStats.app folder)
+				File bundlePath = javaLibraryPath.getParentFile()
+						.getParentFile().getParentFile();
+				hearthstatsLocation=bundlePath.getAbsolutePath();
+				Updater.doUpdate();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			_notifyException(e);
+			Main.showMessageDialog(null, e.getMessage()
+					+ "\n\nYou will now be taken to the download page.");
+			try {
+				Desktop.getDesktop().browse(new URI(DOWNLOAD_URL));
+			} catch (Exception e1) {
+				Main.showErrorDialog("Error launching browser with URL "
+						+ DOWNLOAD_URL, e1);
+			}
+		}
+		System.exit(0);
+	}
 
 
 	public static void _saveSettings() {
@@ -158,9 +123,9 @@ public final class Updater {
 	private static void _restoreSettings() {
 		Config.rebuild();
 		Config.setUserKey(_savedUserKey);
-
 	}
-	public static void _extractZip() {
+
+	private static void _extractZip() {
 
         File updateZip = new File(Main.getExtractionFolder() + "/update.zip");
 
@@ -170,7 +135,6 @@ public final class Updater {
                     _unZipIt(updateZip.getPath(), "./");
                     break;
                 case OSX:
-                    String hearthstatsLocation = System.getProperty("hearthstats.location");
                     _unZipIt(updateZip.getPath(), hearthstatsLocation);
                     break;
             }
@@ -245,12 +209,11 @@ public final class Updater {
 		JOptionPane.showMessageDialog(null, "Update complete. Attempting to restart ...");
 		_notify("Restarting ...");
 		try {
-			switch(Config.os.toString()) {
-				case "WINDOWS":
+			switch(Config.os) {
+				case WINDOWS:
 					Runtime.getRuntime().exec("HearthStats.exe");
 					break;
-				case "OSX":
-                    String hearthstatsLocation = System.getProperty("hearthstats.location");
+				case OSX:
                     Desktop.getDesktop().open(new File(hearthstatsLocation + "/HearthStats.app"));
 					break;
 			}
@@ -263,12 +226,12 @@ public final class Updater {
 	private static void _downloadUpdate() throws IOException {
 		URL website;
 		String zipUrl = null;
-		switch(Config.os.toString()) {
-			case "WINDOWS":
-				 zipUrl = "https://github.com/HearthStats/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "/HearthStats.net.Uploader.v" + getAvailableVersion() + ".zip";
+		switch(Config.os) {
+			case WINDOWS:
+				 zipUrl = RELEASE_URL + getAvailableVersion() + "/HearthStats.net.Uploader.v" + getAvailableVersion() + ".zip";
 				 break;
-			case "OSX":
-				zipUrl = "https://github.com/HearthStats/HearthStats.net-Uploader/releases/download/v" + getAvailableVersion() + "-osx/HearthStats.net.Uploader.v" + getAvailableVersion() + "-osx.zip";
+			case OSX:
+				zipUrl = RELEASE_URL + getAvailableVersion() + "-osx/HearthStats.net.Uploader.v" + getAvailableVersion() + "-osx.zip";
 				break;
 		}
 		website = new URL(zipUrl);
@@ -297,17 +260,18 @@ public final class Updater {
 
 	public static String getAvailableVersion() {
 		if (_availableVersion == null) {
-			String url = "https://raw.github.com/HearthStats/HearthStats.net-Uploader/master/src/version";
+			String url = SRC_URL + "version";
 			if(Config.os.toString().equals("OSX"))
 				url += "-osx";
 			_availableVersion = _readRemoteFile(url);
 		}
 		return _availableVersion;
 	}
+	
 	public static String getRecentChanges() {
 		if (_recentChanges == null) {
-			String url = "https://raw.github.com/HearthStats/HearthStats.net-Uploader/master/src/recentchanges";
-			if(Config.os.toString().equals("OSX"))
+			String url = SRC_URL + "recentchanges";
+			if(Config.os == OS.OSX)
 				url += "-osx";
 			_recentChanges = _readRemoteFile(url);
 		}
@@ -322,7 +286,6 @@ public final class Updater {
 			JOptionPane.showMessageDialog(null, "Exception in Updater: " + e.toString());
 		}
 		BufferedReader reader = null;
-		String availableVersion = null;
 		String returnStr = null;
 		try {
 			reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));

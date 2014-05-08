@@ -9,6 +9,7 @@ target/
 config.ini
 log.txt
 dependency-reduced-pom.xml
+HearthStats.exe
 
 *~
 *.iml
