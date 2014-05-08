@@ -86,6 +86,12 @@
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
 			<version>1.1.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>junit</artifactId>
+					<groupId>junit</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -110,6 +116,12 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.1.1</version>
+		</dependency>
+
+		<dependency>
+			<artifactId>junit</artifactId>
+			<groupId>junit</groupId>
+			<version>4.10</version>
 		</dependency>
 	</dependencies>
 
@@ -144,6 +156,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
 				<configuration>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
@@ -170,24 +183,58 @@
 					</execution>
 				</executions>
 			</plugin>
-			 <plugin>
-			 <!--  Note that this will required a JDK to run -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>osxappbundle-maven-plugin</artifactId>
-                <version>1.0-alpha-1</version>
-                <configuration>
-                    <mainClass>${main.class}</mainClass>
-                    <javaApplicationStub>${basedir}/src/main/app-resources/JavaApplicationStub</javaApplicationStub>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>bundle</goal>
-                        </goals>
-                    </execution>
-               </executions>
-           </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>pkgmacos</id>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<!-- OS X app bundler -->
+								<taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask">
+									<classpath>
+										<pathelement location="src/main/app-resources/mac/appbundler-1.0.jar" />
+									</classpath>
+								</taskdef>
+								<bundleapp outputdirectory="target" name="HearthStats"
+									displayname="HearthStats.net Uploader" identifier="net.hearthstats.HearthStatsUploader"
+									shortversion="${project.version}" applicationCategory="public.app-category.games"
+									icon="src/main/resources/images/icon.icns" mainclassname="net/hearthstats/Main">
+									<classpath
+										file="target/${project.artifactId}-${project.version}.jar" />
+									<librarypath dir="src/main/app-resources/mac/"
+										includes="*.dylib" />
+									<option value="-Dapple.laf.useScreenMenuBar=true" />
+									<option value="-Djna.library.path=$APP_ROOT/Contents/MacOS" />
+									<option
+										value="-DLOG_FILE=Library/Application Support/HearthStatsUploader/log.txt" />
+									<option value="-Xdock:icon=Contents/Resources/${bundle.icon}" />
+									<option value="-Xms96m" />
+									<option value="-Xmx192m" />
+								</bundleapp>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>commons-net</groupId>
+						<artifactId>commons-net</artifactId>
+						<version>1.4.1</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.ant</groupId>
+						<artifactId>ant-commons-net</artifactId>
+						<version>1.8.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
 			<plugin>
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
 				<artifactId>launch4j-maven-plugin</artifactId>

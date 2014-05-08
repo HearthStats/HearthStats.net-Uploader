@@ -1,18 +1,15 @@
-/.classpath
-/.idea
-/.project
-/.settings
-/bin
+.classpath
+.idea
+.project
 
-/log.txt
+log.txt
 
-/build
-/temp
-/tmp
-/out
-/opponentname.jpg
-/log.txt
-.settings/org.eclipse.core.resources.prefs
-/config.ini
-/HearthStatsUploader.jar
-/*.iml
+temp
+tmp
+.settings/
+config.ini
+*.iml
+
+
+*~
+/target
