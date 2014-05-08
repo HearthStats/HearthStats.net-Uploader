@@ -3,6 +3,7 @@ package net.hearthstats.analysis;
 import net.hearthstats.state.Pixel;
 import net.hearthstats.state.PixelLocation;
 import net.hearthstats.state.Screen;
+import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.util.Coordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,8 +140,16 @@ public class ScreenAnalyser {
                 log.debug("Partial match failed because best match {} has {} unmatched pixels",  bestMatch, bestMatchResult.unmatchedCount );
                 acceptBestMatch = false;
             } else {
+                // Check whether other screens are too close to the best-matched screen, but ignore any screens considered to be equivalent (ie the playing screen for each board is considered equivalent)
+                ScreenGroup ignoreGroup;
+                if (bestMatch.group == ScreenGroup.MATCH_PLAYING || bestMatch.group == ScreenGroup.MATCH_END) {
+                    ignoreGroup = bestMatch.group;
+                } else {
+                    ignoreGroup = null;
+                }
                 for (Screen screen : possibleScreens) {
-                    if (screen != bestMatch) {
+                    if (screen != bestMatch && (ignoreGroup == null || screen.group != ignoreGroup)) {
+                        // This screen is not the best match, and it's not from the same group (for those groups considered equivalent) so we need to ensure it's not too close to the best match
                         PartialResult currentResult = screenMatchesMap.get(screen);
                         if (bestMatchResult.matchedCount <= currentResult.matchedCount) {
                             log.debug("Partial match failed because best match {} has {} matched pixels whereas {} has {}",

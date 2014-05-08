@@ -408,11 +408,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	    contribtorsText.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
 				"<p><strong>Contributors</strong> (listed alphabetically):</p>" +
 				"<p>" +
+                    "&bull; <a href=\"https://github.com/gtch\">Charles Gutjahr</a> - OS X version and new screen detection<br>" +
+                    "&bull; <a href=\"https://github.com/jcrka\">jcrka</a> - Russian translation<br>" +
                     "&bull; <a href=\"https://github.com/JeromeDane\">Jerome Dane</a> - Original developer<br>" +
-                    "&bull; <a href=\"https://github.com/gtch\">Charles Gutjahr</a> - Added OS X support and new screen detection<br>" +
 					"&bull; <a href=\"https://github.com/sargonas\">J Eckert</a> - Fixed notifications spawning taskbar icons<br>" +
 					"&bull; <a href=\"https://github.com/nwalsh1995\">nwalsh1995</a> - Started turn detection development<br>" +
-					"&bull; <a href=\"https://github.com/remcoros\">Remco Ros</a> (<a href=\"http://hearthstonetracker.com/\">HearthstoneTracker</a>) - Provides advice & suggestins<br>" +
+					"&bull; <a href=\"https://github.com/remcoros\">Remco Ros</a> (<a href=\"http://hearthstonetracker.com/\">HearthstoneTracker</a>) - Provides advice &amp; suggestins<br>" +
 					"&bull; <a href=\"https://github.com/RoiyS\">RoiyS</a> - Added option to disable all notifications<br>" +
 				"</p>"+
 				"</body></html>"
@@ -1101,11 +1102,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
                        do {
                            if (infoMessage == null) {
                                infoMessage = (matchPopup == Config.MatchPopup.INCOMPLETE)
-                                       ? "Some match information couldn't be detected.<br>Please update these details then click Submit to submit the match to HearthStats:"
-                                       : "The end of the match has been detected.<br>Please check these details then submit the match to HearthStats:";
+                                       ? t("match.popup.message.incomplete")
+                                       : t("match.popup.message.always");
                            }
                            bringWindowToFront();
-                           MatchEndPopup.Button buttonPressed = MatchEndPopup.showPopup(monitor, match, infoMessage);
+                           MatchEndPopup.Button buttonPressed = MatchEndPopup.showPopup(monitor, match, infoMessage, t("match.popup.title"));
                            matchHasValidationErrors = !match.isDataComplete();
                            switch (buttonPressed) {
                                case SUBMIT:
