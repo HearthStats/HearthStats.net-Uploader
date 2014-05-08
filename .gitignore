@@ -1,15 +1,14 @@
+temp/
+tmp/
+target/
+.settings/
+
 .classpath
 .idea
 .project
-
-log.txt
-
-temp
-tmp
-.settings/
 config.ini
-*.iml
-
+log.txt
+dependency-reduced-pom.xml
 
 *~
-/target
+*.iml
