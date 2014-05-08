@@ -13,8 +13,8 @@ import java.io.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-@SuppressWarnings("serial")
-public class Main extends JFrame {
+public final class Main {
+	private Main() {} // never instanciated
 
     private static Logger debugLog = LoggerFactory.getLogger(Main.class);
 
