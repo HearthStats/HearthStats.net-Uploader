@@ -20,7 +20,8 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class Updater {
+public final class Updater {
+	private Updater() {} // never instanciated
 
     private static final Set<String> FILES_TO_SKIP = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
         "instructions-osx.txt"
