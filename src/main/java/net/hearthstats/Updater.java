@@ -24,13 +24,6 @@ import java.util.zip.ZipInputStream;
 
 public final class Updater {
 	private Updater() {} // never instanciated
-	
-	private static String RAW_GITHUB_URL = "https://raw.github.com/";
-	private static String GITHUB_URL = "https://github.com/";
-	private static String PROJECT="HearthStats/HearthStats.net-Uploader";
-	private static String SRC_URL = RAW_GITHUB_URL + PROJECT + "/master/src/";
-	private static String RELEASE_URL = GITHUB_URL + PROJECT+ "/releases/download/v";
-	public static final String DOWNLOAD_URL = "http://hearthstats.net/uploader";
 
     private static final Set<String> FILES_TO_SKIP = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
         "instructions-osx.txt"
