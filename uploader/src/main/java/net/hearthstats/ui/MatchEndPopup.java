@@ -5,6 +5,7 @@ import net.hearthstats.HearthstoneMatch;
 import net.hearthstats.Monitor;
 import net.hearthstats.util.Rank;
 import net.miginfocom.swing.MigLayout;
+
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,6 +47,7 @@ public class MatchEndPopup extends JPanel {
     private List<String> errorMessages;
 
     private JComboBox rankComboBox;
+    private JComboBox gameModeComboBox;
     private JTextField opponentNameField;
     private JComboBox opponentClassComboBox;
     private JComboBox yourClassComboBox;
@@ -54,9 +57,13 @@ public class MatchEndPopup extends JPanel {
     private JRadioButton resultVictory;
     private JRadioButton resultDefeat;
     private JRadioButton resultDraw;
+    private JPanel rankPanel=new JPanel();
+    private JPanel deckPanel=new JPanel();
+	private JLabel rankNotApplicable;
+	private JLabel deckNotApplicable;
 
 
-    public MatchEndPopup(HearthstoneMatch match, String infoMessage) {
+    private MatchEndPopup(HearthstoneMatch match, String infoMessage) {
         this.match = match;
         this.infoMessage = infoMessage;
         this.errorMessages = determineErrors(match);
@@ -99,6 +106,9 @@ public class MatchEndPopup extends JPanel {
     private List<String> determineErrors(HearthstoneMatch match) {
         List<String> result = new ArrayList<>();
 
+        if (match.getMode() == null) {
+            result.add(t("match.popup.error.mode"));
+        }
         if (match.getRankLevel() == null && "Ranked".equals(match.getMode())) {
             result.add(t("match.popup.error.rank"));
         }
@@ -166,49 +176,57 @@ public class MatchEndPopup extends JPanel {
             add(errorLabel, "span, gapy 5px 10px");
         }
 
+        //// Row 3 bis - game mode ////
+        
+        //TODO : localize and use constants
+        String[] gameModes = new String[] {undetectedLabel(), "Arena" , "Casual", "Practice", "Ranked"};
 
+        add(new JLabel(t("match.label.game_mode")), "right");
+
+        gameModeComboBox = new JComboBox<>(gameModes);
+        setDefaultSize(gameModeComboBox);
+        if (match.getMode() != null) {
+             gameModeComboBox.setSelectedItem(match.getMode());
+        } else {
+             gameModeComboBox.setSelectedIndex(0);
+        }
+        gameModeComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	match.setMode(gameModeComboBox.getSelectedItem().toString());
+            	updateGameMode();
+            }
+        });
+        add(gameModeComboBox, "span");
+        
+        
         //// Row 4 ////
 
         add(new JLabel(t("match.label.your_rank")), "right");
+        rankComboBox = new JComboBox<>(Rank.values());
+        setDefaultSize(rankComboBox);
+        rankComboBox.addActionListener(new ActionListener() {
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		match.setRankLevel((Rank) rankComboBox.getSelectedItem());
+        	}
+        });
 
-        if ("Ranked".equals(match.getMode())) {
-            rankComboBox = new JComboBox<>(Rank.values());
-            rankComboBox.setSelectedIndex(25 - match.getRankLevel().number);
-            rankComboBox.setMinimumSize(new Dimension(180, 27));
-            rankComboBox.setPreferredSize(new Dimension(200, 28));
-            rankComboBox.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    match.setRankLevel((Rank) rankComboBox.getSelectedItem());
-                }
-            });
-            add(rankComboBox, "");
-        } else {
-            String rankMessage;
-            if ("Arena".equals(match.getMode())) {
-                rankMessage = "N/A: Arena Mode";
-            } else if ("Casual".equals(match.getMode())) {
-                rankMessage = "N/A: Casual Mode";
-            } else {
-                rankMessage = "N/A";
-            }
-            JLabel rankNotApplicable = new JLabel(rankMessage);
-            rankNotApplicable.setFont(rankNotApplicable.getFont().deriveFont(Font.ITALIC));
-            rankNotApplicable.setEnabled(false);
-            add(rankNotApplicable, "");
+        rankNotApplicable = new JLabel("");
+        rankNotApplicable.setFont(rankNotApplicable.getFont().deriveFont(Font.ITALIC));
+        rankNotApplicable.setEnabled(false);
+        setDefaultSize(rankNotApplicable);
 
-        }
-
+        add(rankPanel, "");
         add(new JLabel(t("match.label.opponent_name")), "right");
 
         opponentNameField = new JTextField();
-        opponentNameField.setMinimumSize(new Dimension(180, 27));
-        opponentNameField.setPreferredSize(new Dimension(200, 28));
+        setDefaultSize(opponentNameField);
         opponentNameField.setText(match.getOpponentName());
         opponentNameField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                match.setOpponentName(opponentNameField.getText().replaceAll("\\s+", ""));
+        	@Override
+        	public void keyReleased(KeyEvent e) {
+        		match.setOpponentName(opponentNameField.getText().replaceAll("\\s+", ""));
             }
         });
         add(opponentNameField, "wrap");
@@ -217,7 +235,7 @@ public class MatchEndPopup extends JPanel {
         //// Row 5 ////
 
         String[] localizedClassOptions = new String[Monitor.hsClassOptions.length];
-        localizedClassOptions[0] = "- " + t("undetected") + " -";
+        localizedClassOptions[0] = undetectedLabel();
         for (int i = 1; i < localizedClassOptions.length; i++) {
             localizedClassOptions[i] = t(Monitor.hsClassOptions[i]);
         }
@@ -225,8 +243,7 @@ public class MatchEndPopup extends JPanel {
         add(new JLabel(t("match.label.your_class")), "right");
 
         yourClassComboBox = new JComboBox<>(localizedClassOptions);
-        yourClassComboBox.setMinimumSize(new Dimension(180, 27));
-        yourClassComboBox.setPreferredSize(new Dimension(200, 28));
+        setDefaultSize(yourClassComboBox);
         if (match.getUserClass() == null) {
             yourClassComboBox.setSelectedIndex(0);
         } else {
@@ -247,8 +264,7 @@ public class MatchEndPopup extends JPanel {
         add(new JLabel(t("match.label.opponents_class")), "right");
 
         opponentClassComboBox = new JComboBox<>(localizedClassOptions);
-        opponentClassComboBox.setMinimumSize(new Dimension(180, 27));
-        opponentClassComboBox.setPreferredSize(new Dimension(200, 28));
+        setDefaultSize(opponentClassComboBox);
         if (match.getOpponentClass() == null) {
             opponentClassComboBox.setSelectedIndex(0);
         } else {
@@ -272,48 +288,38 @@ public class MatchEndPopup extends JPanel {
 
         add(new JLabel(t("match.label.your_deck")), "right");
 
-        if ("Ranked".equals(match.getMode()) || "Casual".equals(match.getMode())) {
-
-            String[] deckSlotList = new String[10];
-            deckSlotList[0] = "- " + t("undetected") + " -";
-            for (int i = 1; i <= 9; i++) {
-                JSONObject deck =  DeckSlotUtils.getDeckFromSlot(i);
-                StringBuilder sb = new StringBuilder();
-                sb.append(t("deck_slot.label_" + i));
-                sb.append(" ");
-                if (deck == null) {
-                    sb.append(t("undetected"));
-                } else {
-                    sb.append(deck.get("name"));
-                }
-                deckSlotList[i] = sb.toString();
-            }
-
-            yourDeckComboBox = new JComboBox<>(deckSlotList);
-            yourDeckComboBox.setMinimumSize(new Dimension(180, 27));
-            yourDeckComboBox.setPreferredSize(new Dimension(200, 28));
-            yourDeckComboBox.setSelectedIndex(match.getDeckSlot());
-            yourDeckComboBox.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    match.setDeckSlot(yourDeckComboBox.getSelectedIndex());
-                }
-            });
-            add(yourDeckComboBox, "wrap");
-
-        } else {
-            String deckMessage;
-            if ("Arena".equals(match.getMode())) {
-                deckMessage = "N/A: Arena Mode";
+        String[] deckSlotList = new String[10];
+        deckSlotList[0] = undetectedLabel();
+        for (int i = 1; i <= 9; i++) {
+            JSONObject deck =  DeckSlotUtils.getDeckFromSlot(i);
+            StringBuilder sb = new StringBuilder();
+            sb.append(t("deck_slot.label_" + i));
+            sb.append(" ");
+            if (deck == null) {
+                sb.append(t("undetected"));
             } else {
-                deckMessage = "N/A";
+                sb.append(deck.get("name"));
             }
-            JLabel rankNotApplicable = new JLabel(deckMessage);
-            rankNotApplicable.setFont(rankNotApplicable.getFont().deriveFont(Font.ITALIC));
-            rankNotApplicable.setEnabled(false);
-            add(rankNotApplicable, "wrap");
+            deckSlotList[i] = sb.toString();
         }
 
+        yourDeckComboBox = new JComboBox<>(deckSlotList);
+        setDefaultSize(yourDeckComboBox);
+        yourDeckComboBox.setSelectedIndex(match.getDeckSlot());
+        yourDeckComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                match.setDeckSlot(yourDeckComboBox.getSelectedIndex());
+            }
+        });
+        
+      
+        deckNotApplicable = new JLabel("");
+        deckNotApplicable.setFont(deckNotApplicable.getFont().deriveFont(Font.ITALIC));
+        deckNotApplicable.setEnabled(false);
+        setDefaultSize(deckNotApplicable);
+        
+        add(deckPanel, "wrap");
 
         //// Row 7 ////
 
@@ -410,8 +416,52 @@ public class MatchEndPopup extends JPanel {
         });
         add(notesTextArea, "span 3, wrap");
 
+        updateGameMode();
     }
+    
+	private void updateGameMode() {
+		boolean isRanked = "Ranked".equals(match.getMode());
+		rankPanel.removeAll();
+		if (isRanked) {
+			if (match.getRankLevel() != null) {
+				rankComboBox.setSelectedIndex(25 - match.getRankLevel().number);
+			}
+			rankPanel.add(rankComboBox);
+		} else {
+			String rankMessage;
+			if ("Arena".equals(match.getMode())) {
+				rankMessage = "N/A: Arena Mode";
+			} else if ("Casual".equals(match.getMode())) {
+				rankMessage = "N/A: Casual Mode";
+			} else {
+				rankMessage = "N/A";
+			}
+			rankNotApplicable.setText(rankMessage);
+			rankPanel.add(rankNotApplicable);
+		}
 
+		deckPanel.removeAll();
+		if (isRanked || "Casual".equals(match.getMode())) { // TODO shouldn't we add also Practice here ?
+			deckPanel.add(yourDeckComboBox);
+		} else {
+			String deckMessage;
+			if ("Arena".equals(match.getMode())) {
+				deckMessage = "N/A: Arena Mode";
+			} else {
+				deckMessage = "N/A";
+			}
+			deckNotApplicable.setText(deckMessage);
+			deckPanel.add(deckNotApplicable);
+		}
+
+		validate();
+		repaint();
+	}
+
+	private static void setDefaultSize(Component c) {
+		c.setMinimumSize(new Dimension(180, 27));
+		c.setPreferredSize(new Dimension(200, 28));
+	}
 
     /**
      * Loads text from the main resource bundle, using the local language when available.
@@ -422,4 +472,7 @@ public class MatchEndPopup extends JPanel {
         return bundle.getString(key);
     }
 
+    private String undetectedLabel() {
+    	return "- "+t("undetected")+" -";
+    }
 }
