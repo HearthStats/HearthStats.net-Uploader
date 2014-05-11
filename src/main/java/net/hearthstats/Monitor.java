@@ -1,6 +1,67 @@
 package net.hearthstats;
 
 
+import java.awt.AWTException;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.Point;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.awt.event.WindowStateListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkListener;
+
 import net.hearthstats.analysis.AnalyserEvent;
 import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
@@ -11,7 +72,6 @@ import net.hearthstats.notification.OsxNotificationQueue;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.ui.MatchEndPopup;
-import net.hearthstats.util.Rank;
 import net.miginfocom.swing.MigLayout;
 
 import org.json.simple.JSONObject;
@@ -19,27 +79,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkListener;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer, WindowListener {
@@ -753,17 +792,33 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_showModeNotificationField.setEnabled(isEnabled);
 		_showDeckNotificationField.setEnabled(isEnabled);
 	}
+
+	private String name(JSONObject o) {
+		return hsClassOptions[Integer.parseInt(o.get("klass_id").toString())]
+				+ " - " + o.get("name").toString().toLowerCase();
+	}
+
 	private void _applyDecksToSelector(JComboBox<String> selector, Integer slotNum) {
 		
-		selector.setMaximumSize(new Dimension(145, selector.getSize().height));
+		selector.setMaximumSize(new Dimension(200, selector.getSize().height));
 		selector.removeAllItems();
 		
 		selector.addItem("- Select a deck -");
 		
 		List<JSONObject> decks = DeckSlotUtils.getDecks();
 		
+		Collections.sort(decks, new Comparator<JSONObject>() {
+			@Override
+			public int compare(JSONObject o1, JSONObject o2) {
+				return name(o1).compareTo(name(o2));
+			}
+
+		});
+		
 		for(int i = 0; i < decks.size(); i++) {
-			selector.addItem(decks.get(i).get("name") + "                                       #" + decks.get(i).get("id"));
+			selector.addItem(name(decks.get(i))
+					+ "                                       #"
+					+ decks.get(i).get("id"));
 			if(decks.get(i).get("slot") != null && decks.get(i).get("slot").toString().equals(slotNum.toString()))
 				selector.setSelectedIndex(i + 1);
 		}
