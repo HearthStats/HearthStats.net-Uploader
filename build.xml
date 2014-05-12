@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Build HearthStats Reporter">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+
+
+    <!-- OS X app bundler -->
+    <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask">
+        <classpath>
+            <pathelement location="./src/main/app-resources/mac/appbundler-1.0.jar" />
+        </classpath>
+    </taskdef>
+
+	<target name="check-update_jar">
+	    <available file="./src/main/resources/updater.jar" property="update_jar.present"/>
+	</target>
+
+	<target name="delete_updater_jar" depends="check-update_jar" if="update_jar.present">
+		<delete file="./src/main/resources/updater.jar"/>
+	</target>
+
+	<target name="create_run_jar">
+        <mkdir dir="./bin"/>
+	    <jar destfile="./src/main/resources/updater.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="net.hearthstats.Updater"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="./bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/commons-lang3-3.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/ghost4j-0.5.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jai-imageio-core-standalone-1.2-pre-dr-b04-2013-04-23.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-core-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-awt-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-cluster-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-fir-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-moment-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-morphology-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/JGoogleAnalyticsTracker-1.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jna-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jna-platform-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/junit-4.10.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/miglayout-core-4.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/miglayout-swing-4.2.jar"/>
+        </jar>
+       	<sleep milliseconds="6000"/>
+        <jar destfile="./target/HearthStatsUploader.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="net.hearthstats.Main"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="./bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/commons-lang3-3.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/ghost4j-0.5.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jai-imageio-core-standalone-1.2-pre-dr-b04-2013-04-23.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-core-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-awt-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-cluster-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-fir-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-moment-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-morphology-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/JGoogleAnalyticsTracker-1.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jna-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jna-platform-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/junit-4.10.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/miglayout-core-4.2.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/miglayout-swing-4.2.jar"/>
+        </jar>
+		<antcall target="delete_updater_jar" />
+    </target>
+
+
+    <target name="clean_osx">
+        <echo>Cleaning OS X build folder</echo>
+        <delete failonerror="false" includeemptydirs="true" quiet="false">
+            <fileset dir="./target/ant-osx" />
+            <fileset dir="./target/HearthStats.app" />
+        </delete>
+    </target>
+
+
+    <target name="build_osx" depends="clean_osx">
+        <mkdir dir="./target/ant-osx" />
+
+        <!-- Load the version number from the version file -->
+        <loadfile property="hearthstats.version"
+                  srcFile="./src/version-osx" />
+
+        <echo>Building OS X version ${hearthstats.version}</echo>
+
+        <!-- Compile the code -->
+        <javac debug="true" deprecation="false"
+               encoding="UTF-8"
+               destdir="./target/ant-osx"
+               includeantruntime="false"
+               failonerror="true" verbose="false">
+            <src path="./src/main/java" />
+            <classpath>
+                <fileset dir="./target/lib-osx" includes="*.jar"/>
+            </classpath>
+        </javac>
+
+        <!-- Copy resources shared by both the updater and the main program -->
+        <copy preservelastmodified="true" todir="./target/ant-osx">
+            <fileset dir="./src/main/resources">
+                <include name="**/*.xml" />
+                <include name="**/*.gif" />
+                <include name="**/*.png" />
+                <exclude name="**/.DS_Store" />
+            </fileset>
+            <fileset dir="./src">
+                <include name="version" />
+                <include name="version-osx" />
+            </fileset>
+        </copy>
+
+        <!-- Build the updater jar -->
+        <jar destfile="./target/ant-osx/updater.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="net.hearthstats.Updater"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="./target/ant-osx"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/JGoogleAnalyticsTracker-1.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/slf4j-api-1.7.6.jar"/>
+        </jar>
+        <sleep milliseconds="1000"/>
+
+        <!-- Copy remaining resources, other than Windows-specific files like DLLs -->
+        <copy preservelastmodified="true" todir="./target/ant-osx">
+            <fileset dir="./src/main/resources">
+                <include name="**/*.css" />
+                <include name="**/*.properties" />
+                <include name="tessdata/**" />
+                <include name="uploader.jar" />
+
+                <exclude name="**/.DS_Store" />
+            </fileset>
+        </copy>
+        <!-- Build a JAR -->
+        <jar destfile="./target/HearthStatsUploader-OSX.jar">
+            <fileset dir="./target/ant-osx"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/asm-3.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/cglib-2.2.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/commons-lang3-3.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/ghost4j-0.5.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/ini4j-0.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jai-imageio-core-standalone-1.2-pre-dr-b04-2013-04-23.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-core-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-awt-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-cluster-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-fir-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-moment-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-morphology-1.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/JGoogleAnalyticsTracker-1.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jna-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jna-platform-4.0.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/json-simple-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/junit-4.10.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/logback-classic-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/logback-core-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/miglayout-core-4.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/miglayout-swing-4.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/rococoa-core-0.5.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/slf4j-api-1.7.6.jar"/>
+        </jar>
+
+    	<antcall target="delete_updater_jar" />
+
+        <!-- Build an OS X application bundle using Oracle's appbundler -->
+        <bundleapp outputdirectory="./target"
+                   name="HearthStats"
+                   displayname="HearthStats.net Uploader"
+                   identifier="net.hearthstats.HearthStatsUploader"
+                   shortversion="${hearthstats.version}"
+                   applicationCategory="public.app-category.games"
+                   icon="./src/main/resources/images/icon.icns"
+                   mainclassname="net/hearthstats/Main">
+            <classpath file="./target/HearthStatsUploader-OSX.jar" />
+            <librarypath dir="./src/main/app-resources/mac" includes="*.dylib"/>
+            <option value="-Dapple.laf.useScreenMenuBar=true"/>
+            <option value="-Djna.library.path=$APP_ROOT/Contents/MacOS"/>
+            <option value="-DLOG_FILE=Library/Application Support/HearthStatsUploader/log.txt"/>
+            <option value="-Xdock:icon=Contents/Resources/${bundle.icon}"/>
+            <option value="-Xms96m"/>
+            <option value="-Xmx256m"/>
+        </bundleapp>
+
+        <!-- Copy Tesseract data into the Resources folder of the bundle -->
+        <copy preservelastmodified="true" todir="./target/HearthStats.app/Contents/Resources">
+            <fileset dir="./src/main/resources">
+                <include name="tessdata/**" />
+                <exclude name="**/.DS_Store" />
+            </fileset>
+        </copy>
+
+        <!-- Add extra settings to the Info.plist file to enable Retina mode on the app bundle -->
+        <xslt in="./target/HearthStats.app/Contents/Info.plist" out="./target/HearthStats.app/Contents/Info-updated.plist" style="./src/main/scripts/build-osx-plist.xslt"  />
+        <delete file="./target/HearthStats.app/Contents/Info.plist" />
+        <move file="./target/HearthStats.app/Contents/Info-updated.plist" tofile="./target/HearthStats.app/Contents/Info.plist" />
+
+
+    </target>
+
+
+
+</project>
