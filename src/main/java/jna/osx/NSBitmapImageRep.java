@@ -2,18 +2,18 @@ package jna.osx;
 
 import com.sun.jna.Pointer;
 import org.rococoa.ID;
-import org.rococoa.ObjCClass;
+import org.rococoa.NSClass;
 import org.rococoa.Rococoa;
 
 /**
  * @author gtch
  */
-public abstract class NSBitmapImageRep extends NSImageRep {
+public interface NSBitmapImageRep extends NSImageRep {
 
 	public static final _Class CLASS = Rococoa.createClass("NSBitmapImageRep",
 			_Class.class);
 
-	public interface _Class extends ObjCClass {
+	public interface _Class extends NSClass {
 		NSBitmapImageRep alloc();
 	}
 

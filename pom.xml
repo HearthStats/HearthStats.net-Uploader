@@ -100,11 +100,14 @@
 			<version>4.2</version>
 		</dependency>
 
+        <!-- This Maven Rococoa 0.5 is not the same as (and incompatible with) the official Rococoa 0.5 release so it's excluded from the Maven build -->
+        <!--
 		<dependency>
 			<groupId>org.rococoa</groupId>
 			<artifactId>rococoa-cocoa</artifactId>
 			<version>0.5</version>
 		</dependency>
+        -->
 
 		<dependency>
 			<groupId>com.dmurph</groupId>

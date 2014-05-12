@@ -146,6 +146,7 @@
         <!-- Build a JAR -->
         <jar destfile="./target/HearthStatsUploader-OSX.jar">
             <fileset dir="./target/ant-osx"/>
+            <zipfileset excludes="META-INF/*.SF" src="./src/main/app-resources/mac/rococoa-core-0.5.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/asm-3.3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/cglib-2.2.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/commons-lang3-3.3.1.jar"/>
@@ -167,7 +168,6 @@
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/logback-core-1.1.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/miglayout-core-4.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/miglayout-swing-4.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/rococoa-core-0.5.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/slf4j-api-1.7.6.jar"/>
         </jar>
 

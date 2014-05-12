@@ -1107,6 +1107,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
                     _numThreads--;
 
                 } catch (Throwable ex) {
+                    ex.printStackTrace(System.err);
                     debugLog.error("  - Iteration " + currentPollIteration + " caused exception which is not being handled:", ex);
                     while (ex.getCause() != null) {
                         ex = ex.getCause();

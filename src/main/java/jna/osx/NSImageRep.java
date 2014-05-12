@@ -1,17 +1,17 @@
 package jna.osx;
 
-import org.rococoa.ObjCClass;
+import org.rococoa.NSClass;
 import org.rococoa.Rococoa;
-import org.rococoa.cocoa.foundation.NSObject;
+import org.rococoa.NSObject;
 
 /**
  * @author gtch
  */
-public abstract class NSImageRep extends NSObject {
+public interface NSImageRep extends NSObject {
 
     public static final _Class CLASS = Rococoa.createClass("NSImageRep", _Class.class);
 
-    public interface _Class extends ObjCClass {
+    public interface _Class extends NSClass {
     }
 
     /// Original signature : <code>-(NSSize)size</code>

@@ -1,13 +1,13 @@
 package jna.osx;
 
-import org.rococoa.ObjCClass;
-import org.rococoa.ObjCObject;
+import org.rococoa.NSClass;
+import org.rococoa.NSObject;
 import org.rococoa.Rococoa;
 
 /**
  * @author gtch
  */
-public interface CGWindow extends ObjCObject {
+public interface CGWindow extends NSObject {
 
     public static final _Class CLASS = Rococoa.createClass("CGWindow", _Class.class);
 
@@ -36,7 +36,7 @@ public interface CGWindow extends ObjCObject {
     public static final int kCGWindowListExcludeDesktopElements = (1 << 4);
 
 
-    public interface _Class extends ObjCClass {
+    public interface _Class extends NSClass {
 //        NSObject CGWindowListCopyWindowInfo(int option, int relativeToWindow);
     }
 
