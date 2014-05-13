@@ -105,7 +105,7 @@ public class HearthstoneMatch {
 		return propertyVal == null ? "[undetected]" : propertyVal;
 	}
 	public String toString() {
-		JSONObject deck = DeckSlotUtils.getDeckFromSlot(getDeckSlot());
+		JSONObject deck = DeckUtils.getDeckFromSlot(getDeckSlot());
 		
 		return _propertyOrUnknown(getMode()) + 
 				("Ranked".equals(getMode()) ? " level " + getRankLevel() : "") +

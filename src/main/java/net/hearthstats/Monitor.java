@@ -805,7 +805,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		selector.addItem("- Select a deck -");
 		
-		List<JSONObject> decks = DeckSlotUtils.getDecks();
+		List<JSONObject> decks = DeckUtils.getDecks();
 		
 		Collections.sort(decks, new Comparator<JSONObject>() {
 			@Override
@@ -824,7 +824,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 	private void _updateDecksTab() throws IOException {
-		DeckSlotUtils.updateDecks();
+		DeckUtils.updateDecks();
 		_applyDecksToSelector(_deckSlot1Field, 1);
 		_applyDecksToSelector(_deckSlot2Field, 2);
 		_applyDecksToSelector(_deckSlot3Field, 3);
@@ -1211,7 +1211,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				break;
 
 			case DECK_SLOT:
-				JSONObject deck = DeckSlotUtils.getDeckFromSlot(_analyzer.getDeckSlot());
+				JSONObject deck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
 				if (deck == null) {
 					_tabbedPane.setSelectedIndex(2);
                     bringWindowToFront();

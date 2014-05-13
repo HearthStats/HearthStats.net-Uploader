@@ -20,6 +20,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.12.6</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.3.1</version>
@@ -270,7 +276,9 @@
 								<productVersion>${project.longVersion}</productVersion>
 								<txtProductVersion>${project.version}</txtProductVersion>
 								<productName>${product.name}</productName>
-								<copyright>See https://github.com/HearthStats/HearthStats.net-Uploader for license</copyright>
+								<copyright>See
+									https://github.com/HearthStats/HearthStats.net-Uploader for
+									license</copyright>
 								<internalName>HearthStats</internalName>
 								<originalFilename>HearthStats.exe</originalFilename>
 							</versionInfo>

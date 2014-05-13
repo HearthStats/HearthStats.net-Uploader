@@ -1,6 +1,6 @@
 package net.hearthstats.ui;
 
-import net.hearthstats.DeckSlotUtils;
+import net.hearthstats.DeckUtils;
 import net.hearthstats.HearthstoneMatch;
 import net.hearthstats.Monitor;
 import net.hearthstats.util.Rank;
@@ -291,7 +291,7 @@ public class MatchEndPopup extends JPanel {
         String[] deckSlotList = new String[10];
         deckSlotList[0] = undetectedLabel();
         for (int i = 1; i <= 9; i++) {
-            JSONObject deck =  DeckSlotUtils.getDeckFromSlot(i);
+            JSONObject deck =  DeckUtils.getDeckFromSlot(i);
             StringBuilder sb = new StringBuilder();
             sb.append(t("deck_slot.label_" + i));
             sb.append(" ");

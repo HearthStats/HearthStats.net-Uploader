@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Observable;
 
 import net.hearthstats.log.Log;
+
 import org.json.simple.JSONArray;
 //http://www.mkyong.com/java/json-simple-example-read-and-write-json/
 import org.json.simple.JSONObject;
@@ -24,7 +25,6 @@ public class API extends Observable {
 
     private static Logger debugLog = LoggerFactory.getLogger(API.class);
 
-    private String _key;
 	private String _message;
 	
 	public API() {
@@ -101,6 +101,7 @@ public class API extends Observable {
 		return arenaRun;
 	}
 	
+
 	private Object _get(String method) throws MalformedURLException, IOException {
         String baseUrl = Config.getApiBaseUrl() + method + "?userkey=";
         // Log the URL with the userkey obscured so that users don't compromise their key if they share their logs
@@ -224,15 +225,13 @@ public class API extends Observable {
 
 	public List<JSONObject> getDecks() throws IOException {
 		JSONArray resultArray = (JSONArray) _get("decks/show");
-		if(resultArray != null) {
-			_dispatchResultMessage("Fetched your decks from HearthStats.net");
-		}
-		
 		List<JSONObject> jsonValues = new ArrayList<JSONObject>();
-		for (int i = 0; i < resultArray.size(); i++)
-		   jsonValues.add((JSONObject) resultArray.get(i));
+		if (resultArray != null) {
+			_dispatchResultMessage("Fetched your decks from HearthStats.net");
+			for (int i = 0; i < resultArray.size(); i++)
+				jsonValues.add((JSONObject) resultArray.get(i));
+		}
 		return jsonValues;
-		
 	}
 
 }
