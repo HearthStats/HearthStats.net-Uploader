@@ -92,7 +92,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     private static final EnumSet<Screen> DO_NOT_NOTIFY_SCREENS = EnumSet.of(Screen.COLLECTION, Screen.COLLECTION_ZOOM, Screen.MAIN_TODAYSQUESTS, Screen.TITLE);
 
     private static Logger debugLog = LoggerFactory.getLogger(Monitor.class);
-    private static Logger perfLog = LoggerFactory.getLogger("net.hearthstats.performance");
 
     public static final String[] hsClassOptions = {
             "- undetected -",
@@ -130,7 +129,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JComboBox _currentOpponentClassSelect;
 	private JComboBox _currentYourClassSelector;
 
-    private int _numThreads = 0;
 	private int _pollIterations = 0;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
@@ -912,10 +910,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 	protected void _notify(String header, String message) {
-		if (!Config.showNotifications())
-			return;	//Notifications disabled
-
-		_notificationQueue.add(header, message, false);
+		if (Config.showNotifications())
+			_notificationQueue.add(header, message, false);
 	}
 
 
@@ -1078,7 +1074,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected void _pollHearthstone() {
         scheduledExecutorService.schedule(new Callable<Object>() {
 			public Object call() throws Exception {
-                _numThreads++;
                 _pollIterations++;
 
                 // A copy of pollIterations is kept in localPollIterations
@@ -1104,7 +1099,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
                         System.gc();
                     }
 
-                    _numThreads--;
 
                 } catch (Throwable ex) {
                     debugLog.error("  - Iteration " + currentPollIteration + " caused exception which is not being handled:", ex);
