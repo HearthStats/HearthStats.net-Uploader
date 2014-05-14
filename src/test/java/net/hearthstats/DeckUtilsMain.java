@@ -18,6 +18,7 @@ public class DeckUtilsMain {
 		for (Deck deck : DeckUtils.getDeckLists()) {
 			System.out.println(deck);
 			for (Card card : deck.getCards()) {
+				System.out.println(card.url());
 				box.add(new ClickableLabel(card));
 			}
 		}
