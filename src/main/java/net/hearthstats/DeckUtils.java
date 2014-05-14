@@ -3,6 +3,7 @@ package net.hearthstats;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import net.hearthstats.Deck.Card;
 import net.hearthstats.log.Log;
@@ -12,6 +13,9 @@ import org.json.simple.JSONObject;
 public final class DeckUtils {
 	private DeckUtils() {
 	}
+
+	private static ResourceBundle bundle = ResourceBundle
+			.getBundle("net.hearthstats.resources.Cards");
 
 	private static List<JSONObject> _decks;
 	private static API _api = new API(); 
@@ -47,7 +51,8 @@ public final class DeckUtils {
 			if (string != null) {
 				String cardString = string.toString().trim();
 				if (cardString.length() > 0) {
-					deckLists.add(new Deck(id, parseDeckString(cardString)));
+					deckLists.add(new Deck(id, deck.get("name").toString(),
+							parseDeckString(cardString)));
 				}
 			}
 		}
@@ -61,7 +66,8 @@ public final class DeckUtils {
 			int u = card.indexOf('_');
 			String cardId = card.substring(0, u);
 			String count = card.substring(u + 1);
-			cards.add(new Card(Integer.parseInt(cardId), "", Integer
+			cards.add(new Card(Integer.parseInt(cardId), bundle
+					.getString(cardId), Integer
 					.parseInt(count)));
 		}
 		return cards;
