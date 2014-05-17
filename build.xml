@@ -77,7 +77,7 @@
 
     <target name="clean_osx">
         <echo>Cleaning OS X build folder</echo>
-        <delete failonerror="false" includeemptydirs="true" quiet="false">
+        <delete failonerror="false" includeemptydirs="true" quiet="true">
             <fileset dir="./target/ant-osx" />
             <fileset dir="./target/HearthStats.app" />
         </delete>
@@ -147,12 +147,12 @@
         <jar destfile="./target/HearthStatsUploader-OSX.jar">
             <fileset dir="./target/ant-osx"/>
             <zipfileset excludes="META-INF/*.SF" src="./src/main/app-resources/mac/rococoa-core-0.5.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/asm-3.3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/asm-3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/cglib-2.2.2.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/commons-lang3-3.3.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/ghost4j-0.5.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/ini4j-0.5.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jai-imageio-core-standalone-1.2-pre-dr-b04-2013-04-23.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/jai_imageio-1.1.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-core-1.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-awt-1.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="./target/lib-osx/javaocr-plugin-cluster-1.0.jar"/>
