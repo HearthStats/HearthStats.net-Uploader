@@ -1,84 +1,40 @@
 package net.hearthstats;
 
 
-import java.awt.AWTException;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.HeadlessException;
-import java.awt.Image;
-import java.awt.MenuItem;
-import java.awt.Point;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.awt.event.WindowStateListener;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.ResourceBundle;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkListener;
-
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import net.hearthstats.analysis.AnalyserEvent;
 import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
 import net.hearthstats.log.LogPane;
 import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.notification.NotificationQueue;
-import net.hearthstats.notification.OsxNotificationQueue;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.ui.MatchEndPopup;
 import net.miginfocom.swing.MigLayout;
-
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkListener;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer, WindowListener {
@@ -153,18 +109,21 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JTabbedPane _tabbedPane;
 	private ResourceBundle _bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
 
-    public Monitor() throws HeadlessException {
-    	
+    public Monitor() throws HeadlessException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+
+        String className;
         switch (Config.os) {
             case WINDOWS:
-                _hsHelper = new ProgramHelperWindows("Hearthstone.exe");
+                className = "net.hearthstats.win.ProgramHelperWindows";
                 break;
             case OSX:
-                _hsHelper = new ProgramHelperOsx("unity.Blizzard Entertainment.Hearthstone");
+                className = "net.hearthstats.osx.ProgramHelperOsx";
                 break;
             default:
                 throw new UnsupportedOperationException(t("error.os_unsupported"));
         }
+
+        _hsHelper = (ProgramHelper) Class.forName(className).newInstance();
     }
 
 
@@ -903,8 +862,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	};
 
-    protected NotificationQueue _notificationQueue = Config.useOsxNotifications() ? new OsxNotificationQueue() : new DialogNotificationQueue();
-	private Boolean _currentMatchEnabled = false;
+    protected NotificationQueue _notificationQueue = newNotificationQueue();
+
+    private Boolean _currentMatchEnabled = false;
 	private boolean _playingInMatch = false;
 
 	protected void _notify(String header) {
@@ -1489,7 +1449,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         if (_notificationsFormat != null) {
             // This control only appears on OS X machines, will be null on Windows machines
             Config.setUseOsxNotifications(_notificationsFormat.getSelectedIndex() == 0);
-            _notificationQueue = Config.useOsxNotifications() ? new OsxNotificationQueue() : new DialogNotificationQueue();
+            _notificationQueue = newNotificationQueue();
         }
 
         try {
@@ -1583,5 +1543,18 @@ public class Monitor extends JFrame implements Observer, WindowListener {
        		});
         
     }
-    
+
+    private static NotificationQueue newNotificationQueue() {
+        if (Config.useOsxNotifications()) {
+            try {
+                return (NotificationQueue) Class.forName("net.hearthstats.osx.OsxNotificationQueue").newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException("Could not create OsxNotificationQueue instance due to " + e.getMessage(), e);
+            }
+        } else {
+            return new DialogNotificationQueue();
+        }
+    }
+
+
 }

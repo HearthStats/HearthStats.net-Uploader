@@ -12,8 +12,12 @@
     <packaging>pom</packaging>
 
     <properties>
-        <project.longVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}</project.longVersion>
         <product.name>HearthStats.net Uploader</product.name>
+
+        <!-- parsedVersion will be populated automatically by the build-helper-maven-plugin -->
+        <project.longVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}</project.longVersion>
+
+        <main.class>net.hearthstats.Main</main.class>
 
         <java.version>1.7</java.version>
         <org.slf4j.version>1.7.6</org.slf4j.version>
@@ -46,6 +50,8 @@
 
     <modules>
         <module>uploader</module>
+        <module>uploader-osx</module>
+        <module>uploader-win</module>
     </modules>
 
     <build>

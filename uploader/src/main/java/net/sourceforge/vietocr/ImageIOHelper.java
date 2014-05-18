@@ -269,12 +269,6 @@ public class ImageIOHelper {
         ImageInputStream iis = null;
 
         try {
-            // convert PDF to TIFF
-            if (imageFile.getName().toLowerCase().endsWith(".pdf")) {
-                workingTiffFile = PdfUtilities.convertPdf2Tiff(imageFile);
-                imageFile = workingTiffFile;
-            }
-
             List<IIOImage> iioImageList = new ArrayList<IIOImage>();
 
             String imageFileName = imageFile.getName();
