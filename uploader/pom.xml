@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>net.hearthstats</groupId>
+        <artifactId>uploader-app</artifactId>
+        <version>0.17.1-SNAPSHOT</version>
+    </parent>
+
+
+	<groupId>net.hearthstats</groupId>
+	<artifactId>uploader</artifactId>
+	<version>0.17.1-SNAPSHOT</version>
+
+	<packaging>jar</packaging>
+	<name>Uploader JAR</name>
+	<url>http://hearthstats.net/uploader</url>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<main.class>net.hearthstats.Main</main.class>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ghost4j</groupId>
+			<artifactId>ghost4j</artifactId>
+			<version>0.5.1</version> <!-- 0.3.1 in ant -->
+			<exclusions>
+				<exclusion>
+					<artifactId>jna</artifactId>
+					<groupId>net.java.dev.jna</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.ini4j</groupId>
+			<artifactId>ini4j</artifactId>
+			<version>0.5.2</version>
+		</dependency>
+        <dependency>
+            <groupId>javax.media</groupId>
+            <artifactId>jai_imageio</artifactId>
+            <version>1.1</version>
+        </dependency>
+		<dependency>
+			<groupId>net.sourceforge.javaocr</groupId>
+			<artifactId>javaocr-core</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.javaocr.plugins</groupId>
+			<artifactId>javaocr-plugin-awt</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.javaocr.plugins</groupId>
+			<artifactId>javaocr-plugin-cluster</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.javaocr.plugins</groupId>
+			<artifactId>javaocr-plugin-fir</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.javaocr.plugins</groupId>
+			<artifactId>javaocr-plugin-moment</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.javaocr.plugins</groupId>
+			<artifactId>javaocr-plugin-morphology</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna-platform</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>junit</artifactId>
+					<groupId>junit</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.miglayout</groupId>
+			<artifactId>miglayout-swing</artifactId>
+			<version>4.2</version>
+		</dependency>
+
+        <!-- This Maven Rococoa 0.5 is not the same as (and incompatible with) the official Rococoa 0.5 release so it's excluded from the Maven build -->
+		<dependency>
+			<groupId>org.rococoa</groupId>
+			<artifactId>rococoa-cocoa-core</artifactId>
+			<version>0.5</version>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${basedir}/../lib/rococoa-core-0.5.jar</systemPath>-->
+		</dependency>
+
+        <!-- Rococoa 0.5 dependency -->
+        <!--<dependency>-->
+            <!--<groupId>asm</groupId>-->
+            <!--<artifactId>asm</artifactId>-->
+            <!--<version>3.1</version>-->
+        <!--</dependency>-->
+
+        <!-- Rococoa 0.5 dependency -->
+        <!--<dependency>-->
+            <!--<groupId>cglib</groupId>-->
+            <!--<artifactId>cglib</artifactId>-->
+            <!--<version>2.2.2</version>-->
+        <!--</dependency>-->
+
+        <dependency>
+			<groupId>com.dmurph</groupId>
+			<artifactId>JGoogleAnalyticsTracker</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+
+		<dependency>
+			<artifactId>junit</artifactId>
+			<groupId>junit</groupId>
+			<version>4.10</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>1.7.6</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.8</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib-osx</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <excludeTransitive>false</excludeTransitive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<artifactSet>
+								<excludes>
+									<exclude>*:*:*:test</exclude>
+								</excludes>
+							</artifactSet>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>${main.class}</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>pkgmacos</id>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<!-- OS X app bundler -->
+
+								<taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask">
+									<classpath>
+										<pathelement location="src/main/app-resources/mac/appbundler-1.0.jar" />
+									</classpath>
+								</taskdef>
+                                <!--
+								<bundleapp outputdirectory="target" name="HearthStats"
+									displayname="HearthStats.net Uploader" identifier="net.hearthstats.HearthStatsUploader"
+									shortversion="${project.version}" applicationCategory="public.app-category.games"
+									icon="src/main/resources/images/icon.icns" mainclassname="net/hearthstats/Main">
+									<classpath
+										file="target/${project.artifactId}-${project.version}.jar" />
+									<librarypath dir="src/main/app-resources/mac/"
+										includes="*.dylib" />
+									<option value="-Dapple.laf.useScreenMenuBar=true" />
+									<option value="-Djna.library.path=$APP_ROOT/Contents/MacOS" />
+									<option
+										value="-DLOG_FILE=Library/Application Support/HearthStatsUploader/log.txt" />
+									<option value="-Xdock:icon=Contents/Resources/${bundle.icon}" />
+									<option value="-Xms96m" />
+									<option value="-Xmx192m" />
+								</bundleapp>
+								-->
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>commons-net</groupId>
+						<artifactId>commons-net</artifactId>
+						<version>1.4.1</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.ant</groupId>
+						<artifactId>ant-commons-net</artifactId>
+						<version>1.8.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>com.akathist.maven.plugins.launch4j</groupId>
+				<artifactId>launch4j-maven-plugin</artifactId>
+				<version>1.5.2</version>
+				<executions>
+					<execution>
+						<id>l4j-clui</id>
+						<phase>package</phase>
+						<goals>
+							<goal>launch4j</goal>
+						</goals>
+						<configuration>
+							<headerType>gui</headerType>
+							<outfile>target/HearthStats.exe</outfile>
+							<classPath>
+								<mainClass>${main.class}</mainClass>
+								<addDependencies>true</addDependencies>
+								<preCp>anything</preCp>
+							</classPath>
+							<jre>
+								<minVersion>${java.version}.0</minVersion>
+							</jre>
+							<versionInfo>
+								<fileVersion>${project.longVersion}</fileVersion>
+								<txtFileVersion>${project.version}</txtFileVersion>
+								<fileDescription>${product.name}</fileDescription>
+								<productVersion>${project.longVersion}</productVersion>
+								<txtProductVersion>${project.version}</txtProductVersion>
+								<productName>${product.name}</productName>
+								<copyright>See https://github.com/HearthStats/HearthStats.net-Uploader for license</copyright>
+								<internalName>HearthStats</internalName>
+								<originalFilename>HearthStats.exe</originalFilename>
+							</versionInfo>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+
+</project>
