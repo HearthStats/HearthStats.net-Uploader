@@ -10,8 +10,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import net.hearthstats.Deck.Card;
-
 public class DeckUtilsMain {
 	public static void main(String[] args) {
 		Box box = Box.createVerticalBox();
@@ -50,7 +48,8 @@ public class DeckUtilsMain {
 		}
 
 		private String label() {
-			return card.name() + " - " + remaining;
+			return String.format("%s - %s - %s/%s", card.cost(), card.name(),
+					remaining, card.count());
 		}
 
 		private void handleClick(int button) {

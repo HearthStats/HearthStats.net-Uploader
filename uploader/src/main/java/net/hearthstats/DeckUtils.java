@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.Map;
 
-import net.hearthstats.Deck.Card;
 import net.hearthstats.log.Log;
 
 import org.json.simple.JSONObject;
@@ -14,9 +13,6 @@ import org.json.simple.JSONObject;
 public final class DeckUtils {
 	private DeckUtils() {
 	}
-
-	private static ResourceBundle bundle = ResourceBundle
-			.getBundle("net.hearthstats.resources.Cards");
 
 	private static List<JSONObject> _decks;
 	private static API _api = new API();
@@ -72,17 +68,16 @@ public final class DeckUtils {
 		throw new IllegalArgumentException("No deck found for id " + id);
 	}
 
-
 	private static List<Card> parseDeckString(String ds) {
+		Map<Integer, Card> cardData = CardUtils.getCards();
 		List<Card> cards = new ArrayList<>();
 		for (String card : ds.split(",")) {
 			int u = card.indexOf('_');
-			String cardId = card.substring(0, u);
 			String count = card.substring(u + 1);
-			// TODO: replace with api call ex
-			// http://www.hearthstats.net/api/v1/cards/285
-			cards.add(new Card(Integer.parseInt(cardId), bundle
-					.getString(cardId), Integer.parseInt(count)));
+			int id = Integer.parseInt(card.substring(0, u));
+			Card cd = cardData.get(id);
+			cards.add(Card.builder().id(id).name(cd.name()).cost(cd.cost())
+					.count(Integer.parseInt(count)).build());
 		}
 		Collections.sort(cards);
 		return cards;

@@ -223,6 +223,17 @@ public class API extends Observable {
 		_message = message;
 	}
 
+	public List<JSONObject> getCards() throws IOException {
+		JSONArray resultArray = (JSONArray) _get("cards");
+		List<JSONObject> jsonValues = new ArrayList<JSONObject>();
+		if (resultArray != null) {
+			_dispatchResultMessage("Fetched all cards data from HearthStats.net");
+			for (int i = 0; i < resultArray.size(); i++)
+				jsonValues.add((JSONObject) resultArray.get(i));
+		}
+		return jsonValues;
+	}
+
 	public List<JSONObject> getDecks() throws IOException {
 		JSONArray resultArray = (JSONArray) _get("decks/show");
 		List<JSONObject> jsonValues = new ArrayList<JSONObject>();
