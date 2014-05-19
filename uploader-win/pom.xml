@@ -6,7 +6,7 @@
 
 	<parent>
 		<groupId>net.hearthstats</groupId>
-		<version>0.17.1-SNAPSHOT</version>
+        <version>0.17.1</version>
 		<artifactId>uploader-parent</artifactId>
 	</parent>
 
@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>net.hearthstats</groupId>
 			<artifactId>uploader</artifactId>
-			<version>0.17.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 

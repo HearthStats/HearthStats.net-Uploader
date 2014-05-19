@@ -8,7 +8,7 @@
 	<groupId>net.hearthstats</groupId>
 	<artifactId>uploader-parent</artifactId>
 	<name>HearthStats.net Uploader</name>
-	<version>0.17.1-SNAPSHOT</version>
+	<version>0.17.1</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -28,8 +28,8 @@
 
 	<modules>
 		<module>uploader</module>
-		<module>uploader-osx</module>
 		<module>uploader-win</module>
+		<module>uploader-osx</module>
 	</modules>
 
 	<build>
