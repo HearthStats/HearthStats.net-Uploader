@@ -2,6 +2,7 @@ package net.hearthstats;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -18,31 +19,35 @@ public final class DeckUtils {
 			.getBundle("net.hearthstats.resources.Cards");
 
 	private static List<JSONObject> _decks;
-	private static API _api = new API(); 
-	
+	private static API _api = new API();
+
 	public static void updateDecks() {
 		try {
 			_decks = _api.getDecks();
 		} catch (IOException e) {
-            Log.warn("Error occurred while loading deck list from HearthStats.net", e);
+			Log.warn(
+					"Error occurred while loading deck list from HearthStats.net",
+					e);
 		}
 	}
-	
+
 	public static JSONObject getDeckFromSlot(Integer slotNum) {
 		getDecks();
-		for(int i = 0; i < _decks.size(); i++) {
-			if(_decks.get(i).get("slot") != null && _decks.get(i).get("slot").toString().equals(slotNum.toString()))
-				return _decks.get(i); 
+		for (int i = 0; i < _decks.size(); i++) {
+			if (_decks.get(i).get("slot") != null
+					&& _decks.get(i).get("slot").toString()
+							.equals(slotNum.toString()))
+				return _decks.get(i);
 		}
 		return null;
 	}
-	
+
 	public static List<JSONObject> getDecks() {
-		if(_decks == null)
+		if (_decks == null)
 			updateDecks();
 		return _decks;
 	}
-	
+
 	public static List<Deck> getDeckLists() {
 		List<Deck> deckLists = new ArrayList<>();
 		for (JSONObject deck : getDecks()) {
@@ -59,6 +64,14 @@ public final class DeckUtils {
 		return deckLists;
 	}
 
+	public static Deck getDeck(int id) {
+		for (Deck deck : getDeckLists()) {
+			if (id == deck.id())
+				return deck;
+		}
+		throw new IllegalArgumentException("No deck found for id " + id);
+	}
+
 
 	private static List<Card> parseDeckString(String ds) {
 		List<Card> cards = new ArrayList<>();
@@ -66,10 +79,12 @@ public final class DeckUtils {
 			int u = card.indexOf('_');
 			String cardId = card.substring(0, u);
 			String count = card.substring(u + 1);
+			// TODO: replace with api call ex
+			// http://www.hearthstats.net/api/v1/cards/285
 			cards.add(new Card(Integer.parseInt(cardId), bundle
-					.getString(cardId), Integer
-					.parseInt(count)));
+					.getString(cardId), Integer.parseInt(count)));
 		}
+		Collections.sort(cards);
 		return cards;
 	}
 

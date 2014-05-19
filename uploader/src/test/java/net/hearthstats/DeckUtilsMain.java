@@ -15,12 +15,11 @@ import net.hearthstats.Deck.Card;
 public class DeckUtilsMain {
 	public static void main(String[] args) {
 		Box box = Box.createVerticalBox();
-		for (Deck deck : DeckUtils.getDeckLists()) {
-			System.out.println(deck);
-			for (Card card : deck.getCards()) {
-				System.out.println(card.url());
-				box.add(new ClickableLabel(card));
-			}
+		Deck deck = DeckUtils.getDeck(21994);
+		System.out.printf("Deck : %s %n", deck);
+		for (Card card : deck.cards()) {
+			System.out.println(card.url());
+			box.add(new ClickableLabel(card));
 		}
 		JOptionPane.showMessageDialog(new JFrame(), box);
 	}
@@ -32,7 +31,7 @@ public class DeckUtilsMain {
 
 		public ClickableLabel(Card card) {
 			this.card = card;
-			remaining = card.getCount();
+			remaining = card.count();
 			setText(label());
 			setOpaque(true);
 
@@ -51,14 +50,14 @@ public class DeckUtilsMain {
 		}
 
 		private String label() {
-			return card.getName() + " - " + remaining;
+			return card.name() + " - " + remaining;
 		}
 
 		private void handleClick(int button) {
 			if (button == MouseEvent.BUTTON1 && remaining > 0) {
 				remaining--;
 			}
-			if (button != MouseEvent.BUTTON1 && remaining < card.getCount()) {
+			if (button != MouseEvent.BUTTON1 && remaining < card.count()) {
 				remaining++;
 			}
 			if (remaining > 0)
