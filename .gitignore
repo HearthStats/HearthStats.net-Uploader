@@ -13,3 +13,6 @@ HearthStats.exe
 
 *~
 *.iml
+
+*.sw?
+*.orig

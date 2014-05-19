@@ -1,12 +1,21 @@
 package net.hearthstats;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
+import net.hearthstats.Deck.Card;
 import net.hearthstats.log.Log;
+
 import org.json.simple.JSONObject;
 
-public class DeckUtils {
+public final class DeckUtils {
+	private DeckUtils() {
+	}
+
+	private static ResourceBundle bundle = ResourceBundle
+			.getBundle("net.hearthstats.resources.Cards");
 
 	private static List<JSONObject> _decks;
 	private static API _api = new API(); 
@@ -34,4 +43,34 @@ public class DeckUtils {
 		return _decks;
 	}
 	
+	public static List<Deck> getDeckLists() {
+		List<Deck> deckLists = new ArrayList<>();
+		for (JSONObject deck : getDecks()) {
+			int id = Integer.parseInt(deck.get("id").toString());
+			Object string = deck.get("cardstring");
+			if (string != null) {
+				String cardString = string.toString().trim();
+				if (cardString.length() > 0) {
+					deckLists.add(new Deck(id, deck.get("name").toString(),
+							parseDeckString(cardString)));
+				}
+			}
+		}
+		return deckLists;
+	}
+
+
+	private static List<Card> parseDeckString(String ds) {
+		List<Card> cards = new ArrayList<>();
+		for (String card : ds.split(",")) {
+			int u = card.indexOf('_');
+			String cardId = card.substring(0, u);
+			String count = card.substring(u + 1);
+			cards.add(new Card(Integer.parseInt(cardId), bundle
+					.getString(cardId), Integer
+					.parseInt(count)));
+		}
+		return cards;
+	}
+
 }

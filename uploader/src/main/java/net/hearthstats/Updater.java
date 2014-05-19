@@ -206,15 +206,17 @@ public final class Updater {
 	}
 
 	public static void _runMain() {
-		JOptionPane.showMessageDialog(null, "Update complete. Attempting to restart ...");
-		_notify("Restarting ...");
 		try {
 			switch(Config.os) {
 				case WINDOWS:
+                    JOptionPane.showMessageDialog(null, "Update complete. Attempting to restart ...");
+                    _notify("Restarting ...");
 					Runtime.getRuntime().exec("HearthStats.exe");
 					break;
 				case OSX:
-                    Desktop.getDesktop().open(new File(hearthstatsLocation + "/HearthStats.app"));
+                    // OS X will not run another copy of an application that is already running, so the user must restart manually
+                    JOptionPane.showMessageDialog(null, "Update complete. HearthStats will now close, please reopen to run the new version.");
+                    //Desktop.getDesktop().open(new File(hearthstatsLocation + "/HearthStats.app"));
 					break;
 			}
 		} catch (IOException e) {

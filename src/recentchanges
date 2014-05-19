@@ -1,5 +1,4 @@
-v0.17
-* New match result popup lets you fix any detection errors before submitting your match
-* More robust turn detection shouldn't be tricked by cards flying over the turn button
-* More forgiving match end detection makes it less likely detection will get stuck
-* Russian translation, thanks to jcrka!
+v0.17.1
+* Improved match result popup lets you choose a game mode
+* Improved display of decks on the decks tab
+Thanks to tyrcho for developing these!

@@ -1,87 +1,77 @@
 <?xml version="1.0"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.hearthstats</groupId>
-    <artifactId>uploader-app</artifactId>
-    <name>HearthStats.net Uploader</name>
-    <version>0.17.1-SNAPSHOT</version>
-    <packaging>pom</packaging>
+	<groupId>net.hearthstats</groupId>
+	<artifactId>uploader-parent</artifactId>
+	<name>HearthStats.net Uploader</name>
+	<version>0.17.2-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-    <properties>
-	    <product.name>HearthStats.net Uploader</product.name>
+	<properties>
+		<product.name>HearthStats.net Uploader (parent pom)</product.name>
 
-	    <!-- parsedVersion will be populated automatically by the build-helper-maven-plugin -->
-	    <project.longVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}</project.longVersion>
-	    <groupId>org.projectlombok</groupId>
-	    <artifactId>lombok</artifactId>
-	    <version>1.12.6</version>
-	    <scope>provided</scope>
-	    <main.class>net.hearthstats.Main</main.class>
-	    <java.version>1.7</java.version>
-	    <org.slf4j.version>1.7.6</org.slf4j.version>
+		<!-- parsedVersion will be populated automatically by the build-helper-maven-plugin -->
+		<project.longVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}</project.longVersion>
+		<java.version>1.7</java.version>
 
-	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    </properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <repositories>
-	    <repository>
-		    <id>local-repository</id>
-		    <name>Local repository for libraries checked in with HearthStats.net Uploader source</name>
-		    <url>file://${project.basedir}/../lib</url>
-	    </repository>
-	    <repository>
-		    <id>org.ghost4j.repository.releases</id>
-		    <name>Ghost4J releases</name>
-		    <url>http://repo.ghost4j.org/maven2/releases</url>
-	    </repository>
-	    <repository>
-		    <releases />
-		    <snapshots>
-			    <enabled>false</enabled>
-		    </snapshots>
-		    <id>mygrid-repository</id>
-		    <name>myGrid Repository</name>
-		    <url>http://www.mygrid.org.uk/maven/repository</url>
-	    </repository>
-    </repositories>
+		<main.class>net.hearthstats.Main</main.class>
+	</properties>
 
-    <modules>
-	    <module>uploader</module>
-	    <module>uploader-osx</module>
-	    <module>uploader-win</module>
-    </modules>
+	<scm>
+		<developerConnection>scm:git:git@github.com:HearthStats/HearthStats.net-Uploader.git</developerConnection>
+	</scm>
 
-    <build>
-	    <plugins>
-		    <plugin>
-			    <artifactId>maven-compiler-plugin</artifactId>
-			    <version>2.3.2</version>
-			    <configuration>
-				    <source>${java.version}</source>
-				    <target>${java.version}</target>
-			    </configuration>
-		    </plugin>
-		    <plugin>
-			    <groupId>org.codehaus.mojo</groupId>
-			    <artifactId>build-helper-maven-plugin</artifactId>
-			    <version>1.8</version>
-			    <executions>
-				    <execution>
-					    <id>parse-version</id>
-					    <goals>
-						    <goal>parse-version</goal>
-					    </goals>
-					    <copyright>See https://github.com/HearthStats/HearthStats.net-Uploader for license</copyright>
 
-				    </execution>
-			    </executions>
-		    </plugin>
-	    </plugins>
-    </build>
+	<modules>
+		<module>uploader</module>
+		<module>uploader-win</module>
+		<module>uploader-osx</module>
+	</modules>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<id>parse-version</id>
+						<goals>
+							<goal>parse-version</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<tagNameFormat>v@{project.version}</tagNameFormat>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+				</configuration>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.3.2</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 
 </project>
