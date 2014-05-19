@@ -103,6 +103,7 @@
                         <configuration>
                             <headerType>gui</headerType>
                             <outfile>target/HearthStats.exe</outfile>
+                            <icon>src/main/resources/images/icon.ico</icon>
                             <classPath>
                                 <mainClass>${main.class}</mainClass>
                                 <addDependencies>true</addDependencies>
@@ -110,6 +111,11 @@
                             </classPath>
                             <jre>
                                 <minVersion>${java.version}.0</minVersion>
+                                <minVersion>1.7.0</minVersion>
+                                <opts>
+                                    <opt>-Xms96m</opt>
+                                    <opt>-Xmx384m</opt>
+                                </opts>
                             </jre>
                             <versionInfo>
                                 <fileVersion>${project.longVersion}</fileVersion>

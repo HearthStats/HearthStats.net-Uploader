@@ -120,6 +120,10 @@
                                     </classpath>
                                 </taskdef>
 
+                                <delete failonerror="false" includeemptydirs="true" quiet="true">
+                                    <fileset dir="target/HearthStats.app" />
+                                </delete>
+
                                 <bundleapp outputdirectory="target" name="HearthStats"
                                            displayname="HearthStats.net Uploader" identifier="net.hearthstats.HearthStatsUploader"
                                            shortversion="${project.version}" applicationCategory="public.app-category.games"
