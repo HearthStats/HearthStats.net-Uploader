@@ -7,13 +7,13 @@
     <parent>
         <groupId>net.hearthstats</groupId>
         <artifactId>uploader-app</artifactId>
-        <version>0.17.1-SNAPSHOT</version>
+        <version>0.17.1</version>
     </parent>
 
 
     <groupId>net.hearthstats</groupId>
     <artifactId>uploader-osx</artifactId>
-    <version>0.17.1-SNAPSHOT</version>
+    <version>0.17.1</version>
 
     <packaging>jar</packaging>
     <name>Uploader OS X</name>
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>net.hearthstats</groupId>
             <artifactId>uploader</artifactId>
-            <version>0.17.1-SNAPSHOT</version>
+            <version>0.17.1</version>
         </dependency>
 
         <dependency>
@@ -84,6 +84,8 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <!-- Create the shaded jar with the same name for all versions because the updater only works if the filename is consistent -->
+                            <outputFile>target/HearthStatsUploader-OSX.jar</outputFile>
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <minimizeJar>false</minimizeJar>
@@ -128,7 +130,7 @@
                                            displayname="HearthStats.net Uploader" identifier="net.hearthstats.HearthStatsUploader"
                                            shortversion="${project.version}" applicationCategory="public.app-category.games"
                                            icon="src/main/resources/images/icon.icns" mainclassname="net/hearthstats/Main">
-                                    <classpath file="target/${project.artifactId}-${project.version}.jar" />
+                                    <classpath file="target/HearthStatsUploader-OSX.jar" />
                                     <librarypath dir="src/main/native/osx/" includes="*.dylib" />
                                     <option value="-Dapple.laf.useScreenMenuBar=true" />
                                     <option value="-Djna.library.path=$APP_ROOT/Contents/MacOS" />

@@ -7,12 +7,12 @@
     <parent>
         <groupId>net.hearthstats</groupId>
         <artifactId>uploader-app</artifactId>
-        <version>0.17.1-SNAPSHOT</version>
+        <version>0.17.1</version>
     </parent>
 
 	<groupId>net.hearthstats</groupId>
 	<artifactId>uploader</artifactId>
-	<version>0.17.1-SNAPSHOT</version>
+	<version>0.17.1</version>
 
 	<packaging>jar</packaging>
 	<name>Uploader Core</name>
