@@ -26,7 +26,7 @@
 	</properties>
 
 	<scm>
-		<developerConnection>scm:git:tyrcho@github.com:HearthStats/HearthStats.net-Uploader.git</developerConnection>
+		<developerConnection>scm:git:git@github.com:HearthStats/HearthStats.net-Uploader.git</developerConnection>
 	</scm>
 
 
@@ -50,6 +50,15 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<tagNameFormat>v@{project.version}</tagNameFormat>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+				</configuration>
 			</plugin>
 		</plugins>
 		<pluginManagement>
