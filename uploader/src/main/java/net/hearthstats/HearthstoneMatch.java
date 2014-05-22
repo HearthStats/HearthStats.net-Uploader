@@ -30,7 +30,7 @@ public class HearthstoneMatch {
 		return propertyVal == null ? "[undetected]" : propertyVal;
 	}
 	public String toString() {
-		JSONObject deck = DeckUtils.getDeckFromSlot(getDeckSlot());
+		Deck deck = DeckUtils.getDeckFromSlot(getDeckSlot());
 		
 		return _propertyOrUnknown(getMode()) + 
 				("Ranked".equals(getMode()) ? " level " + getRankLevel() : "") +
@@ -40,7 +40,7 @@ public class HearthstoneMatch {
 				_propertyOrUnknown(getOpponentClass()) + " " +
 				"(" + _propertyOrUnknown(getOpponentName()) + ") " +
 				getResult() + " " +
-				(deck == null ? "" : " deck: " + deck.get("name")) +
+				(deck == null ? "" : " deck: " + deck.name()) +
 				" (" + getNumTurns() + " turns)";
 				
 	}

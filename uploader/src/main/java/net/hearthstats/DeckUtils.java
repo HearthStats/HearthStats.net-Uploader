@@ -2,9 +2,7 @@ package net.hearthstats;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import net.hearthstats.log.Log;
 
@@ -27,13 +25,13 @@ public final class DeckUtils {
 		}
 	}
 
-	public static JSONObject getDeckFromSlot(Integer slotNum) {
+	public static Deck getDeckFromSlot(Integer slotNum) {
 		getDecks();
 		for (int i = 0; i < _decks.size(); i++) {
 			if (_decks.get(i).get("slot") != null
 					&& _decks.get(i).get("slot").toString()
 							.equals(slotNum.toString()))
-				return _decks.get(i);
+				return Deck.fromJson(_decks.get(i));
 		}
 		return null;
 	}
@@ -47,15 +45,7 @@ public final class DeckUtils {
 	public static List<Deck> getDeckLists() {
 		List<Deck> deckLists = new ArrayList<>();
 		for (JSONObject deck : getDecks()) {
-			int id = Integer.parseInt(deck.get("id").toString());
-			Object string = deck.get("cardstring");
-			if (string != null) {
-				String cardString = string.toString().trim();
-				if (cardString.length() > 0) {
-					deckLists.add(new Deck(id, deck.get("name").toString(),
-							parseDeckString(cardString)));
-				}
-			}
+			deckLists.add(Deck.fromJson(deck));
 		}
 		return deckLists;
 	}
@@ -66,21 +56,6 @@ public final class DeckUtils {
 				return deck;
 		}
 		throw new IllegalArgumentException("No deck found for id " + id);
-	}
-
-	private static List<Card> parseDeckString(String ds) {
-		Map<Integer, Card> cardData = CardUtils.getCards();
-		List<Card> cards = new ArrayList<>();
-		for (String card : ds.split(",")) {
-			int u = card.indexOf('_');
-			String count = card.substring(u + 1);
-			int id = Integer.parseInt(card.substring(0, u));
-			Card cd = cardData.get(id);
-			cards.add(Card.builder().id(id).name(cd.name()).cost(cd.cost())
-					.count(Integer.parseInt(count)).build());
-		}
-		Collections.sort(cards);
-		return cards;
 	}
 
 }
