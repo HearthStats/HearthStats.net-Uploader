@@ -13,10 +13,15 @@ public class Card implements Comparable<Card> {
 	private int count;
 	private int cost;
 
+	public String fileName() {
+		return String.format("%s.png", name.replaceAll("[^a-zA-Z]", "-")
+				.toLowerCase());
+	}
+
 	public String url() {
 		return String.format(
-				"https://s3-us-west-2.amazonaws.com/hearthstats/cards/%s.png",
-				name.replaceAll("[^a-zA-Z]", "-").toLowerCase());
+				"https://s3-us-west-2.amazonaws.com/hearthstats/cards/%s",
+				fileName());
 	}
 
 	@Override

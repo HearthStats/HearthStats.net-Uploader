@@ -117,6 +117,12 @@ public class Config {
 		setStringValue("API", "baseurl", baseUrl);
 	}
 
+	public static String getImageCacheFolder() {
+		File file = new File("cache/cardimages");
+		file.mkdirs();
+		return file.getAbsolutePath();
+	}
+
 	public static String getUserKey() {
 		return getStringSetting("API", "userkey", "your_userkey_here");
 	}

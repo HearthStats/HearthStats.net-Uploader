@@ -1,4 +1,5 @@
 temp/
+cache/
 tmp/
 target/
 .settings/

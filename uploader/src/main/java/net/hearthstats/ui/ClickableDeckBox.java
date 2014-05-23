@@ -3,8 +3,15 @@ package net.hearthstats.ui;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -12,13 +19,18 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import net.hearthstats.Card;
+import net.hearthstats.Config;
 import net.hearthstats.Deck;
+import net.hearthstats.log.Log;
 
 public class ClickableDeckBox {
+	private static String imageCacheFolder = Config.getImageCacheFolder();
+
 	private ClickableDeckBox() {
 	}
 
 	public static Box makeBox(Deck deck) {
+		downloadImages(deck);
 		Box container = Box.createHorizontalBox();
 		Box box = Box.createVerticalBox();
 		JLabel imageLabel = new JLabel();
@@ -31,6 +43,43 @@ public class ClickableDeckBox {
 		container.add(box);
 		container.add(imageLabel);
 		return container;
+	}
+
+	private static void downloadImages(Deck deck) {
+		ScheduledExecutorService scheduledExecutorService = Executors
+				.newScheduledThreadPool(30);
+
+		for (final Card card : deck.cards()) {
+			scheduledExecutorService.submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						ReadableByteChannel rbc = Channels.newChannel(new URL(
+								card.url()).openStream());
+						File file = new File(imageCacheFolder, card.fileName());
+						if (file.length() < 30000) {
+							// probably not downloaded correctly yet
+							FileOutputStream fos = new FileOutputStream(file);
+							fos.getChannel().transferFrom(rbc, 0,
+									Long.MAX_VALUE);
+							fos.close();
+							rbc.close();
+						}
+					} catch (Exception e) {
+						Log.error(
+								"Could not download image for " + card.name(),
+								e);
+					}
+				}
+			});
+		}
+		try {
+			scheduledExecutorService.shutdown();
+			scheduledExecutorService.awaitTermination(30, TimeUnit.SECONDS);
+			Log.info("all images downloaded successfully");
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private static class MouseHandler extends MouseAdapter {
@@ -48,7 +97,9 @@ public class ClickableDeckBox {
 				@Override
 				public void run() {
 					try {
-						imageLabel.setIcon(new ImageIcon(new URL(card.url())));
+						imageLabel.setIcon(new ImageIcon(new File(
+								imageCacheFolder, card.fileName()).toURI()
+								.toURL()));
 					} catch (MalformedURLException e) {
 						throw new RuntimeException(e);
 					}
