@@ -56,8 +56,7 @@ public class Deck {
 			String count = card.substring(u + 1);
 			int id = Integer.parseInt(card.substring(0, u));
 			Card cd = cardData.get(id);
-			cards.add(Card.builder().id(id).name(cd.name()).cost(cd.cost())
-					.count(Integer.parseInt(count)).build());
+			cards.add(cd.withCount(Integer.parseInt(count)));
 		}
 		Collections.sort(cards);
 		return cards;

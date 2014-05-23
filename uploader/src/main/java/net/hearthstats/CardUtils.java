@@ -22,9 +22,11 @@ public final class CardUtils {
 				for (JSONObject json : _api.getCards()) {
 					int id = Integer.parseInt(json.get("id").toString());
 					int cost = Integer.parseInt(json.get("mana").toString());
-					cards.put(
-							id,
-							Card.builder().id(id).cost(cost)
+					Object rarityString = json.get("rarity_id");
+					int rarity = rarityString == null ? 0 : Integer
+							.parseInt(rarityString.toString());
+					cards.put(id,
+							Card.builder().rarity(rarity).id(id).cost(cost)
 									.name(json.get("name").toString()).build());
 				}
 			} catch (IOException e) {

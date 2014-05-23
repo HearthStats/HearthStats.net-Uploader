@@ -1,14 +1,19 @@
 package net.hearthstats.log;
 
+import java.io.File;
+import java.util.Iterator;
+
+import org.slf4j.ILoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
+
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.recovery.ResilientFileOutputStream;
-import org.slf4j.*;
-
-import java.io.File;
-import java.util.Iterator;
 
 /**
  * Static helper class that allows log messages to be logged from anywhere in the application.
@@ -62,6 +67,10 @@ public class Log {
     public static void info(String logMessage) {
         appLog.info(logMessage);
     }
+
+	public static void debug(String logMessage) {
+		appLog.debug(logMessage);
+	}
 
     /**
      * Logs a warning message. This should be used for problems that are temporary or unlikely to break the application.

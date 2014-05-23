@@ -5,7 +5,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -19,12 +18,10 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import net.hearthstats.Card;
-import net.hearthstats.Config;
 import net.hearthstats.Deck;
 import net.hearthstats.log.Log;
 
 public class ClickableDeckBox {
-	private static String imageCacheFolder = Config.getImageCacheFolder();
 
 	private ClickableDeckBox() {
 	}
@@ -56,7 +53,7 @@ public class ClickableDeckBox {
 					try {
 						ReadableByteChannel rbc = Channels.newChannel(new URL(
 								card.url()).openStream());
-						File file = new File(imageCacheFolder, card.fileName());
+						File file = card.localFile();
 						if (file.length() < 30000) {
 							// probably not downloaded correctly yet
 							FileOutputStream fos = new FileOutputStream(file);
@@ -64,6 +61,10 @@ public class ClickableDeckBox {
 									Long.MAX_VALUE);
 							fos.close();
 							rbc.close();
+							Log.debug(card.name() + " saved to cache folder");
+						} else {
+							Log.debug(card.name()
+									+ " already in cache, skipping");
 						}
 					} catch (Exception e) {
 						Log.error(
@@ -96,13 +97,7 @@ public class ClickableDeckBox {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					try {
-						imageLabel.setIcon(new ImageIcon(new File(
-								imageCacheFolder, card.fileName()).toURI()
-								.toURL()));
-					} catch (MalformedURLException e) {
-						throw new RuntimeException(e);
-					}
+					imageLabel.setIcon(new ImageIcon(card.localURL()));
 				}
 			});
 		}

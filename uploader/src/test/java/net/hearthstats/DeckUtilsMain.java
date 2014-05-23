@@ -11,9 +11,11 @@ import net.hearthstats.ui.ClickableDeckBox;
 public class DeckUtilsMain {
 	public static void main(String[] args) throws HeadlessException,
 			MalformedURLException {
-		Deck deck = DeckUtils.getDeck(21994);
+		Deck deck = DeckUtils.getDeck(20034);
 		System.out.printf("Deck : %s %n", deck);
-		JOptionPane.showMessageDialog(new JFrame(),
+		JFrame jFrame = new JFrame();
+		JOptionPane.showMessageDialog(jFrame,
 				ClickableDeckBox.makeBox(deck));
+		System.exit(0);
 	}
 }
