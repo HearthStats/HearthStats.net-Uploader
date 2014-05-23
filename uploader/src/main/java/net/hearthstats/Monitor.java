@@ -149,6 +149,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JCheckBox _minToTrayField;
 	private JCheckBox _startMinimizedField;
 	private JCheckBox _showYourTurnNotificationField;
+	private JCheckBox _showDeckOverlay;
 	private JTabbedPane _tabbedPane;
 	private ResourceBundle _bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
 
@@ -721,6 +722,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		_updateNotificationCheckboxes();
 
+		// show deck overlay
+		panel.add(new JLabel(""), "skip,right");
+		_showDeckOverlay = new JCheckBox(t("options.ui.deckOverlay"));
+		_showDeckOverlay.setSelected(Config.showDeckOverlay());
+		panel.add(_showDeckOverlay, "wrap");
 
         panel.add(new JLabel(t("options.label.matchpopup")), "skip,right");
 
@@ -1282,10 +1288,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 					_resetMatchClassSelectors();
 					Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer
 							.getDeckSlot());
-					if (selectedDeck != null && selectedDeck.isValid())
-					new StandardDialog(selectedDeck.name(),
-							ClickableDeckBox.makeBox(selectedDeck), true)
-							.show();
+					if (selectedDeck != null && selectedDeck.isValid()) {
+						if (Config.showDeckOverlay())
+							new StandardDialog(selectedDeck.name(),
+								ClickableDeckBox.makeBox(selectedDeck), true)
+								.show();
+					}
 					else _notify("invalid deck, update it on hearthstats.net to display deck overlay");
 				}
 
@@ -1487,6 +1495,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		Config.setShowModeNotification(_showModeNotificationField.isSelected());
 		Config.setShowDeckNotification(_showDeckNotificationField.isSelected());
 		Config.setShowYourTurnNotification(_showYourTurnNotificationField.isSelected());
+		Config.setShowDeckOverlay(_showDeckOverlay.isSelected());
         Config.setShowMatchPopup(Config.MatchPopup.values()[showMatchPopupField.getSelectedIndex()]);
 		Config.setAnalyticsEnabled(_analyticsField.isSelected());
 		Config.setMinToTray(_minToTrayField.isSelected());
