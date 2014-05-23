@@ -17,6 +17,7 @@ import org.json.simple.JSONObject;
 public class Deck {
 	private int id;
 	private String name;
+	private String slug;
 	private List<Card> cards;
 
 	public boolean isValid() {
@@ -41,7 +42,9 @@ public class Deck {
 				cardList = parseDeckString(cardString);
 			}
 		}
-		return new Deck(id, json.get("name").toString(), cardList);
+		return Deck.builder().id(id).slug(json.get("slug").toString())
+				.name(json.get("name").toString())
+				.cards(cardList).build();
 
 	}
 

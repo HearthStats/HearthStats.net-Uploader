@@ -1294,7 +1294,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 								ClickableDeckBox.makeBox(selectedDeck), true)
 								.show();
 					}
-					else _notify("invalid deck, update it on hearthstats.net to display deck overlay");
+					else {
+						String message=String.format("Invalid or empty deck, <a href='http://hearthstats.net/decks/%s/edit'>edit it on hearthstats.net</a> to display deck overlay (you will need to restart the uploader)", selectedDeck.slug());
+						_notify(message);
+						Log.info(message);
+					}
 				}
 
 				if (_analyzer.getScreen().group == ScreenGroup.MATCH_START) {
