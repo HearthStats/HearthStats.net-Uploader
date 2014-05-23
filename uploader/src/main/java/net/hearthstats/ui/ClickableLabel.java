@@ -15,7 +15,7 @@ public class ClickableLabel extends JLabel {
 	private Card card;
 	private Color initialColor;
 
-	public ClickableLabel(Card card) {
+	public ClickableLabel(final Card card) {
 		this.card = card;
 		remaining = card.count();
 		setText(label());
