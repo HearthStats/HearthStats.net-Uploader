@@ -36,10 +36,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.ResourceBundle;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -75,6 +71,7 @@ import net.hearthstats.ui.MatchEndPopup;
 import net.hearthstats.ui.StandardDialog;
 import net.miginfocom.swing.MigLayout;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +84,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     private static final String PROFILES_URL = "http://hearthstats.net/profiles";
     private static final String DECKS_URL = "http://hearthstats.net/decks";
 	private static final int POLLING_INTERVAL_IN_MS = 100;
-    private static final int MAX_THREADS = 5;
 
     private static final EnumSet<Screen> DO_NOT_NOTIFY_SCREENS = EnumSet.of(Screen.COLLECTION, Screen.COLLECTION_ZOOM, Screen.MAIN_TODAYSQUESTS, Screen.TITLE);
 
@@ -208,7 +204,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 
 
 		if(_checkForUserKey()) {
-			_pollHearthstone();
+			poller.start();
+		} else {
+			System.exit(1);
 		}
 
         if (Config.os == Config.OS.OSX) {
@@ -243,7 +241,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 
 	
 	private boolean _checkForUserKey() {
-		if(Config.getUserKey().equals("your_userkey_here")) {
+		boolean userKeySet = !Config.getUserKey().equals("your_userkey_here");
+		if(userKeySet) {
+			return true;
+		} else {
             Log.warn(t("error.userkey_not_entered"));
 
             bringWindowToFront();
@@ -253,44 +254,31 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 					t("you_need_to_enter_userkey") + "\n\n" +
 					t("get_it_at_hsnet_profiles"));
 			
-			// Create Desktop object
 			Desktop d = Desktop.getDesktop();
-			// Browse a URL, say google.com
 			try {
 				d.browse(new URI(PROFILES_URL));
 			} catch (IOException | URISyntaxException e) {
                 Log.warn("Error launching browser with URL " + PROFILES_URL, e);
 			}
 
-			String[] options = {t("button.ok"), t("button.cancel")};
-			JPanel panel = new JPanel();
-			JLabel lbl = new JLabel(t("UserKey"));
-			JTextField txt = new JTextField(10);
-			panel.add(lbl);
-			panel.add(txt);
-
-			int selectedOption = JOptionPane.showOptionDialog(this, panel, t("enter_your_userkey"), JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-			if(selectedOption == 0) {
-			    String userkey = txt.getText();
-			    if(userkey.isEmpty()) {
-			    	_checkForUserKey();
-			    } else {
-			    	Config.setUserKey(userkey);
-                    try {
-                        Config.save();
-                    } catch (Throwable e) {
-                        Log.warn("Error occurred trying to write settings file, your settings may not be saved", e);
-                    }
-			    	_userKeyField.setText(userkey);
-                    Log.info(t("UserkeyStored"));
-			    	_pollHearthstone();
-			    }
+			String userkey = JOptionPane.showInputDialog(this,
+					t("enter_your_userkey"));
+			if (StringUtils.isEmpty(userkey)) {
+				return false;
 			} else {
-				System.exit(0);
+				Config.setUserKey(userkey);
+				try {
+					_userKeyField.setText(userkey);
+					Config.save();
+					Log.info(t("UserkeyStored"));
+				} catch (Throwable e) {
+					Log.warn(
+							"Error occurred trying to write settings file, your settings may not be saved",
+							e);
+				}
+				return true;
 			}
-			return false;
 		}
-		return true;
 	}
 
 
@@ -895,8 +883,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 
-	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(MAX_THREADS);
-
 	protected boolean _drawPaneAdded = false;
 
 	protected BufferedImage image;
@@ -1078,39 +1064,39 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			
 		}
 	}
-	protected void _pollHearthstone() {
-        scheduledExecutorService.schedule(new Callable<Object>() {
-			public Object call() throws Exception {
-                try {
-                    if (_hsHelper.foundProgram()) {
-                        _handleHearthstoneFound();
-                    } else {
-						debugLog.debug("  - did not find Hearthstone");
-                        _handleHearthstoneNotFound();
-                    }
 
-                    _updateTitle();
+	private void pollHsImpl() {
+		boolean error = false;
+		while (!error) {
+			try {
+				if (_hsHelper.foundProgram()) {
+					_handleHearthstoneFound();
+				} else {
+					debugLog.debug("  - did not find Hearthstone");
+					_handleHearthstoneNotFound();
+				}
+				_updateTitle();
+				Thread.sleep(POLLING_INTERVAL_IN_MS);
+			} catch (Throwable ex) {
+				ex.printStackTrace(System.err);
+				debugLog.error("  - exception which is not being handled:", ex);
+				while (ex.getCause() != null) {
+					ex = ex.getCause();
+				}
+				Log.error(
+						"ERROR: "
+								+ ex.getMessage()
+								+ ". You will need to restart HearthStats.net Uploader.",
+						ex);
+				error = true;
+			} finally {
+				debugLog.debug("<-- finished");
+			}
 
-                    _pollHearthstone();        // repeat the process
-
-                } catch (Throwable ex) {
-                    ex.printStackTrace(System.err);
-                    debugLog.error("  - exception which is not being handled:", ex);
-                    while (ex.getCause() != null) {
-                        ex = ex.getCause();
-                    }
-                    Log.error("ERROR: " + ex.getMessage() + ". You will need to restart HearthStats.net Uploader.", ex);
-                } finally {
-                    debugLog.debug("<-- finished");
-                }
-
-                return "";
-            }
-		}, POLLING_INTERVAL_IN_MS, TimeUnit.MILLISECONDS);
+		}
 	}
-
-
-    /**
+	
+	/**
      * Checks whether the match result is complete, showing a popup if necessary to fix the match data,
      * and then submits the match when ready.
      *
@@ -1515,6 +1501,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	//http://stackoverflow.com/questions/7461477/how-to-hide-a-jframe-in-system-tray-of-taskbar
 	TrayIcon trayIcon;
     SystemTray tray;
+	private Thread poller = new Thread(new Runnable() {
+		@Override
+		public void run() {
+			pollHsImpl();
+		}
+	});
+
     private void _enableMinimizeToTray(){
         if(SystemTray.isSupported()){
         	
