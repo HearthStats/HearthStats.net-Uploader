@@ -1,21 +1,11 @@
 package net.hearthstats.ui;
 
-import net.hearthstats.DeckSlotUtils;
-import net.hearthstats.HearthstoneMatch;
-import net.hearthstats.Monitor;
-import net.hearthstats.util.Rank;
-import net.miginfocom.swing.MigLayout;
-
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -23,6 +13,30 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import net.hearthstats.Deck;
+import net.hearthstats.DeckUtils;
+import net.hearthstats.HearthstoneMatch;
+import net.hearthstats.Monitor;
+import net.hearthstats.util.Rank;
+import net.miginfocom.swing.MigLayout;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A popup to display at the end of the match that allows the match details to be edited.
@@ -291,14 +305,14 @@ public class MatchEndPopup extends JPanel {
         String[] deckSlotList = new String[10];
         deckSlotList[0] = undetectedLabel();
         for (int i = 1; i <= 9; i++) {
-            JSONObject deck =  DeckSlotUtils.getDeckFromSlot(i);
+			Deck deck = DeckUtils.getDeckFromSlot(i);
             StringBuilder sb = new StringBuilder();
             sb.append(t("deck_slot.label_" + i));
             sb.append(" ");
             if (deck == null) {
                 sb.append(t("undetected"));
             } else {
-                sb.append(deck.get("name"));
+				sb.append(deck.name());
             }
             deckSlotList[i] = sb.toString();
         }

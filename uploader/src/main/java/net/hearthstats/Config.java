@@ -5,11 +5,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.EnumSet;
 
 import javax.swing.JOptionPane;
 
 import net.hearthstats.log.Log;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ini4j.Wini;
 import org.slf4j.Logger;
@@ -42,6 +42,8 @@ public class Config {
 	private static boolean _showModeNotification;
 
 	private static boolean _showDeckNotification;
+
+	private static boolean _showDeckOverlay;
 
     private static MatchPopup showMatchPopup;
 
@@ -115,6 +117,12 @@ public class Config {
 		setStringValue("API", "baseurl", baseUrl);
 	}
 
+	public static String getImageCacheFolder() {
+		File file = new File("cache/cardimages");
+		file.mkdirs();
+		return file.getAbsolutePath();
+	}
+
 	public static String getUserKey() {
 		return getStringSetting("API", "userkey", "your_userkey_here");
 	}
@@ -159,6 +167,11 @@ public class Config {
 		return getBooleanSetting("notifications", "deck", true);
 	}
 	
+	public static boolean showDeckOverlay() {
+		return getBooleanSetting("ui", "deckOverlay", false);
+		// since feature is still new, do not activate by default
+	}
+
 	public static boolean showScreenNotification() {
 		return getBooleanSetting("notifications", "screen", true);
 	}
@@ -286,6 +299,10 @@ public class Config {
 		setBooleanValue("notifications", "deck", val);
 	}
 
+	public static void setShowDeckOverlay(boolean val) {
+		setBooleanValue("ui", "deckOverlay", val);
+	}
+
     public static void setShowMatchPopup(MatchPopup showMatchPopup) {
         setStringValue("ui", "matchpopup", showMatchPopup == null ? "" : showMatchPopup.name());
     }
@@ -402,6 +419,7 @@ public class Config {
 		setShowScreenNotification(_showScreenNotification);
 		setShowModeNotification(_showModeNotification);
 		setShowDeckNotification(_showDeckNotification);
+		setShowDeckOverlay(_showDeckOverlay);
         setShowMatchPopup(showMatchPopup);
 		setAnalyticsEnabled(_analyticsEnabled);
 		setMinToTray(_minToTray);
@@ -423,6 +441,7 @@ public class Config {
 		_showScreenNotification = showScreenNotification();
 		_showModeNotification = showModeNotification();
 		_showDeckNotification = showDeckNotification();
+		_showDeckOverlay = showDeckOverlay();
         showMatchPopup = showMatchPopup();
 		_analyticsEnabled = analyticsEnabled();
 		_minToTray = minimizeToTray();

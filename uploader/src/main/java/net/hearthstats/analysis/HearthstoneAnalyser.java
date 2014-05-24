@@ -1,5 +1,10 @@
 package net.hearthstats.analysis;
 
+import java.awt.image.BufferedImage;
+import java.text.MessageFormat;
+import java.util.Observable;
+import java.util.ResourceBundle;
+
 import net.hearthstats.BackgroundImageSave;
 import net.hearthstats.HearthstoneMatch;
 import net.hearthstats.Main;
@@ -15,14 +20,10 @@ import net.hearthstats.state.UniquePixel;
 import net.hearthstats.util.Coordinate;
 import net.hearthstats.util.MatchOutcome;
 import net.hearthstats.util.Rank;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.image.BufferedImage;
-import java.text.MessageFormat;
-import java.util.Observable;
-import java.util.ResourceBundle;
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
@@ -73,7 +74,6 @@ public class HearthstoneAnalyser extends Observable {
     }
 
 
-    private int iterations = 0;
 
 
     public void analyze(BufferedImage image) {

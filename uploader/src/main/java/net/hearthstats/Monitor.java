@@ -1,7 +1,67 @@
 package net.hearthstats;
 
 
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import java.awt.AWTException;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.Point;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.awt.event.WindowStateListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkListener;
+
 import net.hearthstats.analysis.AnalyserEvent;
 import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
@@ -10,31 +70,16 @@ import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.notification.NotificationQueue;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
+import net.hearthstats.ui.ClickableDeckBox;
 import net.hearthstats.ui.MatchEndPopup;
+import net.hearthstats.ui.StandardDialog;
 import net.miginfocom.swing.MigLayout;
+
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkListener;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
 
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer, WindowListener {
@@ -48,7 +93,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     private static final EnumSet<Screen> DO_NOT_NOTIFY_SCREENS = EnumSet.of(Screen.COLLECTION, Screen.COLLECTION_ZOOM, Screen.MAIN_TODAYSQUESTS, Screen.TITLE);
 
     private static Logger debugLog = LoggerFactory.getLogger(Monitor.class);
-    private static Logger perfLog = LoggerFactory.getLogger("net.hearthstats.performance");
 
     public static final String[] hsClassOptions = {
             "- undetected -",
@@ -86,7 +130,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JComboBox _currentOpponentClassSelect;
 	private JComboBox _currentYourClassSelector;
 
-    private int _numThreads = 0;
 	private int _pollIterations = 0;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
@@ -106,6 +149,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JCheckBox _minToTrayField;
 	private JCheckBox _startMinimizedField;
 	private JCheckBox _showYourTurnNotificationField;
+	private JCheckBox _showDeckOverlay;
 	private JTabbedPane _tabbedPane;
 	private ResourceBundle _bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
 
@@ -678,6 +722,11 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		_updateNotificationCheckboxes();
 
+		// show deck overlay
+		panel.add(new JLabel(""), "skip,right");
+		_showDeckOverlay = new JCheckBox(t("options.ui.deckOverlay"));
+		_showDeckOverlay.setSelected(Config.showDeckOverlay());
+		panel.add(_showDeckOverlay, "wrap");
 
         panel.add(new JLabel(t("options.label.matchpopup")), "skip,right");
 
@@ -764,7 +813,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		selector.addItem("- Select a deck -");
 		
-		List<JSONObject> decks = DeckSlotUtils.getDecks();
+		List<JSONObject> decks = DeckUtils.getDecks();
 		
 		Collections.sort(decks, new Comparator<JSONObject>() {
 			@Override
@@ -783,7 +832,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 	private void _updateDecksTab() throws IOException {
-		DeckSlotUtils.updateDecks();
+		DeckUtils.updateDecks();
 		_applyDecksToSelector(_deckSlot1Field, 1);
 		_applyDecksToSelector(_deckSlot2Field, 2);
 		_applyDecksToSelector(_deckSlot3Field, 3);
@@ -872,10 +921,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 	protected void _notify(String header, String message) {
-		if (!Config.showNotifications())
-			return;	//Notifications disabled
-
-		_notificationQueue.add(header, message, false);
+		if (Config.showNotifications())
+			_notificationQueue.add(header, message, false);
 	}
 
 
@@ -1038,7 +1085,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected void _pollHearthstone() {
         scheduledExecutorService.schedule(new Callable<Object>() {
 			public Object call() throws Exception {
-                _numThreads++;
                 _pollIterations++;
 
                 // A copy of pollIterations is kept in localPollIterations
@@ -1064,7 +1110,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
                         System.gc();
                     }
 
-                    _numThreads--;
 
                 } catch (Throwable ex) {
                     ex.printStackTrace(System.err);
@@ -1172,14 +1217,14 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				break;
 
 			case DECK_SLOT:
-				JSONObject deck = DeckSlotUtils.getDeckFromSlot(_analyzer.getDeckSlot());
+				Deck deck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
 				if (deck == null) {
 					_tabbedPane.setSelectedIndex(2);
                     bringWindowToFront();
                     Main.showMessageDialog(this, "Unable to determine what deck you have in slot #" + _analyzer.getDeckSlot() + "\n\nPlease set your decks in the \"Decks\" tab.");
 				} else {
-					_notify("Deck Detected", deck.get("name").toString());
-                    Log.info("Deck Detected: " + deck.get("name") + " Detected");
+				_notify("Deck Detected", deck.name());
+				Log.info("Deck Detected: " + deck.name() + " Detected");
 				}
 				
 				break;
@@ -1241,6 +1286,19 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				
 				if (_analyzer.getScreen() == Screen.FINDING_OPPONENT) {
 					_resetMatchClassSelectors();
+					Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer
+							.getDeckSlot());
+					if (selectedDeck != null && selectedDeck.isValid()) {
+						if (Config.showDeckOverlay())
+							new StandardDialog(selectedDeck.name(),
+								ClickableDeckBox.makeBox(selectedDeck), true)
+								.show();
+					}
+					else {
+						String message=String.format("Invalid or empty deck, <a href='http://hearthstats.net/decks/%s/edit'>edit it on hearthstats.net</a> to display deck overlay (you will need to restart the uploader)", selectedDeck.slug());
+						_notify(message);
+						Log.info(message);
+					}
 				}
 
 				if (_analyzer.getScreen().group == ScreenGroup.MATCH_START) {
@@ -1441,6 +1499,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		Config.setShowModeNotification(_showModeNotificationField.isSelected());
 		Config.setShowDeckNotification(_showDeckNotificationField.isSelected());
 		Config.setShowYourTurnNotification(_showYourTurnNotificationField.isSelected());
+		Config.setShowDeckOverlay(_showDeckOverlay.isSelected());
         Config.setShowMatchPopup(Config.MatchPopup.values()[showMatchPopupField.getSelectedIndex()]);
 		Config.setAnalyticsEnabled(_analyticsField.isSelected());
 		Config.setMinToTray(_minToTrayField.isSelected());
