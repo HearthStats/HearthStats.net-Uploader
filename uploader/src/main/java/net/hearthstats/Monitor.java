@@ -130,7 +130,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JComboBox _currentOpponentClassSelect;
 	private JComboBox _currentYourClassSelector;
 
-	private int _pollIterations = 0;
 	protected boolean _hearthstoneDetected;
 	protected JGoogleAnalyticsTracker _analytics;
 	protected LogPane _logText;
@@ -1037,44 +1036,42 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         }
 	}
 
-	protected void _handleHearthstoneFound(int currentPollIteration) {
-        debugLog.debug("  - Iteration {} found Hearthstone", currentPollIteration);
-
+	protected void _handleHearthstoneFound() {
 		// mark hearthstone found if necessary
 		if (!_hearthstoneDetected) {
 			_hearthstoneDetected = true;
-            debugLog.debug("  - Iteration {} changed hearthstoneDetected to true", currentPollIteration);
+			debugLog.debug("  - hearthstoneDetected");
             if (Config.showHsFoundNotification()) {
 				_notify("Hearthstone found");
             }
 		}
 		
 		// grab the image from Hearthstone
-        debugLog.debug("  - Iteration {} screen capture", currentPollIteration);
+		debugLog.debug("  - screen capture");
 		image = _hsHelper.getScreenCapture();
 
         if (image == null) {
-            debugLog.debug("  - Iteration {} screen capture returned null", currentPollIteration);
+			debugLog.debug("  - screen capture returned null");
         } else {
 			// detect image stats
 			if (image.getWidth() >= 1024) {
-                debugLog.debug("  - Iteration {} analysing image", currentPollIteration);
+				debugLog.debug("  - analysing image");
 				_analyzer.analyze(image);
             }
 			
 			if (Config.mirrorGameImage()) {
-                debugLog.debug("  - Iteration {} mirroring image", currentPollIteration);
+				debugLog.debug("  - mirroring image");
 				_updateImageFrame();
             }
 		}
 	}
 	
-	protected void _handleHearthstoneNotFound(int currentPollIteration) {
+	protected void _handleHearthstoneNotFound() {
 		
 		// mark hearthstone not found if necessary
 		if (_hearthstoneDetected) {
 			_hearthstoneDetected = false;
-            debugLog.debug("  - Iteration {} changed hearthstoneDetected to false", currentPollIteration);
+			debugLog.debug("  - changed hearthstoneDetected to false");
 			if (Config.showHsClosedNotification()) {
 				_notify("Hearthstone closed");
 				_analyzer.reset();
@@ -1085,41 +1082,27 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	protected void _pollHearthstone() {
         scheduledExecutorService.schedule(new Callable<Object>() {
 			public Object call() throws Exception {
-                _pollIterations++;
-
-                // A copy of pollIterations is kept in localPollIterations
-                int currentPollIteration = _pollIterations;
-
                 try {
-                    debugLog.debug("--> Iteration {} started", currentPollIteration);
-
                     if (_hsHelper.foundProgram()) {
-                        _handleHearthstoneFound(currentPollIteration);
+                        _handleHearthstoneFound();
                     } else {
-                        debugLog.debug("  - Iteration {} did not find Hearthstone", currentPollIteration);
-                        _handleHearthstoneNotFound(currentPollIteration);
+						debugLog.debug("  - did not find Hearthstone");
+                        _handleHearthstoneNotFound();
                     }
 
                     _updateTitle();
 
                     _pollHearthstone();        // repeat the process
 
-                    // Keep memory usage down by telling the JVM to perform a garbage collection after every eighth poll (ie GC 1-2 times per second)
-                    if (_pollIterations % GC_FREQUENCY == 0 && Runtime.getRuntime().totalMemory() > 150000000) {
-                        debugLog.debug("  - Iteration {} triggers GC", currentPollIteration);
-                        System.gc();
-                    }
-
-
                 } catch (Throwable ex) {
                     ex.printStackTrace(System.err);
-                    debugLog.error("  - Iteration " + currentPollIteration + " caused exception which is not being handled:", ex);
+                    debugLog.error("  - exception which is not being handled:", ex);
                     while (ex.getCause() != null) {
                         ex = ex.getCause();
                     }
                     Log.error("ERROR: " + ex.getMessage() + ". You will need to restart HearthStats.net Uploader.", ex);
                 } finally {
-                    debugLog.debug("<-- Iteration {} finished", currentPollIteration);
+                    debugLog.debug("<-- finished");
                 }
 
                 return "";
