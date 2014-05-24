@@ -1,14 +1,5 @@
 package net.hearthstats.analysis;
 
-import net.hearthstats.state.Screen;
-import net.hearthstats.state.UniquePixel;
-import net.hearthstats.util.Coordinate;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,6 +8,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import javax.imageio.ImageIO;
+
+import net.hearthstats.state.Screen;
+import net.hearthstats.state.UniquePixel;
+import net.hearthstats.util.Coordinate;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class tests the RelativePixelAnalyser against a folder of screenshots of victory and defeat screens
@@ -116,9 +118,9 @@ public class RelativePixelAnalyserTest {
                         output.write("\">");
                         if (coordinate != null) {
                             output.write("<div>Reference Pixel = ");
-                            output.write(String.valueOf(coordinate.x));
+							output.write(String.valueOf(coordinate.x()));
                             output.write(", ");
-                            output.write(String.valueOf(coordinate.y));
+							output.write(String.valueOf(coordinate.y()));
                             output.write("</div>");
 
                             int victory1Matches = relativePixelAnalyser.countMatchingRelativePixels(bufferedImage, coordinate, new UniquePixel[] {
@@ -260,7 +262,8 @@ public class RelativePixelAnalyserTest {
         for (int i = 0; i < coordinates.size(); i++) {
             Coordinate coordinate = coordinates.get(i);
             if (coordinate != null) {
-                output.write("drawPixel(\"" + i + "\", " + coordinate.x + ", " + coordinate.y + ");\n");
+				output.write("drawPixel(\"" + i + "\", " + coordinate.x()
+						+ ", " + coordinate.y() + ");\n");
             }
         }
         output.write("});\n" +

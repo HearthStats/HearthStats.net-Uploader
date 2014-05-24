@@ -1,14 +1,5 @@
 package net.hearthstats.analysis;
 
-import net.hearthstats.state.Screen;
-import net.hearthstats.state.UniquePixel;
-import net.hearthstats.util.Coordinate;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,6 +8,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import javax.imageio.ImageIO;
+
+import net.hearthstats.state.Screen;
+import net.hearthstats.state.UniquePixel;
+import net.hearthstats.util.Coordinate;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class tests the IndividualPixelAnalyser against a folder of screenshots of match 'VS' screens
@@ -390,7 +392,9 @@ public class IndividualPixelAnalyserTest {
     }
 
     private Coordinate addCoordinate(UniquePixel uniquePixel, IndividualPixelAnalyser individualPixelAnalyser, List<Coordinate> coordinates, BufferedImage bufferedImage) {
-        CoordinateCacheBase.UniquePixelIdentifier upi = new CoordinateCacheBase.UniquePixelIdentifier(uniquePixel.x, uniquePixel.y, bufferedImage.getWidth(), bufferedImage.getHeight());
+		CoordinateCacheBase.UniquePixelIdentifier upi = new CoordinateCacheBase.UniquePixelIdentifier(
+				uniquePixel.x(), uniquePixel.y(), bufferedImage.getWidth(),
+				bufferedImage.getHeight());
         Coordinate coordinate = individualPixelAnalyser.getCachedCoordinate(upi);
         coordinates.add(coordinate);
         return coordinate;
@@ -483,19 +487,22 @@ public class IndividualPixelAnalyserTest {
         for (int i = 0; i < coordinatesA.size(); i++) {
             Coordinate coordinate = coordinatesA.get(i);
             if (coordinate != null) {
-                output.write("drawPixel(\"" + i + "\", \"a\", " + coordinate.x + ", " + coordinate.y + ");\n");
+				output.write("drawPixel(\"" + i + "\", \"a\", "
+						+ coordinate.x() + ", " + coordinate.y() + ");\n");
             }
         }
         for (int i = 0; i < coordinatesB.size(); i++) {
             Coordinate coordinate = coordinatesB.get(i);
             if (coordinate != null) {
-                output.write("drawPixel(\"" + i + "\", \"b\", " + coordinate.x + ", " + coordinate.y + ");\n");
+				output.write("drawPixel(\"" + i + "\", \"b\", "
+						+ coordinate.x() + ", " + coordinate.y() + ");\n");
             }
         }
         for (int i = 0; i < coordinatesC.size(); i++) {
             Coordinate coordinate = coordinatesC.get(i);
             if (coordinate != null) {
-                output.write("drawPixel(\"" + i + "\", \"c\", " + coordinate.x + ", " + coordinate.y + ");\n");
+				output.write("drawPixel(\"" + i + "\", \"c\", "
+						+ coordinate.x() + ", " + coordinate.y() + ");\n");
             }
         }
         output.write("});\n" +
@@ -508,8 +515,8 @@ public class IndividualPixelAnalyserTest {
     private void writePixelValue(BufferedWriter output, BufferedImage image, Coordinate coordinate, String name) throws IOException {
 
 
-        int x = coordinate.x;
-        int y = coordinate.y;
+		int x = coordinate.x();
+		int y = coordinate.y();
 
         int rgb = image.getRGB(x, y);
         int red = (rgb >> 16) & 0xFF;

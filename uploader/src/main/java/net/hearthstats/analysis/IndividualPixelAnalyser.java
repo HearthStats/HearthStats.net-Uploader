@@ -1,14 +1,12 @@
 package net.hearthstats.analysis;
 
-import net.hearthstats.state.PixelLocation;
+import java.awt.image.BufferedImage;
+
 import net.hearthstats.state.UniquePixel;
 import net.hearthstats.util.Coordinate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Tests whether an individual pixels, or set of pixels, matched the expected colour value.
@@ -23,12 +21,14 @@ public class IndividualPixelAnalyser extends CoordinateCacheBase {
     boolean testAllPixelsMatch(BufferedImage image, UniquePixel[] uniquePixels) {
         for (UniquePixel uniquePixel : uniquePixels) {
 
-            UniquePixelIdentifier upi = new UniquePixelIdentifier(uniquePixel.x, uniquePixel.y, image.getWidth(), image.getHeight());
+			UniquePixelIdentifier upi = new UniquePixelIdentifier(
+					uniquePixel.x(), uniquePixel.y(), image.getWidth(),
+					image.getHeight());
 
             Coordinate coordinate = getCachedCoordinate(upi);
 
-            int x = coordinate.x;
-            int y = coordinate.y;
+			int x = coordinate.x();
+			int y = coordinate.y();
 
             int rgb = image.getRGB(x, y);
             int red = (rgb >> 16) & 0xFF;
@@ -53,12 +53,14 @@ public class IndividualPixelAnalyser extends CoordinateCacheBase {
     boolean testAnyPixelsMatch(BufferedImage image, UniquePixel[] uniquePixels) {
         for (UniquePixel uniquePixel : uniquePixels) {
 
-            UniquePixelIdentifier upi = new UniquePixelIdentifier(uniquePixel.x, uniquePixel.y, image.getWidth(), image.getHeight());
+			UniquePixelIdentifier upi = new UniquePixelIdentifier(
+					uniquePixel.x(), uniquePixel.y(), image.getWidth(),
+					image.getHeight());
 
             Coordinate coordinate = getCachedCoordinate(upi);
 
-            int x = coordinate.x;
-            int y = coordinate.y;
+			int x = coordinate.x();
+			int y = coordinate.y();
 
             int rgb = image.getRGB(x, y);
             int red = (rgb >> 16) & 0xFF;

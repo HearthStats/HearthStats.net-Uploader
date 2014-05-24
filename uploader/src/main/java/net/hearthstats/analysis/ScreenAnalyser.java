@@ -1,17 +1,18 @@
 package net.hearthstats.analysis;
 
+import java.awt.image.BufferedImage;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 import net.hearthstats.state.Pixel;
 import net.hearthstats.state.PixelLocation;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.util.Coordinate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.image.BufferedImage;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * An analyser that identifies Hearthstone screens from screenshots.
@@ -190,23 +191,27 @@ public class ScreenAnalyser {
 
         Map<PixelLocation, Coordinate> result;
 
-        if (width == PixelLocation.REFERENCE_SIZE.x && height == PixelLocation.REFERENCE_SIZE.y) {
+		if (width == PixelLocation.REFERENCE_SIZE.x()
+				&& height == PixelLocation.REFERENCE_SIZE.y()) {
             // The screen size is exactly what our reference pixels are based on, so we can use their coordinates directly
             result = new HashMap<>();
             for (PixelLocation pixelLocation : PixelLocation.values()) {
-                Coordinate coordinate = new Coordinate(pixelLocation.x, pixelLocation.y);
+				Coordinate coordinate = new Coordinate(pixelLocation.x(),
+						pixelLocation.y());
                 log.debug("Stored position of {} as {}", pixelLocation, coordinate);
                 result.put(pixelLocation, coordinate);
             }
 
         } else {
             // The screen size is different to our reference pixels, so coordinates need to be adjusted
-            float ratio = (float) height / (float) PixelLocation.REFERENCE_SIZE.y;
+			float ratio = (float) height
+					/ (float) PixelLocation.REFERENCE_SIZE.y();
             float screenRatio = (float) width / (float) height;
 
             int xOffset;
             if (screenRatio > 1.4) {
-                xOffset = (int) (((float) width - (ratio * PixelLocation.REFERENCE_SIZE.x)) / 2);
+				xOffset = (int) (((float) width - (ratio * PixelLocation.REFERENCE_SIZE
+						.x())) / 2);
             } else {
                 xOffset = 0;
             }
@@ -215,8 +220,8 @@ public class ScreenAnalyser {
 
             result = new HashMap<>();
             for (PixelLocation pixelLocation : PixelLocation.values()) {
-                int x = (int) (pixelLocation.x * ratio) + xOffset;
-                int y = (int) (pixelLocation.y * ratio);
+				int x = (int) (pixelLocation.x() * ratio) + xOffset;
+				int y = (int) (pixelLocation.y() * ratio);
                 Coordinate coordinate = new Coordinate(x, y);
                 log.debug("Calculated position of {} as {}", pixelLocation, coordinate);
                 result.put(pixelLocation, coordinate);
@@ -265,8 +270,8 @@ public class ScreenAnalyser {
 
         for (Pixel pixel : screen.primary) {
             Coordinate coordinate = pixelMap.get(pixel.pixelLocation);
-            int x = coordinate.x;
-            int y = coordinate.y;
+			int x = coordinate.x();
+			int y = coordinate.y();
 
             int rgb = image.getRGB(x, y);
             int red = (rgb >> 16) & 0xFF;
@@ -296,8 +301,8 @@ public class ScreenAnalyser {
 
         for (Pixel pixel : screen.primaryAndSecondary) {
             Coordinate coordinate = pixelMap.get(pixel.pixelLocation);
-            int x = coordinate.x;
-            int y = coordinate.y;
+			int x = coordinate.x();
+			int y = coordinate.y();
 
             int rgb = image.getRGB(x, y);
             int red = (rgb >> 16) & 0xFF;
@@ -329,8 +334,8 @@ public class ScreenAnalyser {
 
         for (Pixel pixel : screen.secondary) {
             Coordinate coordinate = pixelMap.get(pixel.pixelLocation);
-            int x = coordinate.x;
-            int y = coordinate.y;
+			int x = coordinate.x();
+			int y = coordinate.y();
 
             int rgb = image.getRGB(x, y);
             int red = (rgb >> 16) & 0xFF;

@@ -1,12 +1,13 @@
 package net.hearthstats.analysis;
 
+import java.awt.image.BufferedImage;
+
 import net.hearthstats.state.PixelLocation;
 import net.hearthstats.state.UniquePixel;
 import net.hearthstats.util.Coordinate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.image.BufferedImage;
 
 /**
  * <p>Tests whether a set of pixels relative to a reference point match expected colour values.
@@ -29,22 +30,30 @@ public class RelativePixelAnalyser extends CoordinateCacheBase {
 
         boolean foundPixel = false;
 
-        UniquePixelIdentifier upiTopLeft = new UniquePixelIdentifier(boundingBoxTopLeft.x, boundingBoxTopLeft.y, image.getWidth(), image.getHeight());
-        UniquePixelIdentifier upiBottomRight = new UniquePixelIdentifier(boundingBoxBottomRight.x, boundingBoxBottomRight.y, image.getWidth(), image.getHeight());
+		UniquePixelIdentifier upiTopLeft = new UniquePixelIdentifier(
+				boundingBoxTopLeft.x(), boundingBoxTopLeft.y(),
+				image.getWidth(), image.getHeight());
+		UniquePixelIdentifier upiBottomRight = new UniquePixelIdentifier(
+				boundingBoxBottomRight.x(), boundingBoxBottomRight.y(),
+				image.getWidth(), image.getHeight());
 
         Coordinate coordinateTopLeft = getCachedCoordinate(upiTopLeft);
         Coordinate coordinateBottomRight = getCachedCoordinate(upiBottomRight);
 
-        float xStepSize = (float) (coordinateBottomRight.x - coordinateTopLeft.x) / (float) (xSamples - 1);
-        float yStepSize = (float) (coordinateBottomRight.y - coordinateTopLeft.y) / (float) (ySamples - 1);
+		float xStepSize = (float) (coordinateBottomRight.x() - coordinateTopLeft
+				.x()) / (float) (xSamples - 1);
+		float yStepSize = (float) (coordinateBottomRight.y() - coordinateTopLeft
+				.y()) / (float) (ySamples - 1);
 
         debugLog.debug("relative pixel bounding box: topLeft={},{} bottomRight={},{} stepSize={},{}",
-                coordinateTopLeft.x, coordinateTopLeft.y, coordinateBottomRight.x, coordinateBottomRight.y, xStepSize, yStepSize);
+				coordinateTopLeft.x(), coordinateTopLeft.y(),
+				coordinateBottomRight.x(), coordinateBottomRight.y(),
+				xStepSize, yStepSize);
 
         for (int yCount = 0; yCount < ySamples; yCount++ ) {
-            int y = coordinateTopLeft.y + (int)(yCount * xStepSize);
+			int y = coordinateTopLeft.y() + (int) (yCount * xStepSize);
             for (int xCount = 0; xCount < xSamples; xCount++ ) {
-                int x = coordinateTopLeft.x + (int)(xCount * xStepSize);
+				int x = coordinateTopLeft.x() + (int) (xCount * xStepSize);
 
                 int rgb = image.getRGB(x, y);
                 int red = (rgb >> 16) & 0xFF;
@@ -87,14 +96,15 @@ public class RelativePixelAnalyser extends CoordinateCacheBase {
         } else {
             // Calculate the ratio and store it for next time
             lastImageHeight = image.getHeight();
-            ratio = (float) lastImageHeight / (float) PixelLocation.REFERENCE_SIZE.y;
+			ratio = (float) lastImageHeight
+					/ (float) PixelLocation.REFERENCE_SIZE.y();
             cachedRatio = ratio;
         }
 
 
         for (UniquePixel relativePixel : relativePixels) {
-            int x = referencePixel.x + (int)(relativePixel.x * ratio);
-            int y = referencePixel.y + (int)(relativePixel.y * ratio);
+			int x = referencePixel.x() + (int) (relativePixel.x() * ratio);
+			int y = referencePixel.y() + (int) (relativePixel.y() * ratio);
 
             int rgb = image.getRGB(x, y);
             int red = (rgb >> 16) & 0xFF;
