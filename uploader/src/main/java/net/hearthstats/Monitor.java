@@ -21,8 +21,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -79,7 +79,7 @@ import org.slf4j.LoggerFactory;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
 
 @SuppressWarnings("serial")
-public class Monitor extends JFrame implements Observer, WindowListener {
+public class Monitor extends JFrame implements Observer {
 
     private static final String PROFILES_URL = "http://hearthstats.net/profiles";
     private static final String DECKS_URL = "http://hearthstats.net/decks";
@@ -192,7 +192,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			_analytics = AnalyticsTracker.tracker();
 			_analytics.trackEvent("app","AppStart");
 		}
-		addWindowListener(this);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				handleClose();
+			}
+		});
 		
 		_createAndShowGui();
 		_showWelcomeLog();
@@ -216,6 +221,22 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         }
 	}
 
+	public void handleClose() {
+		Point p = getLocationOnScreen();
+		Config.setX(p.x);
+		Config.setY(p.y);
+		Dimension rect = getSize();
+		Config.setWidth((int) rect.getWidth());
+		Config.setHeight((int) rect.getHeight());
+		try {
+			Config.save();
+		} catch (Throwable t) {
+			Log.warn(
+					"Error occurred trying to write settings file, your settings may not be saved",
+					t);
+		}
+		System.exit(0);
+	}
 
 	private void _showWelcomeLog() {
         debugLog.debug("Showing welcome log messages");
@@ -1370,58 +1391,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		
 		if(dispatcher.getClass().toString().matches(".*ProgramHelper(Windows|Osx)?"))
 			_handleProgramHelperEvent(changed);
-	}
-
-	@Override
-	public void windowActivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowClosed(WindowEvent e) {
-		// TODO Auto-generated method stub
-        debugLog.debug("closed");
-	}
-
-	@Override
-	public void windowClosing(WindowEvent e) {
-		Point p = getLocationOnScreen();
-		Config.setX(p.x);
-		Config.setY(p.y);
-		Dimension rect = getSize();
-		Config.setWidth((int) rect.getWidth());
-		Config.setHeight((int) rect.getHeight());
-        try {
-            Config.save();
-        } catch (Throwable t) {
-            Log.warn("Error occurred trying to write settings file, your settings may not be saved", t);
-        }
-		System.exit(0);
-	}
-
-	@Override
-	public void windowDeactivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowDeiconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowIconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowOpened(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	private Integer _getDeckSlotDeckId(JComboBox selector) {
