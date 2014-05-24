@@ -88,7 +88,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     private static final String DECKS_URL = "http://hearthstats.net/decks";
 	private static final int POLLING_INTERVAL_IN_MS = 100;
     private static final int MAX_THREADS = 5;
-    private static final int GC_FREQUENCY = 20;
 
     private static final EnumSet<Screen> DO_NOT_NOTIFY_SCREENS = EnumSet.of(Screen.COLLECTION, Screen.COLLECTION_ZOOM, Screen.MAIN_TODAYSQUESTS, Screen.TITLE);
 
