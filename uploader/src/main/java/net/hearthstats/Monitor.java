@@ -1317,19 +1317,18 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				
 				if (_analyzer.getScreen() == Screen.FINDING_OPPONENT) {
 					_resetMatchClassSelectors();
-					Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer
-							.getDeckSlot());
-					if (selectedDeck != null && selectedDeck.isValid()) {
-						if (Config.showDeckOverlay())
-							new StandardDialog(selectedDeck.name(),
-								ClickableDeckBox.makeBox(selectedDeck), true)
-								.show();
-					}
-					else {
-						String message=String.format("Invalid or empty deck, <a href='http://hearthstats.net/decks/%s/edit'>edit it on hearthstats.net</a> to display deck overlay (you will need to restart the uploader)", selectedDeck.slug());
-						_notify(message);
-						Log.info(message);
-					}
+                    if (Config.showDeckOverlay() && !"Arena".equals(_analyzer.getMode())) {
+                        Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
+    					if (selectedDeck != null && selectedDeck.isValid()) {
+                            new StandardDialog(selectedDeck.name(),
+                                    ClickableDeckBox.makeBox(selectedDeck), true)
+                                    .show();
+                        } else {
+                            String message=String.format("Invalid or empty deck, <a href='http://hearthstats.net/decks/%s/edit'>edit it on hearthstats.net</a> to display deck overlay (you will need to restart the uploader)");
+                            _notify(message);
+                            Log.info(message);
+                        }
+                    }
 				}
 
 				if (_analyzer.getScreen().group == ScreenGroup.MATCH_START) {
@@ -1609,33 +1608,33 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         }
         addWindowStateListener(new WindowStateListener() {
             public void windowStateChanged(WindowEvent e) {
-            	if (Config.minimizeToTray()) {
-	                if (e.getNewState() == ICONIFIED) {
-	                    try {
-	                        tray.add(trayIcon);
-	                        setVisible(false);
-	                    } catch (AWTException ex) {
-	                    }
-	                }
-			        if (e.getNewState()==7) {
-			            try{
-			            	tray.add(trayIcon);
-			            	setVisible(false);
-			            } catch(AWTException ex){
-				        }
-		            }
-			        if (e.getNewState()==MAXIMIZED_BOTH) {
-		                    tray.remove(trayIcon);
-		                    setVisible(true);
-		                }
-		                if (e.getNewState()==NORMAL) {
-		                    tray.remove(trayIcon);
-		                    setVisible(true);
-                            debugLog.debug("Tray icon removed");
-		                }
-		            }
-            	}
-       		});
+                if (Config.minimizeToTray()) {
+                    if (e.getNewState() == ICONIFIED) {
+                        try {
+                            tray.add(trayIcon);
+                            setVisible(false);
+                        } catch (AWTException ex) {
+                        }
+                    }
+                    if (e.getNewState() == 7) {
+                        try {
+                            tray.add(trayIcon);
+                            setVisible(false);
+                        } catch (AWTException ex) {
+                        }
+                    }
+                    if (e.getNewState() == MAXIMIZED_BOTH) {
+                        tray.remove(trayIcon);
+                        setVisible(true);
+                    }
+                    if (e.getNewState() == NORMAL) {
+                        tray.remove(trayIcon);
+                        setVisible(true);
+                        debugLog.debug("Tray icon removed");
+                    }
+                }
+            }
+        });
         
     }
 
