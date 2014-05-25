@@ -1,5 +1,20 @@
 package net.hearthstats.win;
 
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+import net.hearthstats.ProgramHelper;
+import net.hearthstats.win.jna.extra.GDI32Extra;
+import net.hearthstats.win.jna.extra.User32Extra;
+import net.hearthstats.win.jna.extra.WinGDIExtra;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
@@ -14,15 +29,6 @@ import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 import com.sun.jna.ptr.PointerByReference;
-import net.hearthstats.win.jna.extra.GDI32Extra;
-import net.hearthstats.win.jna.extra.User32Extra;
-import net.hearthstats.win.jna.extra.WinGDIExtra;
-import net.hearthstats.ProgramHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.awt.*;
-import java.awt.image.BufferedImage;
 
 /**
  * Implementation of {@link ProgramHelper} for Windows.
@@ -110,7 +116,7 @@ public class ProgramHelperWindows extends ProgramHelper {
 	}
 	
 	@Override
-    public boolean foundProgram() {
+	public boolean foundProgram() {
 		
 		// windows version
 		if(_getWindowHandle() != null) {
@@ -217,5 +223,30 @@ public class ProgramHelperWindows extends ProgramHelper {
 	    public static native int GetWindowThreadProcessId(HWND hWnd, PointerByReference pref);
 	    public static native HWND GetForegroundWindow();
 	    public static native int GetWindowTextW(HWND hWnd, char[] lpString, int nMaxCount);
+	}
+
+	@Override
+	public String hearthstoneFolder() {
+		String appdata = System.getenv("LOCALAPPDATA");
+		if (StringUtils.isBlank(appdata)) {
+			throw new RuntimeException("Cannot find LOCALAPPDATA directory");
+		}
+		File folder = new File(appdata + "/Blizzard/Hearthstone");
+		return folder.getAbsolutePath();
+	}
+
+	@Override
+	public String hearthstoneLogFile() {
+		String programFiles = System.getenv("PROGRAMFILES(X86)");
+		if (StringUtils.isBlank(programFiles)) {
+			programFiles = System.getenv("PROGRAMFILES");
+			if (StringUtils.isBlank(programFiles)) {
+				throw new RuntimeException(
+						"Cannot find Program Files directory");
+			}
+		}
+		File logFile = new File(programFiles
+				+ "\\Hearthstone\\Hearthstone_Data\\output_log.txt");
+		return logFile.getAbsolutePath();
 	}
 }
