@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.nio.Buffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -45,7 +44,7 @@ public class BackgroundImageSave {
             @Override
             public void run() {
                 try {
-                    File outputfile = new File(Main.getExtractionFolder() + "/" + filename + ".png");
+                    File outputfile = new File(Config.getExtractionFolder() + "/" + filename + ".png");
                     ImageIO.write(image, "png", outputfile);
                     debugLog.debug("Successfully saved image " + outputfile.getAbsolutePath());
                 } catch (Exception e) {

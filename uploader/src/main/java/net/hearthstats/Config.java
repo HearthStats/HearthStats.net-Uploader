@@ -27,6 +27,8 @@ public class Config {
 
 	private static String _userkey;
 
+    private static MonitoringMethod monitoringMethod;
+
 	private static boolean _checkForUpdates;
 
     private static boolean _useOsxNotifications;
@@ -75,6 +77,9 @@ public class Config {
 		// api
 		setUserKey("your_userkey_here");
 		setApiBaseUrl(_defaultApiBaseUrl );
+
+        // monitoring method
+        setMonitoringMethod(MonitoringMethod.getDefault());
 		
 		// updates
 		setCheckForUpdates(true);
@@ -223,6 +228,20 @@ public class Config {
         }
     }
 
+    public static MonitoringMethod monitoringMethod() {
+        String stringValue = getStringSetting("ui", "monitoringmethod", MatchPopup.getDefault().name());
+        if (StringUtils.isBlank(stringValue)) {
+            return MonitoringMethod.getDefault();
+        } else {
+            try {
+                return MonitoringMethod.valueOf(stringValue);
+            } catch (IllegalArgumentException e) {
+                debugLog.debug("Could not parse MonitoringMethod value \"{}\", using default instead", stringValue);
+                return MonitoringMethod.getDefault();
+            }
+        }
+    }
+
     public static String getVersion() {
 		if(_version == null) {
 			_version = "";
@@ -305,6 +324,10 @@ public class Config {
 
     public static void setShowMatchPopup(MatchPopup showMatchPopup) {
         setStringValue("ui", "matchpopup", showMatchPopup == null ? "" : showMatchPopup.name());
+    }
+
+    public static void setMonitoringMethod(MonitoringMethod monitoringMethod) {
+        setStringValue("ui", "monitoringmethod", monitoringMethod == null ? "" : monitoringMethod.name());
     }
 
     public static void setCheckForUpdates(boolean val) {
@@ -411,6 +434,7 @@ public class Config {
 	private static void restorePreviousValues() {
 		setUserKey(_userkey);
 		setApiBaseUrl(_apiBaseUrl);
+        setMonitoringMethod(monitoringMethod);
 		setCheckForUpdates(_checkForUpdates);
         setUseOsxNotifications(_useOsxNotifications);
 		setShowNotifications(_showNotifications);
@@ -433,6 +457,7 @@ public class Config {
 	private static void storePreviousValues() {
 		_userkey = getUserKey();
 		_apiBaseUrl = getApiBaseUrl();
+        monitoringMethod = monitoringMethod();
 		_checkForUpdates = checkForUpdates();
         _useOsxNotifications = useOsxNotifications();
 		_showNotifications = showNotifications();
@@ -492,6 +517,40 @@ public class Config {
         }
     }
 
+
+    public static String getExtractionFolder() {
+        if (os == OS.OSX) {
+            File libFolder = new File(getSystemProperty("user.home") + "/Library/Application Support/HearthStatsUploader");
+            libFolder.mkdir();
+            return libFolder.getAbsolutePath();
+
+        } else {
+            String path = "tmp";
+            (new File(path)).mkdirs();
+            return path;
+        }
+    }
+
+
+    public static String getHearthstoneLogFile() {
+        if (os == OS.OSX) {
+            File logFile = new File(getSystemProperty("user.home") + "/Library/Logs/Unity/Player.log");
+            return logFile.getAbsolutePath();
+
+        } else {
+            String programFiles = System.getenv("PROGRAMFILES(X86)");
+            if (StringUtils.isBlank(programFiles)) {
+                programFiles = System.getenv("PROGRAMFILES");
+                if (StringUtils.isBlank(programFiles)) {
+                    Log.warn("Cannot find Program Files directory");
+                }
+            }
+            File logFile = new File(programFiles + "\\Hearthstone\\Hearthstone_Data\\output_log.txt");
+            return logFile.getAbsolutePath();
+        }
+    }
+
+
     public static enum OS {
         WINDOWS, OSX, UNSUPPORTED;
     }
@@ -501,6 +560,14 @@ public class Config {
 
         static MatchPopup getDefault() {
             return INCOMPLETE;
+        }
+    }
+
+    public static enum MonitoringMethod {
+        SCREEN, SCREEN_LOG;
+
+        static MonitoringMethod getDefault() {
+            return SCREEN;
         }
     }
 }

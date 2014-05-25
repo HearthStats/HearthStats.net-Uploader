@@ -66,6 +66,7 @@ import net.hearthstats.analysis.AnalyserEvent;
 import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
 import net.hearthstats.log.LogPane;
+import net.hearthstats.logmonitor.HearthstoneLogMonitor;
 import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.notification.NotificationQueue;
 import net.hearthstats.state.Screen;
@@ -110,7 +111,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
     protected API _api = new API();
 	protected HearthstoneAnalyser _analyzer = new HearthstoneAnalyser();
 	protected ProgramHelper _hsHelper;
-	
+    protected HearthstoneLogMonitor hearthstoneLogMonitor;
+
 	private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
 	private JTextField _currentOpponentNameField;
 	private JLabel _currentMatchLabel;
@@ -131,11 +133,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JComboBox _currentYourClassSelector;
 
 	private int _pollIterations = 0;
-	protected boolean _hearthstoneDetected;
-	protected JGoogleAnalyticsTracker _analytics;
-	protected LogPane _logText;
+	private boolean _hearthstoneDetected;
+    private JGoogleAnalyticsTracker _analytics;
+    private LogPane _logText;
 	private JScrollPane _logScroll;
 	private JTextField _userKeyField;
+    private JComboBox monitoringMethodField;
 	private JCheckBox _checkUpdatesField;
 	private JCheckBox _notificationsEnabledField;
     private JComboBox _notificationsFormat;
@@ -168,6 +171,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         }
 
         _hsHelper = (ProgramHelper) Class.forName(className).newInstance();
+        _notificationQueue = newNotificationQueue();
     }
 
 
@@ -200,9 +204,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 		addWindowListener(this);
 		
-		_createAndShowGui();
-		_showWelcomeLog();
-		_checkForUpdates();
+		createAndShowGui();
+		showWelcomeLog();
+		checkForUpdates();
+        setupLogMonitoring();
 		
 		_api.addObserver(this);
 		_analyzer.addObserver(this);
@@ -221,7 +226,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	}
 
 
-	private void _showWelcomeLog() {
+	private void showWelcomeLog() {
         debugLog.debug("Showing welcome log messages");
 
         Log.welcome("HearthStats.net " + t("Uploader") + " v" + Config.getVersionWithOs());
@@ -348,7 +353,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 
 
 
-	private void _createAndShowGui() {
+	private void createAndShowGui() {
         debugLog.debug("Creating GUI");
 
 		Image icon = new ImageIcon(getClass().getResource("/images/icon.png")).getImage();
@@ -655,8 +660,14 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_userKeyField = new JTextField();
 		_userKeyField.setText(Config.getUserKey());
 		panel.add(_userKeyField, "wrap");
-		
-		// check for updates
+
+        // monitoring method
+        panel.add(new JLabel(t("options.label.monitoring")), "skip,right");
+        monitoringMethodField = new JComboBox<>(new String[]{ t("options.label.monitoring.screen"), t("options.label.monitoring.log")});
+        monitoringMethodField.setSelectedIndex(Config.monitoringMethod().ordinal());
+        panel.add(monitoringMethodField, "wrap");
+
+        // check for updates
 		panel.add(new JLabel(t("options.label.updates") + " "), "skip,right");
 		_checkUpdatesField = new JCheckBox(t("options.check_updates"));
 		_checkUpdatesField.setSelected(Config.checkForUpdates());
@@ -801,10 +812,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_showDeckNotificationField.setEnabled(isEnabled);
 	}
 
+
 	private String name(JSONObject o) {
 		return hsClassOptions[Integer.parseInt(o.get("klass_id").toString())]
 				+ " - " + o.get("name").toString().toLowerCase();
 	}
+
 
 	private void _applyDecksToSelector(JComboBox<String> selector, Integer slotNum) {
 		
@@ -831,6 +844,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				selector.setSelectedIndex(i + 1);
 		}
 	}
+
+
 	private void _updateDecksTab() throws IOException {
 		DeckUtils.updateDecks();
 		_applyDecksToSelector(_deckSlot1Field, 1);
@@ -843,7 +858,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_applyDecksToSelector(_deckSlot8Field, 8);
 		_applyDecksToSelector(_deckSlot9Field, 9);
 	}
-	private void _checkForUpdates() {
+
+
+	private void checkForUpdates() {
 		if(Config.checkForUpdates()) {
             Log.info(t("checking_for_updates..."));
 			try {
@@ -897,6 +914,15 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 
+
+    /**
+     * Sets up the Hearthstone log monitoring if enabled, or stops if it is disabled
+     */
+    private void setupLogMonitoring() {
+        setMonitorHearthstoneLog(Config.monitoringMethod() == Config.MonitoringMethod.SCREEN_LOG);
+    }
+
+
 	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(MAX_THREADS);
 
 	protected boolean _drawPaneAdded = false;
@@ -911,7 +937,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	};
 
-    protected NotificationQueue _notificationQueue = newNotificationQueue();
+    protected NotificationQueue _notificationQueue;
 
     private Boolean _currentMatchEnabled = false;
 	private boolean _playingInMatch = false;
@@ -1047,9 +1073,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             if (Config.showHsFoundNotification()) {
 				_notify("Hearthstone found");
             }
+            if (hearthstoneLogMonitor != null) {
+                hearthstoneLogMonitor.startMonitoring();
+            }
 		}
-		
-		// grab the image from Hearthstone
+
+        // grab the image from Hearthstone
         debugLog.debug("  - Iteration {} screen capture", currentPollIteration);
 		image = _hsHelper.getScreenCapture();
 
@@ -1079,8 +1108,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				_notify("Hearthstone closed");
 				_analyzer.reset();
 			}
-			
-		}
+            if (hearthstoneLogMonitor != null) {
+                hearthstoneLogMonitor.stopMonitoring();
+            }
+        }
 	}
 	protected void _pollHearthstone() {
         scheduledExecutorService.schedule(new Callable<Object>() {
@@ -1490,7 +1521,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private void _saveOptions() {
         debugLog.debug("Saving options...");
 
+        Config.MonitoringMethod monitoringMethod = Config.MonitoringMethod.values()[monitoringMethodField.getSelectedIndex()];
+
 		Config.setUserKey(_userKeyField.getText());
+        Config.setMonitoringMethod(monitoringMethod);
 		Config.setCheckForUpdates(_checkUpdatesField.isSelected());
 		Config.setShowNotifications(_notificationsEnabledField.isSelected());
 		Config.setShowHsFoundNotification(_showHsFoundField.isSelected());
@@ -1510,6 +1544,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             Config.setUseOsxNotifications(_notificationsFormat.getSelectedIndex() == 0);
             _notificationQueue = newNotificationQueue();
         }
+
+        setupLogMonitoring();
 
         try {
             Config.save();
@@ -1602,6 +1638,30 @@ public class Monitor extends JFrame implements Observer, WindowListener {
        		});
         
     }
+
+
+    public void setMonitorHearthstoneLog(boolean monitorHearthstoneLog) {
+        debugLog.debug("setMonitorHearthstoneLog({})", monitorHearthstoneLog);
+
+        if (monitorHearthstoneLog) {
+            // Start monitoring the Hearthstone log
+            if (hearthstoneLogMonitor == null) {
+                hearthstoneLogMonitor = new HearthstoneLogMonitor();
+                if (_hearthstoneDetected) {
+                    hearthstoneLogMonitor.startMonitoring();
+                }
+            } else {
+                Log.warn("Already monitoring Hearthstone log");
+            }
+        } else {
+            // Stop monitoring the Hearthstone log
+            if (hearthstoneLogMonitor != null) {
+                hearthstoneLogMonitor.stopMonitoring();
+                hearthstoneLogMonitor = null;
+            }
+        }
+    }
+
 
     private static NotificationQueue newNotificationQueue() {
         if (Config.useOsxNotifications()) {
