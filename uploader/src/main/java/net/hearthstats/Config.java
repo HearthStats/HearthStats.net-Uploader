@@ -66,6 +66,8 @@ public class Config {
 	private static String _defaultApiBaseUrl = "http://hearthstats.net/api/v1/";
 
 	private static String _apiBaseUrl;
+
+	private static ProgramHelper helper;
 	
 	public static void rebuild() {
         debugLog.debug("Building config");
@@ -531,25 +533,28 @@ public class Config {
         }
     }
 
+	public static ProgramHelper programHelper() {
+		if (helper == null) {
+			String className;
+			switch (Config.os) {
+			case WINDOWS:
+				className = "net.hearthstats.win.ProgramHelperWindows";
+				break;
+			case OSX:
+				className = "net.hearthstats.osx.ProgramHelperOsx";
+				break;
+			default:
+				throw new UnsupportedOperationException("unsupported OS");
+			}
 
-    public static String getHearthstoneLogFile() {
-        if (os == OS.OSX) {
-            File logFile = new File(getSystemProperty("user.home") + "/Library/Logs/Unity/Player.log");
-            return logFile.getAbsolutePath();
-
-        } else {
-            String programFiles = System.getenv("PROGRAMFILES(X86)");
-            if (StringUtils.isBlank(programFiles)) {
-                programFiles = System.getenv("PROGRAMFILES");
-                if (StringUtils.isBlank(programFiles)) {
-                    Log.warn("Cannot find Program Files directory");
-                }
-            }
-            File logFile = new File(programFiles + "\\Hearthstone\\Hearthstone_Data\\output_log.txt");
-            return logFile.getAbsolutePath();
-        }
-    }
-
+			try {
+				helper = (ProgramHelper) Class.forName(className).newInstance();
+			} catch (Exception e) {
+				throw new RuntimeException("bug creating " + className, e);
+			}
+		}
+		return helper;
+	}
 
     public static enum OS {
         WINDOWS, OSX, UNSUPPORTED;

@@ -1,16 +1,16 @@
 package net.hearthstats.logmonitor;
 
-import net.hearthstats.Config;
-import net.hearthstats.log.Log;
-import org.apache.commons.io.input.Tailer;
-import org.apache.commons.io.input.TailerListener;
-import org.apache.commons.io.input.TailerListenerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.hearthstats.Config;
+import net.hearthstats.log.Log;
+
+import org.apache.commons.io.input.Tailer;
+import org.apache.commons.io.input.TailerListenerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gtch
@@ -37,7 +37,7 @@ public class HearthstoneLogMonitor extends TailerListenerAdapter {
 
 
     public HearthstoneLogMonitor() {
-        logFile = Config.getHearthstoneLogFile();
+		logFile = Config.programHelper().hearthstoneLogFile();
         screen = "GAMEPLAY";    // Assume we're in a game until proved otherwise... just in case a game is already in progress
     }
 

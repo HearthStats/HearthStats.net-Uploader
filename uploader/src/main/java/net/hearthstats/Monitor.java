@@ -105,7 +105,7 @@ public class Monitor extends JFrame implements Observer {
 
     protected API _api = new API();
 	protected HearthstoneAnalyser _analyzer = new HearthstoneAnalyser();
-	protected ProgramHelper _hsHelper;
+	protected ProgramHelper _hsHelper = Config.programHelper();
     protected HearthstoneLogMonitor hearthstoneLogMonitor;
 
 	private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
@@ -151,20 +151,6 @@ public class Monitor extends JFrame implements Observer {
 	private ResourceBundle _bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
 
     public Monitor() throws HeadlessException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-
-        String className;
-        switch (Config.os) {
-            case WINDOWS:
-                className = "net.hearthstats.win.ProgramHelperWindows";
-                break;
-            case OSX:
-                className = "net.hearthstats.osx.ProgramHelperOsx";
-                break;
-            default:
-                throw new UnsupportedOperationException(t("error.os_unsupported"));
-        }
-
-        _hsHelper = (ProgramHelper) Class.forName(className).newInstance();
         _notificationQueue = newNotificationQueue();
     }
 
