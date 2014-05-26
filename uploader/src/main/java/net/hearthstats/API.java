@@ -84,7 +84,7 @@ public class API extends Observable {
 			} catch(Exception e) {
                 Log.warn("Error occurred while creating new match", e);
 			}
-			if(hsMatch.getMode() != "Arena")
+			if (hsMatch.mode() != "Arena")
 				_dispatchResultMessage("Success. <a href=\"http://hearthstats.net/constructeds/" + result.get("id") + "/edit\">Edit match #" + result.get("id") + " on HearthStats.net</a>");
 			else
 				_dispatchResultMessage("Arena match successfully created");

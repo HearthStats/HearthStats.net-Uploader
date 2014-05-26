@@ -225,9 +225,9 @@ public class HearthstoneAnalyser extends Observable {
 
                 case MATCH_START:
                     match = new HearthstoneMatch();
-                    match.setMode(mode);
-                    match.setDeckSlot(deckSlot);
-                    match.setRankLevel(rankLevel);
+                    match.mode_$eq(mode);
+                    match.deckSlot_$eq(deckSlot);
+                    match.rankLevel_$eq(rankLevel);
                     arenaRunEndDetected = false;
                     isYourTurn = false;
                     iterationsSinceClassCheckingStarted = 0;
@@ -237,7 +237,9 @@ public class HearthstoneAnalyser extends Observable {
 
                 case MATCH_PLAYING:
                     startTimer();
-                    if ((previousScreen != null && previousScreen.group == ScreenGroup.MATCH_START) && (match.getOpponentClass() == null || match.getUserClass() == null)) {
+				if ((previousScreen != null && previousScreen.group == ScreenGroup.MATCH_START)
+						&& (match.opponentClass() == null || match
+								.userClass() == null)) {
                         // Failed to detect classes, so ask the user to submit screenshots of the problem
                         Log.warn(t("warning.classdetection", Config.getExtractionFolder()));
                     }
@@ -692,7 +694,7 @@ public class HearthstoneAnalyser extends Observable {
 
 
     public boolean getCoin() {
-        return match.hasCoin();
+		return match.coin();
     }
 
 
@@ -702,37 +704,37 @@ public class HearthstoneAnalyser extends Observable {
 
 
     public int getDeckSlot() {
-        return match.getDeckSlot();
+		return match.deckSlot();
     }
 
 
     public String getMode() {
-        return match.getMode();
+		return match.mode();
     }
 
 
     public String getOpponentClass() {
-        return match.getOpponentClass();
+		return match.opponentClass();
     }
 
 
     public String getOpponentName() {
-        return match.getOpponentName();
+		return match.opponentName();
     }
 
 
     public Rank getRankLevel() {
-        return match.getRankLevel();
+		return match.rankLevel();
     }
 
 
     public String getResult() {
-        return match.getResult();
+		return match.result();
     }
 
 
     public String getYourClass() {
-        return match.getUserClass();
+		return match.userClass();
     }
 
 
@@ -760,13 +762,13 @@ public class HearthstoneAnalyser extends Observable {
 
     private void setDeckSlot(int deckSlot) {
         this.deckSlot = deckSlot;
-        match.setDeckSlot(deckSlot);
+		match.deckSlot_$eq(deckSlot);
         notifyObserversOfChangeTo(AnalyserEvent.DECK_SLOT);
     }
 
 
     private void setCoin(boolean coin) {
-        match.setCoin(coin);
+		match.coin_$eq(coin);
         notifyObserversOfChangeTo(AnalyserEvent.COIN);
     }
 
@@ -776,7 +778,7 @@ public class HearthstoneAnalyser extends Observable {
             debugLog.debug("Mode changed from {} to {}", this.mode, mode);
 
             this.mode = mode;
-            match.setMode(mode);
+			match.mode_$eq(mode);
 
             notifyObserversOfChangeTo(AnalyserEvent.MODE);
         }
@@ -784,38 +786,37 @@ public class HearthstoneAnalyser extends Observable {
 
 
     private void setOpponentClass(String opponentClass) {
-        match.setOpponentClass(opponentClass);
+		match.opponentClass_$eq(opponentClass);
         notifyObserversOfChangeTo(AnalyserEvent.OPPONENT_CLASS);
     }
 
 
     private void setRankLevel(Rank rankLevel) {
         this.rankLevel = rankLevel;
-        match.setRankLevel(rankLevel);
+		match.rankLevel_$eq(rankLevel);
     }
 
 
     private void setOpponentName(String opponentName) {
-        match.setOpponentName(opponentName);
+		match.opponentName_$eq(opponentName);
         notifyObserversOfChangeTo(AnalyserEvent.OPPONENT_NAME);
     }
 
 
     private void setResult(String result) {
-        match.setResult(result);
+		match.result_$eq(result);
         notifyObserversOfChangeTo(AnalyserEvent.RESULT);
     }
 
 
     private void setScreen(Screen screen) {
         this.screen = screen;
-
         notifyObserversOfChangeTo(AnalyserEvent.SCREEN);
     }
 
 
     private void setYourClass(String yourClass) {
-        match.setUserClass(yourClass);
+		match.userClass_$eq(yourClass);
         notifyObserversOfChangeTo(AnalyserEvent.YOUR_CLASS);
     }
 
@@ -823,7 +824,7 @@ public class HearthstoneAnalyser extends Observable {
     private void setYourTurn(boolean yourTurn) {
         this.isYourTurn = yourTurn;
         if (yourTurn) {
-            match.setNumTurns(match.getNumTurns() + 1);
+			match.numTurns_$eq(match.numTurns() + 1);
         }
         notifyObserversOfChangeTo(AnalyserEvent.YOUR_TURN);
     }
@@ -835,7 +836,7 @@ public class HearthstoneAnalyser extends Observable {
 
 
     private void endTimer() {
-        match.setDuration(Math.round((System.currentTimeMillis() - startTime) / 1000));
+		match.duration_$eq(Math.round((System.currentTimeMillis() - startTime) / 1000));
     }
 
 
@@ -858,6 +859,4 @@ public class HearthstoneAnalyser extends Observable {
     static public int getXOffset(BufferedImage image, float ratio) {
         return (int) (((float) image.getWidth() - (ratio * PixelLocation.REFERENCE_SIZE.x)) / 2);
     }
-
-
 }
