@@ -7,6 +7,7 @@ import java.io.File
 import org.apache.commons.io.input.TailerListenerAdapter
 import net.hearthstats.log.Log
 import HearthstoneLogMonitor._
+import java.util.Observable
 
 class HearthstoneLogMonitor {
 
@@ -76,12 +77,15 @@ class HearthstoneLogMonitor {
             case ("DECK", "FRIENDLY HAND", "FRIENDLY DECK") =>
               // Put back into the deck... usually after replacing your starting hand
               Log.info("    You returned " + cardName + " to your deck")
+              notifyCardPutBack(cardName)
             case ("HAND", "", "FRIENDLY HAND") =>
               // Received into your hand but not from your deck... usually The Coin
               Log.info("    You received " + cardName)
+              notifyCardDrawn(cardName)
             case ("HAND", "FRIENDLY DECK", "FRIENDLY HAND") =>
               // Picked up into your hand
               Log.info("    You picked up " + cardName);
+              notifyCardDrawn(cardName)
             case ("HAND", "FRIENDLY HAND", "FRIENDLY PLAY") =>
               // Your minion
               Log.info("    You played minion " + cardName)
@@ -163,6 +167,17 @@ class HearthstoneLogMonitor {
       case _ => // ignore line
     }
   }
+
+  val observers = collection.mutable.ListBuffer.empty[CardDrawnObserver]
+
+  def addObserver(obs: CardDrawnObserver): Unit =
+    observers += obs
+
+  private def notifyCardDrawn(c: String): Unit =
+    for (obs <- observers) obs.cardDrawn(c)
+
+  private def notifyCardPutBack(c: String): Unit =
+    for (obs <- observers) obs.cardPutBack(c)
 
 }
 

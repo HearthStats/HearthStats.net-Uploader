@@ -8,36 +8,52 @@ import java.net.URL
 import java.nio.channels.Channels
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-
-import scala.collection.JavaConversions.asScalaBuffer
-
-import javax.swing.Box
-import javax.swing.Box.createHorizontalBox
+import scala.swing.Swing.onEDT
 import javax.swing.Box.createVerticalBox
+import javax.swing.BoxLayout
 import javax.swing.ImageIcon
 import javax.swing.JLabel
-import javax.swing.SwingUtilities
+import javax.swing.JPanel
 import net.hearthstats.Card
 import net.hearthstats.Deck
 import net.hearthstats.log.Log
-import scala.swing.Swing._
+import net.hearthstats.logmonitor.CardDrawnObserver
+import net.hearthstats.ui.ClickableDeckBox.MouseHandler
+
+class ClickableDeckBox(deck: Deck) extends JPanel with CardDrawnObserver {
+
+  setLayout(new BoxLayout(this, BoxLayout.X_AXIS))
+  val box = createVerticalBox
+  val imageLabel = new JLabel
+  imageLabel.setPreferredSize(new Dimension(289, 398))
+  val cardLabels: Map[String, ClickableLabel] = (for (card <- deck.cards) yield {
+    val cardLabel = new ClickableLabel(card)
+    box.add(cardLabel)
+    cardLabel.addMouseListener(new MouseHandler(card, imageLabel))
+
+    card.name -> cardLabel
+  }).toMap
+  add(box)
+  add(imageLabel)
+
+  def cardDrawn(cardName: String): Unit =
+    cardLabels.get(cardName) match {
+      case None => Log.warn(s"card $cardName not found in deck")
+      case Some(label) => label.decreaseRemaining()
+    }
+
+  def cardPutBack(cardName: String): Unit =
+    cardLabels.get(cardName) match {
+      case None => Log.warn(s"card $cardName not found in deck")
+      case Some(label) => label.increaseRemaining()
+    }
+}
 
 object ClickableDeckBox {
 
-  def makeBox(deck: Deck): Box = {
+  def makeBox(deck: Deck): ClickableDeckBox = {
     downloadImages(deck)
-    val container = createHorizontalBox
-    val box = createVerticalBox
-    val imageLabel = new JLabel
-    imageLabel.setPreferredSize(new Dimension(289, 398))
-    for (card <- deck.cards) {
-      val cardLabel = new ClickableLabel(card)
-      box.add(cardLabel)
-      cardLabel.addMouseListener(new MouseHandler(card, imageLabel))
-    }
-    container.add(box)
-    container.add(imageLabel)
-    container
+    new ClickableDeckBox(deck)
   }
 
   private def downloadImages(deck: Deck) {

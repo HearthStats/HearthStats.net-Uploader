@@ -21,7 +21,7 @@ import scala.swing.Swing._
 
 class ClickableLabel(var card: Card) extends JLabel {
 
-  private var remaining = card.count
+  var remaining = card.count
   private var cardImage = new ImageIcon(card.localURL)
   private var currentBack = cardBack
 
@@ -30,7 +30,7 @@ class ClickableLabel(var card: Card) extends JLabel {
   setMaximumSize(displaySize)
   setMinimumSize(displaySize)
 
-  setText(s"   ${card.cost}      $card.name")
+  setText(s"   ${card.cost}      ${card.name}")
   setFont(Font.decode(Font.SANS_SERIF).deriveFont(Font.BOLD, 14))
   setForeground(Color.WHITE)
 
@@ -56,11 +56,19 @@ class ClickableLabel(var card: Card) extends JLabel {
     super.paintComponent(g2)
   }
 
-  private def handleClick(button: Int) {
+  private def handleClick(button: Int): Unit =
     if (button == MouseEvent.BUTTON1 && remaining > 0)
-      remaining -= 1
-    if (button != MouseEvent.BUTTON1 && remaining < card.count)
-      remaining += 1
+      decreaseRemaining()
+    else if (button != MouseEvent.BUTTON1 && remaining < card.count)
+      increaseRemaining()
+
+  def decreaseRemaining(): Unit = {
+    remaining -= 1
+    updateRemaining()
+  }
+
+  def increaseRemaining(): Unit = {
+    remaining += 1
     updateRemaining()
   }
 
@@ -79,5 +87,5 @@ object ClickableLabel {
     Seq("cardBack", "cardBack2", "cardBackL") map buildImage
 
   def buildImage(n: String) =
-    new ImageIcon(classOf[ClickableLabel].getResource("/images/$n.png"))
+    new ImageIcon(classOf[ClickableLabel].getResource(s"/images/$n.png"))
 }

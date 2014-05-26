@@ -3,6 +3,7 @@ package net.hearthstats;
 
 import java.awt.AWTException;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -1306,11 +1307,14 @@ public class Monitor extends JFrame implements Observer {
                     // after the HearthStats Uploader started up. In that case log monitoring won't yet be running.
                     setupLogMonitoring();
 					_resetMatchClassSelectors();
+					//TODO : also display the overlay for Practice mode (usefull for tests)
                     if (Config.showDeckOverlay() && !"Arena".equals(_analyzer.getMode())) {
                         Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
     					if (selectedDeck != null && selectedDeck.isValid()) {
-                            new StandardDialog(selectedDeck.name(),
-                                    ClickableDeckBox.makeBox(selectedDeck), true)
+    						ClickableDeckBox deckBox = ClickableDeckBox.makeBox(selectedDeck);
+    						hearthstoneLogMonitor.addObserver(deckBox);
+							new StandardDialog(selectedDeck.name(),
+                                    deckBox, true)
                                     .show();
                         } else {
                             String message;

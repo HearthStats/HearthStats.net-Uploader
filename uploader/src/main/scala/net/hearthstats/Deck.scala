@@ -17,9 +17,9 @@ object Deck {
     val id = Integer.parseInt(json.get("id").toString)
     val cardList =
       Option(json.get("cardstring")) match {
-        case None => Nil
         case Some(cs) if StringUtils.isNotBlank(cs.toString) =>
           parseDeckString(cs.toString.trim)
+        case _ => Nil
       }
 
     Deck(id = id,
