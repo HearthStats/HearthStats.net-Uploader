@@ -49,8 +49,8 @@ public enum Rank {
         return description;
     }
 
-    public static Rank fromInt(int number) {
-        if (number < 1 || number > 25) {
+    public static Rank fromInt(Integer number) {
+        if (number == null || number < 1 || number > 25) {
             return null;
         } else {
             return values()[25 - number];
