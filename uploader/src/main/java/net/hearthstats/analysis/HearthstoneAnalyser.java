@@ -6,6 +6,7 @@ import java.util.Observable;
 import java.util.ResourceBundle;
 
 import net.hearthstats.BackgroundImageSave;
+import net.hearthstats.Config;
 import net.hearthstats.HearthstoneMatch;
 import net.hearthstats.Main;
 import net.hearthstats.log.Log;
@@ -238,7 +239,7 @@ public class HearthstoneAnalyser extends Observable {
                     startTimer();
                     if ((previousScreen != null && previousScreen.group == ScreenGroup.MATCH_START) && (match.getOpponentClass() == null || match.getUserClass() == null)) {
                         // Failed to detect classes, so ask the user to submit screenshots of the problem
-                        Log.warn(t("warning.classdetection", Main.getExtractionFolder()));
+                        Log.warn(t("warning.classdetection", Config.getExtractionFolder()));
                     }
                     break;
 
@@ -641,7 +642,8 @@ public class HearthstoneAnalyser extends Observable {
     private void analyzeRankLevel(BufferedImage image) {
 
         try {
-            Rank rank = Rank.fromInt(rankLevelOcr.processNumber(image));
+            Integer rankInteger = rankLevelOcr.processNumber(image);
+            Rank rank = Rank.fromInt(rankInteger);
 
             if (rank == null) {
                 Log.warn("Could not interpret rank, your rank may not be recorded correctly");

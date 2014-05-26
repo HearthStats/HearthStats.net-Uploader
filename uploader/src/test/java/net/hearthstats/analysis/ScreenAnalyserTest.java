@@ -1,22 +1,28 @@
 package net.hearthstats.analysis;
 
-import net.hearthstats.ocr.RankLevelOcr;
-import net.hearthstats.state.PixelLocation;
-import net.hearthstats.state.Screen;
-import net.hearthstats.util.Coordinate;
-import net.hearthstats.util.MatchOutcome;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
+
+import net.hearthstats.ocr.RankLevelOcr;
+import net.hearthstats.state.PixelLocation;
+import net.hearthstats.state.Screen;
+import net.hearthstats.util.Coordinate;
+import net.hearthstats.util.MatchOutcome;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class tests the ScreenAnalyser against a folder of screenshots (which you need to provide yourself).
@@ -266,8 +272,8 @@ public class ScreenAnalyserTest {
     private void writePixelValue(BufferedWriter output, BufferedImage image, PixelLocation pixelLocation) throws IOException {
 
         Coordinate coordinate = pixelMap.get(pixelLocation);
-        int x = coordinate.x;
-        int y = coordinate.y;
+		int x = coordinate.x();
+		int y = coordinate.y();
 
         int rgb = image.getRGB(x, y);
         int red = (rgb >> 16) & 0xFF;

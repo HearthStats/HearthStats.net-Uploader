@@ -27,6 +27,8 @@ public class Config {
 
 	private static String _userkey;
 
+    private static MonitoringMethod monitoringMethod;
+
 	private static boolean _checkForUpdates;
 
     private static boolean _useOsxNotifications;
@@ -64,6 +66,8 @@ public class Config {
 	private static String _defaultApiBaseUrl = "http://hearthstats.net/api/v1/";
 
 	private static String _apiBaseUrl;
+
+	private static ProgramHelper helper;
 	
 	public static void rebuild() {
         debugLog.debug("Building config");
@@ -75,6 +79,9 @@ public class Config {
 		// api
 		setUserKey("your_userkey_here");
 		setApiBaseUrl(_defaultApiBaseUrl );
+
+        // monitoring method
+        setMonitoringMethod(MonitoringMethod.getDefault());
 		
 		// updates
 		setCheckForUpdates(true);
@@ -223,6 +230,20 @@ public class Config {
         }
     }
 
+    public static MonitoringMethod monitoringMethod() {
+        String stringValue = getStringSetting("ui", "monitoringmethod", MatchPopup.getDefault().name());
+        if (StringUtils.isBlank(stringValue)) {
+            return MonitoringMethod.getDefault();
+        } else {
+            try {
+                return MonitoringMethod.valueOf(stringValue);
+            } catch (IllegalArgumentException e) {
+                debugLog.debug("Could not parse MonitoringMethod value \"{}\", using default instead", stringValue);
+                return MonitoringMethod.getDefault();
+            }
+        }
+    }
+
     public static String getVersion() {
 		if(_version == null) {
 			_version = "";
@@ -305,6 +326,10 @@ public class Config {
 
     public static void setShowMatchPopup(MatchPopup showMatchPopup) {
         setStringValue("ui", "matchpopup", showMatchPopup == null ? "" : showMatchPopup.name());
+    }
+
+    public static void setMonitoringMethod(MonitoringMethod monitoringMethod) {
+        setStringValue("ui", "monitoringmethod", monitoringMethod == null ? "" : monitoringMethod.name());
     }
 
     public static void setCheckForUpdates(boolean val) {
@@ -411,6 +436,7 @@ public class Config {
 	private static void restorePreviousValues() {
 		setUserKey(_userkey);
 		setApiBaseUrl(_apiBaseUrl);
+        setMonitoringMethod(monitoringMethod);
 		setCheckForUpdates(_checkForUpdates);
         setUseOsxNotifications(_useOsxNotifications);
 		setShowNotifications(_showNotifications);
@@ -433,6 +459,7 @@ public class Config {
 	private static void storePreviousValues() {
 		_userkey = getUserKey();
 		_apiBaseUrl = getApiBaseUrl();
+        monitoringMethod = monitoringMethod();
 		_checkForUpdates = checkForUpdates();
         _useOsxNotifications = useOsxNotifications();
 		_showNotifications = showNotifications();
@@ -492,6 +519,43 @@ public class Config {
         }
     }
 
+
+    public static String getExtractionFolder() {
+        if (os == OS.OSX) {
+            File libFolder = new File(getSystemProperty("user.home") + "/Library/Application Support/HearthStatsUploader");
+            libFolder.mkdir();
+            return libFolder.getAbsolutePath();
+
+        } else {
+            String path = "tmp";
+            (new File(path)).mkdirs();
+            return path;
+        }
+    }
+
+	public static ProgramHelper programHelper() {
+		if (helper == null) {
+			String className;
+			switch (Config.os) {
+			case WINDOWS:
+				className = "net.hearthstats.win.ProgramHelperWindows";
+				break;
+			case OSX:
+				className = "net.hearthstats.osx.ProgramHelperOsx";
+				break;
+			default:
+				throw new UnsupportedOperationException("unsupported OS");
+			}
+
+			try {
+				helper = (ProgramHelper) Class.forName(className).newInstance();
+			} catch (Exception e) {
+				throw new RuntimeException("bug creating " + className, e);
+			}
+		}
+		return helper;
+	}
+
     public static enum OS {
         WINDOWS, OSX, UNSUPPORTED;
     }
@@ -501,6 +565,14 @@ public class Config {
 
         static MatchPopup getDefault() {
             return INCOMPLETE;
+        }
+    }
+
+    public static enum MonitoringMethod {
+        SCREEN, SCREEN_LOG;
+
+        static MonitoringMethod getDefault() {
+            return SCREEN;
         }
     }
 }

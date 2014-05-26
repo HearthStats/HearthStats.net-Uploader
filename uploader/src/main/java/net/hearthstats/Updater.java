@@ -74,7 +74,7 @@ public final class Updater {
 	public static void cleanUp() {
 		_removeFile("updater.jar");
 		_removeFile("HearthStatsUploader.jar");	// remove old jar since we're using an exe now
-		_removeFile(Main.getExtractionFolder() + "/update.zip");
+		_removeFile(Config.getExtractionFolder() + "/update.zip");
 	}
 
 	private static void _removeFile(String path) {
@@ -127,7 +127,7 @@ public final class Updater {
 
 	private static void _extractZip() {
 
-        File updateZip = new File(Main.getExtractionFolder() + "/update.zip");
+        File updateZip = new File(Config.getExtractionFolder() + "/update.zip");
 
         if (updateZip.isFile()) {
             switch (Config.os) {
@@ -238,7 +238,7 @@ public final class Updater {
 		}
 		website = new URL(zipUrl);
 		ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-		FileOutputStream fos = new FileOutputStream(Main.getExtractionFolder() + "/update.zip");
+		FileOutputStream fos = new FileOutputStream(Config.getExtractionFolder() + "/update.zip");
 		fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 		fos.close();
 	}

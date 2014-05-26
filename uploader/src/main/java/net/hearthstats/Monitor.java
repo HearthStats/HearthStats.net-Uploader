@@ -21,8 +21,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -36,10 +36,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.ResourceBundle;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,6 +62,7 @@ import net.hearthstats.analysis.AnalyserEvent;
 import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
 import net.hearthstats.log.LogPane;
+import net.hearthstats.logmonitor.HearthstoneLogMonitor;
 import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.notification.NotificationQueue;
 import net.hearthstats.state.Screen;
@@ -75,6 +72,7 @@ import net.hearthstats.ui.MatchEndPopup;
 import net.hearthstats.ui.StandardDialog;
 import net.miginfocom.swing.MigLayout;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,13 +80,11 @@ import org.slf4j.LoggerFactory;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
 
 @SuppressWarnings("serial")
-public class Monitor extends JFrame implements Observer, WindowListener {
+public class Monitor extends JFrame implements Observer {
 
     private static final String PROFILES_URL = "http://hearthstats.net/profiles";
     private static final String DECKS_URL = "http://hearthstats.net/decks";
 	private static final int POLLING_INTERVAL_IN_MS = 100;
-    private static final int MAX_THREADS = 5;
-    private static final int GC_FREQUENCY = 20;
 
     private static final EnumSet<Screen> DO_NOT_NOTIFY_SCREENS = EnumSet.of(Screen.COLLECTION, Screen.COLLECTION_ZOOM, Screen.MAIN_TODAYSQUESTS, Screen.TITLE);
 
@@ -109,8 +105,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 
     protected API _api = new API();
 	protected HearthstoneAnalyser _analyzer = new HearthstoneAnalyser();
-	protected ProgramHelper _hsHelper;
-	
+	protected ProgramHelper _hsHelper = Config.programHelper();
+    protected HearthstoneLogMonitor hearthstoneLogMonitor;
+
 	private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
 	private JTextField _currentOpponentNameField;
 	private JLabel _currentMatchLabel;
@@ -130,12 +127,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private JComboBox _currentOpponentClassSelect;
 	private JComboBox _currentYourClassSelector;
 
-	private int _pollIterations = 0;
-	protected boolean _hearthstoneDetected;
-	protected JGoogleAnalyticsTracker _analytics;
-	protected LogPane _logText;
+	private boolean _hearthstoneDetected;
+    private JGoogleAnalyticsTracker _analytics;
+    private LogPane _logText;
 	private JScrollPane _logScroll;
 	private JTextField _userKeyField;
+    private JComboBox monitoringMethodField;
 	private JCheckBox _checkUpdatesField;
 	private JCheckBox _notificationsEnabledField;
     private JComboBox _notificationsFormat;
@@ -154,20 +151,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private ResourceBundle _bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
 
     public Monitor() throws HeadlessException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-
-        String className;
-        switch (Config.os) {
-            case WINDOWS:
-                className = "net.hearthstats.win.ProgramHelperWindows";
-                break;
-            case OSX:
-                className = "net.hearthstats.osx.ProgramHelperOsx";
-                break;
-            default:
-                throw new UnsupportedOperationException(t("error.os_unsupported"));
-        }
-
-        _hsHelper = (ProgramHelper) Class.forName(className).newInstance();
+        _notificationQueue = newNotificationQueue();
     }
 
 
@@ -198,19 +182,26 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			_analytics = AnalyticsTracker.tracker();
 			_analytics.trackEvent("app","AppStart");
 		}
-		addWindowListener(this);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				handleClose();
+			}
+		});
 		
-		_createAndShowGui();
-		_showWelcomeLog();
-		_checkForUpdates();
-		
+		createAndShowGui();
+		showWelcomeLog();
+		checkForUpdates();
+
 		_api.addObserver(this);
 		_analyzer.addObserver(this);
 		_hsHelper.addObserver(this);
 
 
 		if(_checkForUserKey()) {
-			_pollHearthstone();
+			poller.start();
+		} else {
+			System.exit(1);
 		}
 
         if (Config.os == Config.OS.OSX) {
@@ -220,8 +211,24 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         }
 	}
 
+	public void handleClose() {
+		Point p = getLocationOnScreen();
+		Config.setX(p.x);
+		Config.setY(p.y);
+		Dimension rect = getSize();
+		Config.setWidth((int) rect.getWidth());
+		Config.setHeight((int) rect.getHeight());
+		try {
+			Config.save();
+		} catch (Throwable t) {
+			Log.warn(
+					"Error occurred trying to write settings file, your settings may not be saved",
+					t);
+		}
+		System.exit(0);
+	}
 
-	private void _showWelcomeLog() {
+	private void showWelcomeLog() {
         debugLog.debug("Showing welcome log messages");
 
         Log.welcome("HearthStats.net " + t("Uploader") + " v" + Config.getVersionWithOs());
@@ -245,7 +252,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 
 	
 	private boolean _checkForUserKey() {
-		if(Config.getUserKey().equals("your_userkey_here")) {
+		boolean userKeySet = !Config.getUserKey().equals("your_userkey_here");
+		if(userKeySet) {
+			return true;
+		} else {
             Log.warn(t("error.userkey_not_entered"));
 
             bringWindowToFront();
@@ -255,44 +265,31 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 					t("you_need_to_enter_userkey") + "\n\n" +
 					t("get_it_at_hsnet_profiles"));
 			
-			// Create Desktop object
 			Desktop d = Desktop.getDesktop();
-			// Browse a URL, say google.com
 			try {
 				d.browse(new URI(PROFILES_URL));
 			} catch (IOException | URISyntaxException e) {
                 Log.warn("Error launching browser with URL " + PROFILES_URL, e);
 			}
 
-			String[] options = {t("button.ok"), t("button.cancel")};
-			JPanel panel = new JPanel();
-			JLabel lbl = new JLabel(t("UserKey"));
-			JTextField txt = new JTextField(10);
-			panel.add(lbl);
-			panel.add(txt);
-
-			int selectedOption = JOptionPane.showOptionDialog(this, panel, t("enter_your_userkey"), JOptionPane.NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-			if(selectedOption == 0) {
-			    String userkey = txt.getText();
-			    if(userkey.isEmpty()) {
-			    	_checkForUserKey();
-			    } else {
-			    	Config.setUserKey(userkey);
-                    try {
-                        Config.save();
-                    } catch (Throwable e) {
-                        Log.warn("Error occurred trying to write settings file, your settings may not be saved", e);
-                    }
-			    	_userKeyField.setText(userkey);
-                    Log.info(t("UserkeyStored"));
-			    	_pollHearthstone();
-			    }
+			String userkey = JOptionPane.showInputDialog(this,
+					t("enter_your_userkey"));
+			if (StringUtils.isEmpty(userkey)) {
+				return false;
 			} else {
-				System.exit(0);
+				Config.setUserKey(userkey);
+				try {
+					_userKeyField.setText(userkey);
+					Config.save();
+					Log.info(t("UserkeyStored"));
+				} catch (Throwable e) {
+					Log.warn(
+							"Error occurred trying to write settings file, your settings may not be saved",
+							e);
+				}
+				return true;
 			}
-			return false;
 		}
-		return true;
 	}
 
 
@@ -348,7 +345,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 
 
 
-	private void _createAndShowGui() {
+	private void createAndShowGui() {
         debugLog.debug("Creating GUI");
 
 		Image icon = new ImageIcon(getClass().getResource("/images/icon.png")).getImage();
@@ -655,8 +652,14 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_userKeyField = new JTextField();
 		_userKeyField.setText(Config.getUserKey());
 		panel.add(_userKeyField, "wrap");
-		
-		// check for updates
+
+        // monitoring method
+        panel.add(new JLabel(t("options.label.monitoring")), "skip,right");
+        monitoringMethodField = new JComboBox<>(new String[]{ t("options.label.monitoring.screen"), t("options.label.monitoring.log")});
+        monitoringMethodField.setSelectedIndex(Config.monitoringMethod().ordinal());
+        panel.add(monitoringMethodField, "wrap");
+
+        // check for updates
 		panel.add(new JLabel(t("options.label.updates") + " "), "skip,right");
 		_checkUpdatesField = new JCheckBox(t("options.check_updates"));
 		_checkUpdatesField.setSelected(Config.checkForUpdates());
@@ -801,10 +804,12 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_showDeckNotificationField.setEnabled(isEnabled);
 	}
 
+
 	private String name(JSONObject o) {
 		return hsClassOptions[Integer.parseInt(o.get("klass_id").toString())]
 				+ " - " + o.get("name").toString().toLowerCase();
 	}
+
 
 	private void _applyDecksToSelector(JComboBox<String> selector, Integer slotNum) {
 		
@@ -831,6 +836,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				selector.setSelectedIndex(i + 1);
 		}
 	}
+
+
 	private void _updateDecksTab() throws IOException {
 		DeckUtils.updateDecks();
 		_applyDecksToSelector(_deckSlot1Field, 1);
@@ -843,7 +850,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		_applyDecksToSelector(_deckSlot8Field, 8);
 		_applyDecksToSelector(_deckSlot9Field, 9);
 	}
-	private void _checkForUpdates() {
+
+
+	private void checkForUpdates() {
 		if(Config.checkForUpdates()) {
             Log.info(t("checking_for_updates..."));
 			try {
@@ -897,7 +906,14 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	}
 
-	protected ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(MAX_THREADS);
+
+    /**
+     * Sets up the Hearthstone log monitoring if enabled, or stops if it is disabled
+     */
+    private void setupLogMonitoring() {
+        setMonitorHearthstoneLog(Config.monitoringMethod() == Config.MonitoringMethod.SCREEN_LOG);
+    }
+
 
 	protected boolean _drawPaneAdded = false;
 
@@ -911,7 +927,7 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 		}
 	};
 
-    protected NotificationQueue _notificationQueue = newNotificationQueue();
+    protected NotificationQueue _notificationQueue;
 
     private Boolean _currentMatchEnabled = false;
 	private boolean _playingInMatch = false;
@@ -1037,98 +1053,88 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         }
 	}
 
-	protected void _handleHearthstoneFound(int currentPollIteration) {
-        debugLog.debug("  - Iteration {} found Hearthstone", currentPollIteration);
-
+	protected void _handleHearthstoneFound() {
 		// mark hearthstone found if necessary
 		if (!_hearthstoneDetected) {
 			_hearthstoneDetected = true;
-            debugLog.debug("  - Iteration {} changed hearthstoneDetected to true", currentPollIteration);
+			debugLog.debug("  - hearthstoneDetected");
             if (Config.showHsFoundNotification()) {
 				_notify("Hearthstone found");
             }
+            if (hearthstoneLogMonitor != null) {
+                hearthstoneLogMonitor.startMonitoring();
+            }
+            setupLogMonitoring();
 		}
-		
-		// grab the image from Hearthstone
-        debugLog.debug("  - Iteration {} screen capture", currentPollIteration);
+
+        // grab the image from Hearthstone
+		debugLog.debug("  - screen capture");
 		image = _hsHelper.getScreenCapture();
 
         if (image == null) {
-            debugLog.debug("  - Iteration {} screen capture returned null", currentPollIteration);
+			debugLog.debug("  - screen capture returned null");
         } else {
 			// detect image stats
 			if (image.getWidth() >= 1024) {
-                debugLog.debug("  - Iteration {} analysing image", currentPollIteration);
+				debugLog.debug("  - analysing image");
 				_analyzer.analyze(image);
             }
 			
 			if (Config.mirrorGameImage()) {
-                debugLog.debug("  - Iteration {} mirroring image", currentPollIteration);
+				debugLog.debug("  - mirroring image");
 				_updateImageFrame();
             }
 		}
 	}
 	
-	protected void _handleHearthstoneNotFound(int currentPollIteration) {
+	protected void _handleHearthstoneNotFound() {
 		
 		// mark hearthstone not found if necessary
 		if (_hearthstoneDetected) {
 			_hearthstoneDetected = false;
-            debugLog.debug("  - Iteration {} changed hearthstoneDetected to false", currentPollIteration);
+			debugLog.debug("  - changed hearthstoneDetected to false");
 			if (Config.showHsClosedNotification()) {
 				_notify("Hearthstone closed");
 				_analyzer.reset();
 			}
-			
+            if (hearthstoneLogMonitor != null) {
+                hearthstoneLogMonitor.stopMonitoring();
+            }
+        }
+	}
+
+	private void pollHsImpl() {
+		boolean error = false;
+		while (!error) {
+			try {
+				if (_hsHelper.foundProgram()) {
+					_handleHearthstoneFound();
+				} else {
+					debugLog.debug("  - did not find Hearthstone");
+					_handleHearthstoneNotFound();
+				}
+				_updateTitle();
+				Thread.sleep(POLLING_INTERVAL_IN_MS);
+			} catch (Throwable ex) {
+				ex.printStackTrace(System.err);
+				debugLog.error("  - exception which is not being handled:", ex);
+				while (ex.getCause() != null) {
+					ex = ex.getCause();
+				}
+				Log.error(
+						"ERROR: "
+								+ ex.getMessage()
+								+ ". You will need to restart HearthStats.net Uploader.",
+						ex);
+				error = true;
+			} finally {
+				debugLog.debug("<-- finished");
+			}
+
 		}
 	}
-	protected void _pollHearthstone() {
-        scheduledExecutorService.schedule(new Callable<Object>() {
-			public Object call() throws Exception {
-                _pollIterations++;
-
-                // A copy of pollIterations is kept in localPollIterations
-                int currentPollIteration = _pollIterations;
-
-                try {
-                    debugLog.debug("--> Iteration {} started", currentPollIteration);
-
-                    if (_hsHelper.foundProgram()) {
-                        _handleHearthstoneFound(currentPollIteration);
-                    } else {
-                        debugLog.debug("  - Iteration {} did not find Hearthstone", currentPollIteration);
-                        _handleHearthstoneNotFound(currentPollIteration);
-                    }
-
-                    _updateTitle();
-
-                    _pollHearthstone();        // repeat the process
-
-                    // Keep memory usage down by telling the JVM to perform a garbage collection after every eighth poll (ie GC 1-2 times per second)
-                    if (_pollIterations % GC_FREQUENCY == 0 && Runtime.getRuntime().totalMemory() > 150000000) {
-                        debugLog.debug("  - Iteration {} triggers GC", currentPollIteration);
-                        System.gc();
-                    }
-
-
-                } catch (Throwable ex) {
-                    ex.printStackTrace(System.err);
-                    debugLog.error("  - Iteration " + currentPollIteration + " caused exception which is not being handled:", ex);
-                    while (ex.getCause() != null) {
-                        ex = ex.getCause();
-                    }
-                    Log.error("ERROR: " + ex.getMessage() + ". You will need to restart HearthStats.net Uploader.", ex);
-                } finally {
-                    debugLog.debug("<-- Iteration {} finished", currentPollIteration);
-                }
-
-                return "";
-            }
-		}, POLLING_INTERVAL_IN_MS, TimeUnit.MILLISECONDS);
-	}
-
-
-    /**
+	
+	/**
      * Checks whether the match result is complete, showing a popup if necessary to fix the match data,
      * and then submits the match when ready.
      *
@@ -1285,6 +1291,9 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 				} 
 				
 				if (_analyzer.getScreen() == Screen.FINDING_OPPONENT) {
+                    // Ensure that log monitoring is running before starting the match because Hearthstone may only have created the log file
+                    // after the HearthStats Uploader started up. In that case log monitoring won't yet be running.
+                    setupLogMonitoring();
 					_resetMatchClassSelectors();
                     if (Config.showDeckOverlay() && !"Arena".equals(_analyzer.getMode())) {
                         Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
@@ -1408,58 +1417,6 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 			_handleProgramHelperEvent(changed);
 	}
 
-	@Override
-	public void windowActivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowClosed(WindowEvent e) {
-		// TODO Auto-generated method stub
-        debugLog.debug("closed");
-	}
-
-	@Override
-	public void windowClosing(WindowEvent e) {
-		Point p = getLocationOnScreen();
-		Config.setX(p.x);
-		Config.setY(p.y);
-		Dimension rect = getSize();
-		Config.setWidth((int) rect.getWidth());
-		Config.setHeight((int) rect.getHeight());
-        try {
-            Config.save();
-        } catch (Throwable t) {
-            Log.warn("Error occurred trying to write settings file, your settings may not be saved", t);
-        }
-		System.exit(0);
-	}
-
-	@Override
-	public void windowDeactivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowDeiconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowIconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowOpened(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	private Integer _getDeckSlotDeckId(JComboBox selector) {
 		Integer deckId = null;
 		String deckStr = (String) selector.getItemAt(selector.getSelectedIndex());
@@ -1494,7 +1451,10 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	private void _saveOptions() {
         debugLog.debug("Saving options...");
 
+        Config.MonitoringMethod monitoringMethod = Config.MonitoringMethod.values()[monitoringMethodField.getSelectedIndex()];
+
 		Config.setUserKey(_userKeyField.getText());
+        Config.setMonitoringMethod(monitoringMethod);
 		Config.setCheckForUpdates(_checkUpdatesField.isSelected());
 		Config.setShowNotifications(_notificationsEnabledField.isSelected());
 		Config.setShowHsFoundNotification(_showHsFoundField.isSelected());
@@ -1514,6 +1474,8 @@ public class Monitor extends JFrame implements Observer, WindowListener {
             Config.setUseOsxNotifications(_notificationsFormat.getSelectedIndex() == 0);
             _notificationQueue = newNotificationQueue();
         }
+
+        setupLogMonitoring();
 
         try {
             Config.save();
@@ -1537,6 +1499,13 @@ public class Monitor extends JFrame implements Observer, WindowListener {
 	//http://stackoverflow.com/questions/7461477/how-to-hide-a-jframe-in-system-tray-of-taskbar
 	TrayIcon trayIcon;
     SystemTray tray;
+	private Thread poller = new Thread(new Runnable() {
+		@Override
+		public void run() {
+			pollHsImpl();
+		}
+	});
+
     private void _enableMinimizeToTray(){
         if(SystemTray.isSupported()){
         	
@@ -1606,6 +1575,36 @@ public class Monitor extends JFrame implements Observer, WindowListener {
         });
         
     }
+
+
+    public void setMonitorHearthstoneLog(boolean monitorHearthstoneLog) {
+        debugLog.debug("setMonitorHearthstoneLog({})", monitorHearthstoneLog);
+
+        if (monitorHearthstoneLog) {
+            // Ensure that the Hearthstone log.config file has been created
+            Boolean configWasCreated = _hsHelper.createConfig();
+
+            // Prepare the log monitor so that it's ready if Hearthstone starts up later
+            if (hearthstoneLogMonitor == null) {
+                hearthstoneLogMonitor = new HearthstoneLogMonitor();
+            }
+            // Start monitoring the Hearthstone log immediately if Hearthstone is already running
+            if (_hearthstoneDetected) {
+                if (configWasCreated) {
+                    // Hearthstone won't actually be logging yet because the log.config was created after Hearthstone started up
+                    Log.help("Hearthstone log.config changed &mdash; please restart Hearthstone so that it starts generating logs");
+                }
+                hearthstoneLogMonitor.startMonitoring();
+            }
+        } else {
+            // Stop monitoring the Hearthstone log
+            if (hearthstoneLogMonitor != null) {
+                hearthstoneLogMonitor.stopMonitoring();
+                hearthstoneLogMonitor = null;
+            }
+        }
+    }
+
 
     private static NotificationQueue newNotificationQueue() {
         if (Config.useOsxNotifications()) {

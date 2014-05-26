@@ -1,10 +1,18 @@
 package net.hearthstats.osx;
 
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.NativeLongByReference;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.io.File;
+
 import net.hearthstats.ProgramHelper;
-import net.hearthstats.osx.jna.*;
+import net.hearthstats.osx.jna.CFArrayRef;
+import net.hearthstats.osx.jna.CFDictionaryRef;
+import net.hearthstats.osx.jna.CGWindow;
+import net.hearthstats.osx.jna.CoreFoundationLibrary;
+import net.hearthstats.osx.jna.CoreGraphicsLibrary;
+import net.hearthstats.osx.jna.NSBitmapImageRep;
+import net.hearthstats.osx.jna.NSRunningApplication;
+
 import org.rococoa.Foundation;
 import org.rococoa.ID;
 import org.rococoa.Rococoa;
@@ -14,8 +22,9 @@ import org.rococoa.cocoa.foundation.NSString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.NativeLongByReference;
 
 /**
  * Implementation of {@link ProgramHelper} for (Mac) OS X.
@@ -361,7 +370,7 @@ public class ProgramHelperOsx extends ProgramHelper {
 
 
     @Override
-    public boolean foundProgram() {
+	public boolean foundProgram() {
 
         int newPid = findProgramPid(_bundleIdentifier);
 
@@ -411,5 +420,19 @@ public class ProgramHelperOsx extends ProgramHelper {
 
         return 0;
     }
+
+	@Override
+	public String hearthstoneConfigFolder() {
+		File folder = new File(System.getProperty("user.home")
+				+ "/Library/Preferences/Blizzard/Hearthstone");
+		return folder.getAbsolutePath();
+	}
+
+	@Override
+	public String hearthstoneLogFile() {
+		File logFile = new File(System.getProperty("user.home")
+				+ "/Library/Logs/Unity/Player.log");
+		return logFile.getAbsolutePath();
+	}
 
 }
