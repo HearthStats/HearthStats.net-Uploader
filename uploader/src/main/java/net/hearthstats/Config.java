@@ -5,11 +5,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.EnumSet;
 
 import javax.swing.JOptionPane;
 
 import net.hearthstats.log.Log;
+
 import org.apache.commons.lang3.StringUtils;
 import org.ini4j.Wini;
 import org.slf4j.Logger;
@@ -27,6 +27,8 @@ public class Config {
 
 	private static String _userkey;
 
+    private static MonitoringMethod monitoringMethod;
+
 	private static boolean _checkForUpdates;
 
     private static boolean _useOsxNotifications;
@@ -42,6 +44,8 @@ public class Config {
 	private static boolean _showModeNotification;
 
 	private static boolean _showDeckNotification;
+
+	private static boolean _showDeckOverlay;
 
     private static MatchPopup showMatchPopup;
 
@@ -62,6 +66,8 @@ public class Config {
 	private static String _defaultApiBaseUrl = "http://hearthstats.net/api/v1/";
 
 	private static String _apiBaseUrl;
+
+	private static ProgramHelper helper;
 	
 	public static void rebuild() {
         debugLog.debug("Building config");
@@ -73,6 +79,9 @@ public class Config {
 		// api
 		setUserKey("your_userkey_here");
 		setApiBaseUrl(_defaultApiBaseUrl );
+
+        // monitoring method
+        setMonitoringMethod(MonitoringMethod.getDefault());
 		
 		// updates
 		setCheckForUpdates(true);
@@ -113,6 +122,12 @@ public class Config {
 	}
 	private static void setApiBaseUrl(String baseUrl) {
 		setStringValue("API", "baseurl", baseUrl);
+	}
+
+	public static String getImageCacheFolder() {
+		File file = new File("cache/cardimages");
+		file.mkdirs();
+		return file.getAbsolutePath();
 	}
 
 	public static String getUserKey() {
@@ -159,6 +174,11 @@ public class Config {
 		return getBooleanSetting("notifications", "deck", true);
 	}
 	
+	public static boolean showDeckOverlay() {
+		return getBooleanSetting("ui", "deckOverlay", false);
+		// since feature is still new, do not activate by default
+	}
+
 	public static boolean showScreenNotification() {
 		return getBooleanSetting("notifications", "screen", true);
 	}
@@ -210,13 +230,27 @@ public class Config {
         }
     }
 
+    public static MonitoringMethod monitoringMethod() {
+        String stringValue = getStringSetting("ui", "monitoringmethod", MatchPopup.getDefault().name());
+        if (StringUtils.isBlank(stringValue)) {
+            return MonitoringMethod.getDefault();
+        } else {
+            try {
+                return MonitoringMethod.valueOf(stringValue);
+            } catch (IllegalArgumentException e) {
+                debugLog.debug("Could not parse MonitoringMethod value \"{}\", using default instead", stringValue);
+                return MonitoringMethod.getDefault();
+            }
+        }
+    }
+
     public static String getVersion() {
 		if(_version == null) {
 			_version = "";
 			String versionFile = "/version";
-			if(Config.os.toString().equals("OSX")) {
-				versionFile += "-osx";
-			}
+//			if(Config.os.toString().equals("OSX")) {
+//				versionFile += "-osx";
+//			}
 			InputStream in = Config.class.getResourceAsStream(versionFile);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String strLine;
@@ -286,8 +320,16 @@ public class Config {
 		setBooleanValue("notifications", "deck", val);
 	}
 
+	public static void setShowDeckOverlay(boolean val) {
+		setBooleanValue("ui", "deckOverlay", val);
+	}
+
     public static void setShowMatchPopup(MatchPopup showMatchPopup) {
         setStringValue("ui", "matchpopup", showMatchPopup == null ? "" : showMatchPopup.name());
+    }
+
+    public static void setMonitoringMethod(MonitoringMethod monitoringMethod) {
+        setStringValue("ui", "monitoringmethod", monitoringMethod == null ? "" : monitoringMethod.name());
     }
 
     public static void setCheckForUpdates(boolean val) {
@@ -394,6 +436,7 @@ public class Config {
 	private static void restorePreviousValues() {
 		setUserKey(_userkey);
 		setApiBaseUrl(_apiBaseUrl);
+        setMonitoringMethod(monitoringMethod);
 		setCheckForUpdates(_checkForUpdates);
         setUseOsxNotifications(_useOsxNotifications);
 		setShowNotifications(_showNotifications);
@@ -402,6 +445,7 @@ public class Config {
 		setShowScreenNotification(_showScreenNotification);
 		setShowModeNotification(_showModeNotification);
 		setShowDeckNotification(_showDeckNotification);
+		setShowDeckOverlay(_showDeckOverlay);
         setShowMatchPopup(showMatchPopup);
 		setAnalyticsEnabled(_analyticsEnabled);
 		setMinToTray(_minToTray);
@@ -415,6 +459,7 @@ public class Config {
 	private static void storePreviousValues() {
 		_userkey = getUserKey();
 		_apiBaseUrl = getApiBaseUrl();
+        monitoringMethod = monitoringMethod();
 		_checkForUpdates = checkForUpdates();
         _useOsxNotifications = useOsxNotifications();
 		_showNotifications = showNotifications();
@@ -423,6 +468,7 @@ public class Config {
 		_showScreenNotification = showScreenNotification();
 		_showModeNotification = showModeNotification();
 		_showDeckNotification = showDeckNotification();
+		_showDeckOverlay = showDeckOverlay();
         showMatchPopup = showMatchPopup();
 		_analyticsEnabled = analyticsEnabled();
 		_minToTray = minimizeToTray();
@@ -473,6 +519,43 @@ public class Config {
         }
     }
 
+
+    public static String getExtractionFolder() {
+        if (os == OS.OSX) {
+            File libFolder = new File(getSystemProperty("user.home") + "/Library/Application Support/HearthStatsUploader");
+            libFolder.mkdir();
+            return libFolder.getAbsolutePath();
+
+        } else {
+            String path = "tmp";
+            (new File(path)).mkdirs();
+            return path;
+        }
+    }
+
+	public static ProgramHelper programHelper() {
+		if (helper == null) {
+			String className;
+			switch (Config.os) {
+			case WINDOWS:
+				className = "net.hearthstats.win.ProgramHelperWindows";
+				break;
+			case OSX:
+				className = "net.hearthstats.osx.ProgramHelperOsx";
+				break;
+			default:
+				throw new UnsupportedOperationException("unsupported OS");
+			}
+
+			try {
+				helper = (ProgramHelper) Class.forName(className).newInstance();
+			} catch (Exception e) {
+				throw new RuntimeException("bug creating " + className, e);
+			}
+		}
+		return helper;
+	}
+
     public static enum OS {
         WINDOWS, OSX, UNSUPPORTED;
     }
@@ -482,6 +565,14 @@ public class Config {
 
         static MatchPopup getDefault() {
             return INCOMPLETE;
+        }
+    }
+
+    public static enum MonitoringMethod {
+        SCREEN, SCREEN_LOG;
+
+        static MonitoringMethod getDefault() {
+            return SCREEN;
         }
     }
 }

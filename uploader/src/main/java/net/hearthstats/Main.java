@@ -13,27 +13,14 @@ import java.io.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-@SuppressWarnings("serial")
-public class Main extends JFrame {
+public final class Main {
+	private Main() {} // never instanciated
 
     private static Logger debugLog = LoggerFactory.getLogger(Main.class);
 
     private static String ocrLanguage = "eng";
 
     private static Monitor _monitor;
-
-	public static String getExtractionFolder() {
-        if (Config.os == Config.OS.OSX) {
-            File libFolder = new File(Config.getSystemProperty("user.home") + "/Library/Application Support/HearthStatsUploader");
-            libFolder.mkdir();
-            return libFolder.getAbsolutePath();
-
-        } else {
-            String path = "tmp";
-            (new File(path)).mkdirs();
-            return path;
-        }
-	}
 
     public static LogPane getLogPane() {
         if (_monitor == null) {
@@ -175,7 +162,7 @@ public class Main extends JFrame {
 
     private static void cleanupDebugFiles() {
         try {
-            File folder = new File(Main.getExtractionFolder());
+            File folder = new File(Config.getExtractionFolder());
             if (folder.exists()) {
                 File[] files = folder.listFiles();
                 for (File file : files) {
@@ -198,7 +185,7 @@ public class Main extends JFrame {
             File javaLibraryPath = new File(Config.getJavaLibraryPath());
             outPath = javaLibraryPath.getParentFile().getAbsolutePath() + "/Resources";
         } else {
-            outPath = Main.getExtractionFolder() + "/";
+            outPath = Config.getExtractionFolder() + "/";
             (new File(outPath + "tessdata/configs")).mkdirs();
             copyFileFromJarTo("/tessdata/eng.traineddata", outPath + "tessdata/eng.traineddata");
             copyFileFromJarTo("/tessdata/configs/api_config", outPath + "tessdata/configs/api_config");
@@ -247,7 +234,7 @@ public class Main extends JFrame {
 		    byte[] buffer = new byte[1024];
 		    int read = -1;
 		    
-		    File outDir = new File(Main.getExtractionFolder());
+		    File outDir = new File(Config.getExtractionFolder());
 		    outDir.mkdirs();
 		    String outPath = outDir.getPath() + "/";
 		    

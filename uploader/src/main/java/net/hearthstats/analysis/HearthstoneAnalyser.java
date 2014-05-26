@@ -1,6 +1,12 @@
 package net.hearthstats.analysis;
 
+import java.awt.image.BufferedImage;
+import java.text.MessageFormat;
+import java.util.Observable;
+import java.util.ResourceBundle;
+
 import net.hearthstats.BackgroundImageSave;
+import net.hearthstats.Config;
 import net.hearthstats.HearthstoneMatch;
 import net.hearthstats.Main;
 import net.hearthstats.log.Log;
@@ -15,12 +21,10 @@ import net.hearthstats.state.UniquePixel;
 import net.hearthstats.util.Coordinate;
 import net.hearthstats.util.MatchOutcome;
 import net.hearthstats.util.Rank;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.image.BufferedImage;
-import java.util.Observable;
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
@@ -31,6 +35,8 @@ import java.util.Observable;
 public class HearthstoneAnalyser extends Observable {
 
     private final static Logger debugLog = LoggerFactory.getLogger(HearthstoneAnalyser.class);
+
+    private final ResourceBundle bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
 
     private final ScreenAnalyser screenAnalyser;
     private final IndividualPixelAnalyser individualPixelAnalyser;
@@ -57,6 +63,9 @@ public class HearthstoneAnalyser extends Observable {
 
     private int iterationsSinceFindingOpponent = 0;
     private int iterationsSinceClassCheckingStarted = 0;
+    private int iterationsSinceScreenMatched = 0;
+    private int iterationsSinceYourTurn = 0;
+    private int iterationsSinceOpponentTurn = 0;
 
 
     public HearthstoneAnalyser() {
@@ -66,7 +75,6 @@ public class HearthstoneAnalyser extends Observable {
     }
 
 
-    private int iterations = 0;
 
 
     public void analyze(BufferedImage image) {
@@ -77,12 +85,23 @@ public class HearthstoneAnalyser extends Observable {
         }
         lastImage = image;
 
+        Screen matchedScreen;
+        if (iterationsSinceScreenMatched < 10) {
+            // We've recently matched a screen, so only consider screens that are likely to follow the last screen.
+            matchedScreen = screenAnalyser.identifyScreen(image, screen);
+        } else {
+            // It's been many iterations since we've matched anything, so maybe we've moved on and missed a key screen.
+            // Perform a full analysis against all screens instead of the limited range used above.
+            matchedScreen = screenAnalyser.identifyScreen(image, null);
+        }
 
-        // We don't know what screen we're on, so perform a full analysis against all screens
-        Screen matchedScreen = screenAnalyser.identifyScreen(image, screen);
+        if (matchedScreen == null) {
+            // No screen was detected
+            iterationsSinceScreenMatched++;
 
-        if (matchedScreen != null) {
+        } else {
             // A screen was detected, so process any screen-specific tests now
+            iterationsSinceScreenMatched = 0;
             boolean screenChangedOK = handleScreenChange(image, screen, matchedScreen);
             if (screenChangedOK) {
                 handleScreenActions(image, matchedScreen);
@@ -212,10 +231,16 @@ public class HearthstoneAnalyser extends Observable {
                     arenaRunEndDetected = false;
                     isYourTurn = false;
                     iterationsSinceClassCheckingStarted = 0;
+                    iterationsSinceYourTurn = 0;
+                    iterationsSinceOpponentTurn = 0;
                     break;
 
                 case MATCH_PLAYING:
                     startTimer();
+                    if ((previousScreen != null && previousScreen.group == ScreenGroup.MATCH_START) && (match.getOpponentClass() == null || match.getUserClass() == null)) {
+                        // Failed to detect classes, so ask the user to submit screenshots of the problem
+                        Log.warn(t("warning.classdetection", Config.getExtractionFolder()));
+                    }
                     break;
 
                 case MATCH_END:
@@ -338,13 +363,27 @@ public class HearthstoneAnalyser extends Observable {
             // Last time we checked it was your turn, check whether it's now the opponent's turn
             debugLog.debug("Testing for opponent turn");
             if (imageShowsOpponentTurn(image)) {
-                setYourTurn(false);
+                iterationsSinceYourTurn++;
+                // Skip two iterations before actually switching, to reduce false detection as a card flies over the turn button
+                if (iterationsSinceYourTurn > 2) {
+                    setYourTurn(false);
+                    iterationsSinceYourTurn = 0;
+                }
+            } else {
+                iterationsSinceYourTurn = 0;
             }
         } else {
             // Last time we checked it was the opponent's turn, check whether it's now your turn
             debugLog.debug("Testing for your turn");
             if (imageShowsYourTurn(image)) {
-                setYourTurn(true);
+                iterationsSinceOpponentTurn++;
+                // Skip two iterations before actually switching, to reduce false detection as a card flies over the turn button
+                if (iterationsSinceOpponentTurn > 2) {
+                    setYourTurn(true);
+                    iterationsSinceOpponentTurn = 0;
+                }
+            } else {
+                iterationsSinceOpponentTurn = 0;
             }
         }
     }
@@ -603,7 +642,8 @@ public class HearthstoneAnalyser extends Observable {
     private void analyzeRankLevel(BufferedImage image) {
 
         try {
-            Rank rank = Rank.fromInt(rankLevelOcr.processNumber(image));
+            Integer rankInteger = rankLevelOcr.processNumber(image);
+            Rank rank = Rank.fromInt(rankInteger);
 
             if (rank == null) {
                 Log.warn("Could not interpret rank, your rank may not be recorded correctly");
@@ -802,6 +842,11 @@ public class HearthstoneAnalyser extends Observable {
     private void notifyObserversOfChangeTo(AnalyserEvent property) {
         setChanged();
         notifyObservers(property);
+    }
+
+    private String t(String key, String value0) {
+        String message = bundle.getString(key);
+        return MessageFormat.format(message, value0);
     }
 
 

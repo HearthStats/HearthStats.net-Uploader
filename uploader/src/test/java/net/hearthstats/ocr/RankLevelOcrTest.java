@@ -13,9 +13,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 
-/**
- * Created by charlie on 23/04/2014.
- */
 public class RankLevelOcrTest {
 
     private final static Logger debugLog = LoggerFactory.getLogger(RankLevelOcrTest.class);
@@ -44,8 +41,14 @@ public class RankLevelOcrTest {
     @Test
     public void testPerformOcr() throws Exception {
 
-        testRankLevel("ranklevel-16-a.png", "16");
         testRankLevel("ranklevel-17-a.png", "17");
+        testRankLevel("ranklevel-18-a.png", "18");
+        testRankLevel("ranklevel-18-b.png", "18");
+        testRankLevel("ranklevel-19-a.png", "19");
+        testRankLevel("ranklevel-19-b.png", "19");
+        testRankLevel("ranklevel-20-a.png", "20");
+        testRankLevel("ranklevel-21-a.png", "21");
+        testRankLevel("ranklevel-22-a.png", "22");
 
     }
 
@@ -59,7 +62,7 @@ public class RankLevelOcrTest {
 
         debugLog.debug("OCR for {} found raw \"{}\" parsed \"{}\"", filename, rawResult, parsedResult);
 
-        org.junit.Assert.assertEquals("OCR of opponent name did not match expected name", expectedResult, parsedResult);
+        org.junit.Assert.assertEquals("OCR of rank in " + filename + " did not match expected rank", expectedResult, parsedResult);
     }
 
 }

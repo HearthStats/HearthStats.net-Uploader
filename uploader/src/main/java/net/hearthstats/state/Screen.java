@@ -418,29 +418,9 @@ public enum Screen {
                 Screen.ARENA_END
         );
 
-        MATCH_PANDARIA_END.nextScreens = EnumSet.of(
-                Screen.MAIN,
-                Screen.PLAY_LOBBY,
-                Screen.PRACTICE_LOBBY,
-                Screen.ARENA_LOBBY,
-                Screen.ARENA_END
-        );
-
-        MATCH_STORMWIND_END.nextScreens = EnumSet.of(
-                Screen.MAIN,
-                Screen.PLAY_LOBBY,
-                Screen.PRACTICE_LOBBY,
-                Screen.ARENA_LOBBY,
-                Screen.ARENA_END
-        );
-
-        MATCH_STRANGLETHORN_END.nextScreens = EnumSet.of(
-                Screen.MAIN,
-                Screen.PLAY_LOBBY,
-                Screen.PRACTICE_LOBBY,
-                Screen.ARENA_LOBBY,
-                Screen.ARENA_END
-        );
+		MATCH_PANDARIA_END.nextScreens = MATCH_ORGRIMMAR_END.nextScreens;
+		MATCH_STORMWIND_END.nextScreens = MATCH_ORGRIMMAR_END.nextScreens;
+		MATCH_STRANGLETHORN_END.nextScreens = MATCH_ORGRIMMAR_END.nextScreens;
 
     }
 

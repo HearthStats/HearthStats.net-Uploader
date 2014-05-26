@@ -231,6 +231,14 @@ public enum UniquePixel {
     public final int maxGreen;
     public final int maxBlue;
 
+	public int x() {
+		return x;
+	}
+
+	public int y() {
+		return y;
+	}
+
     UniquePixel(int x, int y, int minRed, int minGreen, int minBlue, int maxRed, int maxGreen, int maxBlue) {
         this.x = x;
         this.y = y;
