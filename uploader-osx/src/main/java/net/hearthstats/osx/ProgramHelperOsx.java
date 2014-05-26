@@ -422,9 +422,9 @@ public class ProgramHelperOsx extends ProgramHelper {
     }
 
 	@Override
-	public String hearthstoneFolder() {
+	public String hearthstoneConfigFolder() {
 		File folder = new File(System.getProperty("user.home")
-				+ "/Library/Application Support/Blizzard/Hearthstone");
+				+ "/Library/Preferences/Blizzard/Hearthstone");
 		return folder.getAbsolutePath();
 	}
 

@@ -226,7 +226,7 @@ public class ProgramHelperWindows extends ProgramHelper {
 	}
 
 	@Override
-	public String hearthstoneFolder() {
+	public String hearthstoneConfigFolder() {
 		String appdata = System.getenv("LOCALAPPDATA");
 		if (StringUtils.isBlank(appdata)) {
 			throw new RuntimeException("Cannot find LOCALAPPDATA directory");

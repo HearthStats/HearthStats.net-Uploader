@@ -642,7 +642,8 @@ public class HearthstoneAnalyser extends Observable {
     private void analyzeRankLevel(BufferedImage image) {
 
         try {
-            Rank rank = Rank.fromInt(rankLevelOcr.processNumber(image));
+            Integer rankInteger = rankLevelOcr.processNumber(image);
+            Rank rank = Rank.fromInt(rankInteger);
 
             if (rank == null) {
                 Log.warn("Could not interpret rank, your rank may not be recorded correctly");

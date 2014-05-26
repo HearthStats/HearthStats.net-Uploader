@@ -26,7 +26,7 @@ abstract class ProgramHelper extends Observable {
    */
   def getScreenCapture: BufferedImage
 
-  def hearthstoneFolder: String
+  def hearthstoneConfigFolder: String
 
   def hearthstoneLogFile: String
 
@@ -35,24 +35,33 @@ abstract class ProgramHelper extends Observable {
     notifyObservers(property)
   }
 
-  def createConfig(): Unit = {
-    val logFile = new File(s"$hearthstoneFolder/log.config")
-    if (logFile.exists)
-      Log.info(s"$logFile already exists")
-    else {
-      val writer = new FileWriter(logFile)
+  def createConfig(): Boolean = {
+    val logConfigFile = new File(s"$hearthstoneConfigFolder/log.config")
+    if (logConfigFile.exists) {
+      Log.info(s"Using existing Hearthstone log config $logConfigFile")
+      false
+    } else {
+      val writer = new FileWriter(logConfigFile)
       writer.write(configContent)
       writer.close()
-      Log.info(s"$logFile created")
+      Log.info(s"Created new Hearthstone log config $logConfigFile")
+      true
     }
   }
 
-  val configContent = """
-[Zone]
-LogLevel=1
-FilePrinting=false
-ConsolePrinting=true
-ScreenPrinting=false    
-"""
+  var configContent =
+    """[LoadingScreen]
+      |LogLevel=1
+      |FilePrinting=false
+      |ConsolePrinting=true
+      |ScreenPrinting=false
+      |
+      |[Zone]
+      |LogLevel=1
+      |FilePrinting=false
+      |ConsolePrinting=true
+      |ScreenPrinting=false
+    """.stripMargin
+
 }
 

@@ -192,8 +192,7 @@ public class Monitor extends JFrame implements Observer {
 		createAndShowGui();
 		showWelcomeLog();
 		checkForUpdates();
-        setupLogMonitoring();
-		
+
 		_api.addObserver(this);
 		_analyzer.addObserver(this);
 		_hsHelper.addObserver(this);
@@ -1065,6 +1064,7 @@ public class Monitor extends JFrame implements Observer {
             if (hearthstoneLogMonitor != null) {
                 hearthstoneLogMonitor.startMonitoring();
             }
+            setupLogMonitoring();
 		}
 
         // grab the image from Hearthstone
@@ -1291,6 +1291,9 @@ public class Monitor extends JFrame implements Observer {
 				} 
 				
 				if (_analyzer.getScreen() == Screen.FINDING_OPPONENT) {
+                    // Ensure that log monitoring is running before starting the match because Hearthstone may only have created the log file
+                    // after the HearthStats Uploader started up. In that case log monitoring won't yet be running.
+                    setupLogMonitoring();
 					_resetMatchClassSelectors();
                     if (Config.showDeckOverlay() && !"Arena".equals(_analyzer.getMode())) {
                         Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
@@ -1578,14 +1581,20 @@ public class Monitor extends JFrame implements Observer {
         debugLog.debug("setMonitorHearthstoneLog({})", monitorHearthstoneLog);
 
         if (monitorHearthstoneLog) {
-            // Start monitoring the Hearthstone log
+            // Ensure that the Hearthstone log.config file has been created
+            Boolean configWasCreated = _hsHelper.createConfig();
+
+            // Prepare the log monitor so that it's ready if Hearthstone starts up later
             if (hearthstoneLogMonitor == null) {
                 hearthstoneLogMonitor = new HearthstoneLogMonitor();
-                if (_hearthstoneDetected) {
-                    hearthstoneLogMonitor.startMonitoring();
+            }
+            // Start monitoring the Hearthstone log immediately if Hearthstone is already running
+            if (_hearthstoneDetected) {
+                if (configWasCreated) {
+                    // Hearthstone won't actually be logging yet because the log.config was created after Hearthstone started up
+                    Log.help("Hearthstone log.config changed &mdash; please restart Hearthstone so that it starts generating logs");
                 }
-            } else {
-                Log.warn("Already monitoring Hearthstone log");
+                hearthstoneLogMonitor.startMonitoring();
             }
         } else {
             // Stop monitoring the Hearthstone log

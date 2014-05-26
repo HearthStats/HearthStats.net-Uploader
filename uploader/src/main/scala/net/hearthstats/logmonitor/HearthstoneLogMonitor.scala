@@ -16,6 +16,7 @@ class HearthstoneLogMonitor {
   val tailer = new Tailer(file, tailerAdapter, 500, true)
 
   def startMonitoring(): Unit = {
+    debugLog.debug(s"Starting Hearthstone log monitor on file $logFile")
     val thread = new Thread(tailer)
     thread.setDaemon(true) // optional
     thread.start()
