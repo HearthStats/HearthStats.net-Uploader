@@ -75,7 +75,7 @@ class ClickableLabel(var card: Card) extends JLabel {
   private def updateRemaining() {
     currentBack =
       if (remaining > 1) cardBack2
-      else if (card.isLegendary) cardBackL
+      else if (card.isLegendary && remaining >= 1) cardBackL
       else cardBack
     repaint()
   }
