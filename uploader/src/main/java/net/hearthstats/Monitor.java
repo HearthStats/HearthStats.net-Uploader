@@ -363,11 +363,11 @@ public class Monitor extends JFrame implements Observer {
 		text.setBackground(Color.WHITE);
 		text.setText("<html><body style=\"font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:10px;\">" +
 				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> " + t("Uploader") + " v" + Config.getVersion() + "</h2>" +
-				"<p><strong>" + t("Author") + ":</strong> " +
-                        "Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>), " +
-                        "Charles Gutjahr (<a href=\"http://charlesgutjahr.com\">Website</a>), " +
-                        "Michel Daviot (<a href=\"https://github.com/tyrcho\">tyrcho</a>) <a href=\"https://plus.google.com/+MichelDaviot\">G+</a></p>" +
-				"<p>" + t("about.utility_l1") + "<br>" +
+				"<p><strong>" + t("Author") + ":</strong> <ul>" +
+                        "<li> Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>) </li> " +
+                        "<li> Charles Gutjahr (<a href=\"http://charlesgutjahr.com\">Website</a>) </li>" +
+                        "<li> Michel Daviot (<a href=\"https://plus.google.com/+MichelDaviot\">Google+</a></p>, <a href=\"https://github.com/tyrcho\">Github</a>, <a href=\"http://michel-daviot.blogspot.fr\">Blog</a>) </li>" +
+				"</ul><p>" + t("about.utility_l1") + "<br>" +
 					t("about.utility_l2") + "<br>" +
 					t("about.utility_l3") + "</p>" +
 				"<p>" + t("about.open_source_l1") + "<br>" +
@@ -379,7 +379,6 @@ public class Monitor extends JFrame implements Observer {
 				"<p><strong>" + t("about.support_project") + ":</strong></p>" +
 				"</body></html>"
 			);
-	    text.addHyperlinkListener(_hyperLinkListener);
 	    panel.add(text, "wrap");
 		
 	    JButton donateButton = new JButton("<html><img style=\"border-style: none;\" src=\"" + getClass().getResource("/images/donate.gif") + "\"/></html>");
@@ -406,7 +405,7 @@ public class Monitor extends JFrame implements Observer {
 	    contribtorsText.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
 				"<p><strong>Contributors</strong> (listed alphabetically):</p>" +
 				"<p>" +
-                    "&bull; <a href=\"https://github.com/gtch\">Charles Gutjahr</a> - OS X version and new screen detection<br>" +
+                    "&bull; <a href=\"https://github.com/gtch\">Charles Gutjahr</a> - OS X version, new screen detection and card detection in log file<br>" +
                     "&bull; <a href=\"https://github.com/jcrka\">jcrka</a> - Russian translation<br>" +
                     "&bull; <a href=\"https://github.com/JeromeDane\">Jerome Dane</a> - Original developer<br>" +
 					"&bull; <a href=\"https://github.com/sargonas\">J Eckert</a> - Fixed notifications spawning taskbar icons<br>" +
