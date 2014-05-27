@@ -49,10 +49,9 @@
 			<version>${scala.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.12.6</version>
-			<scope>provided</scope>
+			<groupId>org.scala-lang.modules</groupId>
+			<artifactId>scala-swing_2.11</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

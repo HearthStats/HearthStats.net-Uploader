@@ -3,6 +3,7 @@ package net.hearthstats;
 
 import java.awt.AWTException;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -496,7 +497,9 @@ public class Monitor extends JFrame implements Observer {
 		_currentOpponentNameField.setMinimumSize(new Dimension(100, 1));
 		_currentOpponentNameField.addKeyListener(new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
-				_analyzer.getMatch().setOpponentName(_currentOpponentNameField.getText().replaceAll("(\r\n|\n)", "<br/>"));
+				_analyzer.getMatch().opponentName_$eq(
+						_currentOpponentNameField.getText().replaceAll(
+								"(\r\n|\n)", "<br/>"));
 	        }
 	    });
 		panel.add(_currentOpponentNameField, "wrap");
@@ -508,7 +511,8 @@ public class Monitor extends JFrame implements Observer {
 		_currentGameCoinField.setSelected(Config.showHsClosedNotification());
 		_currentGameCoinField.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				_analyzer.getMatch().setCoin(_currentGameCoinField.isSelected());
+				_analyzer.getMatch().coin_$eq(
+						_currentGameCoinField.isSelected());
 			}
 		});
 		panel.add(_currentGameCoinField, "wrap");
@@ -523,7 +527,7 @@ public class Monitor extends JFrame implements Observer {
 	    _currentNotesField.setBackground(Color.WHITE);
 	    _currentNotesField.addKeyListener(new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
-				_analyzer.getMatch().setNotes(_currentNotesField.getText());
+				_analyzer.getMatch().notes_$eq(_currentNotesField.getText());
 	        }
 	    });
 	    panel.add(_currentNotesField, "skip,span");
@@ -536,7 +540,8 @@ public class Monitor extends JFrame implements Observer {
 	    _lastMatchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                String url = "Arena".equals(_lastMatch.getMode()) ? "http://hearthstats.net/arenas/new" : _lastMatch.getEditUrl();
+				String url = "Arena".equals(_lastMatch.mode()) ? "http://hearthstats.net/arenas/new"
+						: _lastMatch.editUrl();
                 try {
                     Desktop.getDesktop().browse(new URI(url));
                 } catch (Throwable e) {
@@ -983,20 +988,25 @@ public class Monitor extends JFrame implements Observer {
         HearthstoneMatch match = _analyzer.getMatch();
 		_updateMatchClassSelectorsIfSet(match);
 		if(_currentMatchEnabled)
-			_currentMatchLabel.setText(match.getMode() + " Match - " + " Turn " + match.getNumTurns());
+			_currentMatchLabel.setText(match.mode() + " Match - " + " Turn "
+					+ match.numTurns());
 		else 
 			_currentMatchLabel.setText("Waiting for next match to start ...");
-		_currentOpponentNameField.setText(match.getOpponentName());
+		_currentOpponentNameField.setText(match.opponentName());
 		
-		_currentOpponentClassSelect.setSelectedIndex(_getClassOptionIndex(match.getOpponentClass()));
-		_currentYourClassSelector.setSelectedIndex(_getClassOptionIndex(match.getUserClass()));
+		_currentOpponentClassSelect.setSelectedIndex(_getClassOptionIndex(match
+				.opponentClass()));
+		_currentYourClassSelector.setSelectedIndex(_getClassOptionIndex(match
+				.userClass()));
 		
-		_currentGameCoinField.setSelected(match.hasCoin());
-		_currentNotesField.setText(match.getNotes());
+		_currentGameCoinField.setSelected(match.coin());
+		_currentNotesField.setText(match.notes());
 		// last match
-		if(_lastMatch != null && _lastMatch.getMode() != null) {
-			if(_lastMatch.getResult() != null) {
-				String tooltip = (_lastMatch.getMode().equals("Arena") ? "View current arena run on" : "Edit the previous match") + " on HearthStats.net";
+		if (_lastMatch != null && _lastMatch.mode() != null) {
+			if (_lastMatch.result() != null) {
+				String tooltip = (_lastMatch.mode().equals("Arena") ? "View current arena run on"
+						: "Edit the previous match")
+						+ " on HearthStats.net";
 				_lastMatchButton.setToolTipText(tooltip);
 				_lastMatchButton.setText(_lastMatch.toString());
 				_lastMatchButton.setEnabled(true);
@@ -1018,9 +1028,9 @@ public class Monitor extends JFrame implements Observer {
 
 	private void _submitMatchResult(HearthstoneMatch hsMatch) throws IOException {
 		// check for new arena run
-		if ("Arena".equals(hsMatch.getMode()) && _analyzer.isNewArena()) {
+		if ("Arena".equals(hsMatch.mode()) && _analyzer.isNewArena()) {
 			ArenaRun run = new ArenaRun();
-			run.setUserClass(hsMatch.getUserClass());
+			run.setUserClass(hsMatch.userClass());
             Log.info("Creating new " + run.getUserClass() + "arena run");
 			_notify("Creating new " + run.getUserClass() + "arena run");
 			_api.createArenaRun(run);
@@ -1033,7 +1043,7 @@ public class Monitor extends JFrame implements Observer {
         Log.matchResult(header + ": " + message);
 
 		if(Config.analyticsEnabled()) {
-			_analytics.trackEvent("app", "Submit" + hsMatch.getMode() + "Match");
+			_analytics.trackEvent("app", "Submit" + hsMatch.mode() + "Match");
 		}
 		
 		_api.createMatch(hsMatch);
@@ -1046,10 +1056,12 @@ public class Monitor extends JFrame implements Observer {
 
 	private void _updateMatchClassSelectorsIfSet(HearthstoneMatch hsMatch) {
 		if (_currentYourClassSelector.getSelectedIndex() > 0) {
-            hsMatch.setUserClass(hsClassOptions[_currentYourClassSelector.getSelectedIndex()]);
+			hsMatch.userClass_$eq(hsClassOptions[_currentYourClassSelector
+					.getSelectedIndex()]);
         }
 		if (_currentOpponentClassSelect.getSelectedIndex() > 0) {
-            hsMatch.setOpponentClass(hsClassOptions[_currentOpponentClassSelect.getSelectedIndex()]);
+			hsMatch.opponentClass_$eq(hsClassOptions[_currentOpponentClassSelect
+					.getSelectedIndex()]);
         }
 	}
 
@@ -1295,11 +1307,14 @@ public class Monitor extends JFrame implements Observer {
                     // after the HearthStats Uploader started up. In that case log monitoring won't yet be running.
                     setupLogMonitoring();
 					_resetMatchClassSelectors();
+					//TODO : also display the overlay for Practice mode (usefull for tests)
                     if (Config.showDeckOverlay() && !"Arena".equals(_analyzer.getMode())) {
                         Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
     					if (selectedDeck != null && selectedDeck.isValid()) {
-                            new StandardDialog(selectedDeck.name(),
-                                    ClickableDeckBox.makeBox(selectedDeck), true)
+    						ClickableDeckBox deckBox = ClickableDeckBox.makeBox(selectedDeck);
+    						hearthstoneLogMonitor.addObserver(deckBox);
+							new StandardDialog(selectedDeck.name(),
+                                    deckBox, true)
                                     .show();
                         } else {
                             String message;
@@ -1376,7 +1391,7 @@ public class Monitor extends JFrame implements Observer {
 			case "result":
 				Log.info("API Result: " + _api.getMessage());
 				_lastMatch = _analyzer.getMatch();
-				_lastMatch.setId(_api.getLastMatchId());
+				_lastMatch.id_$eq(_api.getLastMatchId());
 				_setCurrentMatchEnabledi(false);
 				_updateCurrentMatchUi();
 				// new line after match result
