@@ -137,8 +137,9 @@ class HearthstoneLogMonitor {
               // A card went directly to the graveyard, probably a spell
               debugLog.debug("    Ignoring spell {} going to graveyard", cardName);
             case ("GRAVEYARD", "FRIENDLY HAND", "FRIENDLY GRAVEYARD") =>
-              // Your card was discarded
+              // Your card was discarded from your deck (hand full)
               Log.info("    Your " + cardName + " was discarded");
+              notifyCardDrawn(cardName)
             case ("GRAVEYARD", "FRIENDLY PLAY", "FRIENDLY GRAVEYARD") =>
               // Your minion died
               Log.info("    Your " + cardName + " died");
