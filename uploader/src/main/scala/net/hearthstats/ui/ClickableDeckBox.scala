@@ -36,17 +36,21 @@ class ClickableDeckBox(deck: Deck) extends JPanel with CardDrawnObserver {
   add(box)
   add(imageLabel)
 
-  def cardDrawn(cardName: String): Unit =
-    cardLabels.get(cardName) match {
-      case None => Log.warn(s"card $cardName not found in deck")
-      case Some(label) => label.decreaseRemaining()
-    }
+  def cardDrawn(card: Card): Unit =
+    findLabel(card) map (_.decreaseRemaining())
 
-  def cardPutBack(cardName: String): Unit =
-    cardLabels.get(cardName) match {
-      case None => Log.warn(s"card $cardName not found in deck")
-      case Some(label) => label.increaseRemaining()
-    }
+  def cardPutBack(card: Card): Unit =
+    findLabel(card) map (_.increaseRemaining())
+
+  private def findLabel(c: Card): Option[ClickableLabel] =
+    if (c.collectible) {
+      val l = cardLabels.get(c.name)
+      if (l.isDefined) l
+      else {
+        Log.warn(s"card ${c.name} not found in deck")
+        None
+      }
+    } else None
 }
 
 object ClickableDeckBox {

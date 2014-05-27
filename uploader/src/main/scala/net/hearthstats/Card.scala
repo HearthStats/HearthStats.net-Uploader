@@ -10,7 +10,13 @@ object Card {
   private lazy val imageCacheFolder: String = Config.getImageCacheFolder
 }
 
-case class Card(id: Int, name: String, count: Int = 0, cost: Int = 0, rarity: Int = 0)
+case class Card(
+  id: Int,
+  name: String,
+  count: Int = 0,
+  cost: Int = 0,
+  rarity: Int = 0,
+  collectible: Boolean = true)
   extends Comparable[Card] {
 
   def isLegendary: Boolean = rarity == LEGENDARY

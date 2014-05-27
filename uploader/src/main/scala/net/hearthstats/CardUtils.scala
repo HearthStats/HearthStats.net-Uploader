@@ -20,6 +20,7 @@ object CardUtils {
       rarity = rarity,
       id = id,
       cost = cost,
-      name = json.get("name").toString)).toMap
+      name = json.get("name").toString,
+      collectible = json.get("collectible").toString.toBoolean)).toMap
 
 }
