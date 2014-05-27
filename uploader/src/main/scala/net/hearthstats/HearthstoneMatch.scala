@@ -63,21 +63,20 @@ class HearthstoneMatch(var mode: String = null,
       "oppclass" -> opponentClass,
       "oppname" -> opponentName,
       "coin" -> coin.toString,
-      "result" -> result,
+      "result" -> r,
       "notes" -> notes,
       "numturns" -> numTurns,
       "duration" -> duration)
 
-    val (lvl, legend) =
-      if ("Ranked" == mode) {
-        if (Rank.LEGEND == rankLevel) {
-          map += "ranklvl" -> 26
-          map += "legend" -> "true"
-        } else {
-          map += "ranklvl" -> rankLevel.number
-          map += "legend" -> "false"
-        }
+    if ("Ranked" == mode) {
+      if (Rank.LEGEND == rankLevel) {
+        map += "ranklvl" -> 26
+        map += "legend" -> "true"
+      } else {
+        map += "ranklvl" -> rankLevel.number
+        map += "legend" -> "false"
       }
+    }
     new JSONObject(map)
   }
 
