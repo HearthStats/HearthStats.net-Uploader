@@ -12,20 +12,25 @@ import java.util.Observable
 class HearthstoneLogMonitor {
 
   var screen = "GAMEPLAY"; // Assume we're in a game until proved otherwise... just in case a game is already in progress
+  var tailer: Tailer = null
   val logFile = Config.programHelper.hearthstoneLogFile
   val file = new File(logFile)
-  val tailer = new Tailer(file, tailerAdapter, 500, true)
 
   def startMonitoring(): Unit = {
-    debugLog.debug(s"Starting Hearthstone log monitor on file $logFile")
-    val thread = new Thread(tailer)
-    thread.setDaemon(true) // optional
-    thread.start()
+    if (tailer == null) {
+      debugLog.debug(s"Starting Hearthstone log monitor on file $logFile")
+      tailer = new Tailer(file, tailerAdapter, 500, true)
+      val thread = new Thread(tailer)
+      thread.setDaemon(true) // optional
+      thread.start()
+    }
   }
 
   def stopMonitoring(): Unit = {
-    debugLog.debug(s"Stopping Hearthstone log monitor on file $logFile")
-    tailer.stop()
+    if (tailer != null) {
+      debugLog.debug(s"Stopping Hearthstone log monitor on file $logFile")
+      tailer.stop()
+    }
   }
 
   lazy val tailerAdapter: TailerListenerAdapter = new TailerListenerAdapter {

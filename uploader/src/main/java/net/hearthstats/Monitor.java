@@ -1,64 +1,7 @@
 package net.hearthstats;
 
 
-import java.awt.AWTException;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.HeadlessException;
-import java.awt.Image;
-import java.awt.MenuItem;
-import java.awt.Point;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkListener;
-
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import net.hearthstats.analysis.AnalyserEvent;
 import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
@@ -69,16 +12,30 @@ import net.hearthstats.notification.NotificationQueue;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.ui.ClickableDeckBox;
+import net.hearthstats.ui.HelpIcon;
 import net.hearthstats.ui.MatchEndPopup;
 import net.hearthstats.ui.StandardDialog;
 import net.miginfocom.swing.MigLayout;
-
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkListener;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer {
@@ -408,7 +365,8 @@ public class Monitor extends JFrame implements Observer {
 				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> " + t("Uploader") + " v" + Config.getVersion() + "</h2>" +
 				"<p><strong>" + t("Author") + ":</strong> " +
                         "Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>), " +
-                        "Charles Gutjahr (<a href=\"http://charlesgutjahr.com\">Website</a>)</p>" +
+                        "Charles Gutjahr (<a href=\"http://charlesgutjahr.com\">Website</a>), " +
+                        "Michel Daviot (<a href=\"https://github.com/tyrcho\">tyrcho</a>) <a href=\"https://plus.google.com/+MichelDaviot\">G+</a></p>" +
 				"<p>" + t("about.utility_l1") + "<br>" +
 					t("about.utility_l2") + "<br>" +
 					t("about.utility_l3") + "</p>" +
@@ -452,6 +410,7 @@ public class Monitor extends JFrame implements Observer {
                     "&bull; <a href=\"https://github.com/jcrka\">jcrka</a> - Russian translation<br>" +
                     "&bull; <a href=\"https://github.com/JeromeDane\">Jerome Dane</a> - Original developer<br>" +
 					"&bull; <a href=\"https://github.com/sargonas\">J Eckert</a> - Fixed notifications spawning taskbar icons<br>" +
+                    "&bull; <a href=\"https://github.com/tyrcho\">Michel Daviot</a> - Deck overlay, Maven and Scala implementation<br>" +
 					"&bull; <a href=\"https://github.com/nwalsh1995\">nwalsh1995</a> - Started turn detection development<br>" +
 					"&bull; <a href=\"https://github.com/remcoros\">Remco Ros</a> (<a href=\"http://hearthstonetracker.com/\">HearthstoneTracker</a>) - Provides advice &amp; suggestins<br>" +
 					"&bull; <a href=\"https://github.com/RoiyS\">RoiyS</a> - Added option to disable all notifications<br>" +
@@ -644,6 +603,8 @@ public class Monitor extends JFrame implements Observer {
 		
 		return panel;
 	}
+
+
 	private JPanel _createOptionsUi() {
 		JPanel panel = new JPanel();
 		
@@ -662,7 +623,11 @@ public class Monitor extends JFrame implements Observer {
         panel.add(new JLabel(t("options.label.monitoring")), "skip,right");
         monitoringMethodField = new JComboBox<>(new String[]{ t("options.label.monitoring.screen"), t("options.label.monitoring.log")});
         monitoringMethodField.setSelectedIndex(Config.monitoringMethod().ordinal());
-        panel.add(monitoringMethodField, "wrap");
+        panel.add(monitoringMethodField, "");
+
+        HelpIcon monitoringHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Monitoring", "Help on monitoring options");
+        panel.add(monitoringHelpIcon, "wrap");
+
 
         // check for updates
 		panel.add(new JLabel(t("options.label.updates") + " "), "skip,right");
@@ -682,6 +647,7 @@ public class Monitor extends JFrame implements Observer {
         });
         panel.add(_notificationsEnabledField, "wrap");
 
+
         // When running on Mac OS X 10.8 or later, the format of the notifications can be changed
         if (Config.isOsxNotificationsSupported()) {
             panel.add(new JLabel(""), "skip,right");
@@ -689,7 +655,10 @@ public class Monitor extends JFrame implements Observer {
             panel.add(notificationsFormatLabel, "split 2, gapleft 27");
             _notificationsFormat = new JComboBox<>(new String[]{ t("options.label.notifyformat.osx"), t("options.label.notifyformat.hearthstats")});
             _notificationsFormat.setSelectedIndex(Config.useOsxNotifications() ? 0 : 1);
-            panel.add(_notificationsFormat, "wrap");
+            panel.add(_notificationsFormat, "");
+
+            HelpIcon osxNotificationsHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-OS-X-Notifications", "Help on notification style options");
+            panel.add(osxNotificationsHelpIcon, "wrap");
         }
 
 		// show HS found notification
@@ -734,13 +703,20 @@ public class Monitor extends JFrame implements Observer {
 		panel.add(new JLabel(""), "skip,right");
 		_showDeckOverlay = new JCheckBox(t("options.ui.deckOverlay"));
 		_showDeckOverlay.setSelected(Config.showDeckOverlay());
-		panel.add(_showDeckOverlay, "wrap");
+		panel.add(_showDeckOverlay, "");
 
+        HelpIcon deckOverlayHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Deck-Overlay", "Help on the show deck overlay option");
+        panel.add(deckOverlayHelpIcon, "wrap");
+
+        // match popup
         panel.add(new JLabel(t("options.label.matchpopup")), "skip,right");
 
         showMatchPopupField = new JComboBox<>(new String[]{ t("options.label.matchpopup.always"), t("options.label.matchpopup.incomplete"), t("options.label.matchpopup.never")});
         showMatchPopupField.setSelectedIndex(Config.showMatchPopup().ordinal());
-        panel.add(showMatchPopupField, "wrap");
+        panel.add(showMatchPopupField, "");
+
+        HelpIcon matchPopupHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Match-Popup", "Help on the match popup options");
+        panel.add(matchPopupHelpIcon, "wrap");
 
 
         // minimize to tray
@@ -1312,7 +1288,9 @@ public class Monitor extends JFrame implements Observer {
                         Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
     					if (selectedDeck != null && selectedDeck.isValid()) {
     						ClickableDeckBox deckBox = ClickableDeckBox.makeBox(selectedDeck);
-    						hearthstoneLogMonitor.addObserver(deckBox);
+                            if (hearthstoneLogMonitor != null) {
+                                hearthstoneLogMonitor.addObserver(deckBox);
+                            }
 							new StandardDialog(selectedDeck.name(),
                                     deckBox, true)
                                     .show();
