@@ -365,7 +365,8 @@ public class Monitor extends JFrame implements Observer {
 				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> " + t("Uploader") + " v" + Config.getVersion() + "</h2>" +
 				"<p><strong>" + t("Author") + ":</strong> " +
                         "Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>), " +
-                        "Charles Gutjahr (<a href=\"http://charlesgutjahr.com\">Website</a>)</p>" +
+                        "Charles Gutjahr (<a href=\"http://charlesgutjahr.com\">Website</a>), " +
+                        "Michel Daviot (<a href=\"https://github.com/tyrcho\">tyrcho</a>) <a href=\"https://plus.google.com/+MichelDaviot\">G+</a></p>" +
 				"<p>" + t("about.utility_l1") + "<br>" +
 					t("about.utility_l2") + "<br>" +
 					t("about.utility_l3") + "</p>" +
@@ -409,6 +410,7 @@ public class Monitor extends JFrame implements Observer {
                     "&bull; <a href=\"https://github.com/jcrka\">jcrka</a> - Russian translation<br>" +
                     "&bull; <a href=\"https://github.com/JeromeDane\">Jerome Dane</a> - Original developer<br>" +
 					"&bull; <a href=\"https://github.com/sargonas\">J Eckert</a> - Fixed notifications spawning taskbar icons<br>" +
+                    "&bull; <a href=\"https://github.com/tyrcho\">Michel Daviot</a> - Deck overlay, Maven and Scala implementation<br>" +
 					"&bull; <a href=\"https://github.com/nwalsh1995\">nwalsh1995</a> - Started turn detection development<br>" +
 					"&bull; <a href=\"https://github.com/remcoros\">Remco Ros</a> (<a href=\"http://hearthstonetracker.com/\">HearthstoneTracker</a>) - Provides advice &amp; suggestins<br>" +
 					"&bull; <a href=\"https://github.com/RoiyS\">RoiyS</a> - Added option to disable all notifications<br>" +
