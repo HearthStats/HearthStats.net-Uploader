@@ -1,3 +1,6 @@
+v0.17.3
+* Fixed error loading cards from HearthStats.net on startup
+
 v0.17.2
 * Optional deck overlay to show your deck during matches 
 * Experimental support for monitoring Hearthstone logs
