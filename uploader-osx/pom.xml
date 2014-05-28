@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>net.hearthstats</groupId>
-        <version>0.17.2-SNAPSHOT</version>
+        <version>0.17.2</version>
 		<artifactId>uploader-parent</artifactId>
 	</parent>
 
@@ -71,8 +70,7 @@
 								</excludes>
 							</artifactSet>
 							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>${main.class}</mainClass>
 								</transformer>
 							</transformers>
@@ -98,30 +96,24 @@
 									</classpath>
 								</taskdef>
 
-								<delete failonerror="false" includeemptydirs="true"
-									quiet="true">
+								<delete failonerror="false" includeemptydirs="true" quiet="true">
 									<fileset dir="target/HearthStats.app" />
 								</delete>
 
-								<bundleapp outputdirectory="target" name="HearthStats"
-									displayname="HearthStats.net Uploader" identifier="net.hearthstats.HearthStatsUploader"
-									shortversion="${project.version}" applicationCategory="public.app-category.games"
-									icon="src/main/resources/images/icon.icns" mainclassname="net/hearthstats/Main">
+								<bundleapp outputdirectory="target" name="HearthStats" displayname="HearthStats.net Uploader" identifier="net.hearthstats.HearthStatsUploader" shortversion="${project.version}" applicationCategory="public.app-category.games" icon="src/main/resources/images/icon.icns" mainclassname="net/hearthstats/Main">
                                     <classpath file="target/HearthStatsUploader-OSX.jar" />
-										file="target/${project.artifactId}-${project.version}.jar" />
+										file="target/${project.artifactId}-${project.version}.jar" /&gt;
 									<librarypath dir="src/main/native/osx/" includes="*.dylib" />
 									<option value="-Dapple.laf.useScreenMenuBar=true" />
 									<option value="-Djna.library.path=$APP_ROOT/Contents/MacOS" />
-									<option
-										value="-DLOG_FILE=Library/Application Support/HearthStatsUploader/log.txt" />
+									<option value="-DLOG_FILE=Library/Application Support/HearthStatsUploader/log.txt" />
 									<option value="-Xdock:icon=Contents/Resources/${bundle.icon}" />
 									<option value="-Xms96m" />
 									<option value="-Xmx192m" />
 								</bundleapp>
 
 								<!-- Copy Tesseract data into the Resources folder of the bundle -->
-								<copy preservelastmodified="true"
-									todir="target/HearthStats.app/Contents/Resources">
+								<copy preservelastmodified="true" todir="target/HearthStats.app/Contents/Resources">
 									<fileset dir="src/main/resources">
 										<include name="tessdata/**" />
 										<exclude name="**/.DS_Store" />
@@ -130,11 +122,9 @@
 
 								<!-- Add extra settings to the Info.plist file to enable Retina mode 
 									on the app bundle -->
-								<xslt in="target/HearthStats.app/Contents/Info.plist"
-									out="target/HearthStats.app/Contents/Info-updated.plist" style="src/main/scripts/build-osx-plist.xslt" />
+								<xslt in="target/HearthStats.app/Contents/Info.plist" out="target/HearthStats.app/Contents/Info-updated.plist" style="src/main/scripts/build-osx-plist.xslt" />
 								<delete file="target/HearthStats.app/Contents/Info.plist" />
-								<move file="target/HearthStats.app/Contents/Info-updated.plist"
-									tofile="target/HearthStats.app/Contents/Info.plist" />
+								<move file="target/HearthStats.app/Contents/Info-updated.plist" tofile="target/HearthStats.app/Contents/Info.plist" />
 
 							</target>
 						</configuration>
