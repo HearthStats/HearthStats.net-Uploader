@@ -46,8 +46,8 @@ object CardUtils {
     }
     val all = Future.sequence(futures)
     all.onComplete {
-      case Success(_) => Log.info("all images downloaded successfully")
-      case Failure(e) => Log.warn("could not download an image", e)
+      case Success(_) => Log.info("All images downloaded successfully")
+      case Failure(e) => Log.warn("Could not download an image", e)
     }
     Await.result(all, 10.seconds)
   }
