@@ -23,7 +23,7 @@
 ### Documentation
 
 
-You can directly edit the [Wiki](wiki) of the project
+You are welcome to directly edit the [Wiki](https://github.com/HearthStats/HearthStats.net-Uploader/wiki) of the project.
 
 ## Submitting Changes
 
