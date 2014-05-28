@@ -8,6 +8,7 @@ import org.apache.commons.io.input.TailerListenerAdapter
 import net.hearthstats.log.Log
 import HearthstoneLogMonitor._
 import java.util.Observable
+import net.hearthstats.CardUtils
 
 class HearthstoneLogMonitor {
 
@@ -15,6 +16,7 @@ class HearthstoneLogMonitor {
   var tailer: Tailer = null
   val logFile = Config.programHelper.hearthstoneLogFile
   val file = new File(logFile)
+  lazy val cards = CardUtils.cards.values
 
   def startMonitoring(): Unit = {
     if (tailer == null) {
@@ -137,8 +139,9 @@ class HearthstoneLogMonitor {
               // A card went directly to the graveyard, probably a spell
               debugLog.debug("    Ignoring spell {} going to graveyard", cardName);
             case ("GRAVEYARD", "FRIENDLY HAND", "FRIENDLY GRAVEYARD") =>
-              // Your card was discarded
+              // Your card was discarded from your deck (hand full)
               Log.info("    Your " + cardName + " was discarded");
+              notifyCardDrawn(cardName)
             case ("GRAVEYARD", "FRIENDLY PLAY", "FRIENDLY GRAVEYARD") =>
               // Your minion died
               Log.info("    Your " + cardName + " died");
@@ -178,11 +181,25 @@ class HearthstoneLogMonitor {
   def addObserver(obs: CardDrawnObserver): Unit =
     observers += obs
 
+  private def findCard(name: String) =
+    cards.filter(_.name == name).headOption match {
+      case None =>
+        Log.warn(s"unkown card : $name")
+        None
+      case some => some
+    }
+
   private def notifyCardDrawn(c: String): Unit =
-    for (obs <- observers) obs.cardDrawn(c)
+    for {
+      obs <- observers
+      card <- findCard(c)
+    } obs.cardDrawn(card)
 
   private def notifyCardPutBack(c: String): Unit =
-    for (obs <- observers) obs.cardPutBack(c)
+    for {
+      obs <- observers
+      card <- findCard(c)
+    } obs.cardPutBack(card)
 
 }
 

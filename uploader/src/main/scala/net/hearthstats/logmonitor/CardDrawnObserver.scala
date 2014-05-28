@@ -1,7 +1,9 @@
 package net.hearthstats.logmonitor
 
+import net.hearthstats.Card
+
 trait CardDrawnObserver {
-  def cardDrawn(card: String): Unit
+  def cardDrawn(card: Card): Unit
   //when you mulligan
-  def cardPutBack(card: String): Unit
+  def cardPutBack(card: Card): Unit
 }
