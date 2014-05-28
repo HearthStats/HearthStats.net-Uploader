@@ -22,12 +22,13 @@ object CardUtils {
       cost = Integer.parseInt(json.get("mana").toString)
       rarityString = json.get("rarity_id")
       rarity = if (rarityString == null) 0 else Integer.parseInt(rarityString.toString)
+      collectible = json.get("collectible")
     } yield id -> Card(
       rarity = rarity,
       id = id,
       cost = cost,
       name = json.get("name").toString,
-      collectible = json.get("collectible").toString.toBoolean)).toMap
+      collectible = collectible != null && collectible.toString.toBoolean)).toMap
 
   def downloadImages(cards: List[Card]) {
     import ExecutionContext.Implicits.global
@@ -45,8 +46,8 @@ object CardUtils {
     }
     val all = Future.sequence(futures)
     all.onComplete {
-      case Success(_) => Log.info("all images downloaded successfully")
-      case Failure(e) => Log.warn("could not download an image", e)
+      case Success(_) => Log.info("All images downloaded successfully")
+      case Failure(e) => Log.warn("Could not download an image", e)
     }
     Await.result(all, 10.seconds)
   }
