@@ -22,7 +22,7 @@ case class Card(
   def isLegendary: Boolean = rarity == LEGENDARY
 
   def fileName: String =
-    String.format("%s.png", name.replaceAll("[^a-zA-Z]", "-").toLowerCase)
+    String.format("%s.png", name.replaceAll("[^a-zA-Z0-9]", "-").toLowerCase)
 
   def localURL: URL = localFile.toURI.toURL
 
