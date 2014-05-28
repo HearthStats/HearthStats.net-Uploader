@@ -1,4 +1,6 @@
-v0.17.1
-* Improved match result popup lets you choose a game mode
-* Improved display of decks on the decks tab
-Thanks to tyrcho for developing these!
+v0.17.2
+* Optional deck overlay to show your deck during matches
+* Experimental support for monitoring Hearthstone logs
+  (shows each card played and killed during the match)
+* New help buttons to explain the Options tab
+* Several bug fixes
