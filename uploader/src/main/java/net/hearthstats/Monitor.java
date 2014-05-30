@@ -70,7 +70,6 @@ import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.ui.ClickableDeckBox;
 import net.hearthstats.ui.HelpIcon;
 import net.hearthstats.ui.MatchEndPopup;
-import net.hearthstats.ui.StandardDialog;
 import net.miginfocom.swing.MigLayout;
 
 import org.apache.commons.lang3.StringUtils;
@@ -1325,15 +1324,12 @@ public class Monitor extends JFrame implements Observer {
 					//TODO : also display the overlay for Practice mode (usefull for tests)
                     if (Config.showDeckOverlay() && !"Arena".equals(_analyzer.getMode())) {
                         Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
-    					if (selectedDeck != null && selectedDeck.isValid()) {
-    						ClickableDeckBox deckBox = ClickableDeckBox.makeBox(selectedDeck);
-                            if (hearthstoneLogMonitor != null) {
-							deckBox.setCardEventObservable(hearthstoneLogMonitor
+					if (selectedDeck != null && selectedDeck.isValid()
+							&& hearthstoneLogMonitor != null) {
+						ClickableDeckBox.showBox(
+								selectedDeck,
+								hearthstoneLogMonitor
 									.cardEvents());
-                            }
-							new StandardDialog(selectedDeck.name(),
-                                    deckBox, true)
-                                    .show();
                         } else {
                             String message;
                             if (selectedDeck == null) {
@@ -1622,7 +1618,7 @@ public class Monitor extends JFrame implements Observer {
                 if (configWasCreated) {
                     // Hearthstone won't actually be logging yet because the log.config was created after Hearthstone started up
                     Log.help("Hearthstone log.config changed &mdash; please restart Hearthstone so that it starts generating logs");
-                } else
+				} else if (hearthstoneLogMonitor == null)
                 	hearthstoneLogMonitor=new HearthstoneLogMonitor();
             }
         } else {

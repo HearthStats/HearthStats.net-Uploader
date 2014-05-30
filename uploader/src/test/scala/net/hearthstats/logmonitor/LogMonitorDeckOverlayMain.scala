@@ -7,21 +7,21 @@ import net.hearthstats.DeckUtils
 import javax.swing.JOptionPane
 import net.hearthstats.ui.ClickableDeckBox
 import javax.swing.JFrame
+import javax.swing.JDialog
 
 object LogMonitorDeckOverlayMain extends App {
   val tempLogFile = File.createTempFile("hssample", "log")
   println(s"monitorin $tempLogFile ")
   val monitor = new HearthstoneLogMonitor(tempLogFile.getAbsolutePath)
-  monitor.cardEvents.subscribe(e => println(e))
 
   val deck = DeckUtils.getDeck(20034)
   val jFrame = new JFrame
-  val deckBox = ClickableDeckBox.makeBox(deck)
-  deckBox.setCardEventObservable(monitor.cardEvents)
+  ClickableDeckBox.showBox(deck, monitor.cardEvents)
+  ClickableDeckBox.showBox(deck, monitor.cardEvents)
   new Thread {
     override def run() = {
       val writer = new BufferedWriter(new FileWriter(tempLogFile))
-      Thread.sleep(5000)
+      Thread.sleep(500)
       writer.write(initialHand)
       writer.flush()
       Thread.sleep(5000)
@@ -29,10 +29,6 @@ object LogMonitorDeckOverlayMain extends App {
       writer.close()
     }
   }.start()
-
-  JOptionPane.showMessageDialog(jFrame, deckBox)
-
-  System.exit(0)
 
   def initialHand =
     """

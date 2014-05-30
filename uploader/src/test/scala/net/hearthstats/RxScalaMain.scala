@@ -12,6 +12,14 @@ object RxScalaMain extends App {
   val obs: Observable[String] = subject.asObservable
   obs.subscribe(m => println(m))
 
+  val transf = obs.cache.map { e =>
+    println(s"transforming $e")
+    e.length
+  }
+
+  transf.subscribe(i => ()).unsubscribe
+  transf.subscribe(i => ())
+
   subject.onNext("hello")
   subject.onNext("world")
 

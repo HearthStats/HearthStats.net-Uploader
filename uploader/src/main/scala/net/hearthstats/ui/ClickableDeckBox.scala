@@ -16,8 +16,15 @@ import net.hearthstats.log.Log
 import rx.lang.scala.Observable
 import net.hearthstats.logmonitor.CardEvent
 import net.hearthstats.logmonitor.CardEventType._
+import javax.swing.JFrame
+import scala.swing.Frame
+import scala.swing.MainFrame
+import scala.swing.BorderPanel
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
+import javax.swing.WindowConstants
 
-class ClickableDeckBox(deck: Deck) extends JPanel {
+class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent]) extends JPanel {
 
   setLayout(new BoxLayout(this, BoxLayout.X_AXIS))
   val box = createVerticalBox
@@ -33,12 +40,10 @@ class ClickableDeckBox(deck: Deck) extends JPanel {
   add(box)
   add(imageLabel)
 
-  def setCardEventObservable(o: Observable[CardEvent]): Unit = {
-    o.subscribe {
-      _ match {
-        case CardEvent(card, DRAWN) => findLabel(card) map (_.decreaseRemaining())
-        case CardEvent(card, REPLACED) => findLabel(card) map (_.increaseRemaining())
-      }
+  val subscription = cardEvents.subscribe {
+    _ match {
+      case CardEvent(card, DRAWN) => findLabel(card) map (_.decreaseRemaining())
+      case CardEvent(card, REPLACED) => findLabel(card) map (_.increaseRemaining())
     }
   }
 
@@ -54,10 +59,27 @@ class ClickableDeckBox(deck: Deck) extends JPanel {
 }
 
 object ClickableDeckBox {
+  def showBox(deck: Deck): ClickableDeckBox = showBox(deck, Observable.empty)
 
-  def makeBox(deck: Deck): ClickableDeckBox = {
+  def showBox(deck: Deck, cardEvents: Observable[CardEvent]): ClickableDeckBox = {
     CardUtils.downloadImages(deck.cards)
-    new ClickableDeckBox(deck)
+    val box = new ClickableDeckBox(deck, cardEvents)
+    val frame = new JFrame {
+      setAlwaysOnTop(true)
+      setFocusableWindowState(true)
+      getContentPane.add(box)
+      pack()
+      setVisible(true)
+
+      setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+      addWindowListener(new WindowAdapter {
+        override def windowClosed(e: WindowEvent): Unit = {
+          box.subscription.unsubscribe()
+        }
+      })
+
+    }
+    box
   }
 }
 
