@@ -6,59 +6,40 @@ import org.apache.commons.io.input.Tailer
 import java.io.File
 import org.apache.commons.io.input.TailerListenerAdapter
 import net.hearthstats.log.Log
-import HearthstoneLogMonitor._
-import java.util.Observable
 import net.hearthstats.CardUtils
+import rx.lang.scala.Observable
+import rx.Subscription
+import rx.lang.scala.subscriptions._
+import rx.subjects.PublishSubject
+import rx.lang.scala.JavaConversions._
+import net.hearthstats.util.FileObserver
+import net.hearthstats.logmonitor.CardEvents._
 
-class HearthstoneLogMonitor {
+class HearthstoneLogMonitor(logFile: String) {
+  def this() = this(Config.programHelper.hearthstoneLogFile) // for java calls
 
+  val debugLog = LoggerFactory.getLogger(classOf[HearthstoneLogMonitor])
+  val LOADING_SCREEN_PREFIX = "[LoadingScreen]"
+  val ZONE_PREFIX = "[Zone]"
+  val LS_ONSCENELOADED_REGEX = """^\[LoadingScreen\] LoadingScreen\.OnSceneLoaded\(\) \- prevMode=(\S*) nextMode=(\S*)""".r
+  val ZONE_PROCESSCHANGES_REGEX = """^\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
   var screen = "GAMEPLAY"; // Assume we're in a game until proved otherwise... just in case a game is already in progress
-  var tailer: Tailer = null
-  val logFile = Config.programHelper.hearthstoneLogFile
-  val file = new File(logFile)
-  lazy val cards = CardUtils.cards.values
 
-  def startMonitoring(): Unit = {
-    if (tailer == null) {
-      debugLog.debug(s"Starting Hearthstone log monitor on file $logFile")
-      tailer = new Tailer(file, tailerAdapter, 500, true)
-      val thread = new Thread(tailer)
-      thread.setDaemon(true) // optional
-      thread.start()
-    }
-  }
+  val cards = CardUtils.cards.values
+  val cardPublisher = PublishSubject.create[CardEvent]
 
-  def stopMonitoring(): Unit = {
-    if (tailer != null) {
-      debugLog.debug(s"Stopping Hearthstone log monitor on file $logFile")
-      tailer.stop()
-    }
-  }
+  val fileObserver = FileObserver(new File(logFile))
+  val lines = fileObserver.observable.doOnError(ex => Log.error("Error reading Hearthstone log: " + ex.getMessage, ex))
+  val relevant = lines.filter(l => l != null && l.length > 0 && l.charAt(0) == '[')
+  val screens = relevant.filter(l => l startsWith LOADING_SCREEN_PREFIX)
+  val zones = relevant.filter(l => l startsWith ZONE_PREFIX)
+  screens.doOnEach(handleLoadingScreen _)
 
-  lazy val tailerAdapter: TailerListenerAdapter = new TailerListenerAdapter {
+  val cardEvents = relevant.map(zoneEvent).filter(_.isDefined).map(_.get) // remove None values
 
-    override def handle(line: String): Unit = {
-      if (line != null && line.length() > 0 && line.charAt(0) == '[') {
-        if (line.startsWith(LOADING_SCREEN_PREFIX)) {
-          handleLoadingScreen(line)
-        } else if (line.startsWith(ZONE_PREFIX)) {
-          handleZone(line)
-        }
-      }
-      super.handle(line)
-    }
-
-    override def handle(ex: Exception): Unit = {
-      Log.error("Error reading Hearthstone log: " + ex.getMessage(), ex)
-    }
-
-    override def fileNotFound(): Unit = {
-      Log.warn("Could not find Hearthstone log file " + logFile)
-      Log.info("Monitoring of Hearthstone log is temporarily disabled")
-      if (tailer != null) {
-        tailer.stop()
-      }
-    }
+  def stop(): Unit = {
+    debugLog.debug(s"Stopping Hearthstone log monitor on file $logFile")
+    fileObserver.stop()
   }
 
   def handleLoadingScreen(line: String): Unit = {
@@ -70,13 +51,14 @@ class HearthstoneLogMonitor {
     }
   }
 
-  def handleZone(line: String) {
+  def zoneEvent(line: String): Option[CardEvent] = {
     line match {
       case ZONE_PROCESSCHANGES_REGEX(zoneId, local, cardName, id, cardZone, zonePos, cardId, player, fromZone, toZone) =>
 
         debugLog.debug("HS Zone Log: zoneId={} local={} cardName={} id={} cardZone={} zonePos={} cardId={} player={} fromZone={} toZone={}",
           zoneId, local, cardName, id, cardZone, zonePos, cardId, player, fromZone, toZone)
 
+        val card = cards.find(_.name == cardName).headOption
         // Only log zone changes if we're actually in a game.
         // Some zone changes occur outside games which would result in misleading information if logged.
         if ("GAMEPLAY".equals(screen)) {
@@ -84,102 +66,125 @@ class HearthstoneLogMonitor {
             case ("DECK", "FRIENDLY HAND", "FRIENDLY DECK") =>
               // Put back into the deck... usually after replacing your starting hand
               Log.info("    You returned " + cardName + " to your deck")
-              notifyCardPutBack(cardName)
+              card map CardReplaced
             case ("HAND", "", "FRIENDLY HAND") =>
               // Received into your hand but not from your deck... usually The Coin
               Log.info("    You received " + cardName)
-              notifyCardDrawn(cardName)
+              card map CardDrawn
             case ("HAND", "FRIENDLY DECK", "FRIENDLY HAND") =>
               // Picked up into your hand
-              Log.info("    You picked up " + cardName);
-              notifyCardDrawn(cardName)
+              Log.info("    You picked up " + cardName)
+              card map CardDrawn
             case ("HAND", "FRIENDLY HAND", "FRIENDLY PLAY") =>
               // Your minion
               Log.info("    You played minion " + cardName)
+              None
             case ("HAND", "FRIENDLY HAND", "FRIENDLY PLAY (Weapon)") =>
-              Log.info("    You played weapon " + cardName);
+              Log.info("    You played weapon " + cardName)
+              None
             case ("HAND", "FRIENDLY HAND", "FRIENDLY SECRET") =>
-              Log.info("    You played secret " + cardName);
+              Log.info("    You played secret " + cardName)
+              None
             case ("HAND", "FRIENDLY HAND", "") =>
-              Log.info("    You played spell " + cardName);
+              Log.info("    You played spell " + cardName)
+              None
             case ("HAND", "FRIENDLY PLAY", "FRIENDLY HAND") =>
               // Returned a card to your hand
-              Log.info("    Your " + cardName + " was returned to your hand");
+              Log.info("    Your " + cardName + " was returned to your hand")
+              None
             case ("PLAY", "", "FRIENDLY PLAY") =>
               // You received a minion (without playing card directly)
-              Log.info("    You received minion " + cardName);
+              Log.info("    You received minion " + cardName)
+              None
             case ("PLAY", "", "FRIENDLY PLAY (Weapon)") =>
               // You received a weapon (without playing card directly)
-              Log.info("    You received weapon " + cardName);
+              Log.info("    You received weapon " + cardName)
+              None
             case ("PLAY", "", "FRIENDLY PLAY (Hero Power)") =>
               // Your hero power
-              Log.info("    You played hero power " + cardName);
+              Log.info("    You played hero power " + cardName)
+              None
             case ("PLAY", "", "OPPOSING PLAY") =>
               // Opponent received a minion (without playing card directly)
-              Log.info("    Opponent received minion " + cardName);
+              Log.info("    Opponent received minion " + cardName)
+              None
             case ("PLAY", "", "OPPOSING PLAY (Weapon)") =>
               // Opponent received a weapon (without playing card directly)
-              Log.info("    Opponent received weapon " + cardName);
+              Log.info("    Opponent received weapon " + cardName)
+              None
             case ("PLAY", "", "OPPOSING PLAY (Hero Power)") =>
               // Opponent hero power
-              Log.info("    Opponent played hero power " + cardName);
+              Log.info("    Opponent played hero power " + cardName)
+              None
             case ("PLAY", "OPPOSING HAND", "OPPOSING PLAY") =>
               // Opponent minion
-              Log.info("    Opponent played minion " + cardName);
+              Log.info("    Opponent played minion " + cardName)
+              None
             case ("PLAY", "OPPOSING HAND", "OPPOSING PLAY (Weapon)") =>
               // Opponent weapon
-              Log.info("    Opponent played weapon " + cardName);
+              Log.info("    Opponent played weapon " + cardName)
+              None
             case ("PLAY", "OPPOSING HAND", "") =>
               // Opponent spell
-              Log.info("    Opponent played spell " + cardName);
+              Log.info("    Opponent played spell " + cardName)
+              None
             case ("GRAVEYARD", "", "FRIENDLY GRAVEYARD") =>
               // A card went directly to the graveyard, probably a spell
-              debugLog.debug("    Ignoring spell {} going to graveyard", cardName);
+              debugLog.debug("    Ignoring spell {} going to graveyard", cardName)
+              None
             case ("GRAVEYARD", "", "OPPOSING GRAVEYARD") =>
               // A card went directly to the graveyard, probably a spell
-              debugLog.debug("    Ignoring spell {} going to graveyard", cardName);
+              debugLog.debug("    Ignoring spell {} going to graveyard", cardName)
+              None
             case ("GRAVEYARD", "FRIENDLY HAND", "FRIENDLY GRAVEYARD") =>
               // Your card was discarded from your deck (hand full)
-              Log.info("    Your " + cardName + " was discarded");
-              notifyCardDrawn(cardName)
+              Log.info("    Your " + cardName + " was discarded")
+              card map CardDrawn
             case ("GRAVEYARD", "FRIENDLY PLAY", "FRIENDLY GRAVEYARD") =>
               // Your minion died
-              Log.info("    Your " + cardName + " died");
+              Log.info("    Your " + cardName + " died")
+              None
             case ("GRAVEYARD", "FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") =>
               // Your weapon is finished
-              Log.info("    Your weapon " + cardName + " finished");
+              Log.info("    Your weapon " + cardName + " finished")
+              None
             case ("GRAVEYARD", "FRIENDLY PLAY (Hero)", "FRIENDLY GRAVEYARD") =>
               // Your hero has died... you are defeated(?)
-              debugLog.info("    Your hero " + cardName + " has been defeated");
+              debugLog.info("    Your hero " + cardName + " has been defeated")
+              None
             case ("GRAVEYARD", "FRIENDLY SECRET", "FRIENDLY GRAVEYARD") =>
               // Your secret was triggered... or possibly was destroyed?
-              Log.info("    Your secret " + cardName + " was revealed");
+              Log.info("    Your secret " + cardName + " was revealed")
+              None
             case ("GRAVEYARD", "OPPOSING HAND", "OPPOSING GRAVEYARD") =>
               // Opponent card was discarded
-              Log.info("    Opponent's " + cardName + " was discarded");
+              Log.info("    Opponent's " + cardName + " was discarded")
+              None
             case ("GRAVEYARD", "OPPOSING PLAY", "OPPOSING GRAVEYARD") =>
               // Opponent minion died
-              Log.info("    Opponent's " + cardName + " died");
+              Log.info("    Opponent's " + cardName + " died")
+              None
             case ("GRAVEYARD", "OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") =>
               // Opponent weapon is finished
-              Log.info("    Opponent's weapon " + cardName + " finished");
+              Log.info("    Opponent's weapon " + cardName + " finished")
+              None
             case ("GRAVEYARD", "OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
               // Opponent's hero has died... you are victorious(?)
-              debugLog.info("    Opponent's hero " + cardName + " has been defeated");
+              debugLog.info("    Opponent's hero " + cardName + " has been defeated")
+              None
             case ("GRAVEYARD", "OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
-              Log.info("    Opponent's secret " + cardName + " was revealed");
+              Log.info("    Opponent's secret " + cardName + " was revealed")
+              None
             case _ =>
-              debugLog.debug("Unhandled log for {}: zone {} from {} to {}", cardName, cardZone, fromZone, toZone);
+              debugLog.debug("Unhandled log for {}: zone {} from {} to {}", cardName, cardZone, fromZone, toZone)
+              None
           }
-        }
-      case _ => // ignore line
+        } else None
+      case _ =>
+        // ignore line
+        None
     }
   }
-
-  val observers = collection.mutable.ListBuffer.empty[CardDrawnObserver]
-
-  def addObserver(obs: CardDrawnObserver): Unit =
-    observers += obs
 
   private def findCard(name: String) =
     cards.filter(_.name == name).headOption match {
@@ -188,26 +193,5 @@ class HearthstoneLogMonitor {
         None
       case some => some
     }
-
-  private def notifyCardDrawn(c: String): Unit =
-    for {
-      obs <- observers
-      card <- findCard(c)
-    } obs.cardDrawn(card)
-
-  private def notifyCardPutBack(c: String): Unit =
-    for {
-      obs <- observers
-      card <- findCard(c)
-    } obs.cardPutBack(card)
-
-}
-
-object HearthstoneLogMonitor {
-  val debugLog = LoggerFactory.getLogger(classOf[HearthstoneLogMonitor])
-  val LOADING_SCREEN_PREFIX = "[LoadingScreen]"
-  val ZONE_PREFIX = "[Zone]"
-  val LS_ONSCENELOADED_REGEX = """^\[LoadingScreen\] LoadingScreen\.OnSceneLoaded\(\) \- prevMode=(\S*) nextMode=(\S*)""".r
-  val ZONE_PROCESSCHANGES_REGEX = """^\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
 
 }

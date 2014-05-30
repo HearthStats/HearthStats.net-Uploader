@@ -1,7 +1,63 @@
 package net.hearthstats;
 
 
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import java.awt.AWTException;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.Point;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkListener;
+
 import net.hearthstats.analysis.AnalyserEvent;
 import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
@@ -16,26 +72,13 @@ import net.hearthstats.ui.HelpIcon;
 import net.hearthstats.ui.MatchEndPopup;
 import net.hearthstats.ui.StandardDialog;
 import net.miginfocom.swing.MigLayout;
+
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkListener;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
 
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer {
@@ -1048,8 +1091,8 @@ public class Monitor extends JFrame implements Observer {
             if (Config.showHsFoundNotification()) {
 				_notify("Hearthstone found");
             }
-            if (hearthstoneLogMonitor != null) {
-                hearthstoneLogMonitor.startMonitoring();
+            if (hearthstoneLogMonitor == null) {
+				hearthstoneLogMonitor = new HearthstoneLogMonitor();
             }
             setupLogMonitoring();
 		}
@@ -1084,9 +1127,6 @@ public class Monitor extends JFrame implements Observer {
 				_notify("Hearthstone closed");
 				_analyzer.reset();
 			}
-            if (hearthstoneLogMonitor != null) {
-                hearthstoneLogMonitor.stopMonitoring();
-            }
         }
 	}
 
@@ -1288,7 +1328,8 @@ public class Monitor extends JFrame implements Observer {
     					if (selectedDeck != null && selectedDeck.isValid()) {
     						ClickableDeckBox deckBox = ClickableDeckBox.makeBox(selectedDeck);
                             if (hearthstoneLogMonitor != null) {
-                                hearthstoneLogMonitor.addObserver(deckBox);
+							deckBox.setCardEventObservable(hearthstoneLogMonitor
+									.cardEvents());
                             }
 							new StandardDialog(selectedDeck.name(),
                                     deckBox, true)
@@ -1575,23 +1616,19 @@ public class Monitor extends JFrame implements Observer {
         if (monitorHearthstoneLog) {
             // Ensure that the Hearthstone log.config file has been created
             Boolean configWasCreated = _hsHelper.createConfig();
-
-            // Prepare the log monitor so that it's ready if Hearthstone starts up later
-            if (hearthstoneLogMonitor == null) {
-                hearthstoneLogMonitor = new HearthstoneLogMonitor();
-            }
+           
             // Start monitoring the Hearthstone log immediately if Hearthstone is already running
             if (_hearthstoneDetected) {
                 if (configWasCreated) {
                     // Hearthstone won't actually be logging yet because the log.config was created after Hearthstone started up
                     Log.help("Hearthstone log.config changed &mdash; please restart Hearthstone so that it starts generating logs");
-                }
-                hearthstoneLogMonitor.startMonitoring();
+                } else
+                	hearthstoneLogMonitor=new HearthstoneLogMonitor();
             }
         } else {
             // Stop monitoring the Hearthstone log
             if (hearthstoneLogMonitor != null) {
-                hearthstoneLogMonitor.stopMonitoring();
+                hearthstoneLogMonitor.stop();
                 hearthstoneLogMonitor = null;
             }
         }
