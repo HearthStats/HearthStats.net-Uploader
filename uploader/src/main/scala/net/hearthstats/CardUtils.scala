@@ -22,15 +22,13 @@ object CardUtils {
       cost = Integer.parseInt(json.get("mana").toString)
       rarityString = json.get("rarity_id")
       rarity = if (rarityString == null) 0 else Integer.parseInt(rarityString.toString)
-      collectibleString = json.get("collectible")
-      collectible = if (collectibleString == null) false else collectibleString.toString.toBoolean
+      collectible = json.get("collectible")
     } yield id -> Card(
       rarity = rarity,
       id = id,
       cost = cost,
       name = json.get("name").toString,
-      collectible = collectible)
-    ).toMap
+      collectible = collectible != null && collectible.toString.toBoolean)).toMap
 
   def downloadImages(cards: List[Card]) {
     import ExecutionContext.Implicits.global
