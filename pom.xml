@@ -7,8 +7,7 @@
 	<groupId>net.hearthstats</groupId>
 	<artifactId>uploader-parent</artifactId>
 	<name>HearthStats.net Uploader</name>
-	<version>0.17.4</version>
-	<packaging>pom</packaging>
+	<version>0.17.7-SNAPSHOT</version>	<packaging>pom</packaging>
 
 	<properties>
 		<product.name>HearthStats.net Uploader (parent pom)</product.name>
@@ -24,16 +23,41 @@
 	</properties>
 
 	<scm>
-		<developerConnection>scm:git:git@github.com:HearthStats/HearthStats.net-Uploader.git</developerConnection>
-        <tag>v0.17.4</tag>
-    </scm>
+                <connection>scm:git:https://github.com/HearthStats/HearthStats.net-Uploader.git</connection>
+                <developerConnection>scm:git:https://github.com/tyrcho/HearthStats.net-Uploader.git</developerConnection>
+	  <tag>HEAD</tag>
+  </scm>
 
 
 	<modules>
 		<module>uploader</module>
-		<module>uploader-win</module>
-		<module>uploader-osx</module>
 	</modules>
+
+	<profiles>
+		<profile>
+			<id>windows</id>
+			<modules>
+				<module>uploader-win</module>
+			</modules> 
+		</profile>
+		<profile>
+			<id>osx</id>
+			<modules>
+				<module>uploader-osx</module>
+			</modules> 
+		</profile>
+		<profile>
+			<id>all</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<modules>
+				<module>uploader-win</module>
+				<module>uploader-osx</module>
+			</modules> 
+		</profile>
+	</profiles>
+	
 
 	<build>
 		<plugins>
