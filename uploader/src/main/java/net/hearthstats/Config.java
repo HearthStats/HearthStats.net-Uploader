@@ -277,21 +277,42 @@ public class Config {
     public static Boolean isOsxNotificationsSupported() {
         try {
             if (Config.os == OS.OSX) {
-                String osVersion = Config.getSystemProperty("os.version");
-                String osVersionSplit[] = osVersion.split("\\.");
-                if (osVersionSplit[0].equals("10")) {
-                    // This is OS X
-                    int version = Integer.parseInt(osVersionSplit[1]);
-                    if (version >= 8) {
-                        // This is OS X 10.8 or later
-                        return true;
-                    }
-                }
+                return isOsVersionAtLeast(10, 8);
             }
         } catch (Exception ex) {
             debugLog.warn("Unable to determine if OS X notifications are supported, assuming false", ex);
         }
         return false;
+    }
+
+
+    public static boolean isOsVersionAtLeast(int requiredMajor, int requiredMinor) {
+        String osVersion = Config.getSystemProperty("os.version");
+        try {
+            String osVersionSplit[] = osVersion.split("\\.");
+            int versionMajor = Integer.parseInt(osVersionSplit[0]);
+            int versionMinor;
+            if (osVersionSplit.length > 1) {
+                versionMinor = Integer.parseInt(osVersionSplit[1]);
+            } else {
+                versionMinor = 0;
+            }
+
+            if (versionMajor > requiredMajor) {
+                return true;
+            } else if (versionMajor == requiredMajor) {
+                if (versionMinor >= requiredMinor) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            debugLog.warn("Error parsing os.version " + osVersion, e);
+            return false;
+        }
     }
 
     public static void setShowNotifications(boolean val) {

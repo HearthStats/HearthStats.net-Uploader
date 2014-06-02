@@ -14,6 +14,7 @@ import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 import com.sun.jna.ptr.PointerByReference;
+import net.hearthstats.Config;
 import net.hearthstats.ProgramHelper;
 import net.hearthstats.win.jna.extra.GDI32Extra;
 import net.hearthstats.win.jna.extra.User32Extra;
@@ -99,14 +100,17 @@ public class ProgramHelperWindows extends ProgramHelper {
 
                 if(Native.toString(buffer).equals(_processName) && classNameStr.equals("UnityWndClass")) {
                     // Find the location the HearthStats executable, used later to find the log file
-                    char[] processFileName = new char[MAX_TITLE_LENGTH * 2];
-                    int[] lpdwSize = new int[] { MAX_TITLE_LENGTH };
-                    Kernel32.QueryFullProcessImageNameW(process, 0, processFileName, lpdwSize);
-
-                    hearthstoneProcessFolder = Native.toString(processFileName);
-                    if (hearthstoneProcessFolder != null) {
-                        int lastSlash = hearthstoneProcessFolder.lastIndexOf('\\');
-                        hearthstoneProcessFolder = hearthstoneProcessFolder.substring(0, lastSlash);
+                    // Only compatible with Windows Vista and later, skip for Windows XP
+                    if (Config.isOsVersionAtLeast(6, 0)) {
+                        debugLog.debug("Windows version is Vista or later so the location of the Hearthstone is being determined from the process");
+                        char[] processFileName = new char[MAX_TITLE_LENGTH * 2];
+                        int[] lpdwSize = new int[]{MAX_TITLE_LENGTH};
+                        Kernel32.QueryFullProcessImageNameW(process, 0, processFileName, lpdwSize);
+                        String processFileNameString = Native.toString(processFileName);
+                        if (processFileNameString != null) {
+                            int lastSlash = processFileNameString.lastIndexOf('\\');
+                            hearthstoneProcessFolder = processFileNameString.substring(0, lastSlash);
+                        }
                     }
 
                     _windowHandle = hWnd;
