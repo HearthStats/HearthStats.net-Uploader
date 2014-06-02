@@ -7,7 +7,7 @@
 	<groupId>net.hearthstats</groupId>
 	<artifactId>uploader-parent</artifactId>
 	<name>HearthStats.net Uploader</name>
-	<version>0.17.5-SNAPSHOT</version>
+	<version>0.17.5</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -26,7 +26,8 @@
 	<scm>
                 <connection>scm:git:https://github.com/HearthStats/HearthStats.net-Uploader.git</connection>
                 <developerConnection>scm:git:https://github.com/tyrcho/HearthStats.net-Uploader.git</developerConnection>
-    </scm>
+      <tag>v0.17.5</tag>
+  </scm>
 
 
 	<modules>
