@@ -18,6 +18,7 @@ class CardTest {
       "Shadow Word: Pain",
       "Shadow Word: Death",
       "Pint-Sized Summoner",
+      "SI:7 Agent",
       "Savage Roar")
     val cards = CardUtils.cards.values.filter(c => oldBugs contains c.name)
     checkURLs(cards)
