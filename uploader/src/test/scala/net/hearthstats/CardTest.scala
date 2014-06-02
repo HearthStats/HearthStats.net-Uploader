@@ -16,6 +16,7 @@ class CardTest {
       "Al'Akir the Windlord",
       "Power Word: Shield",
       "Shadow Word: Pain",
+      "Shadow Word: Death",
       "Pint-Sized Summoner",
       "Savage Roar")
     val cards = CardUtils.cards.values.filter(c => oldBugs contains c.name)
@@ -24,7 +25,7 @@ class CardTest {
 
   private def checkURLs(cards: GenIterable[Card]) = {
     for (c <- cards) {
-      println(s"checking download URL for $c")
+      println(s"checking download URL for $c : ${c.url}")
       new URL(c.url).openStream // throws an exception if bad URL
     }
   }
