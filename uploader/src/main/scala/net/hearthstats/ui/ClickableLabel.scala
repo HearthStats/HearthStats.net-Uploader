@@ -15,9 +15,9 @@ import javax.swing.JLabel
 import javax.swing.SwingUtilities
 import net.hearthstats.Card
 import ClickableLabel._
-//remove if not needed
 import scala.collection.JavaConversions._
 import scala.swing.Swing._
+import javax.swing.BorderFactory
 
 class ClickableLabel(var card: Card) extends JLabel {
 
@@ -25,14 +25,17 @@ class ClickableLabel(var card: Card) extends JLabel {
   private var cardImage = new ImageIcon(card.localURL)
   private var currentBack = cardBack
 
-  val displaySize = new Dimension(214, 38)
+  val displaySize = new Dimension(350, 55)
   setPreferredSize(displaySize)
   setMaximumSize(displaySize)
   setMinimumSize(displaySize)
 
-  setText(s"   ${card.cost}      ${card.name}")
-  setFont(Font.decode(Font.SANS_SERIF).deriveFont(Font.BOLD, 14))
+  val fontSize = if (card.cost > 9) 120 else 150
+  setText(s"<html> &nbsp;&nbsp;  <b style='font-size:$fontSize%'>${card.cost}</b>   &nbsp;&nbsp;&nbsp;&nbsp;   ${card.name}</html>")
+  setFont(Font.decode(Font.SANS_SERIF).deriveFont(Font.BOLD, 18))
   setForeground(Color.WHITE)
+
+  setBorder(BorderFactory.createEmptyBorder)
 
   updateRemaining()
 
@@ -44,15 +47,16 @@ class ClickableLabel(var card: Card) extends JLabel {
 
   protected override def paintComponent(g: Graphics) {
     val g2 = g.asInstanceOf[Graphics2D]
-    val scale = 289F / 214
+    val original = g2.getTransform
+    val scale = 55F / 35
+    val composite = g2.getComposite
+    if (remaining < 1) g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f))
+    g2.drawImage(cardImage.getImage, 100, -55, null)
+    g2.setComposite(composite)
     val scaleTransform = AffineTransform.getScaleInstance(scale, scale)
     g2.transform(scaleTransform)
-    if (remaining < 1) g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f))
-    g2.drawImage(cardImage.getImage, 0, -38, null)
-    scaleTransform.invert()
-    g2.transform(scaleTransform)
-    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f))
     g2.drawImage(currentBack.getImage, 0, 0, null)
+    g2.setTransform(original)
     super.paintComponent(g2)
   }
 
