@@ -1,3 +1,7 @@
+v0,17.4
+* Fixes for deck overlay pictures
+* Now finds Hearthstone log in non-standard installation locations
+
 v0.17.3
 * Fixed error loading cards from HearthStats.net on startup
 

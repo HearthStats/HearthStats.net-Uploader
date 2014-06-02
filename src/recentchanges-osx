@@ -1,9 +1,12 @@
+v0,17.4
+* Fixes for deck overlay pictures
+
 v0.17.3
 * Fixed error loading cards from HearthStats.net on startup
 
 v0.17.2
-* Optional deck overlay to show your deck during matches 
+* Optional deck overlay to show your deck during matches
 * Experimental support for monitoring Hearthstone logs
-  (shows each card played and killed during the match)  
+  (shows each card played and killed during the match)
 * New help buttons to explain the Options tab
 * Several bug fixes
