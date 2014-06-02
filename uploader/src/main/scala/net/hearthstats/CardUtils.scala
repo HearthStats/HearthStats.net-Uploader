@@ -3,14 +3,13 @@ package net.hearthstats
 import java.io.FileOutputStream
 import java.net.URL
 import java.nio.channels.Channels
-
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.concurrent._
 import scala.util.Failure
 import scala.util.Success
 import scala.concurrent.duration._
-
 import net.hearthstats.log.Log
+import java.io.IOException
 
 object CardUtils {
   private lazy val api: API = new API
@@ -33,14 +32,18 @@ object CardUtils {
   def downloadImages(cards: List[Card]) {
     import ExecutionContext.Implicits.global
     val futures = for (card <- cards) yield future {
-      val rbc = Channels.newChannel(new URL(card.url).openStream)
       val file = card.localFile
       if (file.length < 30000) {
         val fos = new FileOutputStream(file)
-        fos.getChannel.transferFrom(rbc, 0, Long.MaxValue)
-        fos.close()
-        rbc.close()
-        Log.debug(card.name + " saved to cache folder")
+        try {
+          val channel = Channels.newChannel(new URL(card.url).openStream)
+          fos.getChannel.transferFrom(channel, 0, Long.MaxValue)
+          fos.close()
+          channel.close()
+          Log.debug(card.name + " saved to cache folder")
+        } catch {
+          case e: IOException => Log.warn(s"Could not download $card", e)
+        }
       } else
         Log.debug(card.name + " already in cache, skipping")
     }
@@ -49,7 +52,11 @@ object CardUtils {
       case Success(_) => Log.info("All images downloaded successfully")
       case Failure(e) => Log.warn("Could not download an image", e)
     }
-    Await.result(all, 10.seconds)
+    try {
+      Await.result(all, 10.seconds)
+    } catch {
+      case e: TimeoutException => Log.warn("Could not download an image after 10 seconds", e)
+    }
   }
 
 }
