@@ -1,20 +1,5 @@
 package net.hearthstats.win;
 
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.io.File;
-
-import net.hearthstats.ProgramHelper;
-import net.hearthstats.win.jna.extra.GDI32Extra;
-import net.hearthstats.win.jna.extra.User32Extra;
-import net.hearthstats.win.jna.extra.WinGDIExtra;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
@@ -29,6 +14,17 @@ import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 import com.sun.jna.ptr.PointerByReference;
+import net.hearthstats.ProgramHelper;
+import net.hearthstats.win.jna.extra.GDI32Extra;
+import net.hearthstats.win.jna.extra.User32Extra;
+import net.hearthstats.win.jna.extra.WinGDIExtra;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 /**
  * Implementation of {@link ProgramHelper} for Windows.
@@ -41,6 +37,7 @@ public class ProgramHelperWindows extends ProgramHelper {
      * The number of iterations to wait without a window until we assume that Hearthstone has been minimised
      */
     private static final int ITERATIONS_FOR_MINIMISE = 8;
+    private static final int MAX_TITLE_LENGTH = 1024;
 
     private final String _processName = "Hearthstone.exe";
 
@@ -49,8 +46,11 @@ public class ProgramHelperWindows extends ProgramHelper {
 	private boolean isFullscreen = false;
 	private boolean isMinimised = false;
     private int minimisedCount = 0;
-	
-	public ProgramHelperWindows() {
+    private String hearthstoneProcessFolder = null;
+
+    protected char[] buffer = new char[MAX_TITLE_LENGTH * 2];
+
+    public ProgramHelperWindows() {
         debugLog.debug("Initialising ProgramHelperWindows with {}", _processName);
 	}
 
@@ -80,7 +80,7 @@ public class ProgramHelperWindows extends ProgramHelper {
 	            char[] title = new char[titleLength];
 	            User32.INSTANCE.GetWindowText(hWnd, title, titleLength);
 	            String wText = Native.toString(title);
-	            
+
 	            if (wText.isEmpty()) {
 	               return true;
 	            }
@@ -90,14 +90,26 @@ public class ProgramHelperWindows extends ProgramHelper {
 	      	    User32DLL.GetWindowThreadProcessId(hWnd, pointer);
 	      	    Pointer process = Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION | Kernel32.PROCESS_VM_READ, false, pointer.getValue());
 	      	    Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
-	      	    
+
 	      	    // see https://github.com/JeromeDane/HearthStats.net-Uploader/issues/66#issuecomment-33829132
 	      	    char[] className = new char[512];
 	      	    User32.INSTANCE.GetClassName(hWnd, className, 512);
 	      	    String classNameStr = Native.toString(className);
 
-	      	    if(Native.toString(buffer).equals(_processName) && classNameStr.equals("UnityWndClass")) {
-	      	    	_windowHandle = hWnd;
+
+                if(Native.toString(buffer).equals(_processName) && classNameStr.equals("UnityWndClass")) {
+                    // Find the location the HearthStats executable, used later to find the log file
+                    char[] processFileName = new char[MAX_TITLE_LENGTH * 2];
+                    int[] lpdwSize = new int[] { MAX_TITLE_LENGTH };
+                    Kernel32.QueryFullProcessImageNameW(process, 0, processFileName, lpdwSize);
+
+                    hearthstoneProcessFolder = Native.toString(processFileName);
+                    if (hearthstoneProcessFolder != null) {
+                        int lastSlash = hearthstoneProcessFolder.lastIndexOf('\\');
+                        hearthstoneProcessFolder = hearthstoneProcessFolder.substring(0, lastSlash);
+                    }
+
+                    _windowHandle = hWnd;
 	      	    	if(_windowHandleId == null) {
 	      	    		_windowHandleId = _windowHandle.toString();
 	      	    		_notifyObserversOfChangeTo("Hearthstone window found with process name " + _processName);
@@ -202,9 +214,6 @@ public class ProgramHelperWindows extends ProgramHelper {
 		return null;
 	}
 
-    protected char[] buffer = new char[MAX_TITLE_LENGTH * 2];
-	private static final int MAX_TITLE_LENGTH = 1024;
-	
 	static class Psapi {
 	    static { Native.register("psapi"); }
 	    public static native int GetModuleBaseNameW(Pointer hProcess, Pointer hmodule, char[] lpBaseName, int size);
@@ -216,7 +225,8 @@ public class ProgramHelperWindows extends ProgramHelper {
 	    public static int PROCESS_VM_READ = 0x0010;
 	    public static native int GetLastError();
 	    public static native Pointer OpenProcess(int dwDesiredAccess, boolean bInheritHandle, Pointer pointer);
-	}
+        public static native int QueryFullProcessImageNameW(Pointer hProcess, int dwFlags, char[] lpExeName, int[] lpdwSize);
+    }
 
 	static class User32DLL {
 	    static { Native.register("user32"); }
@@ -237,16 +247,22 @@ public class ProgramHelperWindows extends ProgramHelper {
 
 	@Override
 	public String hearthstoneLogFile() {
-		String programFiles = System.getenv("PROGRAMFILES(X86)");
-		if (StringUtils.isBlank(programFiles)) {
-			programFiles = System.getenv("PROGRAMFILES");
-			if (StringUtils.isBlank(programFiles)) {
-				throw new RuntimeException(
-						"Cannot find Program Files directory");
-			}
-		}
-		File logFile = new File(programFiles
-				+ "\\Hearthstone\\Hearthstone_Data\\output_log.txt");
+		String logLocation;
+        if (hearthstoneProcessFolder != null) {
+            logLocation = hearthstoneProcessFolder + "\\Hearthstone_Data\\output_log.txt";
+        } else {
+            logLocation = System.getenv("PROGRAMFILES(X86)");
+            if (StringUtils.isBlank(logLocation)) {
+                logLocation = System.getenv("PROGRAMFILES");
+                if (StringUtils.isBlank(logLocation)) {
+                    throw new RuntimeException(
+                            "Cannot find Program Files directory");
+                }
+            }
+            logLocation = logLocation + "\\Hearthstone\\Hearthstone_Data\\output_log.txt";
+        }
+
+		File logFile = new File(logLocation);
 		return logFile.getAbsolutePath();
 	}
 }
