@@ -5,7 +5,8 @@
 
 	<parent>
 		<groupId>net.hearthstats</groupId>
-		<version>0.17.7-SNAPSHOT</version>		<artifactId>uploader-parent</artifactId>
+		<version>0.17.5-SNAPSHOT</version>
+        <artifactId>uploader-parent</artifactId>
 	</parent>
 	<artifactId>uploader</artifactId>
 
