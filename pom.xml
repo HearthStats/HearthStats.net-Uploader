@@ -7,7 +7,7 @@
 	<groupId>net.hearthstats</groupId>
 	<artifactId>uploader-parent</artifactId>
 	<name>HearthStats.net Uploader</name>
-	<version>0.17.6-SNAPSHOT</version>	<packaging>pom</packaging>
+	<version>0.17.5-SNAPSHOT</version>	<packaging>pom</packaging>
 
 	<properties>
 		<product.name>HearthStats.net Uploader (parent pom)</product.name>
