@@ -24,7 +24,7 @@ object LogMonitorDeckOverlayMain extends App {
       writer.write(initialHand)
       writer.flush()
       Thread.sleep(5000)
-      ClickableDeckBox.showBox(deck, monitor.cardEvents)
+      //      ClickableDeckBox.showBox(deck, monitor.cardEvents)
       writer.write(mulligan)
       writer.close()
     }
