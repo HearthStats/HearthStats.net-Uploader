@@ -18,19 +18,26 @@ import ClickableLabel._
 import scala.collection.JavaConversions._
 import scala.swing.Swing._
 import javax.swing.BorderFactory
+import javax.swing.JComponent
 
 class ClickableLabel(var card: Card) extends JLabel {
   val backgroundSize = new Dimension(218, 35)
   val pictureSize = new Dimension(275, 384)
-  var displaySize = new Dimension((218 * 1.5).toInt, (1.5 * 35).toInt)
+
+  def displaySize = getSize()
 
   var remaining = card.count
   private var cardImage = new ImageIcon(card.localURL)
   private var currentBack = cardBack
 
-  setPreferredSize(displaySize)
-  setMaximumSize(displaySize)
-  setMinimumSize(displaySize)
+  val mySize = new Dimension((218 * 1.5).toInt, (1.5 * 35).toInt)
+  setMaximumSize(backgroundSize * 3)
+  setPreferredSize(backgroundSize * 1.5)
+  setMinimumSize(backgroundSize * 0.5)
+
+  implicit class DimensionOps(d: Dimension) {
+    def *(r: Double) = new Dimension((d.getWidth * r).toInt, (d.getHeight * r).toInt)
+  }
 
   setBorder(BorderFactory.createEmptyBorder)
 
