@@ -35,7 +35,7 @@ class HearthstoneLogMonitor(logFile: String) {
   val zones = relevant.filter(l => l startsWith ZONE_PREFIX)
   screens.doOnEach(handleLoadingScreen _)
 
-  val cardEvents = relevant.map(zoneEvent).filter(_.isDefined).map(_.get) // remove None values
+  val cardEvents = relevant.map(zoneEvent).filter(_.isDefined).map(_.get).publish // remove None values
 
   def stop(): Unit = {
     debugLog.debug(s"Stopping Hearthstone log monitor on file $logFile")

@@ -23,6 +23,7 @@ import scala.swing.BorderPanel
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.WindowConstants
+import rx.lang.scala.observables.ConnectableObservable
 
 class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent]) extends JPanel {
 
@@ -59,9 +60,9 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent]) extends JP
 }
 
 object ClickableDeckBox {
-  def showBox(deck: Deck): ClickableDeckBox = showBox(deck, Observable.empty)
 
-  def showBox(deck: Deck, cardEvents: Observable[CardEvent]): ClickableDeckBox = {
+  def showBox(deck: Deck, cardEvents: ConnectableObservable[CardEvent]): ClickableDeckBox = {
+    cardEvents.connect
     CardUtils.downloadImages(deck.cards)
     val box = new ClickableDeckBox(deck, cardEvents)
     val frame = new JFrame {
