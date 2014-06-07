@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent
 import net.hearthstats.ProgramHelper
 import net.hearthstats.Config
 import java.awt.Rectangle
+import net.hearthstats.DeckUtils
 
 object RobotMain extends App {
   val helper = Config.programHelper
@@ -14,7 +15,8 @@ object RobotMain extends App {
   else
     new Rectangle(0, 0, 1680, 1050)
 
-  val robot = new HsRobot(rect)
-  robot.add("Si:7 Agent")
+  val robot = new HsRobot(rect, 1)
+  val deck = DeckUtils.getDeck(32521)
+  robot.create(deck)
 
 }

@@ -4,17 +4,31 @@ import java.awt.Robot
 import java.awt.event.KeyEvent._
 import java.awt.event.InputEvent
 import java.awt.Rectangle
+import net.hearthstats.Deck
 
-case class HsRobot(hsWindow: Rectangle) {
+case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 1) {
 
   val robot = new Robot
 
-  def add(cardName: String): Unit = {
+  val shortDelay = 10 * delayRatio
+  val mediumDelay = 100 * delayRatio
+
+  def create(deck: Deck): Unit = {
+    for (card <- deck.cards) {
+      add(card.name, card.count)
+      robot.delay(mediumDelay)
+    }
+  }
+
+  def add(cardName: String, times: Int = 1): Unit = {
     click(resolution.search)
-    robot.delay(100)
+    robot.delay(mediumDelay)
     send(cardName + "\n")
-    robot.delay(100)
-    click(resolution.card)
+    robot.delay(mediumDelay)
+    for (i <- 1 to times) {
+      click(resolution.card)
+      robot.delay(mediumDelay)
+    }
   }
 
   def click(p: Point): Unit = {
