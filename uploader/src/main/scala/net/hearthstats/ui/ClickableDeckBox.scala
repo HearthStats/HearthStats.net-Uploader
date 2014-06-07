@@ -24,6 +24,7 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.WindowConstants
 import rx.lang.scala.observables.ConnectableObservable
+import net.hearthstats.Config
 
 class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent]) extends JPanel {
 
@@ -70,12 +71,26 @@ object ClickableDeckBox {
       setFocusableWindowState(true)
       getContentPane.add(box)
       pack()
+      setLocation(Config.getDeckX, Config.getDeckY)
+      setSize(Config.getDeckWidth, Config.getDeckHeight)
       setVisible(true)
 
       setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
       addWindowListener(new WindowAdapter {
-        override def windowClosed(e: WindowEvent): Unit = {
+        override def windowClosing(e: WindowEvent): Unit = {
           box.subscription.unsubscribe()
+          val p = getLocationOnScreen
+          Config.setDeckX(p.x)
+          Config.setDeckY(p.y)
+          val rect = getSize()
+          Config.setDeckWidth(rect.getWidth.toInt)
+          Config.setDeckHeight(rect.getHeight.toInt)
+          try {
+            Config.save();
+          } catch {
+            case e: Exception =>
+              Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
+          }
         }
       })
 
