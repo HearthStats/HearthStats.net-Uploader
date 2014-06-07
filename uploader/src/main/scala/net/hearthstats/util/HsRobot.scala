@@ -3,20 +3,17 @@ package net.hearthstats.util
 import java.awt.Robot
 import java.awt.event.KeyEvent._
 import java.awt.event.InputEvent
+import java.awt.Rectangle
 
-class HsRobot(
-  x: Int, // top left corner
-  y: Int,
-  width: Int,
-  height: Int) {
+case class HsRobot(hsWindow: Rectangle) {
 
   val robot = new Robot
-  robot.setAutoDelay(1)
 
   val resolution = Res16_9 //TODO detect resolution
 
   def add(cardName: String): Unit = {
     click(resolution.search)
+    robot.delay(100)
     send(cardName + "\n")
     robot.delay(100)
     click(resolution.card)
@@ -53,6 +50,7 @@ class HsRobot(
     def cardRatio: (Float, Float)
 
     private def applyRatio(r: (Float, Float)) = {
+      import hsWindow._
       val (a, b) = r
       Point(x + a * width, y + b * height)
     }

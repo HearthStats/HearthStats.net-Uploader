@@ -1,5 +1,21 @@
 package net.hearthstats.win;
 
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+import net.hearthstats.Config;
+import net.hearthstats.ProgramHelper;
+import net.hearthstats.win.jna.extra.GDI32Extra;
+import net.hearthstats.win.jna.extra.User32Extra;
+import net.hearthstats.win.jna.extra.WinGDIExtra;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
@@ -14,18 +30,6 @@ import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 import com.sun.jna.ptr.PointerByReference;
-import net.hearthstats.Config;
-import net.hearthstats.ProgramHelper;
-import net.hearthstats.win.jna.extra.GDI32Extra;
-import net.hearthstats.win.jna.extra.User32Extra;
-import net.hearthstats.win.jna.extra.WinGDIExtra;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
 
 /**
  * Implementation of {@link ProgramHelper} for Windows.
@@ -133,15 +137,11 @@ public class ProgramHelperWindows extends ProgramHelper {
 	
 	@Override
 	public boolean foundProgram() {
-		
-		// windows version
 		if(_getWindowHandle() != null) {
 			return true;
 		}
 		_windowHandleId = null;
 		return false;
-		
-		// TODO: implement OSX version
 	}
 	
 	private boolean _isFullScreen(Rectangle rect) {
@@ -152,6 +152,12 @@ public class ProgramHelperWindows extends ProgramHelper {
 		return (rect.width >= width && rect.height >= height);
 	}
 	
+	public Rectangle getHSWindowBounds() {
+		RECT bounds = new RECT();
+		User32Extra.INSTANCE.GetWindowRect(_windowHandle, bounds);
+		return bounds.toRectangle();
+	}
+
 	private BufferedImage _getScreenCaptureWindows(HWND hWnd) {
 
 		HDC hdcWindow = User32.INSTANCE.GetDC(hWnd);
