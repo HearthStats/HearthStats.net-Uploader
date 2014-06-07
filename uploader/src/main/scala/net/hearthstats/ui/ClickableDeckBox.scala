@@ -25,22 +25,29 @@ import java.awt.event.WindowEvent
 import javax.swing.WindowConstants
 import rx.lang.scala.observables.ConnectableObservable
 import net.hearthstats.Config
+import java.awt.BorderLayout
 
-class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent]) extends JPanel {
+class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent]) extends JFrame {
+  val content = getContentPane
 
-  setLayout(new BoxLayout(this, BoxLayout.X_AXIS))
+  content.setLayout(new BorderLayout)
   val box = createVerticalBox
   val imageLabel = new JLabel
   imageLabel.setPreferredSize(new Dimension(289, 398))
-  val cardLabels: Map[String, ClickableLabel] = (for (card <- deck.cards) yield {
-    val cardLabel = new ClickableLabel(card)
-    box.add(cardLabel)
-    cardLabel.addMouseListener(new MouseHandler(card, imageLabel))
+  val cardLabels: Map[String, ClickableLabel] =
+    (for {
+      card <- deck.cards
+      cardLabel = new ClickableLabel(card)
+    } yield {
+      box.add(cardLabel)
+      cardLabel.addMouseListener(new MouseHandler(card, imageLabel))
+      card.name -> cardLabel
+    }).toMap
+  content.add(box, BorderLayout.CENTER)
+  content.add(imageLabel, BorderLayout.EAST)
 
-    card.name -> cardLabel
-  }).toMap
-  add(box)
-  add(imageLabel)
+  setAlwaysOnTop(true)
+  setFocusableWindowState(true)
 
   val subscription = cardEvents.subscribe {
     _ match {
@@ -66,35 +73,9 @@ object ClickableDeckBox {
     cardEvents.connect
     CardUtils.downloadImages(deck.cards)
     val box = new ClickableDeckBox(deck, cardEvents)
-    val frame = new JFrame {
-      setAlwaysOnTop(true)
-      setFocusableWindowState(true)
-      getContentPane.add(box)
-      pack()
-      setLocation(Config.getDeckX, Config.getDeckY)
-      setSize(Config.getDeckWidth, Config.getDeckHeight)
-      setVisible(true)
-
-      setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
-      addWindowListener(new WindowAdapter {
-        override def windowClosing(e: WindowEvent): Unit = {
-          box.subscription.unsubscribe()
-          val p = getLocationOnScreen
-          Config.setDeckX(p.x)
-          Config.setDeckY(p.y)
-          val rect = getSize()
-          Config.setDeckWidth(rect.getWidth.toInt)
-          Config.setDeckHeight(rect.getHeight.toInt)
-          try {
-            Config.save();
-          } catch {
-            case e: Exception =>
-              Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
-          }
-        }
-      })
-
-    }
+    box.setLocation(Config.getDeckX, Config.getDeckY)
+    box.setSize(Config.getDeckWidth, Config.getDeckHeight)
+    box.setVisible(true)
     box
   }
 }
