@@ -8,6 +8,9 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.awt.RenderingHints;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform
 import java.awt.geom.NoninvertibleTransformException
 import javax.swing.ImageIcon
@@ -24,16 +27,22 @@ class ClickableLabel(var card: Card) extends JLabel {
   var remaining = card.count
   private var cardImage = new ImageIcon(card.localURL)
   private var currentBack = cardBack
+  private var cost = card.cost.toString
+  private var name = card.name
+  private val imgDstX = 100
+  private val imgDstY = 0
+  private val imgDstW = 113
+  private val imgDstH = 35
+  private val imgSrcX = 81 * cardImage.getIconWidth() / 289
+  private val imgSrcY = 62 * cardImage.getIconHeight() / 398
+  private val imgSrcW = 130 * cardImage.getIconWidth() / 289
+  private val imgSrcH = 40 * cardImage.getIconHeight() / 398
 
-  val displaySize = new Dimension(350, 55)
+  val displaySize = new Dimension(currentBack.getIconWidth(), currentBack.getIconHeight())
+
   setPreferredSize(displaySize)
   setMaximumSize(displaySize)
   setMinimumSize(displaySize)
-
-  val fontSize = if (card.cost > 9) 120 else 150
-  setText(s"<html> &nbsp;&nbsp;  <b style='font-size:$fontSize%'>${card.cost}</b>   &nbsp;&nbsp;&nbsp;&nbsp;   ${card.name}</html>")
-  setFont(Font.decode(Font.SANS_SERIF).deriveFont(Font.BOLD, 18))
-  setForeground(Color.WHITE)
 
   setBorder(BorderFactory.createEmptyBorder)
 
@@ -47,17 +56,36 @@ class ClickableLabel(var card: Card) extends JLabel {
 
   protected override def paintComponent(g: Graphics) {
     val g2 = g.asInstanceOf[Graphics2D]
-    val original = g2.getTransform
-    val scale = 55F / 35
+    val originalTrans = g2.getTransform()
     val composite = g2.getComposite
-    if (remaining < 1) g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f))
-    g2.drawImage(cardImage.getImage, 100, -55, null)
-    g2.setComposite(composite)
-    val scaleTransform = AffineTransform.getScaleInstance(scale, scale)
-    g2.transform(scaleTransform)
+
+    if (remaining < 1) {
+      g2.setColor(Color.BLACK)
+      g2.fillRoundRect(0, 0, currentBack.getIconWidth(), currentBack.getIconHeight(), 15, 15)
+      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f))
+    }
+    g2.drawImage(cardImage.getImage, imgDstX, imgDstY, imgDstX + imgDstW, imgDstY + imgDstH, imgSrcX, imgSrcY, imgSrcX + imgSrcW, imgSrcY + imgSrcH, null)
     g2.drawImage(currentBack.getImage, 0, 0, null)
-    g2.setTransform(original)
+    g2.setFont(Font.decode(Font.SANS_SERIF).deriveFont(Font.BOLD, 18))
+    if (card.cost < 10)
+      outlineText(g2, cost, 9, 25, Color.BLACK, Color.WHITE)
+    else
+      outlineText(g2, cost, 4, 25, Color.BLACK, Color.WHITE)
+    g2.setFont(Font.decode(Font.SANS_SERIF).deriveFont(Font.BOLD, 12))
+    outlineText(g2, name, 35, 23, Color.BLACK, Color.WHITE)
+    g2.setComposite(composite)
+
     super.paintComponent(g2)
+  }
+
+  private def outlineText(g: Graphics, s: String, posX: Int, posY: Int, borderColor: Color, fontColor: Color): Unit = {
+    g.setColor(borderColor)
+    g.drawString(s, posX - 1, posY - 1)
+    g.drawString(s, posX - 1, posY + 1)
+    g.drawString(s, posX + 1, posY - 1)
+    g.drawString(s, posX + 1, posY + 1)
+    g.setColor(fontColor)
+    g.drawString(s, posX, posY)
   }
 
   private def handleClick(button: Int): Unit =
