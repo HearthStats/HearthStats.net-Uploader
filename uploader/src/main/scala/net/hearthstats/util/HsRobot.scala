@@ -9,8 +9,6 @@ case class HsRobot(hsWindow: Rectangle) {
 
   val robot = new Robot
 
-  val resolution = Res16_9 //TODO detect resolution
-
   def add(cardName: String): Unit = {
     click(resolution.search)
     robot.delay(100)
@@ -43,11 +41,21 @@ case class HsRobot(hsWindow: Rectangle) {
     robot.keyRelease(code)
   }
 
+  lazy val resolution: Resolution = {
+    import math._
+    val ratio = hsWindow.width.toFloat / hsWindow.height
+    def score(r: Resolution) =
+      abs(log(ratio / r.ratio))
+    Seq(Res16_9, Res4_3).sortBy(score).head
+  }
+
   sealed trait Resolution {
     def search: Point = applyRatio(searchRatio)
     def card: Point = applyRatio(cardRatio)
+
     def searchRatio: (Float, Float)
     def cardRatio: (Float, Float)
+    def ratio: Float
 
     private def applyRatio(r: (Float, Float)) = {
       import hsWindow._
@@ -59,9 +67,11 @@ case class HsRobot(hsWindow: Rectangle) {
   case object Res16_9 extends Resolution {
     val searchRatio = (425f / 900, 82f / 90)
     val cardRatio = (15f / 80, 13f / 40)
+    val ratio = 16f / 9
   }
   case object Res4_3 extends Resolution {
     val searchRatio = (0.48f, 0.915f)
     val cardRatio = (0.12f, 0.31f)
+    val ratio = 4f / 3
   }
 }
