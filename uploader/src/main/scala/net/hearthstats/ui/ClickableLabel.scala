@@ -19,6 +19,7 @@ import scala.collection.JavaConversions._
 import scala.swing.Swing._
 import javax.swing.BorderFactory
 import javax.swing.JComponent
+import java.awt.Rectangle
 
 class ClickableLabel(var card: Card) extends JLabel {
   val backgroundSize = new Dimension(218, 35)
@@ -69,6 +70,10 @@ class ClickableLabel(var card: Card) extends JLabel {
     else
       g2.drawString(card.cost.toString, 9, 25)
     g2.setTransform(original)
+    if (remaining < 1) {
+      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f))
+      g2.fill(new Rectangle(displaySize))
+    }
     super.paintComponent(g2)
   }
 

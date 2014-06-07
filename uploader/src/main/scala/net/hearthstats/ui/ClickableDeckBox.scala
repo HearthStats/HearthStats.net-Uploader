@@ -49,6 +49,25 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent]) extends JF
   setAlwaysOnTop(true)
   setFocusableWindowState(true)
 
+  setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+  addWindowListener(new WindowAdapter {
+    override def windowClosing(e: WindowEvent): Unit = {
+      subscription.unsubscribe()
+      val p = getLocationOnScreen
+      Config.setDeckX(p.x)
+      Config.setDeckY(p.y)
+      val rect = getSize()
+      Config.setDeckWidth(rect.getWidth.toInt)
+      Config.setDeckHeight(rect.getHeight.toInt)
+      try {
+        Config.save()
+      } catch {
+        case e: Exception =>
+          Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
+      }
+    }
+  })
+
   val subscription = cardEvents.subscribe {
     _ match {
       case CardEvent(card, DRAWN) => findLabel(card) map (_.decreaseRemaining())
