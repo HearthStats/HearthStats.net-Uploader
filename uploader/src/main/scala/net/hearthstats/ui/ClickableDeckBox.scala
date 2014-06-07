@@ -89,14 +89,18 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
 }
 
 object ClickableDeckBox {
+  val instances = collection.mutable.ArrayBuffer.empty[ClickableDeckBox]
 
   def showBox(deck: Deck, cardEvents: ConnectableObservable[CardEvent]): ClickableDeckBox = {
+    for (d <- instances) d.dispose()
+    instances.clear()
     cardEvents.connect
     CardUtils.downloadImages(deck.cards)
     val box = new ClickableDeckBox(deck, cardEvents)
     box.setLocation(Config.getDeckX, Config.getDeckY)
     box.setSize(Config.getDeckWidth, Config.getDeckHeight)
     box.setVisible(true)
+    instances += box
     box
   }
 }
