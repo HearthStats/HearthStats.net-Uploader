@@ -161,7 +161,7 @@ public class Config {
 	}
 
 	public static int getDeckWidth() {
-		return getIntegerSetting("ui", "deckwidth", 300);
+		return getIntegerSetting("ui", "deckwidth", 485);
 	}
 
 	public static int getDeckHeight() {
@@ -509,6 +509,10 @@ public class Config {
 		setY(_y);
 		setWidth(_width);
 		setHeight(_height);
+		setDeckX(_deckx);
+		setDeckY(_decky);
+		setDeckWidth(_deckwidth);
+		setDeckHeight(_deckheight);
 	}
 	
 	private static void storePreviousValues() {
