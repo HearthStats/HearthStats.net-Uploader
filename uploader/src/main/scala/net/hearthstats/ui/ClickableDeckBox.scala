@@ -27,7 +27,9 @@ import rx.lang.scala.observables.ConnectableObservable
 import net.hearthstats.Config
 import java.awt.BorderLayout
 
-class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent]) extends JFrame {
+class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
+  extends JFrame(deck.name) {
+
   val content = getContentPane
 
   content.setLayout(new BorderLayout)
