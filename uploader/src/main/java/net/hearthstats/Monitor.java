@@ -321,12 +321,7 @@ public class Monitor extends JFrame implements Observer {
 		_tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (_tabbedPane.getSelectedIndex() == 2)
-                    try {
-						decksTab.updateDecks();
-                    } catch (IOException e1) {
-                        _notify(t("error.loading_decks.title"), t("error.loading_decks"));
-                        Log.warn(t("error.loading_decks"), e1);
-                    }
+					decksTab.updateDecks();
             }
         });
 		
