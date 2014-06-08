@@ -204,8 +204,10 @@ public class ScreenAnalyser {
 
         } else {
             // The screen size is different to our reference pixels, so coordinates need to be adjusted
-			float ratio = (float) height
-					/ (float) PixelLocation.REFERENCE_SIZE.y();
+			float ratioX = (float) width / (float) PixelLocation.REFERENCE_SIZE.x();
+            float ratioY = (float) height / (float) PixelLocation.REFERENCE_SIZE.y();
+            // ratioY is normally the correct ratio to use, but occasionally ratioX is smaller (usually during screen resizing?)
+            float ratio = Math.min(ratioX, ratioY);
             float screenRatio = (float) width / (float) height;
 
             int xOffset;
