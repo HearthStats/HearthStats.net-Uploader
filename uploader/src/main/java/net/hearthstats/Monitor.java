@@ -1,6 +1,8 @@
 package net.hearthstats;
 
 
+import static net.hearthstats.util.Translations.t;
+
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -28,16 +30,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -68,12 +63,12 @@ import net.hearthstats.notification.NotificationQueue;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.ui.ClickableDeckBox;
+import net.hearthstats.ui.DecksTab;
 import net.hearthstats.ui.HelpIcon;
 import net.hearthstats.ui.MatchEndPopup;
 import net.miginfocom.swing.MigLayout;
 
 import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,25 +78,13 @@ import com.dmurph.tracking.JGoogleAnalyticsTracker;
 public class Monitor extends JFrame implements Observer {
 
     private static final String PROFILES_URL = "http://hearthstats.net/profiles";
-    private static final String DECKS_URL = "http://hearthstats.net/decks";
 	private static final int POLLING_INTERVAL_IN_MS = 100;
 
     private static final EnumSet<Screen> DO_NOT_NOTIFY_SCREENS = EnumSet.of(Screen.COLLECTION, Screen.COLLECTION_ZOOM, Screen.MAIN_TODAYSQUESTS, Screen.TITLE);
 
     private static Logger debugLog = LoggerFactory.getLogger(Monitor.class);
 
-    public static final String[] hsClassOptions = {
-            "- undetected -",
-            "Druid",
-            "Hunter",
-            "Mage",
-            "Paladin",
-            "Priest",
-            "Rogue",
-            "Shaman",
-            "Warlock",
-            "Warrior"
-    };
+
 
     protected API _api = new API();
 	protected HearthstoneAnalyser _analyzer = new HearthstoneAnalyser();
@@ -115,15 +98,7 @@ public class Monitor extends JFrame implements Observer {
 	private JTextArea _currentNotesField;
 	private JButton _lastMatchButton;
 	private HearthstoneMatch _lastMatch;
-	private JComboBox<String> _deckSlot1Field;
-	private JComboBox<String> _deckSlot2Field;
-	private JComboBox<String> _deckSlot3Field;
-	private JComboBox<String> _deckSlot4Field;
-	private JComboBox<String> _deckSlot5Field;
-	private JComboBox<String> _deckSlot6Field;
-	private JComboBox<String> _deckSlot7Field;
-	private JComboBox<String> _deckSlot8Field;
-	private JComboBox<String> _deckSlot9Field;
+
 	private JComboBox _currentOpponentClassSelect;
 	private JComboBox _currentYourClassSelector;
 
@@ -148,33 +123,10 @@ public class Monitor extends JFrame implements Observer {
 	private JCheckBox _showYourTurnNotificationField;
 	private JCheckBox _showDeckOverlay;
 	private JTabbedPane _tabbedPane;
-	private ResourceBundle _bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
 
     public Monitor() throws HeadlessException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         _notificationQueue = newNotificationQueue();
     }
-
-
-    /**
-     * Loads text from the main resource bundle, using the local language when available.
-     * @param key the key for the desired string
-     * @return The requested string
-     */
-    private String t(String key) {
-    	return _bundle.getString(key);
-    }
-
-    /**
-     * Loads text from the main resource bundle, using the local language when available, and puts the given value into the appropriate spot.
-     * @param key the key for the desired string
-     * @param value0 a value to place in the {0} placeholder in the string
-     * @return The requested string
-     */
-    private String t(String key, String value0) {
-        String message = _bundle.getString(key);
-        return MessageFormat.format(message, value0);
-    }
-
 
     public void start() throws IOException {
 		if (Config.analyticsEnabled()) {
@@ -362,7 +314,7 @@ public class Monitor extends JFrame implements Observer {
 		_tabbedPane.add(_logScroll, t("tab.log"));
 		
 		_tabbedPane.add(_createMatchUi(), t("tab.current_match"));
-		_tabbedPane.add(_createDecksUi(), t("tab.decks"));
+		_tabbedPane.add(decksTab = new DecksTab(), t("tab.decks"));
 		_tabbedPane.add(_createOptionsUi(), t("tab.options"));
 		_tabbedPane.add(_createAboutUi(), t("tab.about"));
 		
@@ -370,7 +322,7 @@ public class Monitor extends JFrame implements Observer {
             public void stateChanged(ChangeEvent e) {
                 if (_tabbedPane.getSelectedIndex() == 2)
                     try {
-                        _updateDecksTab();
+						decksTab.updateDecks();
                     } catch (IOException e1) {
                         _notify(t("error.loading_decks.title"), t("error.loading_decks"));
                         Log.warn(t("error.loading_decks"), e1);
@@ -476,10 +428,10 @@ public class Monitor extends JFrame implements Observer {
 		
 		panel.add(new JLabel(" "), "wrap");
 		
-		String[] localizedClassOptions = new String[hsClassOptions.length];
+		String[] localizedClassOptions = new String[Constants.hsClassOptions.length];
 		localizedClassOptions[0] = "- " + t("undetected") + " -";
 		for(int i = 1; i < localizedClassOptions.length; i++)
-			localizedClassOptions[i] = t(hsClassOptions[i]);
+			localizedClassOptions[i] = t(Constants.hsClassOptions[i]);
 		
 		// your class
 		panel.add(new JLabel(t("match.label.your_class") + " "), "skip,right");
@@ -554,96 +506,7 @@ public class Monitor extends JFrame implements Observer {
 	    
 	    return panel;
 	}
-	private JPanel _createDecksUi() {
-		JPanel panel = new JPanel();
 
-		MigLayout layout = new MigLayout();
-		panel.setLayout(layout);
-		
-		panel.add(new JLabel(" "), "wrap");
-		panel.add(new JLabel(t("set_your_deck_slots")), "skip,span,wrap");
-		panel.add(new JLabel(" "), "wrap");
-		
-		panel.add(new JLabel(t("deck_slot.label_1")), "skip"); 
-		panel.add(new JLabel(t("deck_slot.label_2")), ""); 
-		panel.add(new JLabel(t("deck_slot.label_3")), "wrap");
-		
-		_deckSlot1Field = new JComboBox<>();
-		panel.add(_deckSlot1Field, "skip"); 
-		_deckSlot2Field = new JComboBox<>();
-		panel.add(_deckSlot2Field, ""); 
-		_deckSlot3Field = new JComboBox<>();
-		panel.add(_deckSlot3Field, "wrap");
-		
-		panel.add(new JLabel(" "), "wrap");
-		
-		panel.add(new JLabel(t("deck_slot.label_4")), "skip"); 
-		panel.add(new JLabel(t("deck_slot.label_5")), ""); 
-		panel.add(new JLabel(t("deck_slot.label_6")), "wrap");
-		
-		_deckSlot4Field = new JComboBox<>();
-		panel.add(_deckSlot4Field, "skip"); 
-		_deckSlot5Field = new JComboBox<>();
-		panel.add(_deckSlot5Field, ""); 
-		_deckSlot6Field = new JComboBox<>();
-		panel.add(_deckSlot6Field, "wrap");
-		
-		panel.add(new JLabel(" "), "wrap");
-		
-		panel.add(new JLabel(t("deck_slot.label_7")), "skip"); 
-		panel.add(new JLabel(t("deck_slot.label_8")), ""); 
-		panel.add(new JLabel(t("deck_slot.label_9")), "wrap");
-		
-		_deckSlot7Field = new JComboBox<>();
-		panel.add(_deckSlot7Field, "skip"); 
-		_deckSlot8Field = new JComboBox<>();
-		panel.add(_deckSlot8Field, ""); 
-		_deckSlot9Field = new JComboBox<>();
-		panel.add(_deckSlot9Field, "wrap");
-		
-		panel.add(new JLabel(" "), "wrap");
-		panel.add(new JLabel(" "), "wrap");
-		
-		JButton saveButton = new JButton(t("button.save_deck_slots"));
-		saveButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				_saveDeckSlots();
-			}
-		});
-		panel.add(saveButton, "skip");
-		
-		JButton refreshButton = new JButton(t("button.refresh"));
-		refreshButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					_updateDecksTab();
-				} catch (IOException e1) {
-					Main.showErrorDialog("Error updating decks", e1);
-				}
-			}
-		});
-		panel.add(refreshButton, "wrap,span");
-		
-		panel.add(new JLabel(" "), "wrap");
-		panel.add(new JLabel(" "), "wrap");
-		
-		JButton myDecksButton = new JButton(t("manage_decks_on_hsnet"));
-		myDecksButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					Desktop.getDesktop().browse(new URI(DECKS_URL));
-				} catch (Throwable e1) {
-					Main.showErrorDialog("Error launching browser with URL" + DECKS_URL, e1);
-				}
-			}
-		});
-		panel.add(myDecksButton, "skip,span");
-		
-		return panel;
-	}
 
 
 	private JPanel _createOptionsUi() {
@@ -826,54 +689,6 @@ public class Monitor extends JFrame implements Observer {
 		_showDeckNotificationField.setEnabled(isEnabled);
 	}
 
-
-	private String name(JSONObject o) {
-		return hsClassOptions[Integer.parseInt(o.get("klass_id").toString())]
-				+ " - " + o.get("name").toString().toLowerCase();
-	}
-
-
-	private void _applyDecksToSelector(JComboBox<String> selector, Integer slotNum) {
-		
-		selector.setMaximumSize(new Dimension(200, selector.getSize().height));
-		selector.removeAllItems();
-		
-		selector.addItem("- Select a deck -");
-		
-		List<JSONObject> decks = DeckUtils.getDecks();
-		
-		Collections.sort(decks, new Comparator<JSONObject>() {
-			@Override
-			public int compare(JSONObject o1, JSONObject o2) {
-				return name(o1).compareTo(name(o2));
-			}
-
-		});
-		
-		for(int i = 0; i < decks.size(); i++) {
-			selector.addItem(name(decks.get(i))
-					+ "                                       #"
-					+ decks.get(i).get("id"));
-			if(decks.get(i).get("slot") != null && decks.get(i).get("slot").toString().equals(slotNum.toString()))
-				selector.setSelectedIndex(i + 1);
-		}
-	}
-
-
-	private void _updateDecksTab() throws IOException {
-		DeckUtils.updateDecks();
-		_applyDecksToSelector(_deckSlot1Field, 1);
-		_applyDecksToSelector(_deckSlot2Field, 2);
-		_applyDecksToSelector(_deckSlot3Field, 3);
-		_applyDecksToSelector(_deckSlot4Field, 4);
-		_applyDecksToSelector(_deckSlot5Field, 5);
-		_applyDecksToSelector(_deckSlot6Field, 6);
-		_applyDecksToSelector(_deckSlot7Field, 7);
-		_applyDecksToSelector(_deckSlot8Field, 8);
-		_applyDecksToSelector(_deckSlot9Field, 9);
-	}
-
-
 	private void checkForUpdates() {
 		if(Config.checkForUpdates()) {
             Log.info(t("checking_for_updates..."));
@@ -994,8 +809,8 @@ public class Monitor extends JFrame implements Observer {
 	}
 
 	private int _getClassOptionIndex(String cName) {
-		for (int i = 0; i < hsClassOptions.length; i++) {
-			if (hsClassOptions[i].equals(cName)) {
+		for (int i = 0; i < Constants.hsClassOptions.length; i++) {
+			if (Constants.hsClassOptions[i].equals(cName)) {
                 return i;
             }
 		}
@@ -1073,11 +888,11 @@ public class Monitor extends JFrame implements Observer {
 
 	private void _updateMatchClassSelectorsIfSet(HearthstoneMatch hsMatch) {
 		if (_currentYourClassSelector.getSelectedIndex() > 0) {
-			hsMatch.userClass_$eq(hsClassOptions[_currentYourClassSelector
+			hsMatch.userClass_$eq(Constants.hsClassOptions[_currentYourClassSelector
 					.getSelectedIndex()]);
         }
 		if (_currentOpponentClassSelect.getSelectedIndex() > 0) {
-			hsMatch.opponentClass_$eq(hsClassOptions[_currentOpponentClassSelect
+			hsMatch.opponentClass_$eq(Constants.hsClassOptions[_currentOpponentClassSelect
 					.getSelectedIndex()]);
         }
 	}
@@ -1446,37 +1261,8 @@ public class Monitor extends JFrame implements Observer {
 			_handleProgramHelperEvent(changed);
 	}
 
-	private Integer _getDeckSlotDeckId(JComboBox selector) {
-		Integer deckId = null;
-		String deckStr = (String) selector.getItemAt(selector.getSelectedIndex());
-		Pattern pattern = Pattern.compile("[^0-9]+([0-9]+)$");
-		Matcher matcher = pattern.matcher(deckStr);
-		if(matcher.find()) {
-			deckId = Integer.parseInt(matcher.group(1));
-		}
-		return deckId;
-	}
-	private void _saveDeckSlots() {
-		
-		try {
-			_api.setDeckSlots(
-				_getDeckSlotDeckId(_deckSlot1Field),
-				_getDeckSlotDeckId(_deckSlot2Field),
-				_getDeckSlotDeckId(_deckSlot3Field),
-				_getDeckSlotDeckId(_deckSlot4Field),
-				_getDeckSlotDeckId(_deckSlot5Field),
-				_getDeckSlotDeckId(_deckSlot6Field),
-				_getDeckSlotDeckId(_deckSlot7Field),
-				_getDeckSlotDeckId(_deckSlot8Field),
-				_getDeckSlotDeckId(_deckSlot9Field)
-			);
-			Main.showMessageDialog(this, _api.getMessage());
-			_updateDecksTab();
-		} catch (Throwable e) {
-			Main.showErrorDialog("Error saving deck slots", e);
-		}
-	}
 	
+
 	private void _saveOptions() {
         debugLog.debug("Saving options...");
 
@@ -1534,6 +1320,7 @@ public class Monitor extends JFrame implements Observer {
 			pollHsImpl();
 		}
 	});
+	private DecksTab decksTab;
 
     private void _enableMinimizeToTray(){
         if(SystemTray.isSupported()){
