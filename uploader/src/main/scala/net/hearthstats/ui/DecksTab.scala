@@ -27,8 +27,6 @@ import Constants._
 class DecksTab extends JPanel {
   val deckSlotComboBoxes = List.fill(9)(new JComboBox[String])
 
-  protected var _api: API = new API()
-
   setLayout(new MigLayout)
   add(new JLabel(" "), "wrap")
   add(new JLabel(t("set_your_deck_slots")), "skip,span,wrap")
@@ -97,15 +95,11 @@ class DecksTab extends JPanel {
       _applyDecksToSelector(deckSlotComboBoxes(i - 1), i)
   }
 
-  private def _applyDecksToSelector(selector: JComboBox[String], slotNum: java.lang.Integer) {
+  private def _applyDecksToSelector(selector: JComboBox[String], slotNum: Int) {
     selector.setMaximumSize(new Dimension(200, selector.getSize().height))
     selector.removeAllItems()
     selector.addItem("- Select a deck -")
-    val decks = DeckUtils.getDecks
-    Collections.sort(decks, new Comparator[JSONObject]() {
-
-      override def compare(o1: JSONObject, o2: JSONObject): Int = return name(o1).compareTo(name(o2))
-    })
+    val decks = DeckUtils.getDecks.sortBy(name)
     for (i <- 0 until decks.size) {
       selector.addItem(name(decks.get(i)) + "                                       #" +
         decks.get(i).get("id"))
@@ -123,22 +117,18 @@ class DecksTab extends JPanel {
   private def _saveDeckSlots() {
     try {
       val slots = deckSlotComboBoxes map _getDeckSlotDeckId
-      _api.setDeckSlots(slots)
-      Main.showMessageDialog(this, _api.getMessage)
+      API.setDeckSlots(slots)
+      Main.showMessageDialog(this, API.message)
       updateDecks()
     } catch {
       case e: Exception => Main.showErrorDialog("Error saving deck slots", e)
     }
   }
 
-  private def _getDeckSlotDeckId(selector: JComboBox[String]): java.lang.Integer = {
-    var deckId: java.lang.Integer = null
-    val deckStr = selector.getItemAt(selector.getSelectedIndex).asInstanceOf[String]
-    val pattern = Pattern.compile("[^0-9]+([0-9]+)$")
-    val matcher = pattern.matcher(deckStr)
-    if (matcher.find()) {
-      deckId = Integer.parseInt(matcher.group(1))
+  val pattern = "[^0-9]+([0-9]+)$".r
+  private def _getDeckSlotDeckId(selector: JComboBox[String]): Int =
+    selector.getItemAt(selector.getSelectedIndex).asInstanceOf[String] match {
+      case pattern(deckId) => deckId.toInt
+      case _ => -1
     }
-    deckId
-  }
 }

@@ -12,11 +12,10 @@ import net.hearthstats.log.Log
 import java.io.IOException
 
 object CardUtils {
-  private lazy val api: API = new API
 
   lazy val cards: Map[Int, Card] =
     (for {
-      json <- api.getCards
+      json <- API.getCards
       id = Integer.parseInt(json.get("id").toString)
       cost = Integer.parseInt(json.get("mana").toString)
       rarityString = json.get("rarity_id")

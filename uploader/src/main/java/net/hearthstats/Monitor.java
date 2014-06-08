@@ -86,7 +86,6 @@ public class Monitor extends JFrame implements Observer {
 
 
 
-    protected API _api = new API();
 	protected HearthstoneAnalyser _analyzer = new HearthstoneAnalyser();
 	protected ProgramHelper _hsHelper = Config.programHelper();
     protected HearthstoneLogMonitor hearthstoneLogMonitor;
@@ -145,7 +144,7 @@ public class Monitor extends JFrame implements Observer {
 		showWelcomeLog();
 		checkForUpdates();
 
-		_api.addObserver(this);
+		API.addObserver(this);
 		_analyzer.addObserver(this);
 		_hsHelper.addObserver(this);
 
@@ -860,7 +859,7 @@ public class Monitor extends JFrame implements Observer {
 			run.setUserClass(hsMatch.userClass());
             Log.info("Creating new " + run.getUserClass() + "arena run");
 			_notify("Creating new " + run.getUserClass() + "arena run");
-			_api.createArenaRun(run);
+			API.createArenaRun(run);
 			_analyzer.setIsNewArena(false);
 		}
 		
@@ -873,7 +872,7 @@ public class Monitor extends JFrame implements Observer {
 			_analytics.trackEvent("app", "Submit" + hsMatch.mode() + "Match");
 		}
 		
-		_api.createMatch(hsMatch);
+		API.createMatch(hsMatch);
 	}
 	
 	private void _resetMatchClassSelectors() {
@@ -1050,7 +1049,7 @@ public class Monitor extends JFrame implements Observer {
 			case ARENA_END:
 				_notify("End of Arena Run Detected");
                 Log.info("End of Arena Run Detected");
-				_api.endCurrentArenaRun();
+			API.endCurrentArenaRun();
 				break;
 
 			case COIN:
@@ -1208,18 +1207,19 @@ public class Monitor extends JFrame implements Observer {
 	private void _handleApiEvent(Object changed) {
 		switch(changed.toString()) {
 			case "error":
-				_notify("API Error", _api.getMessage());
-				Log.error("API Error: " + _api.getMessage());
-				Main.showMessageDialog(this, "API Error: " + _api.getMessage());
+			_notify("API Error", API.message());
+			Log.error("API Error: " + API.message());
+			Main.showMessageDialog(this, "API Error: " + API.message());
 				break;
 			case "result":
-				Log.info("API Result: " + _api.getMessage());
+			Log.info("API Result: " + API.message());
 				_lastMatch = _analyzer.getMatch();
-				_lastMatch.id_$eq(_api.getLastMatchId());
+			_lastMatch.id_$eq(API.lastMatchId());
 				_setCurrentMatchEnabledi(false);
 				_updateCurrentMatchUi();
 				// new line after match result
-				if(_api.getMessage().matches(".*(Edit match|Arena match successfully created).*")) {
+			if (API.message().matches(
+					".*(Edit match|Arena match successfully created).*")) {
 					_analyzer.resetMatch();
 					_resetMatchClassSelectors();
                     Log.divider();
