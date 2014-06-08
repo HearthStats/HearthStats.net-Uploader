@@ -58,18 +58,11 @@ public class API extends Observable {
 	public int getLastMatchId() {
 		return _lastMatchId;
 	}
-	public void setDeckSlots(Integer slot1, Integer slot2, Integer slot3, Integer slot4, Integer slot5, Integer slot6, Integer slot7, Integer slot8, Integer slot9) throws IOException {
+
+	public void setDeckSlots(List<Integer> slots) throws IOException {
 		JSONObject jsonData = new JSONObject();
-		jsonData.put("slot_1", slot1);
-		jsonData.put("slot_2", slot2);
-		jsonData.put("slot_3", slot3);
-		jsonData.put("slot_4", slot4);
-		jsonData.put("slot_5", slot5);
-		jsonData.put("slot_6", slot6);
-		jsonData.put("slot_7", slot7);
-		jsonData.put("slot_8", slot8);
-		jsonData.put("slot_9", slot9);
-		
+		for (int i = 0; i < 9; i++)
+			jsonData.put("slot_" + (i + 1), slots.get(i));
 		_post("decks/slots", jsonData);
 	}
 	public void createMatch(HearthstoneMatch hsMatch) throws IOException {

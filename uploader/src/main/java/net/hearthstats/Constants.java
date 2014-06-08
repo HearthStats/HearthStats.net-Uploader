@@ -13,4 +13,6 @@ public interface Constants {
           "Warlock",
           "Warrior"
   };
+
+	public static final String DECKS_URL = "http://hearthstats.net/decks";
 }
