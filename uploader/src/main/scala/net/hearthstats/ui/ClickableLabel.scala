@@ -18,22 +18,27 @@ import ClickableLabel._
 import scala.collection.JavaConversions._
 import scala.swing.Swing._
 import javax.swing.BorderFactory
+import javax.swing.JComponent
+import java.awt.Rectangle
 
 class ClickableLabel(var card: Card) extends JLabel {
+  val backgroundSize = new Dimension(218, 35)
+  val pictureSize = new Dimension(275, 384)
+
+  def displaySize = getSize()
 
   var remaining = card.count
   private var cardImage = new ImageIcon(card.localURL)
   private var currentBack = cardBack
 
-  val displaySize = new Dimension(350, 55)
-  setPreferredSize(displaySize)
-  setMaximumSize(displaySize)
-  setMinimumSize(displaySize)
+  val mySize = new Dimension((218 * 1.5).toInt, (1.5 * 35).toInt)
+  setMaximumSize(backgroundSize * 3)
+  setPreferredSize(backgroundSize * 1.5)
+  setMinimumSize(backgroundSize * 0.5)
 
-  val fontSize = if (card.cost > 9) 120 else 150
-  setText(s"<html> &nbsp;&nbsp;  <b style='font-size:$fontSize%'>${card.cost}</b>   &nbsp;&nbsp;&nbsp;&nbsp;   ${card.name}</html>")
-  setFont(Font.decode(Font.SANS_SERIF).deriveFont(Font.BOLD, 18))
-  setForeground(Color.WHITE)
+  implicit class DimensionOps(d: Dimension) {
+    def *(r: Double) = new Dimension((d.getWidth * r).toInt, (d.getHeight * r).toInt)
+  }
 
   setBorder(BorderFactory.createEmptyBorder)
 
@@ -48,15 +53,27 @@ class ClickableLabel(var card: Card) extends JLabel {
   protected override def paintComponent(g: Graphics) {
     val g2 = g.asInstanceOf[Graphics2D]
     val original = g2.getTransform
-    val scale = 55F / 35
     val composite = g2.getComposite
-    if (remaining < 1) g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f))
-    g2.drawImage(cardImage.getImage, 100, -55, null)
-    g2.setComposite(composite)
-    val scaleTransform = AffineTransform.getScaleInstance(scale, scale)
-    g2.transform(scaleTransform)
-    g2.drawImage(currentBack.getImage, 0, 0, null)
+    val pictureScale = displaySize.getWidth / pictureSize.getWidth
+    g2.transform(AffineTransform.getScaleInstance(pictureScale, pictureScale))
+    g2.drawImage(cardImage.getImage, 0, -(pictureSize.getHeight * .2).toInt, null)
     g2.setTransform(original)
+    g2.transform(AffineTransform.getScaleInstance(
+      displaySize.getWidth / backgroundSize.getWidth,
+      displaySize.getHeight / backgroundSize.getHeight))
+    g2.drawImage(currentBack.getImage, 0, 0, null)
+    g2.setFont(Font.decode(Font.SANS_SERIF).deriveFont(Font.BOLD, 14))
+    g2.setColor(Color.WHITE)
+    g2.drawString(card.name, 35, 25)
+    if (card.cost > 9)
+      g2.drawString(card.cost.toString, 7, 25)
+    else
+      g2.drawString(card.cost.toString, 9, 25)
+    g2.setTransform(original)
+    if (remaining < 1) {
+      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f))
+      g2.fill(new Rectangle(displaySize))
+    }
     super.paintComponent(g2)
   }
 

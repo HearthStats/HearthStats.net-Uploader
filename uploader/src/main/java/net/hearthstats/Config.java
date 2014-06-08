@@ -56,12 +56,14 @@ public class Config {
 	private static boolean _startMinimized;
 
 	private static int _x;
-
 	private static int _y;
-
 	private static int _width;
-
 	private static int _height;
+
+	private static int _deckx;
+	private static int _decky;
+	private static int _deckwidth;
+	private static int _deckheight;
 
 	private static String _defaultApiBaseUrl = "http://hearthstats.net/api/v1/";
 
@@ -148,6 +150,22 @@ public class Config {
 	
 	public static int getHeight() {
 		return getIntegerSetting("ui", "height", 700);
+	}
+
+	public static int getDeckX() {
+		return getIntegerSetting("ui", "deckx", 0);
+	}
+
+	public static int getDeckY() {
+		return getIntegerSetting("ui", "decky", 0);
+	}
+
+	public static int getDeckWidth() {
+		return getIntegerSetting("ui", "deckwidth", 485);
+	}
+
+	public static int getDeckHeight() {
+		return getIntegerSetting("ui", "deckheight", 600);
 	}
 
 	public static boolean startMinimized() {
@@ -427,6 +445,22 @@ public class Config {
 		setIntVal("ui", "height", val);
 	}
 	
+	public static void setDeckX(int val) {
+		setIntVal("ui", "deckx", val);
+	}
+
+	public static void setDeckY(int val) {
+		setIntVal("ui", "decky", val);
+	}
+
+	public static void setDeckWidth(int val) {
+		setIntVal("ui", "deckwidth", val);
+	}
+
+	public static void setDeckHeight(int val) {
+		setIntVal("ui", "deckheight", val);
+	}
+
 	private static Wini getIni() {
 		if(_ini == null) {
 			createConfigIniIfNecessary();
@@ -475,6 +509,10 @@ public class Config {
 		setY(_y);
 		setWidth(_width);
 		setHeight(_height);
+		setDeckX(_deckx);
+		setDeckY(_decky);
+		setDeckWidth(_deckwidth);
+		setDeckHeight(_deckheight);
 	}
 	
 	private static void storePreviousValues() {
@@ -498,6 +536,10 @@ public class Config {
 		_y = getY();
 		_width = getWidth();
 		_height = getHeight();
+		_deckx = getDeckX();
+		_decky = getDeckY();
+		_deckwidth = getDeckWidth();
+		_deckheight = getDeckHeight();
 	}
 	
 	private static void setIntVal(String group, String key, int val) {
