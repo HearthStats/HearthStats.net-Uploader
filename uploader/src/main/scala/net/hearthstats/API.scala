@@ -34,7 +34,7 @@ object API extends Observable with Logging {
     }
   }
 
-  def setDeckSlots(slots: List[Option[Int]]): Unit = {
+  def setDeckSlots(slots: Iterable[Option[Int]]): Unit = {
     val data = for ((d, i) <- slots.zipWithIndex)
       yield "slot_" + (i + 1) -> d.getOrElse(null)
     val jsonData = new JSONObject(data.toMap[Any, Any])

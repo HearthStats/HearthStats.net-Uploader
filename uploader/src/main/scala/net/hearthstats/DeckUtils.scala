@@ -30,12 +30,12 @@ object DeckUtils {
     null
   }
 
-  def getDecks(): List[JSONObject] = {
+  def getDecks: List[JSONObject] = {
     if (_decks == null) updateDecks()
     _decks
   }
 
-  def getDeckLists(): List[Deck] =
+  def getDeckLists: List[Deck] =
     for (deck <- getDecks)
       yield Deck.fromJson(deck)
 

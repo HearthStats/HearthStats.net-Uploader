@@ -32,7 +32,7 @@ public final class Translations {
 	 *            a value to place in the {0} placeholder in the string
 	 * @return The requested string
 	 */
-	public static String t(String key, String value0) {
+	public static String t(String key, Object value0) {
 		String message = _bundle.getString(key);
 		return MessageFormat.format(message, value0);
 	}

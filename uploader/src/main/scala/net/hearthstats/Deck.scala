@@ -4,11 +4,19 @@ import org.json.simple.JSONObject
 import Deck._
 import org.apache.commons.lang3.StringUtils
 
-case class Deck(id: Int, name: String, slug: String, cards: List[Card]) {
+case class Deck(
+  id: Int,
+  name: String,
+  slug: String,
+  cards: List[Card],
+  hero: String,
+  activeSlot: Option[Int]) {
 
   def isValid =
     cards != null &&
       cards.map(_.count).sum == 30
+
+  override def toString = s"[$hero] $name"
 }
 
 object Deck {
@@ -25,7 +33,9 @@ object Deck {
     Deck(id = id,
       slug = json.get("slug").toString,
       name = json.get("name").toString,
-      cards = cardList)
+      cards = cardList,
+      hero = Constants.hsClassOptions(json.get("klass_id").toString.toInt),
+      activeSlot = Option(json.get("slot")).map(_.toString.toInt))
   }
 
   private def parseDeckString(ds: String): List[Card] = {

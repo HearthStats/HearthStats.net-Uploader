@@ -25,34 +25,27 @@ import scala.collection.JavaConversions._
 import Constants._
 import scala.concurrent._
 import scala.swing.Swing._
+import java.awt.BorderLayout
+import net.hearthstats.Deck
 
 class DecksTab extends JPanel {
-  val deckSlotComboBoxes = List.fill(9)(new JComboBox[String])
+  val deckSlotComboBoxes = 1 to 9 map { new DeckSlotPanel(_) }
 
   setLayout(new MigLayout)
   add(new JLabel(" "), "wrap")
   add(new JLabel(t("set_your_deck_slots")), "skip,span,wrap")
 
   add(new JLabel(" "), "wrap")
-  add(new JLabel(t("deck_slot.label_1")), "skip")
-  add(new JLabel(t("deck_slot.label_2")), "")
-  add(new JLabel(t("deck_slot.label_3")), "wrap")
   add(deckSlotComboBoxes(0), "skip")
   add(deckSlotComboBoxes(1), "")
   add(deckSlotComboBoxes(2), "wrap")
 
   add(new JLabel(" "), "wrap")
-  add(new JLabel(t("deck_slot.label_4")), "skip")
-  add(new JLabel(t("deck_slot.label_5")), "")
-  add(new JLabel(t("deck_slot.label_6")), "wrap")
   add(deckSlotComboBoxes(3), "skip")
   add(deckSlotComboBoxes(4), "")
   add(deckSlotComboBoxes(5), "wrap")
 
   add(new JLabel(" "), "wrap")
-  add(new JLabel(t("deck_slot.label_7")), "skip")
-  add(new JLabel(t("deck_slot.label_8")), "")
-  add(new JLabel(t("deck_slot.label_9")), "wrap")
   add(deckSlotComboBoxes(6), "skip")
   add(deckSlotComboBoxes(7), "")
   add(deckSlotComboBoxes(8), "wrap")
@@ -63,7 +56,7 @@ class DecksTab extends JPanel {
   val saveButton = new JButton(t("button.save_deck_slots"))
   saveButton.addActionListener(new ActionListener {
     override def actionPerformed(e: ActionEvent) {
-      _saveDeckSlots()
+      onEDT(saveDeckSlots())
     }
   })
   add(saveButton, "skip")
@@ -72,7 +65,7 @@ class DecksTab extends JPanel {
   refreshButton.addActionListener(new ActionListener {
     override def actionPerformed(e: ActionEvent) {
       try {
-        updateDecks()
+        onEDT(updateDecks())
       } catch {
         case e1: IOException => Main.showErrorDialog("Error updating decks", e1)
       }
@@ -99,21 +92,7 @@ class DecksTab extends JPanel {
 
   def updateDecks() {
     DeckUtils.updateDecks()
-    for (i <- 1 to 9)
-      _applyDecksToSelector(deckSlotComboBoxes(i - 1), i)
-  }
-
-  private def _applyDecksToSelector(selector: JComboBox[String], slotNum: Int) {
-    selector.setMaximumSize(new Dimension(200, 40))
-    selector.removeAllItems()
-    selector.addItem("- Select a deck -")
-    val decks = DeckUtils.getDecks.sortBy(name)
-    for (i <- 0 until decks.size) {
-      selector.addItem(name(decks.get(i)) + "                                       #" +
-        decks.get(i).get("id"))
-      if (decks.get(i).get("slot") != null &&
-        decks.get(i).get("slot").toString == slotNum.toString) selector.setSelectedIndex(i + 1)
-    }
+    for (d <- deckSlotComboBoxes) d.applyDecks()
   }
 
   private def name(o: JSONObject): String = {
@@ -122,9 +101,9 @@ class DecksTab extends JPanel {
       o.get("name").toString.toLowerCase
   }
 
-  private def _saveDeckSlots() {
+  private def saveDeckSlots() {
     try {
-      val slots = deckSlotComboBoxes map getDeckSlotDeckId
+      val slots = deckSlotComboBoxes map (_.selectedDeckId)
       API.setDeckSlots(slots)
       Main.showMessageDialog(this, API.message)
       updateDecks()
@@ -133,10 +112,23 @@ class DecksTab extends JPanel {
     }
   }
 
-  val pattern = "[^0-9]+([0-9]+)$".r
-  private def getDeckSlotDeckId(selector: JComboBox[String]): Option[Int] =
-    selector.getItemAt(selector.getSelectedIndex).asInstanceOf[String] match {
-      case pattern(deckId) => Some(deckId.toInt)
-      case _ => None
+  class DeckSlotPanel(slot: Int) extends JPanel {
+    setLayout(new BorderLayout)
+    add(new JLabel(t("deck_slot.label", slot)), BorderLayout.NORTH)
+    val comboBox = new JComboBox[Deck]
+    comboBox.setMaximumSize(new Dimension(200, 40))
+    add(comboBox, BorderLayout.CENTER)
+
+    def selectedDeckId: Option[Int] =
+      Option(comboBox.getSelectedItem.asInstanceOf[Deck]).map(_.id)
+
+    def applyDecks(): Unit = {
+      comboBox.removeAllItems()
+      val decks = DeckUtils.getDeckLists.sortBy(d => (d.hero, d.name))
+      for (deck <- decks) {
+        comboBox.addItem(deck)
+        if (deck.activeSlot == Some(slot)) comboBox.setSelectedItem(deck)
+      }
     }
+  }
 }
