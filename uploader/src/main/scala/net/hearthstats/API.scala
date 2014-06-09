@@ -26,13 +26,13 @@ object API extends Observable with Logging {
     if (arenaRun != null) _dispatchResultMessage("Ended " + arenaRun.getUserClass + " arena run")
   }
 
-  def createArenaRun(arenaRun: ArenaRun): Unit = {
-    val result = _post("arena_runs/new", arenaRun.toJsonObject())
-    if (result != null) {
-      val resultingArenaRun = new ArenaRun(result)
-      _dispatchResultMessage(resultingArenaRun.getUserClass + " run created")
+  def createArenaRun(arenaRun: ArenaRun): Unit =
+    _post("arena_runs/new", arenaRun.toJsonObject) match {
+      case Some(result) =>
+        val resultingArenaRun = new ArenaRun(result)
+        _dispatchResultMessage(resultingArenaRun.getUserClass + " run created")
+      case None => Log.warn("Error occurred while creating new arena run")
     }
-  }
 
   def setDeckSlots(slots: Iterable[Option[Int]]): Unit = {
     val data = for ((d, i) <- slots.zipWithIndex)
@@ -42,18 +42,18 @@ object API extends Observable with Logging {
   }
 
   def createMatch(hsMatch: HearthstoneMatch): Unit = {
-    val result = _post("matches/new", hsMatch.toJsonObject)
-    if (result != null) {
-      try {
-        lastMatchId = result.get("id").asInstanceOf[java.lang.Long].toInt
-      } catch {
-        case e: Exception => Log.warn("Error occurred while creating new match", e)
-      }
-      if (hsMatch.mode != "Arena") {
-        val id = result.get("id")
-        _dispatchResultMessage(
-          s"Success. <a href='http://hearthstats.net/constructeds/$id/edit'>Edit match #$id on HearthStats.net</a>")
-      } else _dispatchResultMessage("Arena match successfully created")
+    _post("matches/new", hsMatch.toJsonObject) match {
+      case Some(result) =>
+        try {
+          lastMatchId = result.get("id").asInstanceOf[java.lang.Long].toInt
+          if (hsMatch.mode != "Arena") {
+            _dispatchResultMessage(
+              s"Success. <a href='http://hearthstats.net/constructeds/$lastMatchId/edit'>Edit match #$lastMatchId on HearthStats.net</a>")
+          } else _dispatchResultMessage("Arena match successfully created")
+        } catch {
+          case e: Exception => Log.warn("Error occurred while creating new match", e)
+        }
+      case None => Log.warn("Error occurred while creating new match")
     }
   }
 
@@ -116,7 +116,7 @@ object API extends Observable with Logging {
 
   }
 
-  private def _post(method: String, jsonData: JSONObject): JSONObject = {
+  private def _post(method: String, jsonData: JSONObject): Option[JSONObject] = {
     val baseUrl = Config.getApiBaseUrl + method + "?userkey="
     debug(s"API post $baseUrl********")
     debug("API post data = " + jsonData.toJSONString)
@@ -134,7 +134,7 @@ object API extends Observable with Logging {
       os.close()
       val resultString = io.Source.fromInputStream(httpcon.getInputStream).getLines.mkString("\n")
       debug("API post result = " + resultString)
-      _parseResult(resultString).asInstanceOf[JSONObject]
+      _parseResult(resultString).map(_.asInstanceOf[JSONObject])
     } catch {
       case e: Exception => {
         Log.warn(s"Error communicating with HearthStats.net (POST $method)", e)
