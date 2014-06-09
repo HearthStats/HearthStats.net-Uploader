@@ -38,22 +38,27 @@ public class ProgramHelperWindows extends ProgramHelper {
    * The number of iterations to wait without a window until we assume that Hearthstone has been minimised
    */
   private static final int ITERATIONS_FOR_MINIMISE = 8;
-  private static final int MAX_TITLE_LENGTH = 1024;
+  private static final int STRING_BUFFER_LENGTH = 1024;
 
-  private final String _processName = "Hearthstone.exe";
+  private final String processName = "Hearthstone.exe";
 
-  private HWND _windowHandle = null;
-  private String _windowHandleId = null;
+  private HWND windowHandle = null;
+  private String windowHandleId = null;
+  private String lastKnownWindowHandleId = null;
   private boolean isFullscreen = false;
   private boolean isMinimised = false;
   private int minimisedCount = 0;
+  private long lastWindowsHandleCheck = 0;
   private String hearthstoneProcessFolder = null;
 
-  protected char[] buffer = new char[MAX_TITLE_LENGTH * 2];
+  protected char[] baseNameBuffer = new char[STRING_BUFFER_LENGTH * 2];
+  protected char[] classNameBuffer = new char[STRING_BUFFER_LENGTH * 2];
+  protected char[] processFileNameBuffer = new char[STRING_BUFFER_LENGTH * 2];
+  protected int[] lpdwSize = new int[]{STRING_BUFFER_LENGTH};
 
 
   public ProgramHelperWindows() {
-    debugLog.debug("Initialising ProgramHelperWindows with {}", _processName);
+    debugLog.debug("Initialising ProgramHelperWindows with {}", processName);
   }
 
 
@@ -64,7 +69,7 @@ public class ProgramHelperWindows extends ProgramHelper {
       BufferedImage image;
 
       // only supports windows at the moment
-      image = _getScreenCaptureWindows(_windowHandle);
+      image = _getScreenCaptureWindows(windowHandle);
 
       return image;
     }
@@ -72,8 +77,18 @@ public class ProgramHelperWindows extends ProgramHelper {
   }
 
 
-  private HWND _getWindowHandle() {
-    _windowHandle = null;
+  private HWND getWindowHandle() {
+    // Cache the window handle for five seconds to reduce CPU load and (possibly) minimise memory leaks
+    long currentTime = System.currentTimeMillis();
+    if (currentTime < lastWindowsHandleCheck + 5000) {
+      // It has been less than five seconds since the last check, so use the cached value
+      return windowHandle;
+    } else {
+      debugLog.debug("Updating window handle ({}ms since last update)", currentTime - lastWindowsHandleCheck);
+      lastWindowsHandleCheck = currentTime;
+      windowHandle = null;
+    }
+
     User32.INSTANCE.EnumWindows(new WNDENUMPROC() {
       @Override
       public boolean callback(HWND hWnd, Pointer arg1) {
@@ -87,37 +102,35 @@ public class ProgramHelperWindows extends ProgramHelper {
           return true;
         }
 
-
         PointerByReference pointer = new PointerByReference();
         User32DLL.GetWindowThreadProcessId(hWnd, pointer);
         Pointer process = Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION | Kernel32.PROCESS_VM_READ, false, pointer.getValue());
-        Psapi.GetModuleBaseNameW(process, null, buffer, MAX_TITLE_LENGTH);
+        Psapi.GetModuleBaseNameW(process, null, baseNameBuffer, STRING_BUFFER_LENGTH);
+        String baseNameString = Native.toString(baseNameBuffer);
 
         // see https://github.com/JeromeDane/HearthStats.net-Uploader/issues/66#issuecomment-33829132
-        char[] className = new char[512];
-        User32.INSTANCE.GetClassName(hWnd, className, 512);
-        String classNameStr = Native.toString(className);
+        User32.INSTANCE.GetClassName(hWnd, classNameBuffer, STRING_BUFFER_LENGTH);
+        String classNameString = Native.toString(classNameBuffer);
 
-
-        if (Native.toString(buffer).equals(_processName) && classNameStr.equals("UnityWndClass")) {
-          // Find the location the HearthStats executable, used later to find the log file
-          // Only compatible with Windows Vista and later, skip for Windows XP
-          if (Config.isOsVersionAtLeast(6, 0)) {
-            debugLog.debug("Windows version is Vista or later so the location of the Hearthstone is being determined from the process");
-            char[] processFileName = new char[MAX_TITLE_LENGTH * 2];
-            int[] lpdwSize = new int[]{MAX_TITLE_LENGTH};
-            Kernel32.QueryFullProcessImageNameW(process, 0, processFileName, lpdwSize);
-            String processFileNameString = Native.toString(processFileName);
-            if (processFileNameString != null) {
-              int lastSlash = processFileNameString.lastIndexOf('\\');
-              hearthstoneProcessFolder = processFileNameString.substring(0, lastSlash);
+        if (baseNameString.equals(processName) && classNameString.equals("UnityWndClass")) {
+          windowHandle = hWnd;
+          if (windowHandleId == null) {
+            windowHandleId = windowHandle.toString();
+            if (lastKnownWindowHandleId == null || lastKnownWindowHandleId != windowHandleId) {
+              // The window handle has changed, so try to find the location the HearthStats executable. This is used to
+              // find the HS log file. Only compatible with Windows Vista and later, so we skip for Windows XP.
+              lastKnownWindowHandleId = windowHandleId;
+              if (Config.isOsVersionAtLeast(6, 0)) {
+                debugLog.debug("Windows version is Vista or later so the location of the Hearthstone is being determined from the process");
+                Kernel32.QueryFullProcessImageNameW(process, 0, processFileNameBuffer, lpdwSize);
+                String processFileNameString = Native.toString(processFileNameBuffer);
+                if (processFileNameString != null) {
+                  int lastSlash = processFileNameString.lastIndexOf('\\');
+                  hearthstoneProcessFolder = processFileNameString.substring(0, lastSlash);
+                }
+              }
             }
-          }
-
-          _windowHandle = hWnd;
-          if (_windowHandleId == null) {
-            _windowHandleId = _windowHandle.toString();
-            _notifyObserversOfChangeTo("Hearthstone window found with process name " + _processName);
+            _notifyObserversOfChangeTo("Hearthstone window found with process name " + processName);
           }
         }
         return true;
@@ -125,11 +138,11 @@ public class ProgramHelperWindows extends ProgramHelper {
     }, null);
 
     // notify of window lost
-    if (_windowHandle == null && _windowHandleId != null) {
-      _notifyObserversOfChangeTo("Hearthstone window with process name " + _processName + " closed");
-      _windowHandleId = null;
+    if (windowHandle == null && windowHandleId != null) {
+      _notifyObserversOfChangeTo("Hearthstone window with process name " + processName + " closed");
+      windowHandleId = null;
     }
-    return _windowHandle;
+    return windowHandle;
   }
 
 
@@ -137,13 +150,11 @@ public class ProgramHelperWindows extends ProgramHelper {
   public boolean foundProgram() {
 
     // windows version
-    if (_getWindowHandle() != null) {
+    if (getWindowHandle() != null) {
       return true;
     }
-    _windowHandleId = null;
+    windowHandleId = null;
     return false;
-
-    // TODO: implement OSX version
   }
 
 
