@@ -28,6 +28,9 @@ import java.awt.BorderLayout
 import net.hearthstats.Deck
 import javax.swing.JDialog
 import javax.swing.JOptionPane
+import net.hearthstats.Config
+import net.hearthstats.util.HsRobot
+import net.hearthstats.util.Browse
 
 class DecksTab extends JPanel {
   val deckSlotComboBoxes = 1 to 9 map { new DeckSlotPanel(_) }
@@ -70,12 +73,7 @@ class DecksTab extends JPanel {
   add(new JLabel(" "), "wrap")
   add(new JLabel(" "), "wrap")
   val myDecksButton = new JButton(t("manage_decks_on_hsnet"))
-  myDecksButton.addActionListener(ActionListener(_ =>
-    try {
-      Desktop.getDesktop.browse(new URI(DECKS_URL))
-    } catch {
-      case e1: Throwable => Main.showErrorDialog("Error launching browser with URL" + DECKS_URL, e1)
-    }))
+  myDecksButton.addActionListener(ActionListener(_ => Browse(DECKS_URL)))
 
   add(myDecksButton, "skip,span")
 
@@ -111,20 +109,40 @@ class DecksTab extends JPanel {
       }
       deckSlotComboBoxes(8).comboBox.setSelectedIndex(0)
     }
+  }
 
+  private def createDeck(d: Deck): Unit = {
+    if (!d.isValid) {
+      JOptionPane.showConfirmDialog(this, s"""${d.name} is not valid (${d.cardCount} cards).
+          Do you want to edit it first on Heartstats.net ?""") match {
+        case JOptionPane.YES_OPTION =>
+          Browse(s"http://hearthstats.net/decks/${d.slug}/edit")
+        case JOptionPane.NO_OPTION => doCreate()
+        case _ =>
+      }
+    } else doCreate()
+
+    def doCreate() = HsRobot(Config.programHelper.getHSWindowBounds).create(d)
   }
 
   class DeckSlotPanel(slot: Int) extends JPanel {
     setLayout(new BorderLayout)
     add(new JLabel(t("deck_slot.label", slot)), BorderLayout.NORTH)
     val comboBox = new JComboBox[Deck]
-    comboBox.setMaximumSize(new Dimension(200, 40))
     add(comboBox, BorderLayout.CENTER)
 
     val removeBtn = new JButton("x") //TODO use an icon instead
     removeBtn.setToolTipText("Remove this deck and shift next ones")
     removeBtn.addActionListener(ActionListener(_ => removeSlot(slot)))
     add(removeBtn, BorderLayout.EAST)
+
+    val createBtn = new JButton("Create")
+    createBtn.setToolTipText("""<html><b>Automatically creates this deck in Hearthstone</b><br/>
+						        (providing you have the required cards)<br/>
+						        <br/>
+						        <i>You need to be in the collection mode and select the hero yourself</i>""")
+    createBtn.addActionListener(ActionListener(_ => createDeck(comboBox.getSelectedItem.asInstanceOf[Deck])))
+    add(createBtn, BorderLayout.SOUTH)
 
     def selectedDeckId: Option[Int] =
       Option(comboBox.getSelectedItem.asInstanceOf[Deck]).map(_.id)

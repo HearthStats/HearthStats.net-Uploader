@@ -13,10 +13,12 @@ case class Deck(
   activeSlot: Option[Int]) {
 
   def isValid =
-    cards != null &&
-      cards.map(_.count).sum == 30
+    cards != null && 30 == cardCount
 
-  override def toString = s"[$hero] $name"
+  def cardCount =
+    cards.map(_.count).sum
+
+  override def toString = s"$hero: $name"
 }
 
 object Deck {

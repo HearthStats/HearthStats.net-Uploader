@@ -6,12 +6,17 @@ import java.awt.event.InputEvent
 import java.awt.Rectangle
 import net.hearthstats.Deck
 
-case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 1) {
+case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) {
 
   val robot = new Robot
 
   val shortDelay = 10 * delayRatio
   val mediumDelay = 100 * delayRatio
+
+  val replacements = Map(
+    "The Beast" -> "The Beast Deathrattle",
+    "Slam" -> "Slam if it survives",
+    "Windfury" -> "Windfury GIVE")
 
   def create(deck: Deck): Unit = {
     for (card <- deck.cards) {
@@ -23,7 +28,8 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 1) {
   def add(cardName: String, times: Int = 1): Unit = {
     click(resolution.search)
     robot.delay(mediumDelay)
-    send(cardName + "\n")
+    val searchText = replacements.get(cardName).getOrElse(cardName)
+    send(searchText + "\n")
     robot.delay(mediumDelay)
     for (i <- 1 to times) {
       click(resolution.card)
@@ -45,6 +51,7 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 1) {
 
   private def mapKey(c: Char): Option[Int] = c match {
     case ' ' => Some(VK_SPACE)
+    case ''' => Some(VK_SPACE)
     case '\n' => Some(VK_ENTER)
     case alpha if 'a' <= c && 'z' >= c => Some(c - 'a' + VK_A)
     case _ => None
