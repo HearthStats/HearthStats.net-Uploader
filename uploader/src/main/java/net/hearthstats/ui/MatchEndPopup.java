@@ -27,10 +27,10 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import net.hearthstats.Constants;
 import net.hearthstats.Deck;
 import net.hearthstats.DeckUtils;
 import net.hearthstats.HearthstoneMatch;
-import net.hearthstats.Monitor;
 import net.hearthstats.util.Rank;
 import net.miginfocom.swing.MigLayout;
 
@@ -251,10 +251,10 @@ public class MatchEndPopup extends JPanel {
 
         //// Row 5 ////
 
-        String[] localizedClassOptions = new String[Monitor.hsClassOptions.length];
+		String[] localizedClassOptions = new String[Constants.hsClassOptions.length];
         localizedClassOptions[0] = undetectedLabel();
         for (int i = 1; i < localizedClassOptions.length; i++) {
-            localizedClassOptions[i] = t(Monitor.hsClassOptions[i]);
+			localizedClassOptions[i] = t(Constants.hsClassOptions[i]);
         }
 
         add(new JLabel(t("match.label.your_class")), "right");
@@ -272,7 +272,7 @@ public class MatchEndPopup extends JPanel {
                 if (yourClassComboBox.getSelectedIndex() == 0) {
 					match.userClass_$eq(null);
                 } else {
-					match.userClass_$eq(Monitor.hsClassOptions[yourClassComboBox
+					match.userClass_$eq(Constants.hsClassOptions[yourClassComboBox
 							.getSelectedIndex()]);
                 }
             }
@@ -294,7 +294,7 @@ public class MatchEndPopup extends JPanel {
                 if (opponentClassComboBox.getSelectedIndex() == 0) {
 					match.opponentClass_$eq(null);
                 } else {
-					match.opponentClass_$eq(Monitor.hsClassOptions[opponentClassComboBox
+					match.opponentClass_$eq(Constants.hsClassOptions[opponentClassComboBox
 							.getSelectedIndex()]);
                 }
             }

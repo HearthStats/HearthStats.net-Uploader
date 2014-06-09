@@ -1,5 +1,6 @@
 package net.hearthstats.osx;
 
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -433,6 +434,12 @@ public class ProgramHelperOsx extends ProgramHelper {
 		File logFile = new File(System.getProperty("user.home")
 				+ "/Library/Logs/Unity/Player.log");
 		return logFile.getAbsolutePath();
+	}
+
+	@Override
+	public Rectangle getHSWindowBounds() {
+		// TODO please implement
+		throw new RuntimeException("Sorry, not implemented yet on OSX");
 	}
 
 }
