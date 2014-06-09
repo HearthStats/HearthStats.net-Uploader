@@ -21,8 +21,14 @@ import ClickableLabel._
 import scala.collection.JavaConversions._
 import scala.swing.Swing._
 import javax.swing.BorderFactory
+import javax.swing.JComponent
+import java.awt.Rectangle
 
 class ClickableLabel(var card: Card) extends JLabel {
+  val backgroundSize = new Dimension(218, 35)
+  val pictureSize = new Dimension(275, 384)
+
+  def displaySize = getSize()
 
   var remaining = card.count
   private var cardImage = new ImageIcon(card.localURL)
@@ -33,17 +39,19 @@ class ClickableLabel(var card: Card) extends JLabel {
   private val imgDstY = 0
   private val imgDstW = 113
   private val imgDstH = 35
-  private val imgSrcX = 81 * cardImage.getIconWidth() / 289
-  private val imgSrcY = 62 * cardImage.getIconHeight() / 398
-  private val imgSrcW = 130 * cardImage.getIconWidth() / 289
-  private val imgSrcH = 40 * cardImage.getIconHeight() / 398
+  private val imgSrcX = 81 * cardImage.getIconWidth() / pictureSize.getWidth().toInt
+  private val imgSrcY: Int = 62 * cardImage.getIconHeight() / pictureSize.getHeight().toInt
+  private val imgSrcW: Int = 130 * cardImage.getIconWidth() / pictureSize.getWidth().toInt
+  private val imgSrcH: Int = 40 * cardImage.getIconHeight() / pictureSize.getHeight().toInt
 
-  val displaySize = new Dimension(currentBack.getIconWidth(), currentBack.getIconHeight())
+  val mySize = new Dimension((218 * 1.5).toInt, (1.5 * 35).toInt)
+  setMaximumSize(backgroundSize * 3)
+  setPreferredSize(backgroundSize * 1.5)
+  setMinimumSize(backgroundSize * 0.5)
 
-  setPreferredSize(displaySize)
-  setMaximumSize(displaySize)
-  setMinimumSize(displaySize)
-
+  implicit class DimensionOps(d: Dimension) {
+    def *(r: Double) = new Dimension((d.getWidth * r).toInt, (d.getHeight * r).toInt)
+  }
   setBorder(BorderFactory.createEmptyBorder)
 
   updateRemaining()
@@ -56,9 +64,12 @@ class ClickableLabel(var card: Card) extends JLabel {
 
   protected override def paintComponent(g: Graphics) {
     val g2 = g.asInstanceOf[Graphics2D]
-    val originalTrans = g2.getTransform()
+    val original = g2.getTransform
     val composite = g2.getComposite
-
+    val pictureScale = displaySize.getWidth / pictureSize.getWidth
+    g2.transform(AffineTransform.getScaleInstance(
+      displaySize.getWidth / backgroundSize.getWidth,
+      displaySize.getHeight / backgroundSize.getHeight))
     if (remaining < 1) {
       g2.setColor(Color.BLACK)
       g2.fillRoundRect(0, 0, currentBack.getIconWidth(), currentBack.getIconHeight(), 15, 15)
@@ -73,6 +84,7 @@ class ClickableLabel(var card: Card) extends JLabel {
       outlineText(g2, cost, 4, 25, Color.BLACK, Color.WHITE)
     g2.setFont(Font.decode(Font.SANS_SERIF).deriveFont(Font.BOLD, 12))
     outlineText(g2, name, 35, 23, Color.BLACK, Color.WHITE)
+    g2.setTransform(original)
     g2.setComposite(composite)
 
     super.paintComponent(g2)
