@@ -101,12 +101,12 @@ object API extends Observable with Logging {
           case e: Exception => try {
             Some(result.get("data").asInstanceOf[JSONArray])
           } catch {
-            case e1: Exception => null
+            case e1: Exception => None
           }
         }
       } else {
         _throwError(result.get("message").asInstanceOf[String])
-        null
+        None
       }
     } catch {
       case ignore: Exception =>
