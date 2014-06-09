@@ -77,7 +77,7 @@ import com.dmurph.tracking.JGoogleAnalyticsTracker;
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer {
 
-    private static final String PROFILES_URL = "http://hearthstats.net/profiles";
+	private static final String PROFILES_URL = "http://hearthstats.net/uploader";
 	private static final int POLLING_INTERVAL_IN_MS = 100;
 
     private static final EnumSet<Screen> DO_NOT_NOTIFY_SCREENS = EnumSet.of(Screen.COLLECTION, Screen.COLLECTION_ZOOM, Screen.MAIN_TODAYSQUESTS, Screen.TITLE);
