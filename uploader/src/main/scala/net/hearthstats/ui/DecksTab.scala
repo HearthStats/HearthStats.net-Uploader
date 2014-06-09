@@ -23,6 +23,8 @@ import net.miginfocom.swing.MigLayout
 import org.json.simple.JSONObject
 import scala.collection.JavaConversions._
 import Constants._
+import scala.concurrent._
+import scala.swing.Swing._
 
 class DecksTab extends JPanel {
   val deckSlotComboBoxes = List.fill(9)(new JComboBox[String])
@@ -30,6 +32,7 @@ class DecksTab extends JPanel {
   setLayout(new MigLayout)
   add(new JLabel(" "), "wrap")
   add(new JLabel(t("set_your_deck_slots")), "skip,span,wrap")
+
   add(new JLabel(" "), "wrap")
   add(new JLabel(t("deck_slot.label_1")), "skip")
   add(new JLabel(t("deck_slot.label_2")), "")
@@ -37,6 +40,7 @@ class DecksTab extends JPanel {
   add(deckSlotComboBoxes(0), "skip")
   add(deckSlotComboBoxes(1), "")
   add(deckSlotComboBoxes(2), "wrap")
+
   add(new JLabel(" "), "wrap")
   add(new JLabel(t("deck_slot.label_4")), "skip")
   add(new JLabel(t("deck_slot.label_5")), "")
@@ -44,6 +48,7 @@ class DecksTab extends JPanel {
   add(deckSlotComboBoxes(3), "skip")
   add(deckSlotComboBoxes(4), "")
   add(deckSlotComboBoxes(5), "wrap")
+
   add(new JLabel(" "), "wrap")
   add(new JLabel(t("deck_slot.label_7")), "skip")
   add(new JLabel(t("deck_slot.label_8")), "")
@@ -51,11 +56,12 @@ class DecksTab extends JPanel {
   add(deckSlotComboBoxes(6), "skip")
   add(deckSlotComboBoxes(7), "")
   add(deckSlotComboBoxes(8), "wrap")
+
   add(new JLabel(" "), "wrap")
   add(new JLabel(" "), "wrap")
 
   val saveButton = new JButton(t("button.save_deck_slots"))
-  saveButton.addActionListener(new ActionListener() {
+  saveButton.addActionListener(new ActionListener {
     override def actionPerformed(e: ActionEvent) {
       _saveDeckSlots()
     }
@@ -63,7 +69,7 @@ class DecksTab extends JPanel {
   add(saveButton, "skip")
 
   val refreshButton = new JButton(t("button.refresh"))
-  refreshButton.addActionListener(new ActionListener() {
+  refreshButton.addActionListener(new ActionListener {
     override def actionPerformed(e: ActionEvent) {
       try {
         updateDecks()
@@ -77,7 +83,7 @@ class DecksTab extends JPanel {
   add(new JLabel(" "), "wrap")
   add(new JLabel(" "), "wrap")
   val myDecksButton = new JButton(t("manage_decks_on_hsnet"))
-  myDecksButton.addActionListener(new ActionListener() {
+  myDecksButton.addActionListener(new ActionListener {
     override def actionPerformed(e: ActionEvent) {
       try {
         Desktop.getDesktop.browse(new URI(DECKS_URL))
@@ -89,6 +95,8 @@ class DecksTab extends JPanel {
 
   add(myDecksButton, "skip,span")
 
+  onEDT(updateDecks())
+
   def updateDecks() {
     DeckUtils.updateDecks()
     for (i <- 1 to 9)
@@ -96,7 +104,7 @@ class DecksTab extends JPanel {
   }
 
   private def _applyDecksToSelector(selector: JComboBox[String], slotNum: Int) {
-    selector.setMaximumSize(new Dimension(200, selector.getSize().height))
+    selector.setMaximumSize(new Dimension(200, 40))
     selector.removeAllItems()
     selector.addItem("- Select a deck -")
     val decks = DeckUtils.getDecks.sortBy(name)
@@ -111,12 +119,12 @@ class DecksTab extends JPanel {
   private def name(o: JSONObject): String = {
     Constants.hsClassOptions(Integer.parseInt(o.get("klass_id").toString)) +
       " - " +
-      o.get("name").toString.toLowerCase()
+      o.get("name").toString.toLowerCase
   }
 
   private def _saveDeckSlots() {
     try {
-      val slots = deckSlotComboBoxes map _getDeckSlotDeckId
+      val slots = deckSlotComboBoxes map getDeckSlotDeckId
       API.setDeckSlots(slots)
       Main.showMessageDialog(this, API.message)
       updateDecks()
@@ -126,9 +134,9 @@ class DecksTab extends JPanel {
   }
 
   val pattern = "[^0-9]+([0-9]+)$".r
-  private def _getDeckSlotDeckId(selector: JComboBox[String]): Int =
+  private def getDeckSlotDeckId(selector: JComboBox[String]): Option[Int] =
     selector.getItemAt(selector.getSelectedIndex).asInstanceOf[String] match {
-      case pattern(deckId) => deckId.toInt
-      case _ => -1
+      case pattern(deckId) => Some(deckId.toInt)
+      case _ => None
     }
 }

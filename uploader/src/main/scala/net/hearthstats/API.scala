@@ -1,65 +1,59 @@
 package net.hearthstats
 
-import java.io.BufferedReader
 import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.io.OutputStream
 import java.net.HttpURLConnection
-import java.net.MalformedURLException
 import java.net.URL
 import java.util.Observable
-import net.hearthstats.log.Log
+
+import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.JavaConversions.mapAsJavaMap
+
 import org.json.simple.JSONArray
 import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import scala.collection.JavaConversions._
-import grizzled.slf4j.Logging
 
+import grizzled.slf4j.Logging
+import net.hearthstats.log.Log
+
+//TODO : replace this JSON implementation with a more typesafe one
 object API extends Observable with Logging {
   var lastMatchId = -1
   var message = ""
 
-  def endCurrentArenaRun() {
+  def endCurrentArenaRun(): Unit = {
     val resultObj = _get("arena_runs/end").asInstanceOf[JSONObject]
     val arenaRun = if (resultObj == null) null else new ArenaRun(resultObj)
     if (arenaRun != null) _dispatchResultMessage("Ended " + arenaRun.getUserClass + " arena run")
   }
 
-  def createArenaRun(arenaRun: ArenaRun): ArenaRun = {
+  def createArenaRun(arenaRun: ArenaRun): Unit = {
     val result = _post("arena_runs/new", arenaRun.toJsonObject())
-    var resultingArenaRun: ArenaRun = null
     if (result != null) {
-      resultingArenaRun = new ArenaRun(result)
+      val resultingArenaRun = new ArenaRun(result)
       _dispatchResultMessage(resultingArenaRun.getUserClass + " run created")
     }
-    resultingArenaRun
   }
 
-  def setDeckSlots(slots: List[Int]) {
-    val data: Map[_, _] = (for ((d, i) <- slots.zipWithIndex)
-      yield "slot_" + (i + 1) -> (if (d == -1) null else d)).toMap
-    val jsonData = new JSONObject(data)
+  def setDeckSlots(slots: List[Option[Int]]): Unit = {
+    val data = for ((d, i) <- slots.zipWithIndex)
+      yield "slot_" + (i + 1) -> d.getOrElse(null)
+    val jsonData = new JSONObject(data.toMap[Any, Any])
     _post("decks/slots", jsonData)
   }
 
-  def createMatch(hsMatch: HearthstoneMatch) {
-    var result: JSONObject = null
-    result = _post("matches/new", hsMatch.toJsonObject)
+  def createMatch(hsMatch: HearthstoneMatch): Unit = {
+    val result = _post("matches/new", hsMatch.toJsonObject)
     if (result != null) {
       try {
         lastMatchId = result.get("id").asInstanceOf[java.lang.Long].toInt
       } catch {
         case e: Exception => Log.warn("Error occurred while creating new match", e)
       }
-      if (hsMatch.mode != "Arena") _dispatchResultMessage("Success. <a href=\"http://hearthstats.net/constructeds/" +
-        result.get("id") +
-        "/edit\">Edit match #" +
-        result.get("id") +
-        " on HearthStats.net</a>")
-      else _dispatchResultMessage("Arena match successfully created")
+      if (hsMatch.mode != "Arena") {
+        val id = result.get("id")
+        _dispatchResultMessage(
+          s"Success. <a href='http://hearthstats.net/constructeds/$id/edit'>Edit match #$id on HearthStats.net</a>")
+      } else _dispatchResultMessage("Arena match successfully created")
     }
   }
 
@@ -76,7 +70,7 @@ object API extends Observable with Logging {
   private def _get(method: String): Option[AnyRef] = {
     val baseUrl = Config.getApiBaseUrl + method + "?userkey="
     debug(s"API get $baseUrl********")
-    val url = new URL(baseUrl + _getKey())
+    val url = new URL(baseUrl + _getKey)
     try {
       val resultString = io.Source.fromURL(url, "UTF-8").getLines.mkString("\n")
       debug(s"API get result = $resultString")
@@ -126,7 +120,7 @@ object API extends Observable with Logging {
     val baseUrl = Config.getApiBaseUrl + method + "?userkey="
     debug(s"API post $baseUrl********")
     debug("API post data = " + jsonData.toJSONString)
-    val url = new URL(baseUrl + _getKey())
+    val url = new URL(baseUrl + _getKey)
     try {
       val httpcon = (url.openConnection()).asInstanceOf[HttpURLConnection]
       httpcon.setDoOutput(true)
@@ -140,28 +134,14 @@ object API extends Observable with Logging {
       os.close()
       val resultString = io.Source.fromInputStream(httpcon.getInputStream).getLines.mkString("\n")
       debug("API post result = " + resultString)
-      return _parseResult(resultString).asInstanceOf[JSONObject]
+      _parseResult(resultString).asInstanceOf[JSONObject]
     } catch {
       case e: Exception => {
         Log.warn(s"Error communicating with HearthStats.net (POST $method)", e)
         _throwError("Error communicating with HearthStats.net")
+        null
       }
     }
-    null
-  }
-
-  private def _getKey(): String = Config.getUserKey
-
-  private def _dispatchResultMessage(m: String) {
-    message = m
-    setChanged()
-    notifyObservers("result")
-  }
-
-  private def _throwError(m: String) {
-    message = m
-    setChanged()
-    notifyObservers("error")
   }
 
   def getCards: List[JSONObject] =
@@ -175,5 +155,19 @@ object API extends Observable with Logging {
       _dispatchResultMessage(message)
       res.asInstanceOf[java.util.List[_]].map(_.asInstanceOf[JSONObject]).toList
     case None => List.empty
+  }
+
+  private def _getKey: String = Config.getUserKey
+
+  private def _dispatchResultMessage(m: String) {
+    message = m
+    setChanged()
+    notifyObservers("result")
+  }
+
+  private def _throwError(m: String) {
+    message = m
+    setChanged()
+    notifyObservers("error")
   }
 }

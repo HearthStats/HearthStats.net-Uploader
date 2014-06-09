@@ -317,13 +317,6 @@ public class Monitor extends JFrame implements Observer {
 		_tabbedPane.add(_createOptionsUi(), t("tab.options"));
 		_tabbedPane.add(_createAboutUi(), t("tab.about"));
 		
-		_tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if (_tabbedPane.getSelectedIndex() == 2)
-					decksTab.updateDecks();
-            }
-        });
-		
 		_updateCurrentMatchUi();
 		
 		_enableMinimizeToTray();
