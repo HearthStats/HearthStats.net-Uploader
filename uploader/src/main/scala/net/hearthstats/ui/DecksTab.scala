@@ -4,7 +4,6 @@ import net.hearthstats.util.Translations.t
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.io.IOException
 import java.net.URI
 import java.util.Collections
@@ -27,6 +26,8 @@ import scala.concurrent._
 import scala.swing.Swing._
 import java.awt.BorderLayout
 import net.hearthstats.Deck
+import javax.swing.JDialog
+import javax.swing.JOptionPane
 
 class DecksTab extends JPanel {
   val deckSlotComboBoxes = 1 to 9 map { new DeckSlotPanel(_) }
@@ -54,37 +55,27 @@ class DecksTab extends JPanel {
   add(new JLabel(" "), "wrap")
 
   val saveButton = new JButton(t("button.save_deck_slots"))
-  saveButton.addActionListener(new ActionListener {
-    override def actionPerformed(e: ActionEvent) {
-      onEDT(saveDeckSlots())
-    }
-  })
+  saveButton.addActionListener(ActionListener(_ => onEDT(saveDeckSlots())))
   add(saveButton, "skip")
 
   val refreshButton = new JButton(t("button.refresh"))
-  refreshButton.addActionListener(new ActionListener {
-    override def actionPerformed(e: ActionEvent) {
-      try {
-        onEDT(updateDecks())
-      } catch {
-        case e1: IOException => Main.showErrorDialog("Error updating decks", e1)
-      }
-    }
-  })
+  refreshButton.addActionListener(ActionListener(_ =>
+    try {
+      onEDT(updateDecks())
+    } catch {
+      case e1: IOException => Main.showErrorDialog("Error updating decks", e1)
+    }))
   add(refreshButton, "wrap,span")
 
   add(new JLabel(" "), "wrap")
   add(new JLabel(" "), "wrap")
   val myDecksButton = new JButton(t("manage_decks_on_hsnet"))
-  myDecksButton.addActionListener(new ActionListener {
-    override def actionPerformed(e: ActionEvent) {
-      try {
-        Desktop.getDesktop.browse(new URI(DECKS_URL))
-      } catch {
-        case e1: Throwable => Main.showErrorDialog("Error launching browser with URL" + DECKS_URL, e1)
-      }
-    }
-  })
+  myDecksButton.addActionListener(ActionListener(_ =>
+    try {
+      Desktop.getDesktop.browse(new URI(DECKS_URL))
+    } catch {
+      case e1: Throwable => Main.showErrorDialog("Error launching browser with URL" + DECKS_URL, e1)
+    }))
 
   add(myDecksButton, "skip,span")
 
@@ -112,12 +103,28 @@ class DecksTab extends JPanel {
     }
   }
 
+  private def removeSlot(slot: Int): Unit = {
+    if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Are you sure ?", "Remove a deck", JOptionPane.YES_NO_OPTION)) {
+      for (i <- slot to 8) {
+        val nextIndex = deckSlotComboBoxes(i).comboBox.getSelectedIndex
+        deckSlotComboBoxes(i - 1).comboBox.setSelectedIndex(nextIndex)
+      }
+      deckSlotComboBoxes(8).comboBox.setSelectedIndex(0)
+    }
+
+  }
+
   class DeckSlotPanel(slot: Int) extends JPanel {
     setLayout(new BorderLayout)
     add(new JLabel(t("deck_slot.label", slot)), BorderLayout.NORTH)
     val comboBox = new JComboBox[Deck]
     comboBox.setMaximumSize(new Dimension(200, 40))
     add(comboBox, BorderLayout.CENTER)
+
+    val removeBtn = new JButton("x") //TODO use an icon instead
+    removeBtn.setToolTipText("Remove this deck and shift next ones")
+    removeBtn.addActionListener(ActionListener(_ => removeSlot(slot)))
+    add(removeBtn, BorderLayout.EAST)
 
     def selectedDeckId: Option[Int] =
       Option(comboBox.getSelectedItem.asInstanceOf[Deck]).map(_.id)
