@@ -1,58 +1,7 @@
 package net.hearthstats;
 
 
-import static net.hearthstats.util.Translations.t;
-
-import java.awt.AWTException;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.HeadlessException;
-import java.awt.Image;
-import java.awt.MenuItem;
-import java.awt.Point;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.EnumSet;
-import java.util.Observable;
-import java.util.Observer;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkListener;
-
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import net.hearthstats.analysis.AnalyserEvent;
 import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
@@ -67,12 +16,28 @@ import net.hearthstats.ui.DecksTab;
 import net.hearthstats.ui.HelpIcon;
 import net.hearthstats.ui.MatchEndPopup;
 import net.miginfocom.swing.MigLayout;
-
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLDocument;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+
+import static net.hearthstats.util.Translations.t;
 
 @SuppressWarnings("serial")
 public class Monitor extends JFrame implements Observer {
@@ -331,76 +296,42 @@ public class Monitor extends JFrame implements Observer {
 	}
 	
 	private JScrollPane _createAboutUi() {
-		
-		JPanel panel = new JPanel();
-		panel.setMaximumSize(new Dimension(100,100));		
-		panel.setBackground(Color.WHITE);
-		MigLayout layout = new MigLayout("");
-		panel.setLayout(layout);
-		
-		JEditorPane text = new JEditorPane();
-		text.setContentType("text/html");
-		text.setEditable(false);
-		text.setBackground(Color.WHITE);
-		text.setText("<html><body style=\"font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:10px;\">" +
-				"<h2 style=\"font-weight:normal\"><a href=\"http://hearthstats.net\">HearthStats.net</a> " + t("Uploader") + " v" + Config.getVersion() + "</h2>" +
-				"<p><strong>" + t("Author") + ":</strong> <ul>" +
-                        "<li> Jerome Dane (<a href=\"https://plus.google.com/+JeromeDane\">Google+</a>, <a href=\"http://twitter.com/JeromeDane\">Twitter</a>) </li> " +
-                        "<li> Charles Gutjahr (<a href=\"http://charlesgutjahr.com\">Website</a>) </li>" +
-                        "<li> Michel Daviot (<a href=\"https://plus.google.com/+MichelDaviot\">Google+</a></p>, <a href=\"https://github.com/tyrcho\">Github</a>, <a href=\"http://michel-daviot.blogspot.fr\">Blog</a>) </li>" +
-				"</ul><p>" + t("about.utility_l1") + "<br>" +
-					t("about.utility_l2") + "<br>" +
-					t("about.utility_l3") + "</p>" +
-				"<p>" + t("about.open_source_l1") + "<br>" +
-					t("about.open_source_l2") + "</p>" +
-				"<p>&bull; <a href=\"https://github.com/HearthStats/HearthStats.net-Uploader/\">" + t("about.project_source") + "</a><br/>" +
-				"&bull; <a href=\"https://github.com/HearthStats/HearthStats.net-Uploader/releases\">" + t("about.releases_and_changelog") + "</a><br/>" +
-				"&bull; <a href=\"https://github.com/HearthStats/HearthStats.net-Uploader/issues\">" + t("about.feedback_and_suggestions") + "</a><br/>" +
-				"&bull; <a href=\"http://redd.it/1wa4rc/\">Reddit thread</a> (please up-vote)</p>" +
-				"<p><strong>" + t("about.support_project") + ":</strong></p>" +
-				"</body></html>"
-			);
-	    panel.add(text, "wrap");
-		
-	    JButton donateButton = new JButton("<html><img style=\"border-style: none;\" src=\"" + getClass().getResource("/images/donate.gif") + "\"/></html>");
-	    donateButton.addActionListener(new ActionListener() {
-	    	@Override
-	    	public void actionPerformed(ActionEvent e) {
-	    		// Create Desktop object
-    			Desktop d = Desktop.getDesktop();
-    			// Browse a URL, say google.com
-    			try {
-    				d.browse(new URI("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UJFTUHZF6WPDS"));
-    			} catch (Throwable e1) {
-    				Main.showErrorDialog("Error launching browser with donation URL", e1);
-    			}
-	    	}
-	    });
-	    donateButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-	    panel.add(donateButton, "wrap");
-	    
-	    JEditorPane contribtorsText = new JEditorPane();
-	    contribtorsText.setContentType("text/html");
-	    contribtorsText.setEditable(false);
-	    contribtorsText.setBackground(Color.WHITE);
-	    contribtorsText.setText("<html><body style=\"font-family:arial,sans-serif; font-size:10px;\">" +
-				"<p><strong>Contributors</strong> (listed alphabetically):</p>" +
-				"<p>" +
-                    "&bull; <a href=\"https://github.com/gtch\">Charles Gutjahr</a> - OS X version, new screen detection and card detection in log file<br>" +
-                    "&bull; <a href=\"https://github.com/jcrka\">jcrka</a> - Russian translation<br>" +
-                    "&bull; <a href=\"https://github.com/JeromeDane\">Jerome Dane</a> - Original developer<br>" +
-					"&bull; <a href=\"https://github.com/sargonas\">J Eckert</a> - Fixed notifications spawning taskbar icons<br>" +
-                    "&bull; <a href=\"https://github.com/tyrcho\">Michel Daviot</a> - Deck overlay, Maven and Scala implementation<br>" +
-					"&bull; <a href=\"https://github.com/nwalsh1995\">nwalsh1995</a> - Started turn detection development<br>" +
-					"&bull; <a href=\"https://github.com/remcoros\">Remco Ros</a> (<a href=\"http://hearthstonetracker.com/\">HearthstoneTracker</a>) - Provides advice &amp; suggestins<br>" +
-					"&bull; <a href=\"https://github.com/RoiyS\">RoiyS</a> - Added option to disable all notifications<br>" +
-				"</p>"+
-				"</body></html>"
-			);
-	    contribtorsText.addHyperlinkListener(_hyperLinkListener);
-	    panel.add(contribtorsText, "wrap");
-	    
-		return new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        Map<String, String> localeStrings = new HashMap<String, String>();
+        localeStrings.put("Author", t("Author"));
+        localeStrings.put("version", t("Uploader") + " v" + Config.getVersion());
+        localeStrings.put("utility_l1", t("about.utility_l1"));
+        localeStrings.put("utility_l2", t("about.utility_l2"));
+        localeStrings.put("utility_l3", t("about.utility_l3"));
+        localeStrings.put("open_source_l1", t("about.open_source_l1"));
+        localeStrings.put("open_source_l2", t("about.open_source_l2"));
+        localeStrings.put("project_source", t("about.project_source"));
+        localeStrings.put("releases_and_changelog", t("about.releases_and_changelog"));
+        localeStrings.put("feedback_and_suggestions", t("about.feedback_and_suggestions"));
+        localeStrings.put("support_project", t("about.support_project"));
+        localeStrings.put("donate_image", getClass().getResource("/images/donate.gif").toString());
+
+	    JEditorPane contributorsText = new JEditorPane();
+	    contributorsText.setContentType("text/html");
+	    contributorsText.setEditable(false);
+	    contributorsText.setBackground(Color.WHITE);
+
+        try (Reader cssReader = new InputStreamReader(LogPane.class.getResourceAsStream("/net/hearthstats/about.css"))) {
+            ((HTMLDocument)contributorsText.getDocument()).getStyleSheet().loadRules(cssReader, null);
+        } catch (IOException e) {
+            // If we can't load the About css, log a warning but continue
+            Log.warn("Unable to format About tab", e);
+        }
+
+        try (Reader aboutReader = new InputStreamReader(LogPane.class.getResourceAsStream("/net/hearthstats/about.html"))) {
+            String aboutText = StrSubstitutor.replace(IOUtils.toString(aboutReader), localeStrings);
+            contributorsText.setText(aboutText);
+        } catch (IOException e) {
+            // If we can't load the About text, log a warning but continue
+            Log.warn("Unable to display About tab", e);
+        }
+	    contributorsText.addHyperlinkListener(_hyperLinkListener);
+
+        return new JScrollPane(contributorsText, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 	}
 	private JPanel _createMatchUi() {
 		JPanel panel = new JPanel();
