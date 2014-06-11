@@ -1,3 +1,4 @@
+[![Build Status](https://api.travis-ci.org/tyrcho/HearthStats.net-Uploader.png)](https://travis-ci.org/tyrcho/HearthStats.net-Uploader)
 [![Stories in Ready](https://badge.waffle.io/HearthStats/HearthStats.net-Uploader.png?label=Ready)](https://waffle.io/HearthStats/HearthStats.net-Uploader)
 
 HearthStats.net Uploader
