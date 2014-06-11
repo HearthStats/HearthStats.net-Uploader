@@ -167,7 +167,14 @@ public class ProgramHelperWindows extends ProgramHelper {
   }
 
 
-  private BufferedImage _getScreenCaptureWindows(HWND hWnd) {
+    public Rectangle getHSWindowBounds() {
+        RECT bounds = new RECT();
+        User32Extra.INSTANCE.GetWindowRect(windowHandle, bounds);
+        return bounds.toRectangle();
+    }
+
+
+    private BufferedImage _getScreenCaptureWindows(HWND hWnd) {
 
     HDC hdcWindow = User32.INSTANCE.GetDC(hWnd);
     HDC hdcMemDC = GDI32.INSTANCE.CreateCompatibleDC(hdcWindow);
