@@ -127,7 +127,7 @@ class DecksTab extends JPanel {
     removeBtn.addActionListener(ActionListener(_ => removeSlot(slot)))
     add(removeBtn, BorderLayout.EAST)
 
-    val createBtn = new JButton("Create")
+    val createBtn = new JButton("Construct")
     createBtn.setToolTipText("""<html><b>Automatically creates this deck in Hearthstone</b><br/>
 						        (providing you have the required cards)<br/>
 						        <br/>
