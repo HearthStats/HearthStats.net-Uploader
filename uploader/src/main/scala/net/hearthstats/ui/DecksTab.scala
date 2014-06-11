@@ -1,15 +1,7 @@
 package net.hearthstats.ui
 
 import net.hearthstats.util.Translations.t
-import java.awt.Desktop
-import java.awt.Dimension
-import java.awt.event.ActionEvent
 import java.io.IOException
-import java.net.URI
-import java.util.Collections
-import java.util.Comparator
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 import javax.swing.JButton
 import javax.swing.JComboBox
 import javax.swing.JLabel
@@ -22,11 +14,9 @@ import net.miginfocom.swing.MigLayout
 import org.json.simple.JSONObject
 import scala.collection.JavaConversions._
 import Constants._
-import scala.concurrent._
 import scala.swing.Swing._
 import java.awt.BorderLayout
 import net.hearthstats.Deck
-import javax.swing.JDialog
 import javax.swing.JOptionPane
 import net.hearthstats.Config
 import net.hearthstats.util.HsRobot
@@ -37,7 +27,8 @@ class DecksTab extends JPanel {
 
   setLayout(new MigLayout)
   add(new JLabel(" "), "wrap")
-  add(new JLabel(t("set_your_deck_slots")), "skip,span,wrap")
+  add(new JLabel(t("set_your_deck_slots")), "skip")
+  add(new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Decks-Tab", "Help on Decks tab"), "skip,right,wrap")
 
   add(new JLabel(" "), "wrap")
   add(deckSlotComboBoxes(0), "skip")
