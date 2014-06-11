@@ -8,12 +8,15 @@ import javax.swing.JOptionPane
 import net.hearthstats.ui.ClickableDeckBox
 import javax.swing.JFrame
 import javax.swing.JDialog
+import net.hearthstats.Config
+import net.hearthstats.util.TranslationCard
 
 object LogMonitorDeckOverlayMain extends App {
   val tempLogFile = File.createTempFile("hssample", "log")
   println(s"monitorin $tempLogFile ")
   val monitor = new HearthstoneLogMonitor(tempLogFile.getAbsolutePath)
-
+  Config.setGameLanguage(Config.GameLanguage.FR)
+  TranslationCard.changeTranslation()
   val deck = DeckUtils.getDeck(87226)
   ClickableDeckBox.showBox(deck, monitor.cardEvents)
   new Thread {
