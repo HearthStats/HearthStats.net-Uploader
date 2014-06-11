@@ -1,10 +1,4 @@
-v0.17.5
-* Improved deck overlay
-* Fix for Hearthstone not being detected in Windows XP
-
-v0.17.4
-* Fixes for deck overlay pictures
-* Now finds Hearthstone log in non-standard installation locations
-
-v0.17.3
-* Fixed error loading cards from HearthStats.net on startup
+v0.18.0
+* New auto deck import feature
+* Improvements to deck overlay
+* Lots of bug fixes
