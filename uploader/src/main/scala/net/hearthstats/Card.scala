@@ -4,7 +4,7 @@ import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
 import Card._
-import net.hearthstats.util.TranslationCard
+import net.hearthstats.util.TranslationCard._
 
 object Card {
   val LEGENDARY = 5
@@ -20,18 +20,21 @@ case class Card(
   collectible: Boolean = true)
   extends Comparable[Card] {
 
-  var name = if (TranslationCard.hasKey(id.toString) == false) originalName else TranslationCard.t(id.toString)
+  val name: String =
+    if (hasKey(id.toString)) t(id.toString)
+    else originalName
 
-  def isLegendary: Boolean = rarity == LEGENDARY
+  val isLegendary: Boolean = rarity == LEGENDARY
 
-  def fileName: String =
-    String.format("%s.png", originalName.replaceAll("[ :']+", "-").replaceAll("""[^a-zA-Z0-9\-]""", "").toLowerCase)
+  val dashes = "[ :']+"
+  val remove = """[^a-z0-9\-]+"""
+  val fileName: String =
+    originalName.toLowerCase.replaceAll(dashes, "-").replaceAll(remove, "") + ".png"
 
-  def localURL: URL = localFile.toURI.toURL
+  val localFile: File = new File(imageCacheFolder, fileName)
+  val localURL: URL = localFile.toURI.toURL
 
-  def localFile: File = new File(imageCacheFolder, fileName)
-
-  def url: String =
+  val url: String =
     String.format("https://s3-us-west-2.amazonaws.com/hearthstats/cards/%s", fileName)
 
   override def compareTo(c: Card): Int = {

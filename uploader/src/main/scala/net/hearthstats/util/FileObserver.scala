@@ -2,15 +2,12 @@ package net.hearthstats.util
 
 import java.io.File
 import java.io.FileNotFoundException
-import net.hearthstats.logmonitor.Tailer
-import net.hearthstats.logmonitor.TailerListener
-import net.hearthstats.logmonitor.TailerListenerAdapter
+import org.apache.commons.io.input.Tailer
+import org.apache.commons.io.input.TailerListenerAdapter
 import rx.lang.scala.JavaConversions.toScalaObservable
 import rx.lang.scala.Observable
 import rx.subjects.PublishSubject
 import grizzled.slf4j.Logging
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 
 case class FileObserver(file: File) {
   import FileObserver._
@@ -19,7 +16,7 @@ case class FileObserver(file: File) {
   var stopped = false
 
   private val subject = PublishSubject.create[String]
-  private val tailer = Tailer.create(file, StandardCharsets.UTF_8, new SubjectAdapter, DEFAULT_DELAY_MS, true, false, 4096)
+  private val tailer = Tailer.create(file, new SubjectAdapter, DEFAULT_DELAY_MS, true)
 
   def observable: Observable[String] = subject.asObservable.cache
   def stop() = {
