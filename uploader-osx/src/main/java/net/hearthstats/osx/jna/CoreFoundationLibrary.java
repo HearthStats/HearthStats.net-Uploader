@@ -41,6 +41,8 @@ public interface CoreFoundationLibrary extends Library {
    */
   Pointer CFArrayGetValueAtIndex(CFArrayRef theArray, long idx);
 
+  CFArrayRef CFArrayCreate(java.lang.Void allocator, Pointer[] values, long numValues, java.lang.Void callBacks);
+
 
   NativeLong CFNumberGetByteSize(Pointer number);
 

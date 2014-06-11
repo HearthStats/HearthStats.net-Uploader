@@ -6,6 +6,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 
 import net.hearthstats.ProgramHelper;
+import net.hearthstats.log.Log;
 import net.hearthstats.osx.jna.CFArrayRef;
 import net.hearthstats.osx.jna.CFDictionaryRef;
 import net.hearthstats.osx.jna.CGWindow;
@@ -438,8 +439,68 @@ public class ProgramHelperOsx extends ProgramHelper {
 
 	@Override
 	public Rectangle getHSWindowBounds() {
-		// TODO please implement
-		throw new RuntimeException("Sorry, not implemented yet on OSX");
+
+    final NSAutoreleasePool pool = NSAutoreleasePool.new_();
+    try {
+
+      // CGWindowListCreateDescriptionFromArray would be more efficient than the loop below,\
+      // but isn't working... commented-out until can be fixed.
+//      final Pointer[] values = { new IntByReference(_windowId).getPointer() };
+//      CFArrayRef windowArray = CoreFoundationLibrary.INSTANCE.CFArrayCreate(null, values, 1, null);
+//      final CFArrayRef descriptionArray = CoreGraphicsLibrary.INSTANCE.CGWindowListCreateDescriptionFromArray(windowArray);
+//      long count = CoreFoundationLibrary.INSTANCE.CFArrayGetCount(descriptionArray);
+
+
+      // Instead, obtain a dictionary of all on-screen windows from Quartz Window Services, which will include all running applications.
+      CFArrayRef originalArray = CoreGraphicsLibrary.INSTANCE.CGWindowListCopyWindowInfo(CGWindow.kCGWindowListExcludeDesktopElements | CGWindow.kCGWindowListOptionOnScreenOnly, 0);
+
+      long count = CoreFoundationLibrary.INSTANCE.CFArrayGetCount(originalArray);
+      for (long i = 0; i < count; i++) {
+
+        // Obtain a CFDictionary containing this window's information dictionary
+        Pointer pointer = CoreFoundationLibrary.INSTANCE.CFArrayGetValueAtIndex(originalArray, i);
+        CFDictionaryRef dictionaryRef = new CFDictionaryRef(pointer);
+
+        // Determine the ID of this window
+        NSString kCGWindowNumber = CoreGraphicsLibrary.kCGWindowNumber;
+        Pointer windowNumberPointer = CoreFoundationLibrary.INSTANCE.CFDictionaryGetValue(dictionaryRef, kCGWindowNumber.id());
+        IntByReference windowIdRef = new IntByReference();
+        CoreFoundationLibrary.INSTANCE.CFNumberGetValue(windowNumberPointer, CoreFoundationLibrary.CFNumberType.kCFNumberIntType, windowIdRef.getPointer());
+        int thisWindowId = windowIdRef.getValue();
+
+        if (thisWindowId == _windowId) {
+
+          // Determine the bounds of this window
+          NSString kCGWindowBounds = CoreGraphicsLibrary.kCGWindowBounds;
+          Pointer boundPointer = CoreFoundationLibrary.INSTANCE.CFDictionaryGetValue(dictionaryRef, kCGWindowBounds.id());
+
+          CoreGraphicsLibrary.CGRectRef rect = new CoreGraphicsLibrary.CGRectRef();
+          boolean result = CoreGraphicsLibrary.INSTANCE.CGRectMakeWithDictionaryRepresentation(boundPointer, rect);
+
+          int x = (int) rect.origin.x;
+          int y = (int) rect.origin.y;
+          int width = (int) rect.size.width;
+          int height = (int) rect.size.height;
+
+          // Determine height of the title bar, if present
+          int titleHeight = determineWindowTitleHeight(height, width);
+
+          debugLog.debug("Found Hearthstone window at x={} y={} width={} height={} title={}", x, y, width, height, titleHeight);
+
+//          x = x + titleHeight;
+//          height = height - titleHeight;
+
+          return new Rectangle(x, y, width, height);
+        }
+      }
+
+    } finally {
+      pool.drain();
+    }
+
+    // Couldn't find the Hearthstone window so return null... this will break the calling code.
+    Log.warn("Unable to find position of Hearthstone window.");
+    return null;
 	}
 
 }

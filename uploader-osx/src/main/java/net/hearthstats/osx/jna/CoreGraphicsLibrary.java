@@ -20,6 +20,11 @@ public interface CoreGraphicsLibrary extends Library {
 
   CFArrayRef CGWindowListCopyWindowInfo(int option, int relativeToWindow);
 
+  CFArrayRef CGWindowListCreateDescriptionFromArray(CFArrayRef windowArray);
+
+  boolean CGRectMakeWithDictionaryRepresentation(Pointer dict, CGRectRef rect);
+
+
   void CGImageRelease(CGImage image);
   boolean CGImageIsMask(CGImage image);
   long CGImageGetWidth(CGImage image);
@@ -88,6 +93,19 @@ public interface CoreGraphicsLibrary extends Library {
 
   class CGRect extends Structure implements Structure.ByValue {
     public static class CGRectByValue extends CGRect {
+    }
+
+    public CGPoint origin;
+    public CGSize size;
+
+    @Override
+    protected List getFieldOrder() {
+      return Arrays.asList("origin", "size");
+    }
+  }
+
+  class CGRectRef extends Structure implements Structure.ByReference {
+    public static class CGRectByReference extends CGRect {
     }
 
     public CGPoint origin;
