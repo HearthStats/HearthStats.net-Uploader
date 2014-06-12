@@ -290,7 +290,7 @@ public class ScreenAnalyserTest {
             output.write("cl");
         }
         output.write("\" style=\"background-color:#");
-        output.write(Integer.toHexString(rgb).substring(2));
+        output.write(String.format("%08x", rgb).substring(2));
         output.write("\" title=\"x=");
         output.write(String.valueOf(x));
         output.write(", y=");
