@@ -1167,16 +1167,17 @@ public class Monitor extends JFrame implements Observer {
 	
 	@Override
 	public void update(Observable dispatcher, Object changed) {
-		if (dispatcher.getClass().isAssignableFrom(HearthstoneAnalyser.class))
+        String dispatcherClass = dispatcher == null ? "" : dispatcher.getClass().getCanonicalName();
+		if (dispatcherClass.startsWith("net.hearthstats.analysis.HearthstoneAnalyser"))
 			try {
 				handleAnalyserEvent((AnalyserEvent) changed);
 			} catch (IOException e) {
 				Main.showErrorDialog("Error handling analyzer event", e);
 			}
-		if(dispatcher.getClass().isAssignableFrom(API.class))
+		if (dispatcherClass.startsWith("net.hearthstats.API"))
 			_handleApiEvent(changed);
 		
-		if(dispatcher.getClass().toString().matches(".*ProgramHelper(Windows|Osx)?"))
+		if (dispatcherClass.matches(".*ProgramHelper(Windows|Osx)?"))
 			_handleProgramHelperEvent(changed);
 	}
 
