@@ -1,3 +1,6 @@
+v0.18.1
+* Fixed bug that caused problems submitting matches to HearthStats
+
 v0.18.0
 * New auto deck import feature
 * Improvements to deck overlay
