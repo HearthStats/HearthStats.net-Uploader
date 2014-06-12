@@ -4,10 +4,14 @@ import org.junit.Test
 import java.io.File
 import java.io.FileWriter
 import java.io.BufferedWriter
+import org.scalatest._
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
-class FileObserverTest {
+@RunWith(classOf[JUnitRunner])
+class FileObserverSpec extends FlatSpec with Matchers {
 
-  @Test def checkForChanges() {
+  "A FileObserver" should "notify observers of content changed" in {
     val f = File.createTempFile("prefa", "aazeae")
     val obs = FileObserver(f)
     var read: String = ""
@@ -16,6 +20,6 @@ class FileObserverTest {
     writer.write("content\n")
     writer.close()
     Thread.sleep(obs.DEFAULT_DELAY_MS * 2)
-    assert(read == "content", read)
+    read should ===("content")
   }
 }
