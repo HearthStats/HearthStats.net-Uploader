@@ -43,24 +43,42 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
+			<groupId>org.scala-lang</groupId>
 			<version>${scala.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scala-lang.modules</groupId>
 			<artifactId>scala-swing_2.11</artifactId>
 			<version>1.0.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>scala-library</artifactId>
+					<groupId>org.scala-lang</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.netflix.rxjava</groupId>
 			<artifactId>rxjava-scala</artifactId>
 			<version>0.18.3</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>scala-library</artifactId>
+					<groupId>org.scala-lang</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 		  <groupId>org.clapper</groupId>
 		  <artifactId>grizzled-slf4j_2.11</artifactId>
 		  <version>1.0.2</version>
+		  <exclusions>
+		  	<exclusion>
+		  		<artifactId>scala-library</artifactId>
+		  		<groupId>org.scala-lang</groupId>
+		  	</exclusion>
+		  </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
