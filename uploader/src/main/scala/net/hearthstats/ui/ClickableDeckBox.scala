@@ -26,6 +26,8 @@ import javax.swing.WindowConstants
 import rx.lang.scala.observables.ConnectableObservable
 import net.hearthstats.Config
 import java.awt.BorderLayout
+import javax.swing.JCheckBox
+import scala.swing.Swing._
 
 class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
   extends JFrame(deck.name) {
@@ -45,8 +47,13 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
       cardLabel.addMouseListener(new MouseHandler(card, imageLabel))
       card.name -> cardLabel
     }).toMap
+
+  val cardCheckBox = new JCheckBox("Display full card image")
+  cardCheckBox.addChangeListener(ChangeListener(_ => imageLabel.setVisible(cardCheckBox.isSelected)))
+  content.add(cardCheckBox, BorderLayout.NORTH)
   content.add(box, BorderLayout.CENTER)
   content.add(imageLabel, BorderLayout.EAST)
+  imageLabel.setVisible(false)
 
   setAlwaysOnTop(true)
   setFocusableWindowState(true)

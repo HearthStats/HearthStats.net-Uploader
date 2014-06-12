@@ -25,7 +25,7 @@ object CardUtils {
       rarity = rarity,
       id = id,
       cost = cost,
-      name = json.get("name").toString,
+      originalName = json.get("name").toString,
       collectible = collectible != null && collectible.toString.toBoolean)).toMap
 
   def downloadImages(cards: List[Card]) {
@@ -57,5 +57,4 @@ object CardUtils {
       case e: TimeoutException => Log.warn("Could not download an image after 10 seconds", e)
     }
   }
-
 }
