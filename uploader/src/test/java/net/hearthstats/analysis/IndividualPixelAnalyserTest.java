@@ -16,7 +16,6 @@ import net.hearthstats.state.UniquePixel;
 import net.hearthstats.util.Coordinate;
 
 import org.junit.Assert;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +34,7 @@ public class IndividualPixelAnalyserTest {
     private final static String IMAGE_PATH = "/tmp/hearthstats";
     private final static int PAGE_SIZE = 25;
 
-    @Test
+	// @Test
     public void testYourClassDetection() throws Exception {
 
         ScreenAnalyser analyser = new ScreenAnalyser();

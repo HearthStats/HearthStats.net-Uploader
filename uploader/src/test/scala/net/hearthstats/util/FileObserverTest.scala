@@ -15,7 +15,7 @@ class FileObserverTest {
     val writer = new BufferedWriter(new FileWriter(f))
     writer.write("content\n")
     writer.close()
-    Thread.sleep(obs.DEFAULT_DELAY_MS)
+    Thread.sleep(obs.DEFAULT_DELAY_MS * 2)
     assert(read == "content", read)
   }
 }
