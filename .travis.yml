@@ -1,15 +1,10 @@
 language: java
 
-scala:
-  - 2.10.4
-script:
-  - "./sbt -Duser.name=$USER.$RANDOM -Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties ++$TRAVIS_SCALA_VERSION assembly"
-  - "scripts/test_tutorials.sh"
 jdk:
   - oraclejdk7
 
 install: true
-script: mvn package -DskipTests -Posx
+script: mvn package -Posx
 
 notifications:
   email:
