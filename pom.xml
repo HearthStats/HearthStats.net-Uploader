@@ -83,6 +83,23 @@
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 				</configuration>
 			</plugin>
+			<plugin>
+				<!-- to run from behind a proxy :
+mvn test -DargLine="-Dhttps.proxyHost=proxy -Dhttps.proxyPort=3128 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=3128" jacoco:report
+				-->
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.7.1.201405082137</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 		<pluginManagement>
 			<plugins>
