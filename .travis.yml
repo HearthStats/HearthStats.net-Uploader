@@ -6,7 +6,7 @@ jdk:
 install: true
 script: mvn package -Posx
 after_success:
-  - mvn clean test jacoco:report coveralls:jacoco -Posx
+  - mvn test cobertura:cobertura coveralls:cobertura -Posx
 
 
 notifications:

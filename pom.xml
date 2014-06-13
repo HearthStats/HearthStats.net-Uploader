@@ -85,40 +85,38 @@
 			</plugin>
 			<plugin>
 				<!-- to run from behind a proxy :
-mvn test -DargLine="-Dhttps.proxyHost=proxy -Dhttps.proxyPort=3128 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=3128" jacoco:report
+mvn test -DargLine="-Dhttps.proxyHost=proxy -Dhttps.proxyPort=3128 -Dhttp.proxyHost=proxy -Dhttp.proxyPort=3128" cobertura:cobertura
 				-->
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.7.1.201405082137</version>
-				<executions>
-					<execution>
-						<id>prepare-agent</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.eluder.coveralls</groupId>
-				<artifactId>coveralls-maven-plugin</artifactId>
-				<version>2.2.0</version>
-			</plugin>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>cobertura-maven-plugin</artifactId>
+			    <version>2.6</version>
+			    <configuration>
+				    <format>xml</format>
+				    <maxmem>256m</maxmem>
+				    <aggregate>true</aggregate>
+			    </configuration>
+		    </plugin>
+
+		    <plugin>
+			    <groupId>org.eluder.coveralls</groupId>
+			    <artifactId>coveralls-maven-plugin</artifactId>
+			    <version>2.2.0</version>
+		    </plugin>
 
 
-		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.3.2</version>
-					<configuration>
-						<source>${java.version}</source>
-						<target>${java.version}</target>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
+	    </plugins>
+	    <pluginManagement>
+		    <plugins>
+			    <plugin>
+				    <artifactId>maven-compiler-plugin</artifactId>
+				    <version>2.3.2</version>
+				    <configuration>
+					    <source>${java.version}</source>
+					    <target>${java.version}</target>
+				    </configuration>
+			    </plugin>
+		    </plugins>
+	    </pluginManagement>
+    </build>
 
 </project>
