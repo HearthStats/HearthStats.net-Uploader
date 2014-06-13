@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/HearthStats/HearthStats.net-Uploader.svg?branch=master)](https://travis-ci.org/HearthStats/HearthStats.net-Uploader)
+[![Coverage Status](https://img.shields.io/coveralls/tyrcho/HearthStats.net-Uploader.svg)](https://coveralls.io/r/tyrcho/HearthStats.net-Uploader?branch=master)
 [![Stories in Ready](https://badge.waffle.io/HearthStats/HearthStats.net-Uploader.png?label=Ready)](https://waffle.io/HearthStats/HearthStats.net-Uploader)
 
 HearthStats.net Uploader
