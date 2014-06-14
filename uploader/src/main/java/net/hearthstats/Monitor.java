@@ -17,8 +17,6 @@ import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -36,11 +34,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -48,16 +42,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLDocument;
 
 import net.hearthstats.analysis.AnalyserEvent;
-import net.hearthstats.analysis.HearthstoneAnalyser;
 import net.hearthstats.log.Log;
 import net.hearthstats.log.LogPane;
 import net.hearthstats.logmonitor.HearthstoneLogMonitor;
@@ -68,14 +57,16 @@ import net.hearthstats.state.ScreenGroup;
 import net.hearthstats.ui.ClickableDeckBox;
 import net.hearthstats.ui.DecksTab;
 import net.hearthstats.ui.MatchEndPopup;
+import net.hearthstats.ui.MatchPanel;
 import net.hearthstats.ui.OptionsPanel;
-import net.miginfocom.swing.MigLayout;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.hearthstats.analysis.HearthstoneAnalyser;
 
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
 
@@ -89,20 +80,10 @@ public class Monitor extends JFrame implements Observer {
 
   private static Logger debugLog = LoggerFactory.getLogger(Monitor.class);
 
-  protected HearthstoneAnalyser _analyzer = new HearthstoneAnalyser();
   protected ProgramHelper _hsHelper = Config.programHelper();
   protected HearthstoneLogMonitor hearthstoneLogMonitor;
 
   private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
-  private JTextField _currentOpponentNameField;
-  private JLabel _currentMatchLabel;
-  private JCheckBox _currentGameCoinField;
-  private JTextArea _currentNotesField;
-  private JButton _lastMatchButton;
-  private HearthstoneMatch _lastMatch;
-
-  private JComboBox _currentOpponentClassSelect;
-  private JComboBox _currentYourClassSelector;
 
   private boolean _hearthstoneDetected;
   private JGoogleAnalyticsTracker _analytics;
@@ -111,6 +92,8 @@ public class Monitor extends JFrame implements Observer {
   private JTabbedPane _tabbedPane;
 
   private OptionsPanel optionsPanel;
+
+  private MatchPanel matchPanel;
 
   public Monitor() {
     _notificationQueue = DialogNotificationQueue.newNotificationQueue();
@@ -134,7 +117,7 @@ public class Monitor extends JFrame implements Observer {
     checkForUpdates();
 
     API.addObserver(this);
-    _analyzer.addObserver(this);
+    HearthstoneAnalyser.addObserver(this);
     _hsHelper.addObserver(this);
 
     if (_checkForUserKey()) {
@@ -294,12 +277,12 @@ public class Monitor extends JFrame implements Observer {
         JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     _tabbedPane.add(_logScroll, t("tab.log"));
 
-    _tabbedPane.add(_createMatchUi(), t("tab.current_match"));
+    _tabbedPane.add(matchPanel = new MatchPanel(), t("tab.current_match"));
     _tabbedPane.add(new DecksTab(), t("tab.decks"));
     _tabbedPane.add(optionsPanel = new OptionsPanel(this), t("tab.options"));
     _tabbedPane.add(_createAboutUi(), t("tab.about"));
 
-    _updateCurrentMatchUi();
+    matchPanel.updateCurrentMatchUi();
 
     _enableMinimizeToTray();
 
@@ -354,94 +337,7 @@ public class Monitor extends JFrame implements Observer {
         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
   }
 
-  private JPanel _createMatchUi() {
-    JPanel panel = new JPanel();
-
-    MigLayout layout = new MigLayout();
-    panel.setLayout(layout);
-
-    // match label
-    panel.add(new JLabel(" "), "wrap");
-    _currentMatchLabel = new JLabel();
-    panel.add(_currentMatchLabel, "skip,span,wrap");
-
-    panel.add(new JLabel(" "), "wrap");
-
-    String[] localizedClassOptions = new String[Constants.hsClassOptions.length];
-    localizedClassOptions[0] = "- " + t("undetected") + " -";
-    for (int i = 1; i < localizedClassOptions.length; i++)
-      localizedClassOptions[i] = t(Constants.hsClassOptions[i]);
-
-    // your class
-    panel.add(new JLabel(t("match.label.your_class") + " "), "skip,right");
-    _currentYourClassSelector = new JComboBox<>(localizedClassOptions);
-    panel.add(_currentYourClassSelector, "wrap");
-
-    // opponent class
-    panel.add(new JLabel(t("match.label.opponents_class") + " "), "skip,right");
-    _currentOpponentClassSelect = new JComboBox<>(localizedClassOptions);
-    panel.add(_currentOpponentClassSelect, "wrap");
-
-    // Opponent name
-    panel.add(new JLabel("Opponent's Name: "), "skip,right");
-    _currentOpponentNameField = new JTextField();
-    _currentOpponentNameField.setMinimumSize(new Dimension(100, 1));
-    _currentOpponentNameField.addKeyListener(new KeyAdapter() {
-      public void keyReleased(KeyEvent e) {
-        _analyzer.getMatch().opponentName_$eq(
-            _currentOpponentNameField.getText().replaceAll("(\r\n|\n)", "<br/>"));
-      }
-    });
-    panel.add(_currentOpponentNameField, "wrap");
-
-    // coin
-    panel.add(new JLabel(t("match.label.coin") + " "), "skip,right");
-    _currentGameCoinField = new JCheckBox(t("match.coin"));
-    _currentGameCoinField.setSelected(Config.showHsClosedNotification());
-    _currentGameCoinField.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
-        _analyzer.getMatch().coin_$eq(_currentGameCoinField.isSelected());
-      }
-    });
-    panel.add(_currentGameCoinField, "wrap");
-
-    // notes
-    panel.add(new JLabel(t("match.label.notes") + " "), "skip,wrap");
-    _currentNotesField = new JTextArea();
-    _currentNotesField.setBorder(BorderFactory.createCompoundBorder(
-        BorderFactory.createMatteBorder(1, 1, 1, 1, Color.black),
-        BorderFactory.createEmptyBorder(3, 6, 3, 6)));
-    _currentNotesField.setMinimumSize(new Dimension(350, 150));
-    _currentNotesField.setBackground(Color.WHITE);
-    _currentNotesField.addKeyListener(new KeyAdapter() {
-      public void keyReleased(KeyEvent e) {
-        _analyzer.getMatch().notes_$eq(_currentNotesField.getText());
-      }
-    });
-    panel.add(_currentNotesField, "skip,span");
-
-    panel.add(new JLabel(" "), "wrap");
-
-    // last match
-    panel.add(new JLabel(t("match.label.previous_match") + " "), "skip,wrap");
-    _lastMatchButton = new JButton("[n/a]");
-    _lastMatchButton.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent arg0) {
-        String url = "Arena".equals(_lastMatch.mode()) ? "http://hearthstats.net/arenas/new"
-            : _lastMatch.editUrl();
-        try {
-          Desktop.getDesktop().browse(new URI(url));
-        } catch (Throwable e) {
-          Main.showErrorDialog("Error launching browser with URL " + url, e);
-        }
-      }
-    });
-    _lastMatchButton.setEnabled(false);
-    panel.add(_lastMatchButton, "skip,wrap,span");
-
-    return panel;
-  }
+  
 
   private void checkForUpdates() {
     if (Config.checkForUpdates()) {
@@ -519,7 +415,6 @@ public class Monitor extends JFrame implements Observer {
     this._notificationQueue = _notificationQueue;
   }
 
-  private Boolean _currentMatchEnabled = false;
   private boolean _playingInMatch = false;
 
   protected void _notify(String header) {
@@ -534,28 +429,33 @@ public class Monitor extends JFrame implements Observer {
   protected void _updateTitle() {
     String title = "HearthStats.net Uploader";
     if (_hearthstoneDetected) {
-      if (_analyzer.getScreen() != null) {
-        title += " - " + _analyzer.getScreen().title;
-        // if (_analyzer.getScreen() == "Play" && _analyzer.getMode() != null) {
-        if (_analyzer.getScreen() == Screen.PLAY_LOBBY && _analyzer.getMode() != null) {
-          title += " " + _analyzer.getMode();
+      if (HearthstoneAnalyser.getScreen() != null) {
+        title += " - " + HearthstoneAnalyser.getScreen().title;
+        // if (HearthstoneAnalyser.getScreen() == "Play" &&
+        // HearthstoneAnalyser.getMode() != null) {
+        if (HearthstoneAnalyser.getScreen() == Screen.PLAY_LOBBY
+            && HearthstoneAnalyser.getMode() != null) {
+          title += " " + HearthstoneAnalyser.getMode();
         }
-        if (_analyzer.getScreen() == Screen.FINDING_OPPONENT) {
-          if (_analyzer.getMode() != null) {
-            title += " for " + _analyzer.getMode() + " Game";
+        if (HearthstoneAnalyser.getScreen() == Screen.FINDING_OPPONENT) {
+          if (HearthstoneAnalyser.getMode() != null) {
+            title += " for " + HearthstoneAnalyser.getMode() + " Game";
           }
         }
 
         // TODO: replace with enum values
-        if ("Match Start".equals(_analyzer.getScreen().title)
-            || "Playing".equals(_analyzer.getScreen().title)) {
-          title += " " + (_analyzer.getMode() == null ? "[undetected]" : _analyzer.getMode());
-          title += " " + (_analyzer.getCoin() ? "" : "No ") + "Coin";
+        if ("Match Start".equals(HearthstoneAnalyser.getScreen().title)
+            || "Playing".equals(HearthstoneAnalyser.getScreen().title)) {
           title += " "
-              + (_analyzer.getYourClass() == null ? "[undetected]" : _analyzer.getYourClass());
+              + (HearthstoneAnalyser.getMode() == null ? "[undetected]" : HearthstoneAnalyser
+                  .getMode());
+          title += " " + (HearthstoneAnalyser.getCoin() ? "" : "No ") + "Coin";
+          title += " "
+              + (HearthstoneAnalyser.getYourClass() == null ? "[undetected]" : HearthstoneAnalyser
+                  .getYourClass());
           title += " VS. "
-              + (_analyzer.getOpponentClass() == null ? "[undetected]" : _analyzer
-                  .getOpponentClass());
+              + (HearthstoneAnalyser.getOpponentClass() == null ? "[undetected]"
+                  : HearthstoneAnalyser.getOpponentClass());
         }
       }
     } else {
@@ -564,40 +464,7 @@ public class Monitor extends JFrame implements Observer {
     setTitle(title);
   }
 
-  private int _getClassOptionIndex(String cName) {
-    for (int i = 0; i < Constants.hsClassOptions.length; i++) {
-      if (Constants.hsClassOptions[i].equals(cName)) {
-        return i;
-      }
-    }
-    return 0;
-  }
 
-  private void _updateCurrentMatchUi() {
-    HearthstoneMatch match = _analyzer.getMatch();
-    _updateMatchClassSelectorsIfSet(match);
-    if (_currentMatchEnabled)
-      _currentMatchLabel.setText(match.mode() + " Match - " + " Turn " + match.numTurns());
-    else
-      _currentMatchLabel.setText("Waiting for next match to start ...");
-    _currentOpponentNameField.setText(match.opponentName());
-
-    _currentOpponentClassSelect.setSelectedIndex(_getClassOptionIndex(match.opponentClass()));
-    _currentYourClassSelector.setSelectedIndex(_getClassOptionIndex(match.userClass()));
-
-    _currentGameCoinField.setSelected(match.coin());
-    _currentNotesField.setText(match.notes());
-    // last match
-    if (_lastMatch != null && _lastMatch.mode() != null) {
-      if (_lastMatch.result() != null) {
-        String tooltip = (_lastMatch.mode().equals("Arena") ? "View current arena run on"
-            : "Edit the previous match") + " on HearthStats.net";
-        _lastMatchButton.setToolTipText(tooltip);
-        _lastMatchButton.setText(_lastMatch.toString());
-        _lastMatchButton.setEnabled(true);
-      }
-    }
-  }
 
   private void _updateImageFrame() {
     if (!_drawPaneAdded) {
@@ -614,13 +481,13 @@ public class Monitor extends JFrame implements Observer {
 
   private void _submitMatchResult(HearthstoneMatch hsMatch) throws IOException {
     // check for new arena run
-    if ("Arena".equals(hsMatch.mode()) && _analyzer.isNewArena()) {
+    if ("Arena".equals(hsMatch.mode()) && HearthstoneAnalyser.isNewArena()) {
       ArenaRun run = new ArenaRun();
       run.setUserClass(hsMatch.userClass());
       Log.info("Creating new " + run.getUserClass() + "arena run");
       _notify("Creating new " + run.getUserClass() + "arena run");
       API.createArenaRun(run);
-      _analyzer.setIsNewArena(false);
+      HearthstoneAnalyser.setIsNewArena(false);
     }
 
     String header = "Submitting match result";
@@ -635,20 +502,6 @@ public class Monitor extends JFrame implements Observer {
     API.createMatch(hsMatch);
   }
 
-  private void _resetMatchClassSelectors() {
-    _currentYourClassSelector.setSelectedIndex(0);
-    _currentOpponentClassSelect.setSelectedIndex(0);
-  }
-
-  private void _updateMatchClassSelectorsIfSet(HearthstoneMatch hsMatch) {
-    if (_currentYourClassSelector.getSelectedIndex() > 0) {
-      hsMatch.userClass_$eq(Constants.hsClassOptions[_currentYourClassSelector.getSelectedIndex()]);
-    }
-    if (_currentOpponentClassSelect.getSelectedIndex() > 0) {
-      hsMatch.opponentClass_$eq(Constants.hsClassOptions[_currentOpponentClassSelect
-          .getSelectedIndex()]);
-    }
-  }
 
   protected void _handleHearthstoneFound() {
     // mark hearthstone found if necessary
@@ -674,7 +527,7 @@ public class Monitor extends JFrame implements Observer {
       // detect image stats
       if (image.getWidth() >= 1024) {
         debugLog.debug("  - analysing image");
-        _analyzer.analyze(image);
+        HearthstoneAnalyser.analyze(image);
       }
 
       if (Config.mirrorGameImage()) {
@@ -692,7 +545,7 @@ public class Monitor extends JFrame implements Observer {
       debugLog.debug("  - changed hearthstoneDetected to false");
       if (Config.showHsClosedNotification()) {
         _notify("Hearthstone closed");
-        _analyzer.reset();
+        HearthstoneAnalyser.reset();
       }
     }
   }
@@ -733,8 +586,7 @@ public class Monitor extends JFrame implements Observer {
    *          The match to check and submit.
    */
   private void checkMatchResult(final HearthstoneMatch match) {
-
-    _updateMatchClassSelectorsIfSet(match);
+    matchPanel.updateMatchClassSelectorsIfSet(match);
 
     final Config.MatchPopup matchPopup = Config.showMatchPopup();
     final boolean showPopup;
@@ -814,12 +666,13 @@ public class Monitor extends JFrame implements Observer {
       break;
 
     case DECK_SLOT:
-      Deck deck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
+      Deck deck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot());
       if (deck == null) {
         _tabbedPane.setSelectedIndex(2);
         bringWindowToFront();
         Main.showMessageDialog(this,
-            "Unable to determine what deck you have in slot #" + _analyzer.getDeckSlot()
+ "Unable to determine what deck you have in slot #"
+            + HearthstoneAnalyser.getDeckSlot()
                 + "\n\nPlease set your decks in the \"Decks\" tab.");
       } else {
         _notify("Deck Detected", deck.name());
@@ -830,70 +683,73 @@ public class Monitor extends JFrame implements Observer {
 
     case MODE:
       _playingInMatch = false;
-      _setCurrentMatchEnabledi(false);
+      matchPanel.setCurrentMatchEnabledi(false);
       if (Config.showModeNotification()) {
-        debugLog.debug(_analyzer.getMode() + " level " + _analyzer.getRankLevel());
-        if ("Ranked".equals(_analyzer.getMode())) {
-          _notify(_analyzer.getMode() + " Mode Detected", "Rank Level " + _analyzer.getRankLevel());
+        debugLog.debug(HearthstoneAnalyser.getMode() + " level "
+            + HearthstoneAnalyser.getRankLevel());
+        if ("Ranked".equals(HearthstoneAnalyser.getMode())) {
+          _notify(HearthstoneAnalyser.getMode() + " Mode Detected", "Rank Level "
+              + HearthstoneAnalyser.getRankLevel());
         } else {
-          _notify(_analyzer.getMode() + " Mode Detected");
+          _notify(HearthstoneAnalyser.getMode() + " Mode Detected");
         }
       }
-      if ("Ranked".equals(_analyzer.getMode())) {
-        Log.info(_analyzer.getMode() + " Mode Detected - Level " + _analyzer.getRankLevel());
+      if ("Ranked".equals(HearthstoneAnalyser.getMode())) {
+        Log.info(HearthstoneAnalyser.getMode() + " Mode Detected - Level "
+            + HearthstoneAnalyser.getRankLevel());
       } else {
-        Log.info(_analyzer.getMode() + " Mode Detected");
+        Log.info(HearthstoneAnalyser.getMode() + " Mode Detected");
       }
       break;
 
     case NEW_ARENA:
-      if (_analyzer.isNewArena())
+      if (HearthstoneAnalyser.isNewArena())
         _notify("New Arena Run Detected");
       Log.info("New Arena Run Detected");
       break;
 
     case OPPONENT_CLASS:
-      _notify("Playing vs " + _analyzer.getOpponentClass());
-      Log.info("Playing vs " + _analyzer.getOpponentClass());
+      _notify("Playing vs " + HearthstoneAnalyser.getOpponentClass());
+      Log.info("Playing vs " + HearthstoneAnalyser.getOpponentClass());
       break;
 
     case OPPONENT_NAME:
-      _notify("Opponent: " + _analyzer.getOpponentName());
-      Log.info("Opponent: " + _analyzer.getOpponentName());
+      _notify("Opponent: " + HearthstoneAnalyser.getOpponentName());
+      Log.info("Opponent: " + HearthstoneAnalyser.getOpponentName());
       break;
 
     case RESULT:
       _playingInMatch = false;
-      _setCurrentMatchEnabledi(false);
-      _notify(_analyzer.getResult() + " Detected");
-      Log.info(_analyzer.getResult() + " Detected");
-      checkMatchResult(_analyzer.getMatch());
+      matchPanel.setCurrentMatchEnabledi(false);
+      _notify(HearthstoneAnalyser.getResult() + " Detected");
+      Log.info(HearthstoneAnalyser.getResult() + " Detected");
+      checkMatchResult(HearthstoneAnalyser.getMatch());
       break;
 
     case SCREEN:
 
-      boolean inGameModeScreen = (_analyzer.getScreen() == Screen.ARENA_LOBBY
-          || _analyzer.getScreen() == Screen.ARENA_END || _analyzer.getScreen() == Screen.PLAY_LOBBY);
+      boolean inGameModeScreen = (HearthstoneAnalyser.getScreen() == Screen.ARENA_LOBBY
+          || HearthstoneAnalyser.getScreen() == Screen.ARENA_END || HearthstoneAnalyser.getScreen() == Screen.PLAY_LOBBY);
       if (inGameModeScreen) {
-        if (_playingInMatch && _analyzer.getResult() == null) {
+        if (_playingInMatch && HearthstoneAnalyser.getResult() == null) {
           _playingInMatch = false;
           _notify("Detection Error", "Match result was not detected.");
           Log.info("Detection Error: Match result was not detected.");
-          checkMatchResult(_analyzer.getMatch());
+          checkMatchResult(HearthstoneAnalyser.getMatch());
         }
         _playingInMatch = false;
       }
 
-      if (_analyzer.getScreen() == Screen.FINDING_OPPONENT) {
+      if (HearthstoneAnalyser.getScreen() == Screen.FINDING_OPPONENT) {
         // Ensure that log monitoring is running before starting the match
         // because Hearthstone may only have created the log file
         // after the HearthStats Uploader started up. In that case log
         // monitoring won't yet be running.
         setupLogMonitoring();
-        _resetMatchClassSelectors();
+        matchPanel.resetMatchClassSelectors();
         // TODO : also display the overlay for Practice mode (usefull for tests)
-        if (Config.showDeckOverlay() && !"Arena".equals(_analyzer.getMode())) {
-          Deck selectedDeck = DeckUtils.getDeckFromSlot(_analyzer.getDeckSlot());
+        if (Config.showDeckOverlay() && !"Arena".equals(HearthstoneAnalyser.getMode())) {
+          Deck selectedDeck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot());
           if (selectedDeck != null && selectedDeck.isValid() && hearthstoneLogMonitor != null) {
             ClickableDeckBox.showBox(selectedDeck, hearthstoneLogMonitor.cardEvents());
           } else {
@@ -912,42 +768,43 @@ public class Monitor extends JFrame implements Observer {
         }
       }
 
-      if (_analyzer.getScreen().group == ScreenGroup.MATCH_START) {
-        _setCurrentMatchEnabledi(true);
+      if (HearthstoneAnalyser.getScreen().group == ScreenGroup.MATCH_START) {
+        matchPanel.setCurrentMatchEnabledi(true);
         _playingInMatch = true;
       }
 
-      if (_analyzer.getScreen().group != ScreenGroup.MATCH_END
-          && !DO_NOT_NOTIFY_SCREENS.contains(_analyzer.getScreen())
+      if (HearthstoneAnalyser.getScreen().group != ScreenGroup.MATCH_END
+          && !DO_NOT_NOTIFY_SCREENS.contains(HearthstoneAnalyser.getScreen())
           && Config.showScreenNotification()) {
-        if (_analyzer.getScreen() == Screen.PRACTICE_LOBBY) {
-          _notify(_analyzer.getScreen().title + " Screen Detected",
+        if (HearthstoneAnalyser.getScreen() == Screen.PRACTICE_LOBBY) {
+          _notify(HearthstoneAnalyser.getScreen().title + " Screen Detected",
               "Results are not tracked in practice mode");
         } else {
-          _notify(_analyzer.getScreen().title + " Screen Detected");
+          _notify(HearthstoneAnalyser.getScreen().title + " Screen Detected");
         }
       }
 
-      if (_analyzer.getScreen() == Screen.PRACTICE_LOBBY) {
-        Log.info(_analyzer.getScreen().title + " Screen Detected. Result tracking disabled.");
+      if (HearthstoneAnalyser.getScreen() == Screen.PRACTICE_LOBBY) {
+        Log.info(HearthstoneAnalyser.getScreen().title
+            + " Screen Detected. Result tracking disabled.");
       } else {
-        if (_analyzer.getScreen() == Screen.MATCH_VS) {
+        if (HearthstoneAnalyser.getScreen() == Screen.MATCH_VS) {
           Log.divider();
         }
-        Log.info(_analyzer.getScreen().title + " Screen Detected");
+        Log.info(HearthstoneAnalyser.getScreen().title + " Screen Detected");
       }
       break;
 
     case YOUR_CLASS:
-      _notify("Playing as " + _analyzer.getYourClass());
-      Log.info("Playing as " + _analyzer.getYourClass());
+      _notify("Playing as " + HearthstoneAnalyser.getYourClass());
+      Log.info("Playing as " + HearthstoneAnalyser.getYourClass());
       break;
 
     case YOUR_TURN:
       if (Config.showYourTurnNotification()) {
-        _notify((_analyzer.isYourTurn() ? "Your" : "Opponent") + " turn detected");
+        _notify((HearthstoneAnalyser.isYourTurn() ? "Your" : "Opponent") + " turn detected");
       }
-      Log.info((_analyzer.isYourTurn() ? "Your" : "Opponent") + " turn detected");
+      Log.info((HearthstoneAnalyser.isYourTurn() ? "Your" : "Opponent") + " turn detected");
       break;
 
     case ERROR_ANALYSING_IMAGE:
@@ -959,7 +816,7 @@ public class Monitor extends JFrame implements Observer {
       _notify("Unhandled event");
       Log.info("Unhandled event");
     }
-    _updateCurrentMatchUi();
+    matchPanel.updateCurrentMatchUi();
   }
 
   public LogPane getLogPane() {
@@ -975,14 +832,15 @@ public class Monitor extends JFrame implements Observer {
       break;
     case "result":
       Log.info("API Result: " + API.message());
-      _lastMatch = _analyzer.getMatch();
-      _lastMatch.id_$eq(API.lastMatchId());
-      _setCurrentMatchEnabledi(false);
-      _updateCurrentMatchUi();
+      HearthstoneMatch lastMatch = HearthstoneAnalyser.getMatch();
+      lastMatch.id_$eq(API.lastMatchId());
+      matchPanel.setCurrentMatchEnabledi(false);
+      matchPanel.updateCurrentMatchUi();
+      matchPanel.setLastMatch(lastMatch);
       // new line after match result
       if (API.message().matches(".*(Edit match|Arena match successfully created).*")) {
-        _analyzer.resetMatch();
-        _resetMatchClassSelectors();
+        HearthstoneAnalyser.resetMatch();
+        matchPanel.resetMatchClassSelectors();
         Log.divider();
       }
       break;
@@ -1021,14 +879,6 @@ public class Monitor extends JFrame implements Observer {
       _handleProgramHelperEvent(changed);
   }
 
-  private void _setCurrentMatchEnabledi(Boolean enabled) {
-    _currentMatchEnabled = enabled;
-    _currentYourClassSelector.setEnabled(enabled);
-    _currentOpponentClassSelect.setEnabled(enabled);
-    _currentGameCoinField.setEnabled(enabled);
-    _currentOpponentNameField.setEnabled(enabled);
-    _currentNotesField.setEnabled(enabled);
-  }
 
   // http://stackoverflow.com/questions/7461477/how-to-hide-a-jframe-in-system-tray-of-taskbar
   TrayIcon trayIcon;

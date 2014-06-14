@@ -50,7 +50,6 @@ public class ScreenAnalyserTest {
         log.debug("Starting check...");
 
         ScreenAnalyser analyser = new ScreenAnalyser();
-        HearthstoneAnalyser hearthstoneAnalyser = new HearthstoneAnalyser();
         RankLevelOcr rankLevelOcr = new RankLevelOcr();
 
         File imageFolder = new File(IMAGE_PATH);
@@ -125,27 +124,37 @@ public class ScreenAnalyserTest {
                         primaryMatches.addAll(secondaryMatches);
 
                         if (primaryMatches.contains(Screen.PLAY_LOBBY)) {
-                            writeScreenSpecificTest(output, "casual", hearthstoneAnalyser.imageShowsCasualPlaySelected(bufferedImage));
-                            writeScreenSpecificTest(output, "ranked", hearthstoneAnalyser.imageShowsRankedPlaySelected(bufferedImage));
-                            writeScreenSpecificTest(output, "deckSlot", hearthstoneAnalyser.imageIdentifyDeckSlot(bufferedImage));
+              writeScreenSpecificTest(output, "casual",
+                  HearthstoneAnalyser.imageShowsCasualPlaySelected(bufferedImage));
+              writeScreenSpecificTest(output, "ranked",
+                  HearthstoneAnalyser.imageShowsRankedPlaySelected(bufferedImage));
+              writeScreenSpecificTest(output, "deckSlot",
+                  HearthstoneAnalyser.imageIdentifyDeckSlot(bufferedImage));
                             writeScreenSpecificTest(output, "rankLevel", rankLevelOcr.processNumber(bufferedImage));
                         }
                         if (primaryMatches.contains(Screen.MATCH_VS) || primaryMatches.contains(Screen.MATCH_STARTINGHAND)) {
-                            writeScreenSpecificTest(output, "coin", hearthstoneAnalyser.imageShowsCoin(bufferedImage));
-                            writeScreenSpecificTest(output, "opponentName", hearthstoneAnalyser.imageShowsOpponentName(bufferedImage));
+              writeScreenSpecificTest(output, "coin",
+                  HearthstoneAnalyser.imageShowsCoin(bufferedImage));
+              writeScreenSpecificTest(output, "opponentName",
+                  HearthstoneAnalyser.imageShowsOpponentName(bufferedImage));
                         }
                         if (primaryMatches.contains(Screen.MATCH_VS)) {
-                            writeScreenSpecificTest(output, "yourClass", hearthstoneAnalyser.imageIdentifyYourClass(bufferedImage));
-                            writeScreenSpecificTest(output, "opponentClass", hearthstoneAnalyser.imageIdentifyOpponentClass(bufferedImage));
+              writeScreenSpecificTest(output, "yourClass",
+                  HearthstoneAnalyser.imageIdentifyYourClass(bufferedImage));
+              writeScreenSpecificTest(output, "opponentClass",
+                  HearthstoneAnalyser.imageIdentifyOpponentClass(bufferedImage));
                         }
                         if (primaryMatches.contains(Screen.MATCH_ORGRIMMAR) || primaryMatches.contains(Screen.MATCH_PANDARIA)
                                 || primaryMatches.contains(Screen.MATCH_STORMWIND) || primaryMatches.contains(Screen.MATCH_STRANGLETHORN)) {
-                            writeScreenSpecificTest(output, "yourTurn", hearthstoneAnalyser.imageShowsYourTurn(bufferedImage));
-                            writeScreenSpecificTest(output, "opponentTurn", hearthstoneAnalyser.imageShowsOpponentTurn(bufferedImage));
+              writeScreenSpecificTest(output, "yourTurn",
+                  HearthstoneAnalyser.imageShowsYourTurn(bufferedImage));
+              writeScreenSpecificTest(output, "opponentTurn",
+                  HearthstoneAnalyser.imageShowsOpponentTurn(bufferedImage));
                         }
                         if (primaryMatches.contains(Screen.MATCH_ORGRIMMAR_END) || primaryMatches.contains(Screen.MATCH_PANDARIA_END)
                                 || primaryMatches.contains(Screen.MATCH_STORMWIND_END) || primaryMatches.contains(Screen.MATCH_STRANGLETHORN_END)) {
-                            MatchOutcome matchOutcome = hearthstoneAnalyser.imageShowsVictoryOrDefeat(bufferedImage);
+              MatchOutcome matchOutcome = HearthstoneAnalyser
+                  .imageShowsVictoryOrDefeat(bufferedImage);
                             writeScreenSpecificTest(output, "victory", matchOutcome == MatchOutcome.VICTORY);
                             writeScreenSpecificTest(output, "defeat", matchOutcome == MatchOutcome.DEFEAT);
                         }

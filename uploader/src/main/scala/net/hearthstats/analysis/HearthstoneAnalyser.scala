@@ -25,13 +25,16 @@ import net.hearthstats.util.Rank
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import HearthstoneAnalyser._
-//remove if not needed
 import scala.collection.JavaConversions._
+import grizzled.slf4j.Logging
 
-object HearthstoneAnalyser {
-
-  private val debugLog = LoggerFactory.getLogger(classOf[HearthstoneAnalyser])
+/**
+ * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
+ * and updates the match records appropriately.
+ *
+ * @author gtch
+ */
+object HearthstoneAnalyser extends Observable with Logging {
 
   def getRatio(image: BufferedImage): Float = {
     image.getHeight / PixelLocation.REFERENCE_SIZE.y.toFloat
@@ -41,15 +44,6 @@ object HearthstoneAnalyser {
     ((image.getWidth.toFloat - (ratio * PixelLocation.REFERENCE_SIZE.x)) /
       2).toInt
   }
-}
-
-/**
- * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
- * and updates the match records appropriately.
- *
- * @author gtch
- */
-class HearthstoneAnalyser extends Observable {
 
   private val bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main")
 
@@ -113,14 +107,14 @@ class HearthstoneAnalyser extends Observable {
       if (screenChangedOK) {
         handleScreenActions(image, matchedScreen)
       } else {
-        debugLog.debug("Ignored screen {} because it was determined to be invalid", matchedScreen)
+        debug(s"Ignored screen $matchedScreen because it was determined to be invalid")
       }
     }
   }
 
   private def handleScreenActions(image: BufferedImage, newScreen: Screen) {
     if (newScreen != null) {
-      debugLog.debug("Screen being processed {}", newScreen)
+      debug(s"Screen being processed $newScreen")
       newScreen match {
         case PLAY_LOBBY =>
           testForCasualOrRanked(image)
@@ -171,7 +165,7 @@ class HearthstoneAnalyser extends Observable {
    */
   private def handleScreenChange(image: BufferedImage, previousScreen: Screen, newScreen: Screen): Boolean = {
     if (newScreen != null && newScreen != previousScreen) {
-      debugLog.debug(s"Screen changed from $previousScreen to $newScreen")
+      debug(s"Screen changed from $previousScreen to $newScreen")
       if (newScreen == Screen.PLAY_LOBBY) {
         if (imageShowsPlayBackground(image)) {
           return false
@@ -220,7 +214,7 @@ class HearthstoneAnalyser extends Observable {
 
   private def testForNewArenaRun(image: BufferedImage) {
     if (!isNewArena) {
-      debugLog.debug("Testing for new arena run")
+      debug("Testing for new arena run")
       if (individualPixelAnalyser.testAllPixelsMatch(image, Array(UniquePixel.NEW_ARENA_RUN_A, UniquePixel.NEW_ARENA_RUN_B, UniquePixel.NEW_ARENA_RUN_C, UniquePixel.NEW_ARENA_RUN_D, UniquePixel.NEW_ARENA_RUN_E))) {
         setIsNewArena(true)
       }
@@ -229,13 +223,13 @@ class HearthstoneAnalyser extends Observable {
 
   private def testForCasualOrRanked(image: BufferedImage) {
     if ("Casual" != getMode) {
-      debugLog.debug("Testing for casual mode")
+      debug("Testing for casual mode")
       if (imageShowsCasualPlaySelected(image)) {
         setMode("Casual")
       }
     }
     if ("Ranked" != getMode) {
-      debugLog.debug("Testing for ranked mode")
+      debug("Testing for ranked mode")
       if (imageShowsRankedPlaySelected(image)) {
         analyzeRankLevel(image)
         setMode("Ranked")
@@ -244,7 +238,7 @@ class HearthstoneAnalyser extends Observable {
   }
 
   private def testForDeckSlot(image: BufferedImage) {
-    debugLog.debug("Testing for deck slot")
+    debug("Testing for deck slot")
     val newDeckSlot = imageIdentifyDeckSlot(image)
     if (newDeckSlot != null) {
       if (newDeckSlot.intValue() != getDeckSlot) {
@@ -255,7 +249,7 @@ class HearthstoneAnalyser extends Observable {
 
   private def testForYourClass(image: BufferedImage) {
     if (getYourClass == null) {
-      debugLog.debug("Testing for your class")
+      debug("Testing for your class")
       val newClass = imageIdentifyYourClass(image)
       if (newClass != null) {
         setYourClass(newClass)
@@ -269,7 +263,7 @@ class HearthstoneAnalyser extends Observable {
 
   private def testForOpponentClass(image: BufferedImage) {
     if (getOpponentClass == null) {
-      debugLog.debug("Testing for opponent class")
+      debug("Testing for opponent class")
       val newClass = imageIdentifyOpponentClass(image)
       if (newClass != null) {
         setOpponentClass(newClass)
@@ -283,7 +277,7 @@ class HearthstoneAnalyser extends Observable {
 
   private def testForOpponentName(image: BufferedImage) {
     if (getOpponentName == null) {
-      debugLog.debug("Testing for opponent name")
+      debug("Testing for opponent name")
       if (imageShowsOpponentName(image)) {
         analyseOpponentName(image)
       }
@@ -292,7 +286,7 @@ class HearthstoneAnalyser extends Observable {
 
   private def testForCoin(image: BufferedImage) {
     if (!getCoin) {
-      debugLog.debug("Testing for coin")
+      debug("Testing for coin")
       if (imageShowsCoin(image)) {
         setCoin(true)
       }
@@ -301,7 +295,7 @@ class HearthstoneAnalyser extends Observable {
 
   private def testForOpponentOrYourTurn(image: BufferedImage) {
     if (isYourTurn) {
-      debugLog.debug("Testing for opponent turn")
+      debug("Testing for opponent turn")
       if (imageShowsOpponentTurn(image)) {
         iterationsSinceYourTurn += 1
         if (iterationsSinceYourTurn > 2) {
@@ -312,7 +306,7 @@ class HearthstoneAnalyser extends Observable {
         iterationsSinceYourTurn = 0
       }
     } else {
-      debugLog.debug("Testing for your turn")
+      debug("Testing for your turn")
       if (imageShowsYourTurn(image)) {
         iterationsSinceOpponentTurn += 1
         if (iterationsSinceOpponentTurn > 2) {
@@ -327,7 +321,7 @@ class HearthstoneAnalyser extends Observable {
 
   private def testForVictoryOrDefeat(image: BufferedImage) {
     if (!victoryOrDefeatDetected) {
-      debugLog.debug("Testing for victory or defeat")
+      debug("Testing for victory or defeat")
       val result = imageShowsVictoryOrDefeat(image)
       if (result == MatchOutcome.VICTORY) {
         endTimer()
@@ -343,7 +337,7 @@ class HearthstoneAnalyser extends Observable {
 
   private def setArenaRunEnd() {
     if (!arenaRunEndDetected) {
-      debugLog.debug("Setting end of arena run")
+      debug("Setting end of arena run")
       arenaRunEndDetected = true
       notifyObserversOfChangeTo(AnalyserEvent.ARENA_END)
     }
@@ -398,7 +392,7 @@ class HearthstoneAnalyser extends Observable {
       val matchedDefeat = victory1Matches == 0 && victory2Matches == 0 && defeat1Matches > 0 &&
         defeat2Matches == 1
       if (matchedVictory && matchedDefeat) {
-        debugLog.warn("Matched both victory and defeat, which shouldn't be possible. Will try again next iteration.")
+        warn("Matched both victory and defeat, which shouldn't be possible. Will try again next iteration.")
       } else if (matchedVictory) {
         return MatchOutcome.VICTORY
       } else if (matchedDefeat) {
@@ -565,7 +559,7 @@ class HearthstoneAnalyser extends Observable {
 
   private def setMode(mode: String) {
     if (!StringUtils.equals(this.mode, mode)) {
-      debugLog.debug(s"Mode changed from ${this.mode} to $mode")
+      debug(s"Mode changed from ${this.mode} to $mode")
       this.mode = mode
       `match`.mode_$eq(mode)
       notifyObserversOfChangeTo(AnalyserEvent.MODE)
