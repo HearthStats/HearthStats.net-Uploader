@@ -1,7 +1,7 @@
 package net.hearthstats;
 
 public interface Constants {
-	  public static final String[] hsClassOptions = {
+	static final String[] hsClassOptions = {
           "- undetected -",
           "Druid",
           "Hunter",
@@ -14,5 +14,6 @@ public interface Constants {
           "Warrior"
   };
 
-	public static final String DECKS_URL = "http://hearthstats.net/decks";
+	static final String PROFILES_URL = "http://hearthstats.net/uploader";
+	static final String DECKS_URL = "http://hearthstats.net/decks";
 }
