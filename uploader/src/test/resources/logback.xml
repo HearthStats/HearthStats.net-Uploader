@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration debug="true">
+<configuration>
 
     <!-- Outputs logs to the standard console -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -23,17 +23,17 @@
 
 
     <!-- Send app logs to the Log tab in the GUI. This logger should be left at INFO level. -->
-    <logger name="net.hearthstats.app" level="DEBUG">
+    <logger name="net.hearthstats.app" level="WARN">
         <appender-ref ref="APP" />
     </logger>
 
 
     <!-- Send all other logs to the log file and the console. -->
     <!-- Change the level to DEBUG to enable full log output. -->
-    <logger name="net.hearthstats" level="DEBUG"></logger>
+    <logger name="net.hearthstats" level="WARN"></logger>
 
 
-    <root level="DEBUG">
+    <root level="WARN">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </root>

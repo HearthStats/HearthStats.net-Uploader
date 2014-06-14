@@ -20,7 +20,6 @@ import net.hearthstats.util.Coordinate;
 import net.hearthstats.util.MatchOutcome;
 
 import org.junit.Assert;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +43,7 @@ public class ScreenAnalyserTest {
     private Map<PixelLocation, Coordinate> pixelMap;
 
 
-    @Test
+	// @Test
     public void htmlScreenMatchTest() throws Exception {
 
         log.debug("Starting check...");

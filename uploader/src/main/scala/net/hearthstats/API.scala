@@ -20,18 +20,27 @@ object API extends Observable with Logging {
   var lastMatchId = -1
   var message = ""
 
-  def endCurrentArenaRun(): Unit = {
-    val resultObj = _get("arena_runs/end").asInstanceOf[JSONObject]
-    val arenaRun = if (resultObj == null) null else new ArenaRun(resultObj)
-    if (arenaRun != null) _dispatchResultMessage("Ended " + arenaRun.getUserClass + " arena run")
+  def endCurrentArenaRun(): Option[ArenaRun] = {
+    _get("arena_runs/end") match {
+      case None =>
+        Log.warn("Error occurred while ending the arena run")
+        None
+      case Some(resultObj) =>
+        val arenaRun = new ArenaRun(resultObj.asInstanceOf[JSONObject])
+        _dispatchResultMessage("Ended " + arenaRun.getUserClass + " arena run")
+        Some(arenaRun)
+    }
   }
 
-  def createArenaRun(arenaRun: ArenaRun): Unit =
+  def createArenaRun(arenaRun: ArenaRun): Option[ArenaRun] =
     _post("arena_runs/new", arenaRun.toJsonObject) match {
       case Some(result) =>
         val resultingArenaRun = new ArenaRun(result)
         _dispatchResultMessage(resultingArenaRun.getUserClass + " run created")
-      case None => Log.warn("Error occurred while creating new arena run")
+        Some(resultingArenaRun)
+      case None =>
+        Log.warn("Error occurred while creating new arena run")
+        None
     }
 
   def setDeckSlots(slots: Iterable[Option[Int]]): Unit = {
@@ -57,20 +66,20 @@ object API extends Observable with Logging {
     }
   }
 
-  def getLastArenaRun(): ArenaRun = {
-    val resultObj = _get("arena_runs/show").asInstanceOf[JSONObject]
-    val arenaRun = if (resultObj == null) null else new ArenaRun(resultObj)
-    if (arenaRun != null) {
-      _dispatchResultMessage("Fetched current " + arenaRun.getUserClass + " arena run")
+  def getLastArenaRun: ArenaRun =
+    _get("arena_runs/show") match {
+      case None => null
+      case Some(resultObj) =>
+        val arenaRun = new ArenaRun(resultObj.asInstanceOf[JSONObject])
+        _dispatchResultMessage("Fetched current " + arenaRun.getUserClass + " arena run")
+        arenaRun
     }
-    arenaRun
-  }
 
   //can return JSONObject or JSONArray
   private def _get(method: String): Option[AnyRef] = {
     val baseUrl = Config.getApiBaseUrl + method + "?userkey="
     debug(s"API get $baseUrl********")
-    val url = new URL(baseUrl + _getKey)
+    val url = new URL(baseUrl + key)
     try {
       val resultString = io.Source.fromURL(url, "UTF-8").getLines.mkString("\n")
       debug(s"API get result = $resultString")
@@ -120,7 +129,7 @@ object API extends Observable with Logging {
     val baseUrl = Config.getApiBaseUrl + method + "?userkey="
     debug(s"API post $baseUrl********")
     debug("API post data = " + jsonData.toJSONString)
-    val url = new URL(baseUrl + _getKey)
+    val url = new URL(baseUrl + key)
     try {
       val httpcon = (url.openConnection()).asInstanceOf[HttpURLConnection]
       httpcon.setDoOutput(true)
@@ -157,7 +166,7 @@ object API extends Observable with Logging {
     case None => List.empty
   }
 
-  private def _getKey: String = Config.getUserKey
+  var key: String = Config.getUserKey
 
   private def _dispatchResultMessage(m: String) {
     message = m
