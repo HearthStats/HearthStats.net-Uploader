@@ -1,6 +1,6 @@
 package net.hearthstats;
 
-import net.hearthstats.Config.OS;
+import net.hearthstats.config.OS;
 import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.notification.NotificationQueue;
 
@@ -88,9 +88,9 @@ public final class Updater {
 		System.out.println("trying to run updater");
 		_notify("Performing Update", "Extracting and running updater ...");
 		try {
-			if (Config.os == Config.OS.WINDOWS) {
+			if (Config.os == OS.WINDOWS) {
 				doUpdate();
-			} else if (Config.os == Config.OS.OSX) {
+			} else if (Config.os == OS.OSX) {
 				// The Java library path is
 				// /<folder>/HearthStats.app/Contents/MacOS
 				File javaLibraryPath = new File(Config.getJavaLibraryPath());

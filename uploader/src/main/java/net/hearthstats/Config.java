@@ -8,6 +8,10 @@ import java.io.InputStreamReader;
 
 import javax.swing.JOptionPane;
 
+import net.hearthstats.config.GameLanguage;
+import net.hearthstats.config.MatchPopup;
+import net.hearthstats.config.MonitoringMethod;
+import net.hearthstats.config.OS;
 import net.hearthstats.log.Log;
 
 import org.apache.commons.lang3.StringUtils;
@@ -651,33 +655,5 @@ public class Config {
             }
         }
         return helper;
-    }
-
-    public static enum OS {
-        WINDOWS, OSX, UNSUPPORTED;
-    }
-
-    public static enum MatchPopup {
-        ALWAYS, INCOMPLETE, NEVER;
-
-        static MatchPopup getDefault() {
-            return INCOMPLETE;
-        }
-    }
-
-    public static enum MonitoringMethod {
-        SCREEN, SCREEN_LOG;
-
-        static MonitoringMethod getDefault() {
-            return SCREEN;
-        }
-    }
-
-    public static enum GameLanguage {
-        EU, FR;
-
-        static GameLanguage getDefault() {
-            return EU;
-        }
     }
 }

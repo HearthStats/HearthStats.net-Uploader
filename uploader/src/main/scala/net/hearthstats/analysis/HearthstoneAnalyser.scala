@@ -4,6 +4,10 @@ import java.awt.image.BufferedImage
 import java.text.MessageFormat
 import java.util.Observable
 import java.util.ResourceBundle
+
+import org.apache.commons.lang3.StringUtils
+
+import grizzled.slf4j.Logging
 import net.hearthstats.BackgroundImageSave
 import net.hearthstats.Config
 import net.hearthstats.HearthstoneMatch
@@ -14,19 +18,19 @@ import net.hearthstats.ocr.OpponentNameRankedOcr
 import net.hearthstats.ocr.OpponentNameUnrankedOcr
 import net.hearthstats.ocr.RankLevelOcr
 import net.hearthstats.state.PixelLocation
-import net.hearthstats.state.Screen._
 import net.hearthstats.state.Screen
+import net.hearthstats.state.Screen.ARENA_LOBBY
+import net.hearthstats.state.Screen.MATCH_STARTINGHAND
+import net.hearthstats.state.Screen.MATCH_VS
+import net.hearthstats.state.Screen.PLAY_LOBBY
+import net.hearthstats.state.Screen.PRACTICE_LOBBY
 import net.hearthstats.state.ScreenGroup
-import net.hearthstats.state.ScreenGroup._
+import net.hearthstats.state.ScreenGroup.MATCH_END
+import net.hearthstats.state.ScreenGroup.MATCH_PLAYING
+import net.hearthstats.state.ScreenGroup.MATCH_START
 import net.hearthstats.state.UniquePixel
-import net.hearthstats.util.Coordinate
 import net.hearthstats.util.MatchOutcome
 import net.hearthstats.util.Rank
-import org.apache.commons.lang3.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import scala.collection.JavaConversions._
-import grizzled.slf4j.Logging
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,

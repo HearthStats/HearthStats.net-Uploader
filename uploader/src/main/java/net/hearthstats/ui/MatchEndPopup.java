@@ -86,12 +86,6 @@ public class MatchEndPopup extends JPanel {
     }
 
 
-    public static enum Button {
-        SUBMIT, CANCEL
-    }
-
-
-
     public static Button showPopup(Component parentComponent, HearthstoneMatch match, String infoMessage, String title) {
         MatchEndPopup popup = new MatchEndPopup(match, infoMessage);
 

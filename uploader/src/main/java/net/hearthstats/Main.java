@@ -1,13 +1,16 @@
 package net.hearthstats;
 
+import net.hearthstats.config.OS;
 import net.hearthstats.log.Log;
 import net.hearthstats.log.LogPane;
 import net.hearthstats.notification.DialogNotification;
 import net.sourceforge.tess4j.Tesseract;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.io.*;
 import java.util.concurrent.Executors;
@@ -106,7 +109,7 @@ public final class Main {
         if (e instanceof UnsatisfiedLinkError) {
             // A library that Tesseract or Leptonica expects to find on this system isn't there
             title = "Expected libraries are not installed";
-            if (Config.os == Config.OS.WINDOWS && "amd64".equals(Config.getSystemProperty("os.arch"))) {
+            if (Config.os == OS.WINDOWS && "amd64".equals(Config.getSystemProperty("os.arch"))) {
                 // This is the most common scenario - the user is using 64-bit Windows and there is no 64-bit library installed by default
                 message = new Object[] {
                         new JLabel("The HearthStats Uploader requires the Visual C++ Redistributable to be installed."),
@@ -114,7 +117,7 @@ public final class Main {
                         HyperLinkHandler.getUrlLabel("http://www.microsoft.com/en-US/download/details.aspx?id=30679"),
                         new JLabel("and install it before using the HearthStats Uploader.")
                 };
-            } else if (Config.os == Config.OS.WINDOWS) {
+            } else if (Config.os == OS.WINDOWS) {
                 // There is no known problem with other variants of Windows, but just in case this does occur we show a similar message
                 message = new Object[] {
                         new JLabel("The HearthStats Uploader requires the Visual C++ Redistributable to be installed."),
@@ -181,7 +184,7 @@ public final class Main {
 	public static void setupTesseract() {
         debugLog.debug("Extracting Tesseract data");
 		String outPath;
-        if (Config.os == Config.OS.OSX) {
+        if (Config.os == OS.OSX) {
             File javaLibraryPath = new File(Config.getJavaLibraryPath());
             outPath = javaLibraryPath.getParentFile().getAbsolutePath() + "/Resources";
         } else {

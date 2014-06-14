@@ -10,12 +10,13 @@ import javax.swing.JFrame
 import javax.swing.JDialog
 import net.hearthstats.Config
 import net.hearthstats.util.TranslationCard
+import net.hearthstats.config.GameLanguage
 
 object LogMonitorDeckOverlayMain extends App {
   val tempLogFile = File.createTempFile("hssample", "log")
   println(s"monitorin $tempLogFile ")
   val monitor = new HearthstoneLogMonitor(tempLogFile.getAbsolutePath)
-  Config.setGameLanguage(Config.GameLanguage.EU)
+  Config.setGameLanguage(GameLanguage.EU)
   TranslationCard.changeTranslation()
   val deck = DeckUtils.getDeck(20034)
   ClickableDeckBox.showBox(deck, monitor.cardEvents)

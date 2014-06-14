@@ -4,7 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ResourceBundle;
 
 import net.hearthstats.Config;
-import net.hearthstats.Config.GameLanguage;
+import net.hearthstats.config.GameLanguage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

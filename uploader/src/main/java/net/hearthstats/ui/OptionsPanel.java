@@ -15,6 +15,9 @@ import javax.swing.JTextField;
 
 import net.hearthstats.Config;
 import net.hearthstats.Monitor;
+import net.hearthstats.config.GameLanguage;
+import net.hearthstats.config.MatchPopup;
+import net.hearthstats.config.MonitoringMethod;
 import net.hearthstats.log.Log;
 import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.util.TranslationCard;
@@ -247,9 +250,9 @@ public class OptionsPanel extends JPanel {
   private void _saveOptions() {
     debugLog.debug("Saving options...");
 
-    Config.MonitoringMethod monitoringMethod = Config.MonitoringMethod.values()[monitoringMethodField
+    MonitoringMethod monitoringMethod = MonitoringMethod.values()[monitoringMethodField
         .getSelectedIndex()];
-    Config.GameLanguage gameLanguage = Config.GameLanguage.values()[gameLanguageField
+    GameLanguage gameLanguage = GameLanguage.values()[gameLanguageField
         .getSelectedIndex()];
 
     Config.setUserKey(_userKeyField.getText());
@@ -264,7 +267,7 @@ public class OptionsPanel extends JPanel {
     Config.setShowDeckNotification(_showDeckNotificationField.isSelected());
     Config.setShowYourTurnNotification(_showYourTurnNotificationField.isSelected());
     Config.setShowDeckOverlay(_showDeckOverlay.isSelected());
-    Config.setShowMatchPopup(Config.MatchPopup.values()[showMatchPopupField.getSelectedIndex()]);
+    Config.setShowMatchPopup(MatchPopup.values()[showMatchPopupField.getSelectedIndex()]);
     Config.setAnalyticsEnabled(_analyticsField.isSelected());
     Config.setMinToTray(_minToTrayField.isSelected());
     Config.setStartMinimized(_startMinimizedField.isSelected());
