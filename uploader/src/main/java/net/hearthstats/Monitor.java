@@ -4,7 +4,6 @@ import static net.hearthstats.Constants.PROFILES_URL;
 import static net.hearthstats.util.Translations.t;
 
 import java.awt.AWTException;
-import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -24,18 +23,13 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.ImageIcon;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -43,8 +37,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLDocument;
 
 import net.hearthstats.analysis.AnalyserEvent;
 import net.hearthstats.log.Log;
@@ -54,19 +46,16 @@ import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.notification.NotificationQueue;
 import net.hearthstats.state.Screen;
 import net.hearthstats.state.ScreenGroup;
+import net.hearthstats.ui.AboutPanel;
 import net.hearthstats.ui.ClickableDeckBox;
 import net.hearthstats.ui.DecksTab;
 import net.hearthstats.ui.MatchEndPopup;
 import net.hearthstats.ui.MatchPanel;
 import net.hearthstats.ui.OptionsPanel;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.hearthstats.analysis.HearthstoneAnalyser;
 
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
 
@@ -74,30 +63,26 @@ import com.dmurph.tracking.JGoogleAnalyticsTracker;
 public class Monitor extends JFrame implements Observer {
 
   private static final int POLLING_INTERVAL_IN_MS = 100;
+  private static Logger debugLog = LoggerFactory.getLogger(Monitor.class);
 
   private static final EnumSet<Screen> DO_NOT_NOTIFY_SCREENS = EnumSet.of(Screen.COLLECTION,
       Screen.COLLECTION_ZOOM, Screen.MAIN_TODAYSQUESTS, Screen.TITLE);
 
-  private static Logger debugLog = LoggerFactory.getLogger(Monitor.class);
 
   protected ProgramHelper _hsHelper = Config.programHelper();
   protected HearthstoneLogMonitor hearthstoneLogMonitor;
 
-  private HyperlinkListener _hyperLinkListener = HyperLinkHandler.getInstance();
 
   private boolean _hearthstoneDetected;
   private JGoogleAnalyticsTracker _analytics;
   private LogPane _logText;
+
   private JScrollPane _logScroll;
   private JTabbedPane _tabbedPane;
-
   private OptionsPanel optionsPanel;
-
   private MatchPanel matchPanel;
 
-  public Monitor() {
-    _notificationQueue = DialogNotificationQueue.newNotificationQueue();
-  }
+  protected NotificationQueue _notificationQueue = DialogNotificationQueue.newNotificationQueue();
 
   public void start() throws IOException {
     if (Config.analyticsEnabled()) {
@@ -280,7 +265,7 @@ public class Monitor extends JFrame implements Observer {
     _tabbedPane.add(matchPanel = new MatchPanel(), t("tab.current_match"));
     _tabbedPane.add(new DecksTab(), t("tab.decks"));
     _tabbedPane.add(optionsPanel = new OptionsPanel(this), t("tab.options"));
-    _tabbedPane.add(_createAboutUi(), t("tab.about"));
+    _tabbedPane.add(new AboutPanel(), t("tab.about"));
 
     matchPanel.updateCurrentMatchUi();
 
@@ -295,49 +280,6 @@ public class Monitor extends JFrame implements Observer {
     _updateTitle();
   }
 
-  private JScrollPane _createAboutUi() {
-    Map<String, String> localeStrings = new HashMap<String, String>();
-    localeStrings.put("Author", t("Author"));
-    localeStrings.put("version", t("Uploader") + " v" + Config.getVersion());
-    localeStrings.put("utility_l1", t("about.utility_l1"));
-    localeStrings.put("utility_l2", t("about.utility_l2"));
-    localeStrings.put("utility_l3", t("about.utility_l3"));
-    localeStrings.put("open_source_l1", t("about.open_source_l1"));
-    localeStrings.put("open_source_l2", t("about.open_source_l2"));
-    localeStrings.put("project_source", t("about.project_source"));
-    localeStrings.put("releases_and_changelog", t("about.releases_and_changelog"));
-    localeStrings.put("feedback_and_suggestions", t("about.feedback_and_suggestions"));
-    localeStrings.put("support_project", t("about.support_project"));
-    localeStrings.put("donate_image", getClass().getResource("/images/donate.gif").toString());
-
-    JEditorPane contributorsText = new JEditorPane();
-    contributorsText.setContentType("text/html");
-    contributorsText.setEditable(false);
-    contributorsText.setBackground(Color.WHITE);
-
-    try (Reader cssReader = new InputStreamReader(
-        LogPane.class.getResourceAsStream("/net/hearthstats/about.css"))) {
-      ((HTMLDocument) contributorsText.getDocument()).getStyleSheet().loadRules(cssReader, null);
-    } catch (IOException e) {
-      // If we can't load the About css, log a warning but continue
-      Log.warn("Unable to format About tab", e);
-    }
-
-    try (Reader aboutReader = new InputStreamReader(
-        LogPane.class.getResourceAsStream("/net/hearthstats/about.html"))) {
-      String aboutText = StrSubstitutor.replace(IOUtils.toString(aboutReader), localeStrings);
-      contributorsText.setText(aboutText);
-    } catch (IOException e) {
-      // If we can't load the About text, log a warning but continue
-      Log.warn("Unable to display About tab", e);
-    }
-    contributorsText.addHyperlinkListener(_hyperLinkListener);
-
-    return new JScrollPane(contributorsText, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-  }
-
-  
 
   private void checkForUpdates() {
     if (Config.checkForUpdates()) {
@@ -409,7 +351,6 @@ public class Monitor extends JFrame implements Observer {
     }
   };
 
-  protected NotificationQueue _notificationQueue;
 
   public void setNotificationQueue(NotificationQueue _notificationQueue) {
     this._notificationQueue = _notificationQueue;
