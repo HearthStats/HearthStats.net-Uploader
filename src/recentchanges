@@ -1,3 +1,7 @@
+v0.18.2
+* Fixed error that occurred at end of Arena runs
+* Fixed problems caused by deleting decks and empty deck slots
+
 v0.18.1
 * Fixed bug that caused problems submitting matches to HearthStats
 
