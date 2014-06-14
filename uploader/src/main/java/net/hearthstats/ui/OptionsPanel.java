@@ -16,6 +16,7 @@ import javax.swing.JTextField;
 import net.hearthstats.Config;
 import net.hearthstats.Monitor;
 import net.hearthstats.log.Log;
+import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.util.TranslationCard;
 import net.miginfocom.swing.MigLayout;
 
@@ -272,7 +273,7 @@ public class OptionsPanel extends JPanel {
       // This control only appears on OS X machines, will be null on
       // Windows machines
       Config.setUseOsxNotifications(_notificationsFormat.getSelectedIndex() == 0);
-      monitor.setNotificationQueue(Monitor.newNotificationQueue());
+      monitor.setNotificationQueue(DialogNotificationQueue.newNotificationQueue());
     }
 
     monitor.setupLogMonitoring();

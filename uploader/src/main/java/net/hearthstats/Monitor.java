@@ -9,7 +9,6 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.Point;
@@ -113,9 +112,8 @@ public class Monitor extends JFrame implements Observer {
 
   private OptionsPanel optionsPanel;
 
-  public Monitor() throws HeadlessException, ClassNotFoundException, InstantiationException,
-      IllegalAccessException {
-    _notificationQueue = newNotificationQueue();
+  public Monitor() {
+    _notificationQueue = DialogNotificationQueue.newNotificationQueue();
   }
 
   public void start() throws IOException {
@@ -1137,19 +1135,4 @@ public class Monitor extends JFrame implements Observer {
       }
     }
   }
-
-  public static NotificationQueue newNotificationQueue() {
-    if (Config.useOsxNotifications()) {
-      try {
-        return (NotificationQueue) Class.forName("net.hearthstats.osx.OsxNotificationQueue")
-            .newInstance();
-      } catch (Exception e) {
-        throw new RuntimeException("Could not create OsxNotificationQueue instance due to "
-            + e.getMessage(), e);
-      }
-    } else {
-      return new DialogNotificationQueue();
-    }
-  }
-
 }

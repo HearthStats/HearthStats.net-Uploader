@@ -2,6 +2,8 @@ package net.hearthstats.notification;
 
 import java.util.ArrayList;
 
+import net.hearthstats.Config;
+
 public class DialogNotificationQueue implements NotificationQueue {
 
 	protected ArrayList<DialogNotification> _notifications = new ArrayList<DialogNotification>();
@@ -50,4 +52,18 @@ public class DialogNotificationQueue implements NotificationQueue {
 			}
 		}
 	}
+
+  public static NotificationQueue newNotificationQueue() {
+    if (Config.useOsxNotifications()) {
+      try {
+        return (NotificationQueue) Class.forName("net.hearthstats.osx.OsxNotificationQueue")
+            .newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException("Could not create OsxNotificationQueue instance due to "
+            + e.getMessage(), e);
+      }
+    } else {
+      return new DialogNotificationQueue();
+    }
+  }
 }
