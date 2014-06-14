@@ -102,24 +102,33 @@ class DecksTab extends JPanel {
     }
   }
 
-  private def createDeck(d: Deck): Unit = {
-    if (!d.isValid) {
-      JOptionPane.showConfirmDialog(this, s"""${d.name} is not valid (${d.cardCount} cards).
-          Do you want to edit it first on Heartstats.net ?""") match {
-        case JOptionPane.YES_OPTION =>
-          Browse(s"http://hearthstats.net/decks/${d.slug}/edit")
-        case JOptionPane.NO_OPTION => doCreate()
-        case _ =>
+  private def createDeck(in: Option[Deck]): Unit = {
+    in match {
+      case Some(d) => {
+        if (!d.isValid) {
+          JOptionPane.showConfirmDialog(this,
+            s"""${d.name} is not valid (${d.cardCount} cards). Do you want to edit it first on Heartstats.net ?""".stripMargin) match {
+            case JOptionPane.YES_OPTION =>
+              Browse(s"http://hearthstats.net/decks/${d.slug}/edit")
+            case JOptionPane.NO_OPTION => doCreate(d)
+            case _ =>
+          }
+        } else doCreate(d)
       }
-    } else doCreate()
+      case None => {
+        JOptionPane.showMessageDialog(this,
+          s"""There is no deck in this slot.
+             |Choose a deck before pressing Construct""".stripMargin)
+      }
+    }
 
-    def doCreate() = HsRobot(Config.programHelper.getHSWindowBounds).create(d)
+    def doCreate(d: Deck) = HsRobot(Config.programHelper.getHSWindowBounds).create(d)
   }
 
   class DeckSlotPanel(slot: Int) extends JPanel {
     setLayout(new BorderLayout)
     add(new JLabel(t("deck_slot.label", slot)), BorderLayout.NORTH)
-    val comboBox = new JComboBox[Deck]
+    val comboBox = new JComboBox[Object]
     add(comboBox, BorderLayout.CENTER)
 
     val removeBtn = new JButton("x") //TODO use an icon instead
@@ -132,14 +141,22 @@ class DecksTab extends JPanel {
 						        (providing you have the required cards)<br/>
 						        <br/>
 						        <i>You need to be in the collection mode and select the hero yourself</i>""")
-    createBtn.addActionListener(ActionListener(_ => createDeck(comboBox.getSelectedItem.asInstanceOf[Deck])))
+    createBtn.addActionListener(ActionListener(_ => createDeck(selectedDeck)))
+
     add(createBtn, BorderLayout.SOUTH)
 
+    def selectedDeck: Option[Deck] =
+      comboBox.getSelectedItem match {
+        case deck: Deck => Some(deck)
+        case _ => None
+      }
+
     def selectedDeckId: Option[Int] =
-      Option(comboBox.getSelectedItem.asInstanceOf[Deck]).map(_.id)
+      selectedDeck.map(_.id)
 
     def applyDecks(): Unit = {
       comboBox.removeAllItems()
+      comboBox.addItem(t("deck_slot.empty"))
       val decks = DeckUtils.getDeckLists.sortBy(d => (d.hero, d.name))
       for (deck <- decks) {
         comboBox.addItem(deck)
