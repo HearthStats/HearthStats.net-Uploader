@@ -1,5 +1,7 @@
 package net.hearthstats.ui;
 
+import static net.hearthstats.util.Translations.t;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -312,7 +314,7 @@ public class MatchEndPopup extends JPanel {
         for (int i = 1; i <= 9; i++) {
 			Deck deck = DeckUtils.getDeckFromSlot(i);
             StringBuilder sb = new StringBuilder();
-            sb.append(t("deck_slot.label_" + i));
+            sb.append(t("deck_slot.label", i));
             sb.append(" ");
             if (deck == null) {
                 sb.append(t("undetected"));
@@ -484,14 +486,6 @@ public class MatchEndPopup extends JPanel {
 		c.setPreferredSize(new Dimension(200, 28));
 	}
 
-    /**
-     * Loads text from the main resource bundle, using the local language when available.
-     * @param key the key for the desired string
-     * @return The requested string
-     */
-    private String t(String key) {
-        return bundle.getString(key);
-    }
 
     private String undetectedLabel() {
     	return "- "+t("undetected")+" -";
