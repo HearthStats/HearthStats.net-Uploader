@@ -139,9 +139,9 @@ public class ScreenAnalyserTest {
                         }
                         if (primaryMatches.contains(Screen.MATCH_VS)) {
               writeScreenSpecificTest(output, "yourClass",
-                  HearthstoneAnalyser.imageIdentifyYourClass(bufferedImage));
+                 (String) HearthstoneAnalyser.imageIdentifyYourClass(bufferedImage).getOrElse(null));
               writeScreenSpecificTest(output, "opponentClass",
-                  HearthstoneAnalyser.imageIdentifyOpponentClass(bufferedImage));
+                  (String) HearthstoneAnalyser.imageIdentifyOpponentClass(bufferedImage).getOrElse(null));
                         }
                         if (primaryMatches.contains(Screen.MATCH_ORGRIMMAR) || primaryMatches.contains(Screen.MATCH_PANDARIA)
                                 || primaryMatches.contains(Screen.MATCH_STORMWIND) || primaryMatches.contains(Screen.MATCH_STRANGLETHORN)) {

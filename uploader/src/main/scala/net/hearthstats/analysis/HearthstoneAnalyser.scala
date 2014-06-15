@@ -4,9 +4,7 @@ import java.awt.image.BufferedImage
 import java.text.MessageFormat
 import java.util.Observable
 import java.util.ResourceBundle
-
 import org.apache.commons.lang3.StringUtils
-
 import grizzled.slf4j.Logging
 import net.hearthstats.BackgroundImageSave
 import net.hearthstats.Config
@@ -31,6 +29,7 @@ import net.hearthstats.state.ScreenGroup.MATCH_START
 import net.hearthstats.state.UniquePixel._
 import net.hearthstats.util.MatchOutcome
 import net.hearthstats.util.Rank
+import net.hearthstats.state.UniquePixel
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
@@ -236,9 +235,10 @@ object HearthstoneAnalyser extends Observable with Logging {
   private def testForYourClass(image: BufferedImage) {
     if (getYourClass == null) {
       debug("Testing for your class")
-      val newClass = imageIdentifyYourClass(image)
-      if (newClass != null)
-        setYourClass(newClass)
+      imageIdentifyYourClass(image) match {
+        case Some(newClass) => setYourClass(newClass)
+        case None =>
+      }
       if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
         val filename = "class-yours-" + (iterationsSinceClassCheckingStarted >> 2)
         BackgroundImageSave.saveCroppedPngImage(image, filename, 204, 600, 478, 530)
@@ -249,9 +249,10 @@ object HearthstoneAnalyser extends Observable with Logging {
   private def testForOpponentClass(image: BufferedImage) {
     if (getOpponentClass == null) {
       debug("Testing for opponent class")
-      val newClass = imageIdentifyOpponentClass(image)
-      if (newClass != null)
-        setOpponentClass(newClass)
+      imageIdentifyOpponentClass(image) match {
+        case Some(newClass) => setOpponentClass(newClass)
+        case None =>
+      }
       if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
         val filename = "class-opponent-" + (iterationsSinceClassCheckingStarted >> 2)
         BackgroundImageSave.saveCroppedPngImage(image, filename, 1028, 28, 478, 530)
@@ -360,10 +361,10 @@ object HearthstoneAnalyser extends Observable with Logging {
         Array(DEFEAT_REL_1A, DEFEAT_REL_1B, DEFEAT_REL_1C, DEFEAT_REL_1D, DEFEAT_REL_1E))
       val defeat2Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate,
         Array(DEFEAT_REL_2A))
-      val matchedVictory = victory1Matches > 0 && victory2Matches == 3 && defeat1Matches == 0 &&
-        defeat2Matches == 0
-      val matchedDefeat = victory1Matches == 0 && victory2Matches == 0 && defeat1Matches > 0 &&
-        defeat2Matches == 1
+      val matchedVictory = victory1Matches > 0 && victory2Matches == 3 &&
+        defeat1Matches == 0 && defeat2Matches == 0
+      val matchedDefeat = victory1Matches == 0 && victory2Matches == 0 &&
+        defeat1Matches > 0 && defeat2Matches == 1
       if (matchedVictory && matchedDefeat) {
         warn("Matched both victory and defeat, which shouldn't be possible. Will try again next iteration.")
         null
@@ -385,67 +386,48 @@ object HearthstoneAnalyser extends Observable with Logging {
   def imageShowsPlayBackground(image: BufferedImage): Boolean =
     individualPixelAnalyser.testAllPixelsMatch(image, Array(BACKGROUND_PLAY_1, BACKGROUND_PLAY_2, BACKGROUND_PLAY_3, BACKGROUND_PLAY_4, BACKGROUND_PLAY_5, BACKGROUND_PLAY_6, BACKGROUND_PLAY_7, BACKGROUND_PLAY_8, BACKGROUND_PLAY_9))
 
+  private def identify[T](image: BufferedImage, pixelRules: Iterable[(Array[UniquePixel], T)]): Option[T] =
+    (for {
+      (pixels, result) <- pixelRules
+      if individualPixelAnalyser.testAllPixelsMatch(image, pixels)
+    } yield result).headOption
+
   def imageIdentifyDeckSlot(image: BufferedImage): Option[Int] =
-    if (individualPixelAnalyser.testAllPixelsMatch(image, Array(DECK_SLOT_1A, DECK_SLOT_1B))) Some(1)
-    else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(DECK_SLOT_2A, DECK_SLOT_2B))) Some(2)
-    else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(DECK_SLOT_3A, DECK_SLOT_3B))) Some(3)
-    else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(DECK_SLOT_4A, DECK_SLOT_4B))) Some(4)
-    else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(DECK_SLOT_5A, DECK_SLOT_5B))) Some(5)
-    else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(DECK_SLOT_6A, DECK_SLOT_6B))) Some(6)
-    else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(DECK_SLOT_7A, DECK_SLOT_7B))) Some(7)
-    else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(DECK_SLOT_8A, DECK_SLOT_8B))) Some(8)
-    else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(DECK_SLOT_9A, DECK_SLOT_9B))) Some(9)
-    else None
+    identify(image, Seq(
+      Array(DECK_SLOT_1A, DECK_SLOT_1B) -> 1,
+      Array(DECK_SLOT_2A, DECK_SLOT_2B) -> 2,
+      Array(DECK_SLOT_3A, DECK_SLOT_3B) -> 3,
+      Array(DECK_SLOT_4A, DECK_SLOT_4B) -> 4,
+      Array(DECK_SLOT_5A, DECK_SLOT_5B) -> 5,
+      Array(DECK_SLOT_6A, DECK_SLOT_6B) -> 6,
+      Array(DECK_SLOT_7A, DECK_SLOT_7B) -> 7,
+      Array(DECK_SLOT_8A, DECK_SLOT_8B) -> 8,
+      Array(DECK_SLOT_9A, DECK_SLOT_9B) -> 9))
 
-  def imageIdentifyYourClass(image: BufferedImage): String = {
-    if (individualPixelAnalyser.testAllPixelsMatch(image, Array(YOUR_DRUID_1, YOUR_DRUID_2, YOUR_DRUID_3))) {
-      "Druid"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(YOUR_HUNTER_1, YOUR_HUNTER_2, YOUR_HUNTER_3))) {
-      "Hunter"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(YOUR_HUNTER_GOLDEN_1, YOUR_HUNTER_GOLDEN_2, YOUR_HUNTER_GOLDEN_3))) {
-      "Hunter"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(YOUR_MAGE_1, YOUR_MAGE_2, YOUR_MAGE_3))) {
-      "Mage"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(YOUR_PALADIN_1, YOUR_PALADIN_2, YOUR_PALADIN_3))) {
-      "Paladin"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(YOUR_PRIEST_1, YOUR_PRIEST_2, YOUR_PRIEST_3))) {
-      "Priest"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(YOUR_ROGUE_1, YOUR_ROGUE_2, YOUR_ROGUE_3))) {
-      "Rogue"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(YOUR_SHAMAN_1, YOUR_SHAMAN_2, YOUR_SHAMAN_3))) {
-      "Shaman"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(YOUR_WARLOCK_1, YOUR_WARLOCK_2, YOUR_WARLOCK_3))) {
-      "Warlock"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(YOUR_WARRIOR_1, YOUR_WARRIOR_2, YOUR_WARRIOR_3))) {
-      "Warrior"
-    } else {
-      null
-    }
-  }
+  def imageIdentifyYourClass(image: BufferedImage): Option[String] =
+    identify(image, Seq(
+      Array(YOUR_DRUID_1, YOUR_DRUID_2, YOUR_DRUID_3) -> "Druid",
+      Array(YOUR_HUNTER_1, YOUR_HUNTER_2, YOUR_HUNTER_3) -> "Hunter",
+      Array(YOUR_HUNTER_GOLDEN_1, YOUR_HUNTER_GOLDEN_2, YOUR_HUNTER_GOLDEN_3) -> "Hunter",
+      Array(YOUR_MAGE_1, YOUR_MAGE_2, YOUR_MAGE_3) -> "Mage",
+      Array(YOUR_PALADIN_1, YOUR_PALADIN_2, YOUR_PALADIN_3) -> "Paladin",
+      Array(YOUR_PRIEST_1, YOUR_PRIEST_2, YOUR_PRIEST_3) -> "Priest",
+      Array(YOUR_ROGUE_1, YOUR_ROGUE_2, YOUR_ROGUE_3) -> "Rogue",
+      Array(YOUR_SHAMAN_1, YOUR_SHAMAN_2, YOUR_SHAMAN_3) -> "Shaman",
+      Array(YOUR_WARLOCK_1, YOUR_WARLOCK_2, YOUR_WARLOCK_3) -> "Warlock",
+      Array(YOUR_WARRIOR_1, YOUR_WARRIOR_2, YOUR_WARRIOR_3) -> "Warrior"))
 
-  def imageIdentifyOpponentClass(image: BufferedImage): String = {
-    if (individualPixelAnalyser.testAllPixelsMatch(image, Array(OPPONENT_DRUID_1, OPPONENT_DRUID_2, OPPONENT_DRUID_3))) {
-      "Druid"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(OPPONENT_HUNTER_1, OPPONENT_HUNTER_2, OPPONENT_HUNTER_3))) {
-      "Hunter"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(OPPONENT_MAGE_1, OPPONENT_MAGE_2, OPPONENT_MAGE_3))) {
-      "Mage"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(OPPONENT_PALADIN_1, OPPONENT_PALADIN_2, OPPONENT_PALADIN_3))) {
-      "Paladin"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(OPPONENT_PRIEST_1, OPPONENT_PRIEST_2, OPPONENT_PRIEST_3))) {
-      "Priest"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(OPPONENT_ROGUE_1, OPPONENT_ROGUE_2, OPPONENT_ROGUE_3))) {
-      "Rogue"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(OPPONENT_SHAMAN_1, OPPONENT_SHAMAN_2, OPPONENT_SHAMAN_3))) {
-      "Shaman"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(OPPONENT_WARLOCK_1, OPPONENT_WARLOCK_2, OPPONENT_WARLOCK_3))) {
-      "Warlock"
-    } else if (individualPixelAnalyser.testAllPixelsMatch(image, Array(OPPONENT_WARRIOR_1, OPPONENT_WARRIOR_2, OPPONENT_WARRIOR_3))) {
-      "Warrior"
-    } else {
-      null
-    }
-  }
+  def imageIdentifyOpponentClass(image: BufferedImage): Option[String] =
+    identify(image, Seq(
+      Array(OPPONENT_DRUID_1, OPPONENT_DRUID_2, OPPONENT_DRUID_3) -> "Druid",
+      Array(OPPONENT_HUNTER_1, OPPONENT_HUNTER_2, OPPONENT_HUNTER_3) -> "Hunter",
+      Array(OPPONENT_MAGE_1, OPPONENT_MAGE_2, OPPONENT_MAGE_3) -> "Mage",
+      Array(OPPONENT_PALADIN_1, OPPONENT_PALADIN_2, OPPONENT_PALADIN_3) -> "Paladin",
+      Array(OPPONENT_PRIEST_1, OPPONENT_PRIEST_2, OPPONENT_PRIEST_3) -> "Priest",
+      Array(OPPONENT_ROGUE_1, OPPONENT_ROGUE_2, OPPONENT_ROGUE_3) -> "Rogue",
+      Array(OPPONENT_SHAMAN_1, OPPONENT_SHAMAN_2, OPPONENT_SHAMAN_3) -> "Shaman",
+      Array(OPPONENT_WARLOCK_1, OPPONENT_WARLOCK_2, OPPONENT_WARLOCK_3) -> "Warlock",
+      Array(OPPONENT_WARRIOR_1, OPPONENT_WARRIOR_2, OPPONENT_WARRIOR_3) -> "Warrior"))
 
   private def analyzeRankLevel(image: BufferedImage) {
     try {

@@ -305,7 +305,7 @@ class Monitor extends JFrame with Observer {
   }
 
   protected def _notify(header: String, message: String) {
-    if (Config.showNotifications()) _notificationQueue.add(header, message, false)
+    if (Config.showNotifications) _notificationQueue.add(header, message, false)
   }
 
   protected def _updateTitle() {
