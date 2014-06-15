@@ -30,9 +30,10 @@ import java.util.Observer
 import javax.swing.ImageIcon
 import javax.swing.JFrame
 import javax.swing.JLabel
-import javax.swing.JOptionPane
+import javax.swing._
 import javax.swing.JPanel
 import javax.swing.JScrollPane
+import javax.swing.JOptionPane._
 import javax.swing.JTabbedPane
 import javax.swing.SwingUtilities
 import net.hearthstats.analysis.AnalyserEvent
@@ -42,7 +43,7 @@ import net.hearthstats.log.LogPane
 import net.hearthstats.logmonitor.HearthstoneLogMonitor
 import net.hearthstats.notification.DialogNotificationQueue
 import net.hearthstats.notification.NotificationQueue
-import net.hearthstats.state.Screen
+import net.hearthstats.state.Screen._
 import net.hearthstats.state.ScreenGroup
 import net.hearthstats.ui.AboutPanel
 import net.hearthstats.ui.ClickableDeckBox
@@ -65,33 +66,30 @@ import net.hearthstats.config.MonitoringMethod
 import net.hearthstats.config.MatchPopup
 import net.hearthstats.ui.Button
 import net.hearthstats.ui.Button
+import scala.swing.Swing
+import net.hearthstats.state.Screen
 
 class Monitor extends JFrame with Observer {
 
   val _hsHelper: ProgramHelper = Config.programHelper
-
-  var hearthstoneLogMonitor: HearthstoneLogMonitor = _
+  lazy val hearthstoneLogMonitor = new HearthstoneLogMonitor
+  val _analytics = AnalyticsTracker.tracker
+  val _logText = new LogPane
+  val _logScroll = new JScrollPane(_logText, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED)
+  val _tabbedPane = new JTabbedPane
+  val optionsPanel = new OptionsPanel(this)
+  val matchPanel = new MatchPanel
 
   var _hearthstoneDetected: Boolean = _
-
-  var _analytics: JGoogleAnalyticsTracker = _
-
-  var _logText: LogPane = _
-  var _logScroll: JScrollPane = _
-  var _tabbedPane: JTabbedPane = _
-  val optionsPanel: OptionsPanel = new OptionsPanel(this)
-  val matchPanel: MatchPanel = new MatchPanel()
-
   var _notificationQueue: NotificationQueue = DialogNotificationQueue.newNotificationQueue()
+  var _playingInMatch: Boolean = false
 
   def start() {
-    if (Config.analyticsEnabled()) {
+    if (Config.analyticsEnabled) {
       debugLog.debug("Enabling analytics")
-      _analytics = AnalyticsTracker.tracker()
       _analytics.trackEvent("app", "AppStart")
     }
-    addWindowListener(new WindowAdapter() {
-
+    addWindowListener(new WindowAdapter {
       override def windowClosing(e: WindowEvent) {
         handleClose()
       }
@@ -121,7 +119,7 @@ class Monitor extends JFrame with Observer {
     } else {
       Log.warn(t("error.userkey_not_entered"))
       bringWindowToFront()
-      JOptionPane.showMessageDialog(this, "HearthStats.net " + t("error.title") + ":\n\n" + t("you_need_to_enter_userkey") +
+      showMessageDialog(this, "HearthStats.net " + t("error.title") + ":\n\n" + t("you_need_to_enter_userkey") +
         "\n\n" +
         t("get_it_at_hsnet_profiles"))
       val d = Desktop.getDesktop
@@ -130,7 +128,7 @@ class Monitor extends JFrame with Observer {
       } catch {
         case e: IOException => Log.warn("Error launching browser with URL " + PROFILES_URL, e)
       }
-      val userkey = JOptionPane.showInputDialog(this, t("enter_your_userkey"))
+      val userkey = showInputDialog(this, t("enter_your_userkey"))
       if (StringUtils.isEmpty(userkey)) {
         false
       } else {
@@ -140,8 +138,7 @@ class Monitor extends JFrame with Observer {
           Config.save()
           Log.info(t("UserkeyStored"))
         } catch {
-          case e: Throwable => Log.warn("Error occurred trying to write settings file, your settings may not be saved",
-            e)
+          case e: Exception => Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
         }
         true
       }
@@ -158,8 +155,7 @@ class Monitor extends JFrame with Observer {
     try {
       Config.save()
     } catch {
-      case t: Throwable => Log.warn("Error occurred trying to write settings file, your settings may not be saved",
-        t)
+      case t: Exception => Log.warn("Error occurred trying to write settings file, your settings may not be saved", t)
     }
     System.exit(0)
   }
@@ -189,13 +185,7 @@ class Monitor extends JFrame with Observer {
    * user to see immediately.
    */
   def bringWindowToFront() {
-    val frame = this
-    java.awt.EventQueue.invokeLater(new Runnable() {
-
-      override def run() {
-        frame.setVisible(true)
-      }
-    })
+    Swing.onEDT(setVisible(true))
   }
 
   /**
@@ -232,15 +222,11 @@ class Monitor extends JFrame with Observer {
 
   private def createAndShowGui() {
     debugLog.debug("Creating GUI")
-    val icon = new ImageIcon(getClass.getResource("/images/icon.png"))
-      .getImage
+    val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
     setIconImage(icon)
     setLocation(Config.getX, Config.getY)
     setSize(Config.getWidth, Config.getHeight)
-    _tabbedPane = new JTabbedPane()
     add(_tabbedPane)
-    _logText = new LogPane()
-    _logScroll = new JScrollPane(_logText, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED)
     _tabbedPane.add(_logScroll, t("tab.log"))
     _tabbedPane.add(matchPanel, t("tab.current_match"))
     _tabbedPane.add(new DecksTab(), t("tab.decks"))
@@ -250,7 +236,7 @@ class Monitor extends JFrame with Observer {
     _enableMinimizeToTray()
     setMinimumSize(new Dimension(500, 600))
     setVisible(true)
-    if (Config.startMinimized()) setState(ICONIFIED)
+    if (Config.startMinimized) setState(ICONIFIED)
     _updateTitle()
   }
 
@@ -263,32 +249,38 @@ class Monitor extends JFrame with Observer {
           Log.info(t("latest_v_available") + " " + availableVersion)
           if (!availableVersion.matches(Config.getVersion)) {
             bringWindowToFront()
-            val dialogButton = JOptionPane.YES_NO_OPTION
-            var dialogResult = JOptionPane.showConfirmDialog(this, "A new version of this uploader is available\n\n" + Updater.getRecentChanges +
-              "\n\n" +
-              t("would_u_like_to_install_update"), "HearthStats.net " + t("uploader_updates_avail"),
+            val dialogButton = YES_NO_OPTION
+            var dialogResult = showConfirmDialog(
+              this,
+              s"""A new version of this uploader is available
+                  |${Updater.getRecentChanges}
+                  |            
+                  |
+                  | ${t("would_u_like_to_install_update")}""".stripMargin,
+              "HearthStats.net " + t("uploader_updates_avail"),
               dialogButton)
-            if (dialogResult == JOptionPane.YES_OPTION) {
+            if (dialogResult == YES_OPTION) {
               Updater.run()
             } else {
-              dialogResult = JOptionPane.showConfirmDialog(null, t("would_you_like_to_disable_updates"),
-                t("disable_update_checking"), dialogButton)
-              if (dialogResult == JOptionPane.YES_OPTION) {
+              dialogResult = showConfirmDialog(
+                null,
+                t("would_you_like_to_disable_updates"),
+                t("disable_update_checking"),
+                dialogButton)
+              if (dialogResult == YES_OPTION) {
                 val options = Array(t("button.ok"))
                 val panel = new JPanel()
                 val lbl = new JLabel(t("reenable_updates_any_time"))
                 panel.add(lbl)
-                JOptionPane.showOptionDialog(this, panel, t("updates_disabled_msg"), JOptionPane.NO_OPTION,
-                  JOptionPane.QUESTION_MESSAGE, null, options.toArray, options(0))
+                showOptionDialog(this, panel, t("updates_disabled_msg"), NO_OPTION,
+                  QUESTION_MESSAGE, null, options.toArray, options(0))
                 Config.setCheckForUpdates(false)
               }
             }
           }
-        } else {
-          Log.warn("Unable to determine latest available version")
-        }
+        } else Log.warn("Unable to determine latest available version")
       } catch {
-        case e: Throwable => {
+        case e: Exception => {
           e.printStackTrace(System.err)
           _notify("Update Checking Error", "Unable to determine the latest available version")
         }
@@ -301,26 +293,12 @@ class Monitor extends JFrame with Observer {
    * disabled
    */
   def setupLogMonitoring() {
-    setMonitorHearthstoneLog(Config.monitoringMethod() == MonitoringMethod.SCREEN_LOG)
-  }
-
-  protected var _drawPaneAdded: Boolean = false
-
-  protected var image: BufferedImage = _
-
-  protected var _drawPane: JPanel = new JPanel() {
-
-    protected override def paintComponent(g: Graphics) {
-      super.paintComponent(g)
-      g.drawImage(image, 0, 0, null)
-    }
+    setMonitorHearthstoneLog(Config.monitoringMethod == MonitoringMethod.SCREEN_LOG)
   }
 
   def setNotificationQueue(_notificationQueue: NotificationQueue) {
     this._notificationQueue = _notificationQueue
   }
-
-  private var _playingInMatch: Boolean = false
 
   protected def _notify(header: String) {
     _notify(header, "")
@@ -335,10 +313,10 @@ class Monitor extends JFrame with Observer {
     if (_hearthstoneDetected) {
       if (HearthstoneAnalyser.getScreen != null) {
         title += " - " + HearthstoneAnalyser.getScreen.title
-        if (HearthstoneAnalyser.getScreen == Screen.PLAY_LOBBY && HearthstoneAnalyser.getMode != null) {
+        if (HearthstoneAnalyser.getScreen == PLAY_LOBBY && HearthstoneAnalyser.getMode != null) {
           title += " " + HearthstoneAnalyser.getMode
         }
-        if (HearthstoneAnalyser.getScreen == Screen.FINDING_OPPONENT) {
+        if (HearthstoneAnalyser.getScreen == FINDING_OPPONENT) {
           if (HearthstoneAnalyser.getMode != null) {
             title += " for " + HearthstoneAnalyser.getMode + " Game"
           }
@@ -359,19 +337,6 @@ class Monitor extends JFrame with Observer {
       title += " - Waiting for Hearthstone "
     }
     setTitle(title)
-  }
-
-  private def _updateImageFrame() {
-    if (!_drawPaneAdded) {
-      add(_drawPane)
-    }
-    if (image.getWidth >= 1024) {
-      setSize(image.getWidth, image.getHeight)
-    }
-    _drawPane.repaint()
-    invalidate()
-    validate()
-    repaint()
   }
 
   private def _submitMatchResult(hsMatch: HearthstoneMatch) {
@@ -400,25 +365,9 @@ class Monitor extends JFrame with Observer {
       if (Config.showHsFoundNotification()) {
         _notify("Hearthstone found")
       }
-      if (hearthstoneLogMonitor == null) {
-        hearthstoneLogMonitor = new HearthstoneLogMonitor()
-      }
       setupLogMonitoring()
     }
     debugLog.debug("  - screen capture")
-    image = _hsHelper.getScreenCapture
-    if (image == null) {
-      debugLog.debug("  - screen capture returned null")
-    } else {
-      if (image.getWidth >= 1024) {
-        debugLog.debug("  - analysing image")
-        HearthstoneAnalyser.analyze(image)
-      }
-      if (Config.mirrorGameImage()) {
-        debugLog.debug("  - mirroring image")
-        _updateImageFrame()
-      }
-    }
   }
 
   protected def _handleHearthstoneNotFound() {
@@ -436,9 +385,9 @@ class Monitor extends JFrame with Observer {
     var error = false
     while (!error) {
       try {
-        if (_hsHelper.foundProgram) {
+        if (_hsHelper.foundProgram)
           _handleHearthstoneFound()
-        } else {
+        else {
           debugLog.debug("  - did not find Hearthstone")
           _handleHearthstoneNotFound()
         }
@@ -468,53 +417,47 @@ class Monitor extends JFrame with Observer {
   private def checkMatchResult(`match`: HearthstoneMatch) {
     matchPanel.updateMatchClassSelectorsIfSet(`match`)
     val matchPopup = Config.showMatchPopup()
-    var showPopup: Boolean = false
-    matchPopup match {
-      case MatchPopup.ALWAYS => showPopup = true
-      case MatchPopup.INCOMPLETE => showPopup = !`match`.isDataComplete
-      case MatchPopup.NEVER => showPopup = false
-      case _ => throw new UnsupportedOperationException("Unknown config option " + Config.showMatchPopup())
+    val showPopup = matchPopup match {
+      case MatchPopup.ALWAYS => true
+      case MatchPopup.INCOMPLETE => !`match`.isDataComplete
+      case MatchPopup.NEVER => false
+      case _ => throw new UnsupportedOperationException("Unknown config option " + Config.showMatchPopup)
     }
     if (showPopup) {
-      val monitor = this
-      SwingUtilities.invokeLater(new Runnable() {
-
-        override def run() {
-          try {
-            var matchHasValidationErrors = !`match`.isDataComplete
-            var infoMessage: String = null
-            do {
-              if (infoMessage == null) {
-                infoMessage = if ((matchPopup == MatchPopup.INCOMPLETE)) t("match.popup.message.incomplete") else t("match.popup.message.always")
+      Swing.onEDT {
+        try {
+          var matchHasValidationErrors = !`match`.isDataComplete
+          var infoMessage: String = null
+          do {
+            if (infoMessage == null) {
+              infoMessage = if ((matchPopup == MatchPopup.INCOMPLETE)) t("match.popup.message.incomplete") else t("match.popup.message.always")
+            }
+            bringWindowToFront()
+            val buttonPressed = MatchEndPopup.showPopup(this, `match`, infoMessage, t("match.popup.title"))
+            matchHasValidationErrors = !`match`.isDataComplete
+            buttonPressed match {
+              case Button.SUBMIT => if (matchHasValidationErrors) {
+                infoMessage = "Some match information is incomplete.<br>Please update these details then click Submit to submit the match to HearthStats:"
+              } else {
+                _submitMatchResult(`match`)
               }
-              bringWindowToFront()
-              val buttonPressed = MatchEndPopup.showPopup(monitor, `match`, infoMessage, t("match.popup.title"))
-              matchHasValidationErrors = !`match`.isDataComplete
-              buttonPressed match {
-                case Button.SUBMIT => if (matchHasValidationErrors) {
-                  infoMessage = "Some match information is incomplete.<br>Please update these details then click Submit to submit the match to HearthStats:"
-                } else {
-                  _submitMatchResult(`match`)
-                }
-                case Button.CANCEL => return
-              }
-            } while (matchHasValidationErrors);
-          } catch {
-            case e: IOException => Main.showErrorDialog("Error submitting match result", e)
-          }
+              case Button.CANCEL => return
+            }
+          } while (matchHasValidationErrors);
+        } catch {
+          case e: Exception => Main.showErrorDialog("Error submitting match result", e)
         }
-      })
-    } else {
+      }
+    } else
       try {
         _submitMatchResult(`match`)
       } catch {
-        case e: IOException => Main.showErrorDialog("Error submitting match result", e)
+        case e: Exception => Main.showErrorDialog("Error submitting match result", e)
       }
-    }
   }
 
   private def handleAnalyserEvent(changed: AnalyserEvent) = changed match {
-    case ARENA_END =>
+    case AnalyserEvent.ARENA_END =>
       _notify("End of Arena Run Detected")
       Log.info("End of Arena Run Detected")
       API.endCurrentArenaRun()
@@ -524,7 +467,7 @@ class Monitor extends JFrame with Observer {
       Log.info("Coin Detected")
 
     case DECK_SLOT =>
-      var deck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot)
+      val deck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot)
       if (deck == null) {
         _tabbedPane.setSelectedIndex(2)
         bringWindowToFront()
@@ -538,7 +481,7 @@ class Monitor extends JFrame with Observer {
     case MODE =>
       _playingInMatch = false
       matchPanel.setCurrentMatchEnabledi(false)
-      if (Config.showModeNotification()) {
+      if (Config.showModeNotification) {
         debugLog.debug(HearthstoneAnalyser.getMode + " level " + HearthstoneAnalyser.getRankLevel)
         if ("Ranked" == HearthstoneAnalyser.getMode) {
           _notify(HearthstoneAnalyser.getMode + " Mode Detected", "Rank Level " + HearthstoneAnalyser.getRankLevel)
@@ -547,8 +490,7 @@ class Monitor extends JFrame with Observer {
         }
       }
       if ("Ranked" == HearthstoneAnalyser.getMode) {
-        Log.info(HearthstoneAnalyser.getMode + " Mode Detected - Level " +
-          HearthstoneAnalyser.getRankLevel)
+        Log.info(HearthstoneAnalyser.getMode + " Mode Detected - Level " + HearthstoneAnalyser.getRankLevel)
       } else {
         Log.info(HearthstoneAnalyser.getMode + " Mode Detected")
       }
@@ -573,9 +515,7 @@ class Monitor extends JFrame with Observer {
       checkMatchResult(HearthstoneAnalyser.getMatch)
 
     case SCREEN =>
-      var inGameModeScreen = (HearthstoneAnalyser.getScreen == Screen.ARENA_LOBBY ||
-        HearthstoneAnalyser.getScreen == Screen.ARENA_END ||
-        HearthstoneAnalyser.getScreen == Screen.PLAY_LOBBY)
+      val inGameModeScreen = Seq(Screen.ARENA_END, ARENA_LOBBY, PLAY_LOBBY) contains HearthstoneAnalyser.getScreen
       if (inGameModeScreen) {
         if (_playingInMatch && HearthstoneAnalyser.getResult == null) {
           _playingInMatch = false
@@ -585,17 +525,19 @@ class Monitor extends JFrame with Observer {
         }
         _playingInMatch = false
       }
-      if (HearthstoneAnalyser.getScreen == Screen.FINDING_OPPONENT) {
+      if (HearthstoneAnalyser.getScreen == FINDING_OPPONENT) {
         setupLogMonitoring()
         matchPanel.resetMatchClassSelectors()
-        if (Config.showDeckOverlay() && "Arena" != HearthstoneAnalyser.getMode) {
+        if (Config.showDeckOverlay && "Arena" != HearthstoneAnalyser.getMode) {
           val selectedDeck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot)
-          if (selectedDeck != null && selectedDeck.isValid && hearthstoneLogMonitor != null) {
+          if (selectedDeck != null && selectedDeck.isValid) {
             ClickableDeckBox.showBox(selectedDeck, hearthstoneLogMonitor.cardEvents)
           } else {
-            var message: String = null
-            message = if (selectedDeck == null) "Invalid or empty deck, edit it on HearthStats.net to display deck overlay (you will need to restart the uploader)" else String.format("Invalid or empty deck, <a href='http://hearthstats.net/decks/%s/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart the uploader)",
-              selectedDeck.slug)
+            val message =
+              if (selectedDeck == null)
+                "Invalid or empty deck, edit it on HearthStats.net to display deck overlay (you will need to restart the uploader)"
+              else
+                s"Invalid or empty deck, <a href='http://hearthstats.net/decks/${selectedDeck.slug}/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart the uploader)"
             _notify(message)
             Log.info(message)
           }
@@ -607,17 +549,16 @@ class Monitor extends JFrame with Observer {
       }
       if (HearthstoneAnalyser.getScreen.group != ScreenGroup.MATCH_END &&
         !DO_NOT_NOTIFY_SCREENS.contains(HearthstoneAnalyser.getScreen) &&
-        Config.showScreenNotification()) {
-        if (HearthstoneAnalyser.getScreen == Screen.PRACTICE_LOBBY) {
+        Config.showScreenNotification)
+        if (HearthstoneAnalyser.getScreen == PRACTICE_LOBBY)
           _notify(HearthstoneAnalyser.getScreen.title + " Screen Detected", "Results are not tracked in practice mode")
-        } else {
+        else
           _notify(HearthstoneAnalyser.getScreen.title + " Screen Detected")
-        }
-      }
-      if (HearthstoneAnalyser.getScreen == Screen.PRACTICE_LOBBY) {
+
+      if (HearthstoneAnalyser.getScreen == PRACTICE_LOBBY)
         Log.info(HearthstoneAnalyser.getScreen.title + " Screen Detected. Result tracking disabled.")
-      } else {
-        if (HearthstoneAnalyser.getScreen == Screen.MATCH_VS) {
+      else {
+        if (HearthstoneAnalyser.getScreen == MATCH_VS) {
           Log.divider()
         }
         Log.info(HearthstoneAnalyser.getScreen.title + " Screen Detected")
@@ -628,12 +569,9 @@ class Monitor extends JFrame with Observer {
       Log.info("Playing as " + HearthstoneAnalyser.getYourClass)
 
     case YOUR_TURN =>
-      if (Config.showYourTurnNotification()) {
-        _notify((if (HearthstoneAnalyser.isYourTurn) "Your" else "Opponent") +
-          " turn detected")
-      }
-      Log.info((if (HearthstoneAnalyser.isYourTurn) "Your" else "Opponent") +
-        " turn detected")
+      if (Config.showYourTurnNotification)
+        _notify((if (HearthstoneAnalyser.isYourTurn) "Your" else "Opponent") + " turn detected")
+      Log.info((if (HearthstoneAnalyser.isYourTurn) "Your" else "Opponent") + " turn detected")
 
     case ERROR_ANALYSING_IMAGE =>
       _notify("Error analysing opponent name image")
@@ -645,7 +583,7 @@ class Monitor extends JFrame with Observer {
 
   }
 
-  def getLogPane(): LogPane = _logText
+  def getLogPane: LogPane = _logText
 
   private def _handleApiEvent(changed: AnyRef) = changed.toString match {
     case "error" =>
@@ -655,8 +593,8 @@ class Monitor extends JFrame with Observer {
 
     case "result" =>
       Log.info("API Result: " + API.message)
-      var lastMatch = HearthstoneAnalyser.getMatch
-      lastMatch.id_$eq(API.lastMatchId)
+      val lastMatch = HearthstoneAnalyser.getMatch
+      lastMatch.id = API.lastMatchId
       matchPanel.setCurrentMatchEnabledi(false)
       matchPanel.updateCurrentMatchUi()
       matchPanel.setLastMatch(lastMatch)
@@ -670,15 +608,12 @@ class Monitor extends JFrame with Observer {
 
   private def _handleProgramHelperEvent(changed: AnyRef) {
     Log.info(changed.toString)
-    if (changed.toString.matches(".*minimized.*")) {
+    if (changed.toString.matches(".*minimized.*"))
       _notify("Hearthstone Minimized", "Warning! No detection possible while minimized.")
-    }
-    if (changed.toString.matches(".*fullscreen.*")) {
-      JOptionPane.showMessageDialog(this, "Hearthstats.net Uploader Warning! \n\nNo detection possible while Hearthstone is in fullscreen mode.\n\nPlease set Hearthstone to WINDOWED mode and close and RESTART Hearthstone.\n\nSorry for the inconvenience.")
-    }
-    if (changed.toString.matches(".*restored.*")) {
+    if (changed.toString.matches(".*fullscreen.*"))
+      showMessageDialog(this, "Hearthstats.net Uploader Warning! \n\nNo detection possible while Hearthstone is in fullscreen mode.\n\nPlease set Hearthstone to WINDOWED mode and close and RESTART Hearthstone.\n\nSorry for the inconvenience.")
+    if (changed.toString.matches(".*restored.*"))
       _notify("Hearthstone Restored", "Resuming detection ...")
-    }
   }
 
   override def update(dispatcher: Observable, changed: AnyRef) {
@@ -692,10 +627,6 @@ class Monitor extends JFrame with Observer {
     if (dispatcherClass.matches(".*ProgramHelper(Windows|Osx)?")) _handleProgramHelperEvent(changed)
   }
 
-  var trayIcon: TrayIcon = _
-
-  var tray: SystemTray = _
-
   private var poller: Thread = new Thread(new Runnable() {
 
     override def run() {
@@ -703,35 +634,40 @@ class Monitor extends JFrame with Observer {
     }
   })
 
+  lazy val restoreButton = {
+    val button = new MenuItem("Restore")
+    button.setFont(new Font("Arial", Font.BOLD, 14))
+    button.addActionListener(new ActionListener {
+      def actionPerformed(e: ActionEvent) {
+        setVisible(true)
+        setExtendedState(NORMAL)
+      }
+    })
+    button
+  }
+
+  lazy val exitButton = {
+    val exitListener = new ActionListener() {
+      def actionPerformed(e: ActionEvent) {
+        System.exit(0)
+      }
+    }
+    val button = new MenuItem("Exit")
+    button.addActionListener(exitListener)
+    button.setFont(new Font("Arial", Font.PLAIN, 14))
+    button
+  }
+
   private def _enableMinimizeToTray() {
     if (SystemTray.isSupported) {
-      tray = SystemTray.getSystemTray
-      val exitListener = new ActionListener() {
-
-        def actionPerformed(e: ActionEvent) {
-          System.exit(0)
-        }
-      }
+      val tray = SystemTray.getSystemTray
       val popup = new PopupMenu()
-      var defaultItem = new MenuItem("Restore")
-      defaultItem.setFont(new Font("Arial", Font.BOLD, 14))
-      defaultItem.addActionListener(new ActionListener() {
-
-        def actionPerformed(e: ActionEvent) {
-          setVisible(true)
-          setExtendedState(NORMAL)
-        }
-      })
-      popup.add(defaultItem)
-      defaultItem = new MenuItem("Exit")
-      defaultItem.addActionListener(exitListener)
-      defaultItem.setFont(new Font("Arial", Font.PLAIN, 14))
-      popup.add(defaultItem)
-      val icon = new ImageIcon(getClass.getResource("/images/icon.png"))
-        .getImage
-      trayIcon = new TrayIcon(icon, "HearthStats.net Uploader", popup)
+      popup.add(restoreButton)
+      popup.add(exitButton)
+      val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
+      val trayIcon = new TrayIcon(icon, "HearthStats.net Uploader", popup)
       trayIcon.setImageAutoSize(true)
-      trayIcon.addMouseListener(new MouseAdapter() {
+      trayIcon.addMouseListener(new MouseAdapter {
         override def mousePressed(e: MouseEvent) {
           if (e.getClickCount >= 2) {
             setVisible(true)
@@ -739,41 +675,26 @@ class Monitor extends JFrame with Observer {
           }
         }
       })
-    } else {
-      debugLog.debug("system tray not supported")
-    }
-    addWindowStateListener(new WindowStateListener() {
-
-      def windowStateChanged(e: WindowEvent) {
-        if (Config.minimizeToTray()) {
-          if (e.getNewState == ICONIFIED) {
-            try {
-              tray.add(trayIcon)
-              setVisible(false)
-            } catch {
-              case ex: AWTException =>
+      addWindowStateListener(new WindowStateListener {
+        def windowStateChanged(e: WindowEvent) {
+          if (Config.minimizeToTray) {
+            e.getNewState match {
+              case ICONIFIED =>
+                try {
+                  tray.add(trayIcon)
+                  setVisible(false)
+                } catch {
+                  case ex: AWTException => debugLog.debug(ex.getMessage, ex)
+                }
+              case MAXIMIZED_BOTH | NORMAL =>
+                tray.remove(trayIcon)
+                setVisible(true)
+                debugLog.debug("Tray icon removed")
             }
-          }
-          if (e.getNewState == 7) {
-            try {
-              tray.add(trayIcon)
-              setVisible(false)
-            } catch {
-              case ex: AWTException =>
-            }
-          }
-          if (e.getNewState == MAXIMIZED_BOTH) {
-            tray.remove(trayIcon)
-            setVisible(true)
-          }
-          if (e.getNewState == NORMAL) {
-            tray.remove(trayIcon)
-            setVisible(true)
-            debugLog.debug("Tray icon removed")
           }
         }
-      }
-    })
+      })
+    } else debugLog.debug("system tray not supported")
   }
 
   def setMonitorHearthstoneLog(monitorHearthstoneLog: Boolean) {
@@ -783,13 +704,10 @@ class Monitor extends JFrame with Observer {
       if (_hearthstoneDetected) {
         if (configWasCreated) {
           Log.help("Hearthstone log.config changed &mdash; please restart Hearthstone so that it starts generating logs")
-        } else if (hearthstoneLogMonitor == null) hearthstoneLogMonitor = new HearthstoneLogMonitor()
+        }
       }
     } else {
-      if (hearthstoneLogMonitor != null) {
-        hearthstoneLogMonitor.stop()
-        hearthstoneLogMonitor = null
-      }
+      hearthstoneLogMonitor.stop()
     }
   }
 }
@@ -799,8 +717,8 @@ object Monitor {
 
   val POLLING_INTERVAL_IN_MS = 100
   val DO_NOT_NOTIFY_SCREENS = EnumSet.of(
-    Screen.COLLECTION,
-    Screen.COLLECTION_ZOOM,
-    Screen.MAIN_TODAYSQUESTS,
-    Screen.TITLE)
+    COLLECTION,
+    COLLECTION_ZOOM,
+    MAIN_TODAYSQUESTS,
+    TITLE)
 }
