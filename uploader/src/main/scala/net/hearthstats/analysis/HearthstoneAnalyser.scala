@@ -228,7 +228,7 @@ object HearthstoneAnalyser extends Observable with Logging {
     imageIdentifyDeckSlot(image) match {
       case Some(newDeckSlot) if newDeckSlot != getDeckSlot =>
         setDeckSlot(newDeckSlot)
-      case None =>
+      case _ =>
     }
   }
 

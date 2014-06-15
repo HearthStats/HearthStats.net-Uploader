@@ -368,6 +368,13 @@ class Monitor extends JFrame with Observer {
       setupLogMonitoring()
     }
     debugLog.debug("  - screen capture")
+    val image = _hsHelper.getScreenCapture
+    if (image == null)
+      debugLog.debug("  - screen capture returned null")
+    else if (image.getWidth >= 1024) {
+      debugLog.debug("  - analysing image")
+      HearthstoneAnalyser.analyze(image)
+    }
   }
 
   protected def _handleHearthstoneNotFound() {
