@@ -26,8 +26,8 @@ import net.hearthstats.Config;
 import net.hearthstats.Constants;
 import net.hearthstats.HearthstoneMatch;
 import net.hearthstats.Main;
-import net.miginfocom.swing.MigLayout;
 import net.hearthstats.analysis.HearthstoneAnalyser;
+import net.miginfocom.swing.MigLayout;
 
 
 public class MatchPanel extends JPanel {
@@ -80,7 +80,7 @@ public class MatchPanel extends JPanel {
     _currentOpponentNameField.setMinimumSize(new Dimension(100, 1));
     _currentOpponentNameField.addKeyListener(new KeyAdapter() {
       public void keyReleased(KeyEvent e) {
-        HearthstoneAnalyser.getMatch().opponentName_$eq(
+        HearthstoneAnalyser.hsMatch().opponentName_$eq(
             _currentOpponentNameField.getText().replaceAll("(\r\n|\n)", "<br/>"));
       }
     });
@@ -92,7 +92,7 @@ public class MatchPanel extends JPanel {
     _currentGameCoinField.setSelected(Config.showHsClosedNotification());
     _currentGameCoinField.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
-        HearthstoneAnalyser.getMatch().coin_$eq(_currentGameCoinField.isSelected());
+        HearthstoneAnalyser.hsMatch().coin_$eq(_currentGameCoinField.isSelected());
       }
     });
     add(_currentGameCoinField, "wrap");
@@ -107,7 +107,7 @@ public class MatchPanel extends JPanel {
     _currentNotesField.setBackground(Color.WHITE);
     _currentNotesField.addKeyListener(new KeyAdapter() {
       public void keyReleased(KeyEvent e) {
-        HearthstoneAnalyser.getMatch().notes_$eq(_currentNotesField.getText());
+        HearthstoneAnalyser.hsMatch().notes_$eq(_currentNotesField.getText());
       }
     });
     add(_currentNotesField, "skip,span");
@@ -135,7 +135,7 @@ public class MatchPanel extends JPanel {
   }
 
   public void updateCurrentMatchUi() {
-    HearthstoneMatch match = HearthstoneAnalyser.getMatch();
+    HearthstoneMatch match = HearthstoneAnalyser.hsMatch();
     updateMatchClassSelectorsIfSet(match);
     if (_currentMatchEnabled)
       _currentMatchLabel.setText(match.mode() + " Match - " + " Turn " + match.numTurns());

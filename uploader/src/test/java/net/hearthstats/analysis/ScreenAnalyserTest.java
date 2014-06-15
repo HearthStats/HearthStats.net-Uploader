@@ -128,7 +128,7 @@ public class ScreenAnalyserTest {
               writeScreenSpecificTest(output, "ranked",
                   HearthstoneAnalyser.imageShowsRankedPlaySelected(bufferedImage));
               writeScreenSpecificTest(output, "deckSlot",
-                  HearthstoneAnalyser.imageIdentifyDeckSlot(bufferedImage));
+                  (Integer) HearthstoneAnalyser.imageIdentifyDeckSlot(bufferedImage).getOrElse(null));
                             writeScreenSpecificTest(output, "rankLevel", rankLevelOcr.processNumber(bufferedImage));
                         }
                         if (primaryMatches.contains(Screen.MATCH_VS) || primaryMatches.contains(Screen.MATCH_STARTINGHAND)) {

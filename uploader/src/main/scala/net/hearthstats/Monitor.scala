@@ -311,18 +311,18 @@ class Monitor extends JFrame with Observer {
   protected def _updateTitle() {
     var title = "HearthStats.net Uploader"
     if (_hearthstoneDetected) {
-      if (HearthstoneAnalyser.getScreen != null) {
-        title += " - " + HearthstoneAnalyser.getScreen.title
-        if (HearthstoneAnalyser.getScreen == PLAY_LOBBY && HearthstoneAnalyser.getMode != null) {
+      if (HearthstoneAnalyser.screen != null) {
+        title += " - " + HearthstoneAnalyser.screen.title
+        if (HearthstoneAnalyser.screen == PLAY_LOBBY && HearthstoneAnalyser.getMode != null) {
           title += " " + HearthstoneAnalyser.getMode
         }
-        if (HearthstoneAnalyser.getScreen == FINDING_OPPONENT) {
+        if (HearthstoneAnalyser.screen == FINDING_OPPONENT) {
           if (HearthstoneAnalyser.getMode != null) {
             title += " for " + HearthstoneAnalyser.getMode + " Game"
           }
         }
-        if ("Match Start" == HearthstoneAnalyser.getScreen.title ||
-          "Playing" == HearthstoneAnalyser.getScreen.title) {
+        if ("Match Start" == HearthstoneAnalyser.screen.title ||
+          "Playing" == HearthstoneAnalyser.screen.title) {
           title += " " +
             (if (HearthstoneAnalyser.getMode == null) "[undetected]" else HearthstoneAnalyser.getMode)
           title += " " + (if (HearthstoneAnalyser.getCoin) "" else "No ") +
@@ -414,32 +414,32 @@ class Monitor extends JFrame with Observer {
    * @param match
    *          The match to check and submit.
    */
-  private def checkMatchResult(`match`: HearthstoneMatch) {
-    matchPanel.updateMatchClassSelectorsIfSet(`match`)
-    val matchPopup = Config.showMatchPopup()
+  private def checkMatchResult(hsMatch: HearthstoneMatch) {
+    matchPanel.updateMatchClassSelectorsIfSet(hsMatch)
+    val matchPopup = Config.showMatchPopup
     val showPopup = matchPopup match {
       case MatchPopup.ALWAYS => true
-      case MatchPopup.INCOMPLETE => !`match`.isDataComplete
+      case MatchPopup.INCOMPLETE => !hsMatch.isDataComplete
       case MatchPopup.NEVER => false
       case _ => throw new UnsupportedOperationException("Unknown config option " + Config.showMatchPopup)
     }
     if (showPopup) {
       Swing.onEDT {
         try {
-          var matchHasValidationErrors = !`match`.isDataComplete
+          var matchHasValidationErrors = !hsMatch.isDataComplete
           var infoMessage: String = null
           do {
             if (infoMessage == null) {
               infoMessage = if ((matchPopup == MatchPopup.INCOMPLETE)) t("match.popup.message.incomplete") else t("match.popup.message.always")
             }
             bringWindowToFront()
-            val buttonPressed = MatchEndPopup.showPopup(this, `match`, infoMessage, t("match.popup.title"))
-            matchHasValidationErrors = !`match`.isDataComplete
+            val buttonPressed = MatchEndPopup.showPopup(this, hsMatch, infoMessage, t("match.popup.title"))
+            matchHasValidationErrors = !hsMatch.isDataComplete
             buttonPressed match {
               case Button.SUBMIT => if (matchHasValidationErrors) {
                 infoMessage = "Some match information is incomplete.<br>Please update these details then click Submit to submit the match to HearthStats:"
               } else {
-                _submitMatchResult(`match`)
+                _submitMatchResult(hsMatch)
               }
               case Button.CANCEL => return
             }
@@ -450,7 +450,7 @@ class Monitor extends JFrame with Observer {
       }
     } else
       try {
-        _submitMatchResult(`match`)
+        _submitMatchResult(hsMatch)
       } catch {
         case e: Exception => Main.showErrorDialog("Error submitting match result", e)
       }
@@ -512,20 +512,20 @@ class Monitor extends JFrame with Observer {
       matchPanel.setCurrentMatchEnabledi(false)
       _notify(HearthstoneAnalyser.getResult + " Detected")
       Log.info(HearthstoneAnalyser.getResult + " Detected")
-      checkMatchResult(HearthstoneAnalyser.getMatch)
+      checkMatchResult(HearthstoneAnalyser.hsMatch)
 
     case SCREEN =>
-      val inGameModeScreen = Seq(Screen.ARENA_END, ARENA_LOBBY, PLAY_LOBBY) contains HearthstoneAnalyser.getScreen
+      val inGameModeScreen = Seq(Screen.ARENA_END, ARENA_LOBBY, PLAY_LOBBY) contains HearthstoneAnalyser.screen
       if (inGameModeScreen) {
         if (_playingInMatch && HearthstoneAnalyser.getResult == null) {
           _playingInMatch = false
           _notify("Detection Error", "Match result was not detected.")
           Log.info("Detection Error: Match result was not detected.")
-          checkMatchResult(HearthstoneAnalyser.getMatch)
+          checkMatchResult(HearthstoneAnalyser.hsMatch)
         }
         _playingInMatch = false
       }
-      if (HearthstoneAnalyser.getScreen == FINDING_OPPONENT) {
+      if (HearthstoneAnalyser.screen == FINDING_OPPONENT) {
         setupLogMonitoring()
         matchPanel.resetMatchClassSelectors()
         if (Config.showDeckOverlay && "Arena" != HearthstoneAnalyser.getMode) {
@@ -543,25 +543,25 @@ class Monitor extends JFrame with Observer {
           }
         }
       }
-      if (HearthstoneAnalyser.getScreen.group == ScreenGroup.MATCH_START) {
+      if (HearthstoneAnalyser.screen.group == ScreenGroup.MATCH_START) {
         matchPanel.setCurrentMatchEnabledi(true)
         _playingInMatch = true
       }
-      if (HearthstoneAnalyser.getScreen.group != ScreenGroup.MATCH_END &&
-        !DO_NOT_NOTIFY_SCREENS.contains(HearthstoneAnalyser.getScreen) &&
+      if (HearthstoneAnalyser.screen.group != ScreenGroup.MATCH_END &&
+        !DO_NOT_NOTIFY_SCREENS.contains(HearthstoneAnalyser.screen) &&
         Config.showScreenNotification)
-        if (HearthstoneAnalyser.getScreen == PRACTICE_LOBBY)
-          _notify(HearthstoneAnalyser.getScreen.title + " Screen Detected", "Results are not tracked in practice mode")
+        if (HearthstoneAnalyser.screen == PRACTICE_LOBBY)
+          _notify(HearthstoneAnalyser.screen.title + " Screen Detected", "Results are not tracked in practice mode")
         else
-          _notify(HearthstoneAnalyser.getScreen.title + " Screen Detected")
+          _notify(HearthstoneAnalyser.screen.title + " Screen Detected")
 
-      if (HearthstoneAnalyser.getScreen == PRACTICE_LOBBY)
-        Log.info(HearthstoneAnalyser.getScreen.title + " Screen Detected. Result tracking disabled.")
+      if (HearthstoneAnalyser.screen == PRACTICE_LOBBY)
+        Log.info(HearthstoneAnalyser.screen.title + " Screen Detected. Result tracking disabled.")
       else {
-        if (HearthstoneAnalyser.getScreen == MATCH_VS) {
+        if (HearthstoneAnalyser.screen == MATCH_VS) {
           Log.divider()
         }
-        Log.info(HearthstoneAnalyser.getScreen.title + " Screen Detected")
+        Log.info(HearthstoneAnalyser.screen.title + " Screen Detected")
       }
 
     case YOUR_CLASS =>
@@ -593,7 +593,7 @@ class Monitor extends JFrame with Observer {
 
     case "result" =>
       Log.info("API Result: " + API.message)
-      val lastMatch = HearthstoneAnalyser.getMatch
+      val lastMatch = HearthstoneAnalyser.hsMatch
       lastMatch.id = API.lastMatchId
       matchPanel.setCurrentMatchEnabledi(false)
       matchPanel.updateCurrentMatchUi()
