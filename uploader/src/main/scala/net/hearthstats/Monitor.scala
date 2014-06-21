@@ -356,13 +356,14 @@ class Monitor extends JFrame with Observer {
       _analytics.trackEvent("app", "Submit" + hsMatch.mode + "Match")
     }
     API.createMatch(hsMatch)
+    HearthstoneAnalyser.hsMatch = new HearthstoneMatch
   }
 
   protected def _handleHearthstoneFound() {
     if (!_hearthstoneDetected) {
       _hearthstoneDetected = true
       debugLog.debug("  - hearthstoneDetected")
-      if (Config.showHsFoundNotification()) {
+      if (Config.showHsFoundNotification) {
         _notify("Hearthstone found")
       }
       setupLogMonitoring()
@@ -381,7 +382,7 @@ class Monitor extends JFrame with Observer {
     if (_hearthstoneDetected) {
       _hearthstoneDetected = false
       debugLog.debug("  - changed hearthstoneDetected to false")
-      if (Config.showHsClosedNotification()) {
+      if (Config.showHsClosedNotification) {
         _notify("Hearthstone closed")
         HearthstoneAnalyser.reset()
       }
@@ -606,7 +607,7 @@ class Monitor extends JFrame with Observer {
       matchPanel.updateCurrentMatchUi()
       matchPanel.setLastMatch(lastMatch)
       if (API.message.matches(".*(Edit match|Arena match successfully created).*")) {
-        HearthstoneAnalyser.resetMatch()
+        HearthstoneAnalyser.hsMatch = new HearthstoneMatch
         matchPanel.resetMatchClassSelectors()
         Log.divider()
       }

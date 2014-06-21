@@ -19,7 +19,8 @@ class HearthstoneMatch(var mode: String = null,
   var numTurns: Int = -1,
   var duration: Int = -1,
   var notes: String = null,
-  var id: Int = -1) {
+  var id: Int = -1,
+  var initialized: Boolean = false) {
   //needed for java calls
   def this() = this(mode = null)
 

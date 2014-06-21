@@ -30,6 +30,7 @@ import net.hearthstats.state.UniquePixel._
 import net.hearthstats.util.MatchOutcome
 import net.hearthstats.util.Rank
 import net.hearthstats.state.UniquePixel
+import net.hearthstats.HearthstoneMatch
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
@@ -66,7 +67,7 @@ object HearthstoneAnalyser extends Observable with Logging {
 
   var isYourTurn: Boolean = true
 
-  var hsMatch: HearthstoneMatch = new HearthstoneMatch()
+  var hsMatch: HearthstoneMatch = new HearthstoneMatch
 
   private var mode: String = _
 
@@ -83,9 +84,8 @@ object HearthstoneAnalyser extends Observable with Logging {
   private var iterationsSinceOpponentTurn: Int = 0
 
   def analyze(image: BufferedImage) {
-    if (lastImage != null) {
+    if (lastImage != null)
       lastImage.flush()
-    }
     lastImage = image
     val matchedScreen =
       if (iterationsSinceScreenMatched < 10) screenAnalyser.identifyScreen(image, screen)
@@ -174,10 +174,12 @@ object HearthstoneAnalyser extends Observable with Logging {
         setArenaRunEnd()
       newScreen.group match {
         case MATCH_START =>
-          hsMatch = new HearthstoneMatch
-          hsMatch.mode = mode
-          hsMatch.deckSlot = deckSlot
-          hsMatch.rankLevel = rankLevel
+          if (hsMatch.initialized == false) {
+            hsMatch.initialized = true
+            hsMatch.mode = mode
+            hsMatch.deckSlot = deckSlot
+            hsMatch.rankLevel = rankLevel
+          }
           arenaRunEndDetected = false
           isYourTurn = false
           iterationsSinceClassCheckingStarted = 0
@@ -459,12 +461,8 @@ object HearthstoneAnalyser extends Observable with Logging {
     }
   }
 
-  def resetMatch() {
-    hsMatch = new HearthstoneMatch()
-  }
-
   def reset() {
-    resetMatch()
+    hsMatch = new HearthstoneMatch
     screen = null
     isYourTurn = false
     arenaRunEndDetected = false
