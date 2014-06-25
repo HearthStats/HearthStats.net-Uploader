@@ -1,9 +1,9 @@
 /**
  * @author shyos
  */
-package zulu.deckport.prob;
+package zulu.deckexport.prob;
 
-import zulu.deckport.card.Card;
+import zulu.deckexport.card.Card;
 
 public class ProbListItem {
 	private Card card;

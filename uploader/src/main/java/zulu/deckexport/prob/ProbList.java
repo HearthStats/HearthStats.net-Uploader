@@ -1,12 +1,12 @@
 /**
  * @author shyos
  */
-package zulu.deckport.prob;
+package zulu.deckexport.prob;
 
 import java.util.LinkedList;
 
-import zulu.deckport.card.Card;
-import zulu.deckport.extracter.Constants;
+import zulu.deckexport.card.Card;
+import zulu.deckexport.extracter.Constants;
 
 public class ProbList{
 	LinkedList<ProbListItem> items;

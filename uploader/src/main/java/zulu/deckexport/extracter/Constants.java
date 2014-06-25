@@ -1,7 +1,7 @@
 /**
  * @author shyos
  */
-package zulu.deckport.extracter;
+package zulu.deckexport.extracter;
 
 public class Constants {
 	public static int probItemLimit = 5;

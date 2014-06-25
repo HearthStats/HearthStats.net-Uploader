@@ -1,7 +1,7 @@
 /**
  * @author shyos
  */
-package zulu.deckport.extracter;
+package zulu.deckexport.extracter;
 
 import java.awt.image.BufferedImage;
 

@@ -1,9 +1,9 @@
 /**
  * @author shyos
  */
-package zulu.deckport.extracter;
+package zulu.deckexport.extracter;
 
-import zulu.deckport.util.Myrect;
+import zulu.deckexport.util.Myrect;
 
 public class PixelManager {	
 	private static int x_FirstCard;			// X of first card
