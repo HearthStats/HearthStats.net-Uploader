@@ -61,15 +61,13 @@ import net.hearthstats.analysis.HearthstoneAnalyser
 import javax.swing.WindowConstants
 import java.awt.Frame._
 import javax.swing.ScrollPaneConstants._
-import net.hearthstats.config.OS
-import net.hearthstats.config.MonitoringMethod
-import net.hearthstats.config.MatchPopup
+import net.hearthstats.config.{Environment, OS, MonitoringMethod, MatchPopup}
 import net.hearthstats.ui.Button
 import net.hearthstats.ui.Button
 import scala.swing.Swing
 import net.hearthstats.state.Screen
 
-class Monitor extends JFrame with Observer {
+class Monitor(val environment: Environment) extends JFrame with Observer {
 
   val _hsHelper: ProgramHelper = Config.programHelper
   lazy val hearthstoneLogMonitor = new HearthstoneLogMonitor
@@ -105,7 +103,7 @@ class Monitor extends JFrame with Observer {
     } else {
       System.exit(1)
     }
-    if (Config.os == OS.OSX) {
+    if (environment.os == OS.OSX) {
       Log.info(t("waiting_for_hs"))
     } else {
       Log.info(t("waiting_for_hs_windowed"))
@@ -164,7 +162,7 @@ class Monitor extends JFrame with Observer {
     debugLog.debug("Showing welcome log messages")
     Log.welcome("HearthStats.net " + t("Uploader") + " v" + Config.getVersionWithOs)
     Log.help(t("welcome_1_set_decks"))
-    if (Config.os == OS.OSX) {
+    if (environment.os == OS.OSX) {
       Log.help(t("welcome_2_run_hearthstone"))
       Log.help(t("welcome_3_notifications"))
     } else {
