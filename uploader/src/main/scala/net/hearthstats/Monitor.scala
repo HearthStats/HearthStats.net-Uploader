@@ -49,14 +49,14 @@ import Monitor._
 import net.hearthstats.analysis.HearthstoneAnalyser
 import java.awt.Frame._
 import javax.swing.ScrollPaneConstants._
-import net.hearthstats.config.{Environment, OS, MonitoringMethod, MatchPopup}
+import net.hearthstats.config.{ Environment, OS, MonitoringMethod, MatchPopup }
 import net.hearthstats.ui.Button
 import scala.swing.Swing
 import net.hearthstats.state.Screen
 
 class Monitor(val environment: Environment) extends JFrame with Observer {
 
-  val _hsHelper: ProgramHelper = environment.newProgramHelper
+  val _hsHelper: ProgramHelper = environment.programHelper
   lazy val hearthstoneLogMonitor = new HearthstoneLogMonitor(environment.hearthstoneLogFile)
   val _analytics = AnalyticsTracker.tracker
   val _logText = new LogPane

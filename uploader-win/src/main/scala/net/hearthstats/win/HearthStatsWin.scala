@@ -11,25 +11,14 @@ import grizzled.slf4j.Logging
 /**
  * Main object for the Windows application, starts up the HearthStats Uploader.
  */
-object HearthStatsWin extends Logging {
+object HearthStatsWin extends Logging with App {
 
-  val environment = new EnvironmentWin()
-
-
-  /**
-   * The entry point: this is the first method to run when HearthStats starts up on Windows.
-   *
-   * @param args Parameters from the command line, if any.
-   */
-  def main(args: Array[String]) {
-
-    setupTesseract
+  val environment = new EnvironmentWin
+    setupTesseract()
     Main.start(environment)
 
-  }
 
-
-  def setupTesseract {
+  def setupTesseract():Unit= {
     debug("Extracting Tesseract data")
 
     // Determine where the Tesseract training data is stored, and copy it into the tmp folder

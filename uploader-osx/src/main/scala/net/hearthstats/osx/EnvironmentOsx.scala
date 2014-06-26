@@ -1,43 +1,36 @@
 package net.hearthstats.osx
 
-import net.hearthstats.config.{OS, Environment}
-import net.hearthstats.notification.{DialogNotificationQueue, NotificationQueue}
+import net.hearthstats.config.{ OS, Environment }
+import net.hearthstats.notification.{ DialogNotificationQueue, NotificationQueue }
 import java.io.File
-import net.hearthstats.{ProgramHelper, Config}
+import net.hearthstats.{ ProgramHelper, Config }
 
 /**
  * Mac OS X environment.
  */
 class EnvironmentOsx extends Environment {
 
-  override def os: OS = OS.OSX
+  val os: OS = OS.OSX
 
-  // OS X may use the HearthStats notifications or inbuilt OS X notifications
-  override def newNotificationQueue: NotificationQueue = {
-    if (Config.useOsxNotifications)
-      new OsxNotificationQueue
-    else
-      new DialogNotificationQueue
-  }
+  val programHelper: ProgramHelper = new ProgramHelperOsx
 
-  override def newProgramHelper: ProgramHelper = new ProgramHelperOsx
-
-  override def extractionFolder = {
+  val extractionFolder = {
     val libFolder = new File(Environment.systemProperty("user.home") + "/Library/Application Support/HearthStatsUploader")
     libFolder.mkdir
     libFolder.getAbsolutePath
   }
 
-  override def hearthstoneConfigFolder = {
+  val hearthstoneConfigFolder = {
     val configFolder = new File(Environment.systemProperty("user.home") + "/Library/Preferences/Blizzard/Hearthstone")
     configFolder.getAbsolutePath
   }
 
-  override def hearthstoneLogFile = {
+  val hearthstoneLogFile = {
     val logFile = new File(Environment.systemProperty("user.home") + "/Library/Logs/Unity/Player.log")
     logFile.getAbsolutePath
   }
 
-  override def osxNotificationsSupported: Boolean = Environment.isOsVersionAtLeast(10, 8)
+  val osxNotificationsSupported: Boolean =
+    Environment.isOsVersionAtLeast(10, 8)
 
 }

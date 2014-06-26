@@ -4,33 +4,18 @@ import net.hearthstats.Main
 import java.io.File
 import net.hearthstats.log.Log
 import grizzled.slf4j.Logging
-import javax.swing.{JOptionPane, JLabel}
+import javax.swing.{ JOptionPane, JLabel }
 import net.hearthstats.config.Environment
-
 
 /**
  * Main object for the OS X bundle, starts up the HearthStats Uploader.
  */
-object HearthStatsOsx extends Logging {
+object HearthStatsOsx extends Logging with App {
+  val environment = new EnvironmentOsx
+  setupTesseract()
+  Main.start(environment)
 
-  val environment = new EnvironmentOsx()
-
-
-  /**
-   * The entry point: this is the first method to run when HearthStats starts up on Mac OS X.
-   *
-   * @param args Parameters from the command line, if any.
-   */
-  def main(args: Array[String]) {
-
-    setupTesseract
-
-    Main.start(environment)
-
-  }
-
-
-  private def setupTesseract {
+  private def setupTesseract(): Unit = {
     debug("Setting up Tesseract data")
 
     // Determine where the Tesseract training data is stored
@@ -41,8 +26,7 @@ object HearthStatsOsx extends Logging {
     try {
       loadOsxDylib("lept")
       loadOsxDylib("tesseract")
-    }
-    catch {
+    } catch {
       case e: Throwable => {
         Log.error("Error loading libraries", e)
         showLibraryErrorMessage(e)
@@ -54,13 +38,11 @@ object HearthStatsOsx extends Logging {
     Main.setupTesseract(outPath)
   }
 
-
   private def loadOsxDylib(name: String) {
     debug(s"Loading dylib $name")
     try {
       System.loadLibrary(name)
-    }
-    catch {
+    } catch {
       case e: UnsatisfiedLinkError => {
         error(s"UnsatisfiedLinkError loading dylib $name", e)
         throw e
@@ -70,7 +52,6 @@ object HearthStatsOsx extends Logging {
       }
     }
   }
-
 
   private def showLibraryErrorMessage(e: Throwable) {
     var title: String = null
@@ -92,6 +73,5 @@ object HearthStatsOsx extends Logging {
     }
     JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE)
   }
-
 
 }

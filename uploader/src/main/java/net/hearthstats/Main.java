@@ -1,16 +1,20 @@
 package net.hearthstats;
 
+import java.awt.Component;
+import java.io.File;
+
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import net.hearthstats.config.Application;
 import net.hearthstats.config.Environment;
 import net.hearthstats.log.LogPane;
 import net.hearthstats.notification.DialogNotification;
 import net.sourceforge.tess4j.Tesseract;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
 
 public final class Main {
   private Main() {} // never instantiated
@@ -82,13 +86,13 @@ public final class Main {
     if (debugLog.isInfoEnabled()) {
       debugLog.info("**********************************************************************");
       debugLog.info("  Starting HearthStats.net Uploader {} on {}", Application.version(), environment.os());
-      debugLog.info("  os.name={}", environment.systemProperty("os.name"));
-      debugLog.info("  os.version={}", environment.systemProperty("os.version"));
-      debugLog.info("  os.arch={}", environment.systemProperty("os.arch"));
-      debugLog.info("  java.runtime.version={}", environment.systemProperty("java.runtime.version"));
-      debugLog.info("  java.class.path={}", environment.systemProperty("java.class.path"));
-      debugLog.info("  java.library.path={}", environment.systemProperty("java.library.path"));
-      debugLog.info("  user.language={}", environment.systemProperty("user.language"));
+      debugLog.info("  os.name={}", Environment.systemProperty("os.name"));
+      debugLog.info("  os.version={}", Environment.systemProperty("os.version"));
+      debugLog.info("  os.arch={}", Environment.systemProperty("os.arch"));
+      debugLog.info("  java.runtime.version={}", Environment.systemProperty("java.runtime.version"));
+      debugLog.info("  java.class.path={}", Environment.systemProperty("java.class.path"));
+      debugLog.info("  java.library.path={}", Environment.systemProperty("java.library.path"));
+      debugLog.info("  user.language={}", Environment.systemProperty("user.language"));
       debugLog.info("**********************************************************************");
     }
   }

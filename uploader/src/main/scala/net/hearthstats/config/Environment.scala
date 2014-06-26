@@ -4,7 +4,6 @@ import net.hearthstats.notification.NotificationQueue
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 
-
 /**
  * Represents the environment-specific information that varies between OS X and Windows.
  */
@@ -13,46 +12,34 @@ abstract class Environment {
   /**
    * Which operating system this environment is running.
    */
-  def os: OS
-
+  val os: OS
 
   /**
    * The location where temporary files can be extracted.
    */
-  def extractionFolder: String
-
+  val extractionFolder: String
 
   /**
    * The location of the Hearthstone log.config file.
    */
-  def hearthstoneConfigFolder: String
-
+  val hearthstoneConfigFolder: String
 
   /**
    * The location of the Hearthstone log output file.
    */
-  def hearthstoneLogFile: String
-
-
-  /**
-   * Creates a new NotificationQueue object that is suitable for the current environment.
-   */
-  def newNotificationQueue: NotificationQueue
-
+  val hearthstoneLogFile: String
 
   /**
    * Creates a new ProgramHelper object that is suitable for the current environment.
    */
-  def newProgramHelper: ProgramHelper
-
+  val programHelper: ProgramHelper
 
   /**
    * Whether OS X notifications are supported in the current environment.
    */
-  def osxNotificationsSupported: Boolean
+  val osxNotificationsSupported: Boolean
 
 }
-
 
 object Environment extends Logging {
 
@@ -65,8 +52,7 @@ object Environment extends Logging {
   def systemProperty(property: String): String = {
     try {
       System.getProperty(property)
-    }
-    catch {
+    } catch {
       case ex: SecurityException => {
         warn(s"Caught a SecurityException reading the system property '$property', defaulting to blank string.")
         ""
@@ -86,33 +72,22 @@ object Environment extends Logging {
     try {
       val osVersionSplit = osVersion.split("\\.")
       val versionMajor = osVersionSplit(0).toInt
-      var versionMinor = 0
-      if (osVersionSplit.length > 1) {
-        versionMinor = osVersionSplit(1).toInt
-      }
-      else {
-        versionMinor = 0
-      }
-      if (versionMajor > requiredMajor) {
-        return true
-      }
+      val versionMinor =
+        if (osVersionSplit.length > 1)
+          osVersionSplit(1).toInt
+        else 0
+      if (versionMajor > requiredMajor)
+        true
       else if (versionMajor == requiredMajor) {
-        if (versionMinor >= requiredMinor) {
-          return true
-        }
-        else {
-          return false
-        }
-      }
-      else {
-        return false
-      }
-    }
-    catch {
-      case e: NumberFormatException => {
+        if (versionMinor >= requiredMinor)
+          true
+        else false
+      } else
+        false
+    } catch {
+      case e: NumberFormatException =>
         warn(s"Error parsing os.version $osVersion", e)
-        return false
-      }
+        false
     }
   }
 
