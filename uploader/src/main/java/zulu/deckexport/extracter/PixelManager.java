@@ -3,6 +3,10 @@
  */
 package zulu.deckexport.extracter;
 
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+
 import zulu.deckexport.util.Myrect;
 
 public class PixelManager {	
@@ -74,6 +78,39 @@ public class PixelManager {
 		
 	}
 
+	
+	/**
+	 * Converts image into 1024x768 version
+	 * @param tempImage
+	 * @return
+	 */
+    static BufferedImage rescaleImage(BufferedImage tempImage) {
+    	
+    	int gh = 768;		// Global initial height
+    	int gw = 1024;		// Global initial width
+    	
+    	int w = tempImage.getWidth();
+		int h = tempImage.getHeight();
+		
+		double expectedW = ((double)h/gh)*gw;
+		int expW = (int) expectedW;
+		int side = (w - expW)/2;
+		
+		ratio = expectedW/gw;
+		sideCrop = side;
+		
+		int type = tempImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : tempImage.getType();
+		BufferedImage resizedImage = new BufferedImage(gw, gh, type);
+		Graphics2D g = resizedImage.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+		g.drawImage(tempImage.getSubimage(sideCrop, 0, expW, h), 0, 0, gw, gh, null);
+		g.dispose();
+
+		return resizedImage;
+	}
+    
 	public static Myrect getMana() {
 		return new Myrect(x_Mana, getBaseY(), w_Mana, getBaseH());
 	}

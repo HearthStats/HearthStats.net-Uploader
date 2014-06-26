@@ -59,7 +59,7 @@ public class ExtracterMain {
 	 */
 	public static Deck exportDeck(String deckName, BufferedImage img, BufferedImage imgScroll)
 	{
-		BufferedImage img1 = rescaleImage(img);
+		BufferedImage img1 = PixelManager.rescaleImage(img);
 		buildEnvironment();
 		ArrayList<DeckItem> deckItems = new ArrayList<DeckItem>();
 		probList = new ArrayList<ProbList>();
@@ -68,160 +68,16 @@ public class ExtracterMain {
 		if(isScrollable)
 		{
 			ArrayList<DeckItem> scrolledDeckItems = new ArrayList<DeckItem>();
-			BufferedImage img2 = rescaleImage(imgScroll);
+			BufferedImage img2 = PixelManager.rescaleImage(imgScroll);
 			PixelManager.setPixelManager();
 			scrolledDeckItems = fetchCards(img2);
-			deckItems = mergeDeckParts(deckItems, scrolledDeckItems);
+			deckItems = LogicalDeckAlgorithm.mergeDeckParts(deckItems, scrolledDeckItems, probList);
 		}
 		if(deckItems != null)
 			return new Deck(deckItems, deckName);
 		else return null;	
 	}
 	
-	/**
-	 * Merge two part of the deck. First part(without scroll) and second part(with scroll)
-	 * @param part1
-	 * @param part2
-	 * @return
-	 */
-	private static ArrayList<DeckItem> mergeDeckParts(ArrayList<DeckItem> part1,
-			ArrayList<DeckItem> part2) {
-		
-		ArrayList<ProbList> probListPart1 = new ArrayList<ProbList>();
-		probListPart1.addAll(probList.subList(0, part1.size()));
-		
-		ArrayList<ProbList> probListPart2 = new ArrayList<ProbList>();
-		probListPart2.addAll(probList.subList(part1.size(),probList.size()));
-		
-		int j = 0;
-		boolean onStreak = false;
-		for(int i = 0; i<part1.size();i++)
-		{
-			// If two parts have shared cards skip them.
-			if(part1.get(i).getCard().getHearthhead_id() == part2.get(j).getCard().getHearthhead_id())
-			{
-			//	System.out.println(part1.get(i).getCard().getName() + " is equal " + part2.get(j).getCard().getName());
-				onStreak = true;
-				j++;
-			}
-			else if(probListPart2.get(j).isInProbList(part1.get(i).getCard().getHearthhead_id()))
-			{
-				onStreak = true;
-				j++;
-			}
-			else
-			{
-				if(onStreak == true) break;
-			}
-		}	
-		// Add left cards
-		for(;j<part2.size();j++)
-		{
-			part1.add(part2.get(j));
-			probListPart1.add(probListPart2.get(j));
-		}	
-		// If deck reaches 30 card count, rip off rest
-		int count = 0;
-		int i;
-		j=0;
-		ArrayList<DeckItem> mergedDeck = new ArrayList<DeckItem>();
-		ArrayList<ProbList> mergedProbList = new ArrayList<ProbList>();
-		for(i=0;i<part1.size() && count<30;i++)
-		{
-			count+=part1.get(i).getCount();
-			if(i!=0)
-			{
-				if(part1.get(i).getCard().getHearthhead_id() == mergedDeck.get(j-1).getCard().getHearthhead_id())
-				{
-					mergedDeck.get(j-1).setCount(mergedDeck.get(j-1).getCount()+1);
-				}
-				else
-				{
-					mergedDeck.add(part1.get(i));
-					mergedProbList.add(probListPart1.get(i));
-					j++;
-				}
-			}
-			else
-			{
-				mergedDeck.add(part1.get(i));
-				mergedProbList.add(probListPart1.get(i));
-				j++;
-			}
-		}
-		return makeDeckLogical(mergedDeck, mergedProbList);
-	}
-
-
-	private static ArrayList<DeckItem> makeDeckLogical(ArrayList<DeckItem> deck, ArrayList<ProbList> probList) {
-		// TODO Auto-generated method stub
-		int[] bankos = new int[deck.size()];
-		int[] manas = new int[deck.size()];
-		// Reset bankos
-		for(int i = 0; i<bankos.length; i++)
-		{
-			bankos[i] = 0;
-			manas[i] = 0;
-		}
-		// Find bankos level 1
-		for(int i = 0; i<probList.size(); i++)
-		{
-			if(probList.get(i).getProbMin() < 6)
-			{
-				bankos[i] = 1;
-				manas[i] = probList.get(i).getItems().getLast().getCard().getMana();
-			}
-		}
-		// Find level 2
-		for(int i=0;i<deck.size();i++)
-		{
-			if(bankos[i] == 0)
-			{
-				int lowM = findPrevMana(manas, i);
-				int highM = findNextMana(manas, i);
-				Card card = probList.get(i).getBestCardWithMana(lowM,highM);
-				if(!card.getName().equals("UNKNOWN"))
-				{
-					bankos[i] = 1;
-					manas[i] = card.getMana();
-				}
-				deck.get(i).setCard(card);
-			}
-		}
-		
-		//Invalid deck page
-		int count = 0;
-		for(int i=0; i<deck.size();i++)
-		{
-			count += deck.get(i).getCount();
-		}
-		
-		if(count < 30)
-			return null;
-		if(deck.size() < 15)
-			return null;
-		
-		return deck;
-	}
-
-	private static int findNextMana(int[] manas, int i) {
-		for(int j=i;j<manas.length;j++)
-			if(manas[j] > 0)
-			{
-				return manas[j];
-			}
-		return 20;
-	}
-
-	private static int findPrevMana(int[] manas, int i) {
-		for(int j=i;j>=0;j--)
-			if(manas[j] > 0)
-			{
-				return manas[j];
-			}
-		return 0;
-	}
-
 	/**
 	 * <ul>
 	 * <li>Sets pixel manager</li>
@@ -233,42 +89,43 @@ public class ExtracterMain {
 	{
 		//Sets PixelManager with resolution
 		PixelManager.setPixelManager();
-
 		//Read card list
-		readCards();
-		
+		readCards();	
 		//Read card count list
 		readCardCounts();
 	}
 	
-	private static void readCardCounts() {
-		String guicardsText = readFromResourceFile(Constants.txtCardCounts);
-		Type mapType = new TypeToken<List<CardCount>>(){}.getType(); 
-		cardCounts =  new Gson().fromJson(guicardsText, mapType);
-	}
-
-	//Read card list from txt, build maps
-	private static void readCards()
-	{
-		String cardsText = readFromResourceFile(Constants.txtCards);
-		Type mapType = new TypeToken<List<Card>>(){}.getType(); 
-		cards = new Gson().fromJson(cardsText, mapType);
+	
+	// Deck Export
+	private static ArrayList<DeckItem> fetchCards(BufferedImage image) {
 		
-		cardMap = new HashMap<String, Card>();
-		cardIdMap = new HashMap<Integer, Card>();
-		for(Card card : cards)
+		ArrayList<DeckItem> deckItems = new ArrayList<DeckItem>();
+		int manaFlag = 0;
+		for(int i=0;i<numberOfCardInDeck;i++)
 		{
-			cardMap.put(card.getName(), card);
-			cardIdMap.put(card.getHearthhead_id(), card);
-		}
+			CropManager.cropImage(i, image);
+			DeckItem deckItem = matchCards(CropManager.subImage, CropManager.countImage, manaFlag);
+			if(!deckItem.getCard().getName().equals("UNKNOWN"))
+			{
+				//System.out.println((i+1) + "/"+ numberOfCardInDeck + " - " + deckItem.toString());
+				deckItem.setImage(CropManager.deckItemImage);
+				deckItems.add(deckItem);
+			}
+			else
+			{
+				System.out.println("This card does not have any trained data.");
+				deckItems.add(deckItem);
+			}
+			manaFlag = deckItem.getCard().getMana();
+		}	
+		return deckItems;
 	}
 	
-	// Finds similar of the card
+	// Finds similar of the card and cardcount
 	private static DeckItem matchCards(BufferedImage image, BufferedImage countImage, int manaFlag) {
 		DeckItem deckItem = new DeckItem(findSimilarCard(image, manaFlag));
 		deckItem.setCount(findSimilarCount(countImage));
 		return deckItem;
-
 	}
 	
 	// Compares current card with others (Algortihm included)
@@ -407,36 +264,38 @@ public class ExtracterMain {
 	    else 
 	    	return 1;
 	}
-	
-	// Deck Export
-	private static ArrayList<DeckItem> fetchCards(BufferedImage image) {
-		
-		ArrayList<DeckItem> deckItems = new ArrayList<DeckItem>();
-		int manaFlag = 0;
-		for(int i=0;i<numberOfCardInDeck;i++)
-		{
-			CropManager.cropImage(i, image);
-			DeckItem deckItem = matchCards(CropManager.subImage, CropManager.countImage, manaFlag);
-			if(!deckItem.getCard().getName().equals("UNKNOWN"))
-			{
-				//System.out.println((i+1) + "/"+ numberOfCardInDeck + " - " + deckItem.toString());
-				deckItem.setImage(CropManager.deckItemImage);
-				deckItems.add(deckItem);
-			}
-			else
-			{
-				System.out.println("This card does not have any trained data.");
-				deckItems.add(deckItem);
-			}
-			manaFlag = deckItem.getCard().getMana();
-		}	
-		return deckItems;
-	}
+
 
 	// Used by TrainingAPP GUI to fetch card images
 	public static void getCardImage(int k)
 	{
 		CropManager.cropImage(k, image);
+	}
+	
+	
+	//##################################################
+	//
+	//Read card counts list from txt
+	private static void readCardCounts() {
+		String guicardsText = readFromResourceFile(Constants.txtCardCounts);
+		Type mapType = new TypeToken<List<CardCount>>(){}.getType(); 
+		cardCounts =  new Gson().fromJson(guicardsText, mapType);
+	}
+
+	//Read card list from txt, build maps
+	private static void readCards()
+	{
+		String cardsText = readFromResourceFile(Constants.txtCards);
+		Type mapType = new TypeToken<List<Card>>(){}.getType(); 
+		cards = new Gson().fromJson(cardsText, mapType);
+		
+		cardMap = new HashMap<String, Card>();
+		cardIdMap = new HashMap<Integer, Card>();
+		for(Card card : cards)
+		{
+			cardMap.put(card.getName(), card);
+			cardIdMap.put(card.getHearthhead_id(), card);
+		}
 	}
 	
 	// Reads cards from resource txt
@@ -456,36 +315,5 @@ public class ExtracterMain {
 
 		return cardsText;
 	}
-	
-	/**
-	 * Converts image into 1024x768 version
-	 * @param tempImage
-	 * @return
-	 */
-    private static BufferedImage rescaleImage(BufferedImage tempImage) {
-    	
-    	int gh = 768;		// Global initial height
-    	int gw = 1024;		// Global initial width
-    	
-    	int w = tempImage.getWidth();
-		int h = tempImage.getHeight();
-		
-		double expectedW = ((double)h/gh)*gw;
-		int expW = (int) expectedW;
-		int sideCrop = (w - expW)/2;
-		
-		PixelManager.ratio = expectedW/gw;
-		PixelManager.sideCrop = sideCrop;
-		
-		int type = tempImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : tempImage.getType();
-		BufferedImage resizedImage = new BufferedImage(gw, gh, type);
-		Graphics2D g = resizedImage.createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-		g.drawImage(tempImage.getSubimage(sideCrop, 0, expW, h), 0, 0, gw, gh, null);
-		g.dispose();
 
-		return resizedImage;
-	}
 }
