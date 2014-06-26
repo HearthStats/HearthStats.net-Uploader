@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>net.hearthstats</groupId>
 		<version>0.18.2-SNAPSHOT</version>
-        <artifactId>uploader-parent</artifactId>
+		<artifactId>uploader-parent</artifactId>
 	</parent>
 
 	<artifactId>uploader-osx</artifactId>
@@ -14,6 +14,10 @@
 	<packaging>jar</packaging>
 	<name>Uploader OS X</name>
 	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
+
+	<properties>
+		<main.class>net.hearthstats.osx.HearthStatsOsx</main.class>
+	</properties>
 
 	<repositories>
 		<repository>
@@ -27,10 +31,10 @@
 		<dependency>
 			<groupId>net.hearthstats</groupId>
 			<artifactId>uploader</artifactId>
-            <version>${project.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
-		<!-- This Maven Rococoa 0.5 is not the same as (and incompatible with) 
+		<!-- This Maven Rococoa 0.5 is not the same as (and incompatible with)
 			the official Rococoa 0.5 release so it's provided in a lib folder -->
 		<dependency>
 			<groupId>org.rococoa</groupId>
@@ -48,6 +52,10 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>2.3</version>
@@ -59,8 +67,8 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-                            <!-- Create the shaded jar with the same name for all versions because the updater only works if the filename is consistent -->
-                            <outputFile>target/HearthStatsUploader-OSX.jar</outputFile>
+							<!-- Create the shaded jar with the same name for all versions because the updater only works if the filename is consistent -->
+							<outputFile>target/HearthStatsUploader-OSX.jar</outputFile>
 							<shadedArtifactAttached>false</shadedArtifactAttached>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
 							<minimizeJar>false</minimizeJar>
@@ -100,8 +108,11 @@
 									<fileset dir="target/HearthStats.app" />
 								</delete>
 
-								<bundleapp outputdirectory="target" name="HearthStats" displayname="HearthStats.net Uploader" identifier="net.hearthstats.HearthStatsUploader" shortversion="${project.version}" applicationCategory="public.app-category.games" icon="src/main/resources/images/icon.icns" mainclassname="net/hearthstats/Main">
-                                    <classpath file="target/HearthStatsUploader-OSX.jar" />
+								<bundleapp outputdirectory="target" name="HearthStats" displayname="HearthStats.net Uploader"
+                                           identifier="net.hearthstats.HearthStatsUploader" shortversion="${project.version}"
+                                           applicationCategory="public.app-category.games" icon="src/main/resources/images/icon.icns"
+                                           mainclassname="net/hearthstats/osx/HearthStatsOsx">
+									<classpath file="target/HearthStatsUploader-OSX.jar" />
 										file="target/${project.artifactId}-${project.version}.jar" /&gt;
 									<librarypath dir="src/main/native/osx/" includes="*.dylib" />
 									<option value="-Dapple.laf.useScreenMenuBar=true" />
@@ -120,7 +131,7 @@
 									</fileset>
 								</copy>
 
-								<!-- Add extra settings to the Info.plist file to enable Retina mode 
+								<!-- Add extra settings to the Info.plist file to enable Retina mode
 									on the app bundle -->
 								<xslt in="target/HearthStats.app/Contents/Info.plist" out="target/HearthStats.app/Contents/Info-updated.plist" style="src/main/scripts/build-osx-plist.xslt" />
 								<delete file="target/HearthStats.app/Contents/Info.plist" />

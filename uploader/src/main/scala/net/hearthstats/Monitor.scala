@@ -6,10 +6,7 @@ import java.awt.AWTException
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.Font
-import java.awt.Graphics
-import java.awt.Image
 import java.awt.MenuItem
-import java.awt.Point
 import java.awt.PopupMenu
 import java.awt.SystemTray
 import java.awt.TrayIcon
@@ -20,22 +17,16 @@ import java.awt.event.MouseEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.awt.event.WindowStateListener
-import java.awt.image.BufferedImage
 import java.io.IOException
 import java.net.URI
-import java.net.URISyntaxException
 import java.util.EnumSet
 import java.util.Observable
 import java.util.Observer
-import javax.swing.ImageIcon
-import javax.swing.JFrame
-import javax.swing.JLabel
 import javax.swing._
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JOptionPane._
 import javax.swing.JTabbedPane
-import javax.swing.SwingUtilities
 import net.hearthstats.analysis.AnalyserEvent
 import net.hearthstats.analysis.AnalyserEvent._
 import net.hearthstats.log.Log
@@ -54,25 +45,19 @@ import net.hearthstats.ui.OptionsPanel
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import com.dmurph.tracking.JGoogleAnalyticsTracker
 import Monitor._
-import scala.collection.JavaConversions._
 import net.hearthstats.analysis.HearthstoneAnalyser
-import javax.swing.WindowConstants
 import java.awt.Frame._
 import javax.swing.ScrollPaneConstants._
-import net.hearthstats.config.OS
-import net.hearthstats.config.MonitoringMethod
-import net.hearthstats.config.MatchPopup
-import net.hearthstats.ui.Button
+import net.hearthstats.config.{ Environment, OS, MonitoringMethod, MatchPopup }
 import net.hearthstats.ui.Button
 import scala.swing.Swing
 import net.hearthstats.state.Screen
 
-class Monitor extends JFrame with Observer {
+class Monitor(val environment: Environment) extends JFrame with Observer {
 
-  val _hsHelper: ProgramHelper = Config.programHelper
-  lazy val hearthstoneLogMonitor = new HearthstoneLogMonitor
+  val _hsHelper: ProgramHelper = environment.programHelper
+  lazy val hearthstoneLogMonitor = new HearthstoneLogMonitor(environment.hearthstoneLogFile)
   val _analytics = AnalyticsTracker.tracker
   val _logText = new LogPane
   val _logScroll = new JScrollPane(_logText, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED)
@@ -105,7 +90,7 @@ class Monitor extends JFrame with Observer {
     } else {
       System.exit(1)
     }
-    if (Config.os == OS.OSX) {
+    if (environment.os == OS.OSX) {
       Log.info(t("waiting_for_hs"))
     } else {
       Log.info(t("waiting_for_hs_windowed"))
@@ -164,7 +149,7 @@ class Monitor extends JFrame with Observer {
     debugLog.debug("Showing welcome log messages")
     Log.welcome("HearthStats.net " + t("Uploader") + " v" + Config.getVersionWithOs)
     Log.help(t("welcome_1_set_decks"))
-    if (Config.os == OS.OSX) {
+    if (environment.os == OS.OSX) {
       Log.help(t("welcome_2_run_hearthstone"))
       Log.help(t("welcome_3_notifications"))
     } else {
@@ -229,7 +214,7 @@ class Monitor extends JFrame with Observer {
     add(_tabbedPane)
     _tabbedPane.add(_logScroll, t("tab.log"))
     _tabbedPane.add(matchPanel, t("tab.current_match"))
-    _tabbedPane.add(new DecksTab(), t("tab.decks"))
+    _tabbedPane.add(new DecksTab(this), t("tab.decks"))
     _tabbedPane.add(optionsPanel, t("tab.options"))
     _tabbedPane.add(new AboutPanel(), t("tab.about"))
     matchPanel.updateCurrentMatchUi()
@@ -419,7 +404,7 @@ class Monitor extends JFrame with Observer {
    * Checks whether the match result is complete, showing a popup if necessary
    * to fix the match data, and then submits the match when ready.
    *
-   * @param match
+   * @param hsMatch
    *          The match to check and submit.
    */
   private def checkMatchResult(hsMatch: HearthstoneMatch) {
@@ -708,7 +693,7 @@ class Monitor extends JFrame with Observer {
   def setMonitorHearthstoneLog(monitorHearthstoneLog: Boolean) {
     debugLog.debug("setMonitorHearthstoneLog({})", monitorHearthstoneLog)
     if (monitorHearthstoneLog) {
-      val configWasCreated = _hsHelper.createConfig()
+      val configWasCreated = _hsHelper.createConfig(environment)
       if (_hearthstoneDetected) {
         if (configWasCreated) {
           Log.help("Hearthstone log.config changed &mdash; please restart Hearthstone so that it starts generating logs")

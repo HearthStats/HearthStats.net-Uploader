@@ -15,6 +15,10 @@
 	<name>Uploader Windows</name>
 	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
 
+    <properties>
+        <main.class>net.hearthstats.win.HearthStatsWin</main.class>
+    </properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>net.hearthstats</groupId>

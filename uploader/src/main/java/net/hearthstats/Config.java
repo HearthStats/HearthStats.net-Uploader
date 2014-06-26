@@ -8,10 +8,7 @@ import java.io.InputStreamReader;
 
 import javax.swing.JOptionPane;
 
-import net.hearthstats.config.GameLanguage;
-import net.hearthstats.config.MatchPopup;
-import net.hearthstats.config.MonitoringMethod;
-import net.hearthstats.config.OS;
+import net.hearthstats.config.*;
 import net.hearthstats.log.Log;
 
 import org.apache.commons.lang3.StringUtils;
@@ -77,10 +74,10 @@ public class Config {
 
     private static ProgramHelper    helper;
 
-    public static void rebuild() {
+    public static void rebuild(Environment environment) {
         debugLog.debug( "Building config" );
 
-        storePreviousValues();
+        storePreviousValues(environment);
 
         getIni().clear();
 
@@ -95,7 +92,7 @@ public class Config {
         setCheckForUpdates( true );
 
         // notifications
-        setUseOsxNotifications( isOsxNotificationsSupported() );
+        setUseOsxNotifications( environment == null ? false : environment.osxNotificationsSupported() );
         setShowNotifications( true );
         setShowHsFoundNotification( true );
         setShowHsClosedNotification( true );
@@ -230,14 +227,25 @@ public class Config {
 
     public static boolean useOsxNotifications() {
         try {
-            return getBooleanSetting( "notifications", "osx", isOsxNotificationsSupported() );
+            return getBooleanSetting( "notifications", "osx", false );
         } catch ( Exception e ) {
             debugLog.warn( "Ignoring exception reading OS X notifications settings, assuming they are disabled", e );
             return false;
         }
     }
 
-    public static boolean showNotifications() {
+    public static boolean useOsxNotifications(Environment environment) {
+        try {
+            return getBooleanSetting( "notifications", "osx", environment == null ? false : environment.osxNotificationsSupported() );
+        } catch ( Exception e ) {
+            debugLog.warn( "Ignoring exception reading OS X notifications settings, assuming they are disabled", e );
+            return false;
+        }
+    }
+
+
+
+  public static boolean showNotifications() {
         return getBooleanSetting( "notifications", "enabled", true );
     }
 
@@ -312,46 +320,6 @@ public class Config {
 
     public static void setUseOsxNotifications( boolean val ) {
         setBooleanValue( "notifications", "osx", val );
-    }
-
-    public static Boolean isOsxNotificationsSupported() {
-        try {
-            if ( Config.os == OS.OSX ) {
-                return isOsVersionAtLeast( 10, 8 );
-            }
-        } catch ( Exception ex ) {
-            debugLog.warn( "Unable to determine if OS X notifications are supported, assuming false", ex );
-        }
-        return false;
-    }
-
-    public static boolean isOsVersionAtLeast( int requiredMajor, int requiredMinor ) {
-        String osVersion = Config.getSystemProperty( "os.version" );
-        try {
-            String osVersionSplit[] = osVersion.split( "\\." );
-            int versionMajor = Integer.parseInt( osVersionSplit[0] );
-            int versionMinor;
-            if ( osVersionSplit.length > 1 ) {
-                versionMinor = Integer.parseInt( osVersionSplit[1] );
-            } else {
-                versionMinor = 0;
-            }
-
-            if ( versionMajor > requiredMajor ) {
-                return true;
-            } else if ( versionMajor == requiredMajor ) {
-                if ( versionMinor >= requiredMinor ) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        } catch ( NumberFormatException e ) {
-            debugLog.warn( "Error parsing os.version " + osVersion, e );
-            return false;
-        }
     }
 
     public static void setShowNotifications( boolean val ) {
@@ -552,13 +520,13 @@ public class Config {
         setDeckHeight( _deckheight );
     }
 
-    private static void storePreviousValues() {
+    private static void storePreviousValues(Environment environment) {
         _userkey = getUserKey();
         _apiBaseUrl = getApiBaseUrl();
         monitoringMethod = monitoringMethod();
         gameLanguage = gameLanguage();
         _checkForUpdates = checkForUpdates();
-        _useOsxNotifications = useOsxNotifications();
+        _useOsxNotifications = useOsxNotifications(environment);
         _showNotifications = showNotifications();
         _showHsFoundNotification = showHsFoundNotification();
         _showHsClosedNotification = showHsClosedNotification();
@@ -634,26 +602,4 @@ public class Config {
         }
     }
 
-    public static ProgramHelper programHelper() {
-        if ( helper == null ) {
-            String className;
-            switch ( Config.os ) {
-            case WINDOWS:
-                className = "net.hearthstats.win.ProgramHelperWindows";
-                break;
-            case OSX:
-                className = "net.hearthstats.osx.ProgramHelperOsx";
-                break;
-            default:
-                throw new UnsupportedOperationException( "unsupported OS" );
-            }
-
-            try {
-                helper = (ProgramHelper) Class.forName( className ).newInstance();
-            } catch ( Exception e ) {
-                throw new RuntimeException( "bug creating " + className, e );
-            }
-        }
-        return helper;
-    }
 }

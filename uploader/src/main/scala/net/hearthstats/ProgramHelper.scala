@@ -6,6 +6,7 @@ import java.io.File
 import java.io.FileWriter
 import net.hearthstats.log.Log
 import java.awt.Rectangle
+import net.hearthstats.config.Environment
 
 /**
  * Abstract class that finds the Hearthstone program and takes screenshots of it.
@@ -27,10 +28,6 @@ abstract class ProgramHelper extends Observable {
    */
   def getScreenCapture: BufferedImage
 
-  def hearthstoneConfigFolder: String
-
-  def hearthstoneLogFile: String
-
   protected def _notifyObserversOfChangeTo(property: String): Unit = {
     setChanged()
     notifyObservers(property)
@@ -38,8 +35,8 @@ abstract class ProgramHelper extends Observable {
 
   def getHSWindowBounds: Rectangle
 
-  def createConfig(): Boolean = {
-    val logConfigFile = new File(s"$hearthstoneConfigFolder/log.config")
+  def createConfig(environment: Environment): Boolean = {
+    val logConfigFile = new File(s"${environment.hearthstoneConfigFolder}/log.config")
     if (logConfigFile.exists) {
       Log.info(s"Using existing Hearthstone log config $logConfigFile")
       false

@@ -108,7 +108,7 @@ public class OptionsPanel extends JPanel {
 
     // When running on Mac OS X 10.8 or later, the format of the
     // notifications can be changed
-    if (Config.isOsxNotificationsSupported()) {
+    if (monitor.environment().osxNotificationsSupported()) {
       add(new JLabel(""), "skip,right");
       JLabel notificationsFormatLabel = new JLabel(t("options.label.notifyformat.label"));
       add(notificationsFormatLabel, "split 2, gapleft 27");

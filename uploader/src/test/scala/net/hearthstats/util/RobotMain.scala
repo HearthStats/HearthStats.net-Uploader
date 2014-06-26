@@ -1,15 +1,11 @@
 package net.hearthstats.util
 
-import java.awt.Robot
-import java.awt.event.InputEvent
-import java.awt.event.KeyEvent
-import net.hearthstats.ProgramHelper
-import net.hearthstats.Config
+import net.hearthstats.{ProgramHelper, Config, DeckUtils}
 import java.awt.Rectangle
-import net.hearthstats.DeckUtils
 
 object RobotMain extends App {
-  val helper = Config.programHelper
+  val helper = Class.forName("net.hearthstats.win.ProgramHelperWindows").newInstance.asInstanceOf[ProgramHelper]
+
   val rect = if (helper.foundProgram)
     helper.getHSWindowBounds
   else

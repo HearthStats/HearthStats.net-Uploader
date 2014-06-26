@@ -22,7 +22,8 @@ public class RankLevelOcrTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         // Ensure that Tesseract has its training data available
-        Main.setupTesseract();
+        // TODO: Determine an cross-platform way to supply extracted Tesseract training data for this setup
+        //Main.setupTesseract();
 
         // Set up a single OCR instance for all image tests
         rankLevelOcr = new RankLevelOcr();

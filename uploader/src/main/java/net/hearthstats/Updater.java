@@ -121,7 +121,7 @@ public final class Updater {
 		_savedUserKey = Config.getUserKey();
 	}
 	private static void _restoreSettings() {
-		Config.rebuild();
+		Config.rebuild(null);
 		Config.setUserKey(_savedUserKey);
 	}
 
