@@ -602,26 +602,4 @@ public class Config {
         }
     }
 
-    public static ProgramHelper programHelper() {
-        if ( helper == null ) {
-            String className;
-            switch ( Config.os ) {
-            case WINDOWS:
-                className = "net.hearthstats.win.ProgramHelperWindows";
-                break;
-            case OSX:
-                className = "net.hearthstats.osx.ProgramHelperOsx";
-                break;
-            default:
-                throw new UnsupportedOperationException( "unsupported OS" );
-            }
-
-            try {
-                helper = (ProgramHelper) Class.forName( className ).newInstance();
-            } catch ( Exception e ) {
-                throw new RuntimeException( "bug creating " + className, e );
-            }
-        }
-        return helper;
-    }
 }

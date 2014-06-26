@@ -2,6 +2,7 @@ package net.hearthstats.config
 
 import net.hearthstats.notification.NotificationQueue
 import grizzled.slf4j.Logging
+import net.hearthstats.ProgramHelper
 
 
 /**
@@ -22,9 +23,27 @@ abstract class Environment {
 
 
   /**
+   * The location of the Hearthstone log.config file.
+   */
+  def hearthstoneConfigFolder: String
+
+
+  /**
+   * The location of the Hearthstone log output file.
+   */
+  def hearthstoneLogFile: String
+
+
+  /**
    * Creates a new NotificationQueue object that is suitable for the current environment.
    */
   def newNotificationQueue: NotificationQueue
+
+
+  /**
+   * Creates a new ProgramHelper object that is suitable for the current environment.
+   */
+  def newProgramHelper: ProgramHelper
 
 
   /**

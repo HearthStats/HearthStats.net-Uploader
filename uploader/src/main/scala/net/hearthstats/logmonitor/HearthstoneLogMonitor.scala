@@ -16,8 +16,6 @@ import net.hearthstats.util.FileObserver
 import net.hearthstats.logmonitor.CardEvents._
 
 class HearthstoneLogMonitor(logFile: String) {
-  def this() = this(Config.programHelper.hearthstoneLogFile) // for java calls
-
   val debugLog = LoggerFactory.getLogger(classOf[HearthstoneLogMonitor])
   val LOADING_SCREEN_PREFIX = "[LoadingScreen]"
   val ZONE_PREFIX = "[Zone]"
