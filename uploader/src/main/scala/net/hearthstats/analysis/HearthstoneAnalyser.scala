@@ -135,8 +135,7 @@ object HearthstoneAnalyser extends Observable with Logging {
         case MATCH_END => testForVictoryOrDefeat(image)
         case _ =>
       }
-      if (victoryOrDefeatDetected && newScreen.group != ScreenGroup.MATCH_END)
-        victoryOrDefeatDetected = false
+      if (newScreen.group != ScreenGroup.MATCH_END) victoryOrDefeatDetected = false
     }
   }
 
@@ -157,9 +156,8 @@ object HearthstoneAnalyser extends Observable with Logging {
     if (newScreen != null && newScreen != previousScreen) {
       debug(s"Screen changed from $previousScreen to $newScreen")
       if (newScreen == Screen.PLAY_LOBBY) {
-        if (imageShowsPlayBackground(image)) {
+        if (imageShowsPlayBackground(image))
           return false
-        }
         if (previousScreen == Screen.FINDING_OPPONENT) {
           if (iterationsSinceFindingOpponent < 5) {
             iterationsSinceFindingOpponent += 1
