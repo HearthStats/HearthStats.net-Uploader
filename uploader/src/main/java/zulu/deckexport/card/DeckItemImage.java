@@ -1,8 +1,9 @@
 /**
  * @author shyos
  */
-package zulu.deckexport.extracter;
+package zulu.deckexport.card;
 
+import zulu.deckexport.extracter.PixelManager;
 import zulu.deckexport.util.Myrect;
 
 public class DeckItemImage {

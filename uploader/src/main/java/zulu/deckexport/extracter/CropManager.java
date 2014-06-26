@@ -5,7 +5,9 @@ package zulu.deckexport.extracter;
 
 import java.awt.image.BufferedImage;
 
-public class ExtractManager {
+import zulu.deckexport.card.DeckItemImage;
+
+public class CropManager {
 
 	public static BufferedImage subImage;		// Text Image of a DeckItem
 	public static BufferedImage countImage;		// Count Image of a DeckItem

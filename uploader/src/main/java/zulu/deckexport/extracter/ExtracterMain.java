@@ -6,13 +6,8 @@ package zulu.deckexport.extracter;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,11 +36,13 @@ public class ExtracterMain {
 	private static ArrayList<CardCount> cardCounts;
 	private static ArrayList<ProbList> probList;
 	public static void main(String[] args) throws IOException{
-		BufferedImage img = ImageIO.read(new File("part1.png"));
-		BufferedImage imgScroll = ImageIO.read(new File("part2.png"));
+		
+		BufferedImage img = ImageIO.read(new File("src/test/resources/images/deckexportexamples/part1.png"));
+		BufferedImage imgScroll = ImageIO.read(new File("src/test/resources/images/deckexportexamples/part2.png"));
 		Deck deck  = exportDeck("test", img, imgScroll);
 		for(DeckItem dI : deck.getCards())
 			System.out.println(dI.getCard().getName() + " x" + dI.getCount());
+		
 	}
 	
 	/**
@@ -58,7 +55,7 @@ public class ExtracterMain {
 	 * @param deckName - name of the deck
 	 * @param img - first part of the deck image
 	 * @param imgScroll - second part of the deck image (Scrolled Deck Image)
-	 * @return Deck
+	 * @return Deck - null if it is not a logical deck.
 	 */
 	public static Deck exportDeck(String deckName, BufferedImage img, BufferedImage imgScroll)
 	{
@@ -245,7 +242,7 @@ public class ExtracterMain {
 	}
 	
 	private static void readCardCounts() {
-		String guicardsText = readFromResourceFile("/txt/cardcounts.txt");
+		String guicardsText = readFromResourceFile(Constants.txtCardCounts);
 		Type mapType = new TypeToken<List<CardCount>>(){}.getType(); 
 		cardCounts =  new Gson().fromJson(guicardsText, mapType);
 	}
@@ -253,7 +250,7 @@ public class ExtracterMain {
 	//Read card list from txt, build maps
 	private static void readCards()
 	{
-		String cardsText = readFromResourceFile("/txt/cards.txt");
+		String cardsText = readFromResourceFile(Constants.txtCards);
 		Type mapType = new TypeToken<List<Card>>(){}.getType(); 
 		cards = new Gson().fromJson(cardsText, mapType);
 		
@@ -418,12 +415,12 @@ public class ExtracterMain {
 		int manaFlag = 0;
 		for(int i=0;i<numberOfCardInDeck;i++)
 		{
-			ExtractManager.cropImage(i, image);
-			DeckItem deckItem = matchCards(ExtractManager.subImage, ExtractManager.countImage, manaFlag);
+			CropManager.cropImage(i, image);
+			DeckItem deckItem = matchCards(CropManager.subImage, CropManager.countImage, manaFlag);
 			if(!deckItem.getCard().getName().equals("UNKNOWN"))
 			{
 				//System.out.println((i+1) + "/"+ numberOfCardInDeck + " - " + deckItem.toString());
-				deckItem.setImage(ExtractManager.deckItemImage);
+				deckItem.setImage(CropManager.deckItemImage);
 				deckItems.add(deckItem);
 			}
 			else
@@ -439,29 +436,7 @@ public class ExtracterMain {
 	// Used by TrainingAPP GUI to fetch card images
 	public static void getCardImage(int k)
 	{
-		ExtractManager.cropImage(k, image);
-	}
-
-	// Writes cards to resource file as txt
-	public static void writeToResourceFile(Object cards, String filename) {
-		try {
-
-			/*File file = new File(filename);
- 
-			// if file doesnt exists, then create it
-			if (!file.exists()) {
-				file.createNewFile();
-			}*/
-			PrintWriter writer = new PrintWriter(
-		                     new File(ExtracterMain.class.getResource(filename).getPath()));
-			
-			writer.write(new Gson().toJson(cards));
-			writer.close();
-
- 
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		CropManager.cropImage(k, image);
 	}
 	
 	// Reads cards from resource txt
@@ -482,55 +457,6 @@ public class ExtracterMain {
 		return cardsText;
 	}
 	
-	// Writes cards to txt
-	public static void writeToFile(Object cards, String filename) {
-		try {
-
-			File file = new File(filename);
- 
-			// if file doesnt exists, then create it
-			if (!file.exists()) {
-				file.createNewFile();
-			}
- 
-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write(new Gson().toJson(cards));
-			bw.close();
-
- 
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	// Reads cards from txt
-	private static String readFromFile(String filename) {
-			 
-		BufferedReader br = null;
-		String cardsText = "";
-		try {
- 
-			String sCurrentLine;
- 
-			br = new BufferedReader(new FileReader(filename));
- 
-			while ((sCurrentLine = br.readLine()) != null) {
-				cardsText+=sCurrentLine;
-			}
- 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (br != null)br.close();
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		}
-		return cardsText;
-	}
-	
 	/**
 	 * Converts image into 1024x768 version
 	 * @param tempImage
@@ -538,24 +464,25 @@ public class ExtracterMain {
 	 */
     private static BufferedImage rescaleImage(BufferedImage tempImage) {
     	
-    	int gh = 768;
-    	int gw = 1024;
+    	int gh = 768;		// Global initial height
+    	int gw = 1024;		// Global initial width
+    	
     	int w = tempImage.getWidth();
-		int h = tempImage.getHeight();	
+		int h = tempImage.getHeight();
+		
 		double expectedW = ((double)h/gh)*gw;
-		PixelManager.ratio = expectedW/gw;
 		int expW = (int) expectedW;
 		int sideCrop = (w - expW)/2;
+		
+		PixelManager.ratio = expectedW/gw;
 		PixelManager.sideCrop = sideCrop;
+		
 		int type = tempImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : tempImage.getType();
 		BufferedImage resizedImage = new BufferedImage(gw, gh, type);
 		Graphics2D g = resizedImage.createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-		RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g.setRenderingHint(RenderingHints.KEY_RENDERING,
-		RenderingHints.VALUE_RENDER_QUALITY);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-		RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 		g.drawImage(tempImage.getSubimage(sideCrop, 0, expW, h), 0, 0, gw, gh, null);
 		g.dispose();
 
