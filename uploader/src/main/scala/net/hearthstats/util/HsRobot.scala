@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent._
 import java.awt.event.InputEvent
 import java.awt.Rectangle
 import net.hearthstats.Deck
+import zulu.deckexport.extracter.PixelManager
 
 case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) {
 
@@ -22,6 +23,15 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) {
     for (card <- deck.cards) {
       add(card.name, card.count)
       robot.delay(mediumDelay)
+    }
+  }
+  
+  def export(): Unit = {
+    var i = 0
+    click(Point(hsWindow.x + PixelManager.getX_Scroll(),hsWindow.y + PixelManager.getY_Scroll()))
+    robot.delay(mediumDelay)
+    for (i <- 1 to 5) {
+    	scroll
     }
   }
 
@@ -42,7 +52,10 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) {
     robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
     robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
   }
-
+  def scroll(): Unit = {
+    robot.mouseWheel(5);
+    robot.delay(mediumDelay)
+  }
   def send(s: String): Unit =
     for {
       char <- s.toLowerCase

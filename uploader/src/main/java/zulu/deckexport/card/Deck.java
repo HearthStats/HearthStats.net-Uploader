@@ -14,9 +14,8 @@ public class Deck {
 	private String deckOwner;
 	private String deckClass;
 	private List<DeckItem> cards;
-	public Deck(ArrayList<DeckItem> deckItems, String deckName) {
+	public Deck(ArrayList<DeckItem> deckItems) {
 		this.setCards(deckItems);
-		this.deckName = deckName;
 	}
 	public String getDeckName() {
 		return deckName;

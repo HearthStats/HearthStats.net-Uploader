@@ -25,6 +25,8 @@ abstract class ProgramHelper extends Observable {
    *
    * @return An image of the Hearthstone window, or null if not running or not available.
    */
+  def setWindowVisible
+  
   def getScreenCapture: BufferedImage
 
   def hearthstoneConfigFolder: String

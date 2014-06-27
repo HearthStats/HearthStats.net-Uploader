@@ -137,14 +137,19 @@ public class LogicalDeckAlgorithm {
 		
 		//Invalid deck page
 		int count = 0;
+		int unkCount = 0;
 		for(int i=0; i<deck.size();i++)
 		{
 			count += deck.get(i).getCount();
+			if(deck.get(i).getCard().getName().equalsIgnoreCase("UNKNOWN"))
+				unkCount++;
 		}
 		
-		if(count < 30)
+		if(unkCount > 5)	// If there are 5 or more cards which we cannot detect then deck is invalid.
 			return null;
-		if(deck.size() < 15)
+		if(count < 30)		// If there are less than 30 cards
+			return null;
+		if(deck.size() < 15) // If deck has less than 15 different cards
 			return null;
 		
 		return deck;

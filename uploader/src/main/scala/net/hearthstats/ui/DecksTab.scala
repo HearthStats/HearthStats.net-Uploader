@@ -21,6 +21,8 @@ import javax.swing.JOptionPane
 import net.hearthstats.Config
 import net.hearthstats.util.HsRobot
 import net.hearthstats.util.Browse
+import zulu.deckexport.extracter.ExtracterMain
+import zulu.deckexport.Export
 
 class DecksTab extends JPanel {
   val deckSlotComboBoxes = 1 to 9 map { new DeckSlotPanel(_) }
@@ -124,6 +126,10 @@ class DecksTab extends JPanel {
 
     def doCreate(d: Deck) = HsRobot(Config.programHelper.getHSWindowBounds).create(d)
   }
+ 
+  private def buildDeck(in: Option[Deck]): Unit = {
+    Export.deckExport()
+  }
 
   class DeckSlotPanel(slot: Int) extends JPanel {
     setLayout(new BorderLayout)
@@ -136,15 +142,25 @@ class DecksTab extends JPanel {
     removeBtn.addActionListener(ActionListener(_ => removeSlot(slot)))
     add(removeBtn, BorderLayout.EAST)
 
+    val btnPanel = new JPanel();
+    btnPanel.setLayout(new BorderLayout)
+    
+    val buildBtn = new JButton("Build/Upload")
+    buildBtn.setToolTipText("""<html><b>Automatically exports Hearthstone deck into HearthStats website</b><br/>
+						        <i>You need to be in the collection mode and select the deck yourself</i>""")
+    buildBtn.addActionListener(ActionListener(_ => buildDeck(selectedDeck)))
+    btnPanel.add(buildBtn, BorderLayout.CENTER)
+    
     val createBtn = new JButton("Construct")
     createBtn.setToolTipText("""<html><b>Automatically creates this deck in Hearthstone</b><br/>
 						        (providing you have the required cards)<br/>
 						        <br/>
 						        <i>You need to be in the collection mode and select the hero yourself</i>""")
     createBtn.addActionListener(ActionListener(_ => createDeck(selectedDeck)))
-
-    add(createBtn, BorderLayout.SOUTH)
-
+    btnPanel.add(createBtn, BorderLayout.EAST)
+    
+    add(btnPanel, BorderLayout.SOUTH)
+    
     def selectedDeck: Option[Deck] =
       comboBox.getSelectedItem match {
         case deck: Deck => Some(deck)

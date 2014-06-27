@@ -39,7 +39,7 @@ public class ExtracterMain {
 		
 		BufferedImage img = ImageIO.read(new File("src/test/resources/images/deckexportexamples/part1.png"));
 		BufferedImage imgScroll = ImageIO.read(new File("src/test/resources/images/deckexportexamples/part2.png"));
-		Deck deck  = exportDeck("test", img, imgScroll);
+		Deck deck  = exportDeck(img, imgScroll);
 		for(DeckItem dI : deck.getCards())
 			System.out.println(dI.getCard().getName() + " x" + dI.getCount());
 		
@@ -57,7 +57,7 @@ public class ExtracterMain {
 	 * @param imgScroll - second part of the deck image (Scrolled Deck Image)
 	 * @return Deck - null if it is not a logical deck.
 	 */
-	public static Deck exportDeck(String deckName, BufferedImage img, BufferedImage imgScroll)
+	public static Deck exportDeck(BufferedImage img, BufferedImage imgScroll)
 	{
 		BufferedImage img1 = PixelManager.rescaleImage(img);
 		buildEnvironment();
@@ -74,7 +74,7 @@ public class ExtracterMain {
 			deckItems = LogicalDeckAlgorithm.mergeDeckParts(deckItems, scrolledDeckItems, probList);
 		}
 		if(deckItems != null)
-			return new Deck(deckItems, deckName);
+			return new Deck(deckItems);
 		else return null;	
 	}
 	

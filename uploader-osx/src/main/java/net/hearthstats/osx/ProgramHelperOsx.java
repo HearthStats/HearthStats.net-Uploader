@@ -49,7 +49,11 @@ public class ProgramHelperOsx extends ProgramHelper {
         debugLog.debug("Initialising ProgramHelperOsx with {}", _bundleIdentifier);
     }
 
-
+    public void setWindowVisible()
+    {
+    	// Get Hearthstone.exe to foreground
+    }
+    
     @Override
     public BufferedImage getScreenCapture() {
         final NSAutoreleasePool pool = NSAutoreleasePool.new_();
