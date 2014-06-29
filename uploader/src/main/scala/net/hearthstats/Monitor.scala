@@ -32,7 +32,6 @@ import net.hearthstats.analysis.AnalyserEvent._
 import net.hearthstats.log.Log
 import net.hearthstats.log.LogPane
 import net.hearthstats.logmonitor.HearthstoneLogMonitor
-import net.hearthstats.notification.DialogNotificationQueue
 import net.hearthstats.notification.NotificationQueue
 import net.hearthstats.state.Screen._
 import net.hearthstats.state.ScreenGroup
@@ -66,7 +65,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
   val matchPanel = new MatchPanel
 
   var _hearthstoneDetected: Boolean = _
-  var _notificationQueue: NotificationQueue = DialogNotificationQueue.newNotificationQueue()
+  var _notificationQueue: NotificationQueue = environment.newNotificationQueue(Config.notificationType())
   var _playingInMatch: Boolean = false
 
   def start() {

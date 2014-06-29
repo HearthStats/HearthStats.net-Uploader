@@ -1,9 +1,9 @@
 package net.hearthstats.osx
 
-import net.hearthstats.config.{ OS, Environment }
+import net.hearthstats.config.{NotificationType, OS, Environment}
 import net.hearthstats.notification.{ DialogNotificationQueue, NotificationQueue }
 import java.io.File
-import net.hearthstats.{ ProgramHelper, Config }
+import net.hearthstats.ProgramHelper
 
 /**
  * Mac OS X environment.
@@ -32,5 +32,10 @@ class EnvironmentOsx extends Environment {
 
   val osxNotificationsSupported: Boolean =
     Environment.isOsVersionAtLeast(10, 8)
+
+  def newNotificationQueue(notificationType: NotificationType): NotificationQueue = notificationType match {
+    case NotificationType.OSX => new OsxNotificationQueue
+    case _ => new DialogNotificationQueue
+  }
 
 }

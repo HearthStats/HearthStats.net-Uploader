@@ -1,9 +1,8 @@
 package net.hearthstats.win
 
-import net.hearthstats.config.{ OS, Environment }
+import net.hearthstats.config.{NotificationType, OS, Environment}
 import net.hearthstats.notification.{ DialogNotificationQueue, NotificationQueue }
 import java.io.File
-import net.hearthstats.ProgramHelper
 import org.apache.commons.lang3.StringUtils
 
 /**
@@ -51,4 +50,7 @@ class EnvironmentWin extends Environment {
     val logFile = new File(logLocation)
     logFile.getAbsolutePath
   }
+
+  // Windows only supports the DialogNotificationQueue, so always return that regardless of what is requested.
+  def newNotificationQueue(notificationType: NotificationType): NotificationQueue = new DialogNotificationQueue
 }
