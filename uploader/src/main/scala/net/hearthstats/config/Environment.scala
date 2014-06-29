@@ -30,7 +30,7 @@ abstract class Environment {
   val hearthstoneLogFile: String
 
   /**
-   * Creates a new ProgramHelper object that is suitable for the current environment.
+   * Provides a ProgramHelper object that is suitable for the current environment.
    */
   val programHelper: ProgramHelper
 
@@ -38,6 +38,11 @@ abstract class Environment {
    * Whether OS X notifications are supported in the current environment.
    */
   val osxNotificationsSupported: Boolean
+
+  /**
+   * Creates a new NotificationQueue object of the requested type, if suitable for the current environment.
+   */
+  def newNotificationQueue(notificationType: NotificationType): NotificationQueue
 
 }
 

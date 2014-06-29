@@ -243,6 +243,9 @@ public class Config {
         }
     }
 
+  public static NotificationType notificationType() {
+    return useOsxNotifications() ? NotificationType.OSX : NotificationType.HEARTHSTATS;
+  }
 
 
   public static boolean showNotifications() {
