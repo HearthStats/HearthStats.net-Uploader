@@ -101,7 +101,7 @@
 								<minVersion>1.7.0</minVersion>
 								<opts>
 									<opt>-Xms96m</opt>
-									<opt>-Xmx384m</opt>
+									<opt>-Xmx320m</opt>
 								</opts>
 							</jre>
 							<versionInfo>
