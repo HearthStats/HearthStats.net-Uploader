@@ -67,6 +67,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
   var _hearthstoneDetected: Boolean = _
   var _notificationQueue: NotificationQueue = environment.newNotificationQueue(Config.notificationType())
   var _playingInMatch: Boolean = false
+  var nextGcTime: Long = 0
 
   def start() {
     if (Config.analyticsEnabled) {
@@ -359,6 +360,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     else if (image.getWidth >= 1024) {
       debugLog.debug("  - analysing image")
       HearthstoneAnalyser.analyze(image)
+      image.flush()
     }
   }
 
@@ -384,7 +386,13 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
           _handleHearthstoneNotFound()
         }
         _updateTitle()
-        Thread.sleep(POLLING_INTERVAL_IN_MS)
+        // We need to manually trigger GC due to memory leakage that occurs on Windows 8 if we leave GC to the JVM
+        if (nextGcTime > System.currentTimeMillis())
+          Thread.sleep(POLLING_INTERVAL_IN_MS)
+        else {
+          System.gc()
+          nextGcTime = System.currentTimeMillis() + GC_INTERVAL_IN_MS
+        }
       } catch {
         case ex: Exception => {
           ex.printStackTrace(System.err)
@@ -708,6 +716,7 @@ object Monitor {
   val debugLog: Logger = LoggerFactory.getLogger(classOf[Monitor])
 
   val POLLING_INTERVAL_IN_MS = 100
+  val GC_INTERVAL_IN_MS = 3000
   val DO_NOT_NOTIFY_SCREENS = EnumSet.of(
     COLLECTION,
     COLLECTION_ZOOM,
