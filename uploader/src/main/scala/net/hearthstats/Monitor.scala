@@ -229,10 +229,10 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     if (Config.checkForUpdates()) {
       Log.info(t("checking_for_updates..."))
       try {
-        val availableVersion = Updater.getAvailableVersion
-        if (availableVersion != null) {
-          Log.info(t("latest_v_available") + " " + availableVersion)
-          if (!availableVersion.matches(Config.getVersion)) {
+        var latestRelease = Updater.getLatestRelease
+        if (latestRelease != null) {
+          Log.info(t("latest_v_available") + " " + latestRelease.getVersion)
+          if (!latestRelease.getVersion.matches(Config.getVersion)) {
             bringWindowToFront()
             val dialogButton = YES_NO_OPTION
             var dialogResult = showConfirmDialog(
@@ -245,7 +245,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
               "HearthStats.net " + t("uploader_updates_avail"),
               dialogButton)
             if (dialogResult == YES_OPTION) {
-              Updater.run()
+              Updater.run(environment, latestRelease)
             } else {
               dialogResult = showConfirmDialog(
                 null,

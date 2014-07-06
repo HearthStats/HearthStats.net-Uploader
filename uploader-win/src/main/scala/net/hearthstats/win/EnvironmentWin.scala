@@ -4,6 +4,7 @@ import net.hearthstats.config.{NotificationType, OS, Environment}
 import net.hearthstats.notification.{ DialogNotificationQueue, NotificationQueue }
 import java.io.File
 import org.apache.commons.lang3.StringUtils
+import net.hearthstats.updater.api.model.Release
 
 /**
  * Windows environment.
@@ -53,4 +54,9 @@ class EnvironmentWin extends Environment {
 
   // Windows only supports the DialogNotificationQueue, so always return that regardless of what is requested.
   def newNotificationQueue(notificationType: NotificationType): NotificationQueue = new DialogNotificationQueue
+
+  /**
+   * Performs an update of the HearthStats Uploader. This method should quit the uploader then start the update.
+   */
+  def performApplicationUpdate(release: Release): String = { "not implemented" }
 }

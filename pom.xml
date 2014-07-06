@@ -30,7 +30,8 @@
 
 
 	<modules>
-		<module>uploader</module>
+        <module>updater</module>
+        <module>uploader</module>
 	</modules>
 
 	<profiles>
