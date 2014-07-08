@@ -597,7 +597,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
       lastMatch.id = API.lastMatchId
       matchPanel.setCurrentMatchEnabled(false)
       matchPanel.updateCurrentMatchUi()
-      matchPanel.setLastMatch(lastMatch)
+      matchPanel.lastMatch = lastMatch
       if (API.message.matches(".*(Edit match|Arena match successfully created).*")) {
         HearthstoneAnalyser.hsMatch = new HearthstoneMatch
         matchPanel.resetMatchClassSelectors()
@@ -618,10 +618,11 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
 
   override def update(dispatcher: Observable, changed: AnyRef) {
     val dispatcherClass = if (dispatcher == null) "" else dispatcher.getClass.getCanonicalName
-    if (dispatcherClass.startsWith("net.hearthstats.analysis.HearthstoneAnalyser")) try {
-      handleAnalyserEvent(changed.asInstanceOf[AnalyserEvent])
-    } catch {
-      case e: IOException => Main.showErrorDialog("Error handling analyzer event", e)
+    if (dispatcherClass.startsWith("net.hearthstats.analysis.HearthstoneAnalyser")) {
+      try handleAnalyserEvent(changed.asInstanceOf[AnalyserEvent])
+      catch {
+        case e: IOException => Main.showErrorDialog("Error handling analyzer event", e)
+      }
     }
     if (dispatcherClass.startsWith("net.hearthstats.API")) _handleApiEvent(changed)
     if (dispatcherClass.matches(".*ProgramHelper(Windows|Osx)?")) _handleProgramHelperEvent(changed)
