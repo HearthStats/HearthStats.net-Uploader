@@ -465,6 +465,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     case COIN =>
       _notify("Coin Detected")
       Log.info("Coin Detected")
+      matchPanel.updateCurrentMatchUi()
 
     case DECK_SLOT =>
       val deck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot)
@@ -502,10 +503,12 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     case OPPONENT_CLASS =>
       _notify("Playing vs " + HearthstoneAnalyser.getOpponentClass)
       Log.info("Playing vs " + HearthstoneAnalyser.getOpponentClass)
+      matchPanel.updateCurrentMatchUi()
 
     case OPPONENT_NAME =>
       _notify("Opponent: " + HearthstoneAnalyser.getOpponentName)
       Log.info("Opponent: " + HearthstoneAnalyser.getOpponentName)
+      matchPanel.updateCurrentMatchUi()
 
     case RESULT =>
       _playingInMatch = false
@@ -513,6 +516,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
       _notify(HearthstoneAnalyser.getResult + " Detected")
       Log.info(HearthstoneAnalyser.getResult + " Detected")
       checkMatchResult(HearthstoneAnalyser.hsMatch)
+      matchPanel.updateCurrentMatchUi()
 
     case SCREEN =>
       val inGameModeScreen = Seq(Screen.ARENA_END, ARENA_LOBBY, PLAY_LOBBY) contains HearthstoneAnalyser.screen
@@ -567,11 +571,13 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     case YOUR_CLASS =>
       _notify("Playing as " + HearthstoneAnalyser.getYourClass)
       Log.info("Playing as " + HearthstoneAnalyser.getYourClass)
+      matchPanel.updateCurrentMatchUi()
 
     case YOUR_TURN =>
       if (Config.showYourTurnNotification)
         _notify((if (HearthstoneAnalyser.isYourTurn) "Your" else "Opponent") + " turn detected")
       Log.info((if (HearthstoneAnalyser.isYourTurn) "Your" else "Opponent") + " turn detected")
+      matchPanel.updateCurrentMatchUi()
 
     case ERROR_ANALYSING_IMAGE =>
       _notify("Error analysing opponent name image")
