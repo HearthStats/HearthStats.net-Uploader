@@ -101,7 +101,8 @@ class HearthstoneMatch(var mode: String = null,
     result != null &&
       userClass != null &&
       opponentClass != null &&
-      StringUtils.isNotBlank(opponentName)
+      StringUtils.isNotBlank(opponentName) &&
+      StringUtils.isNotBlank(mode)
 
   def editUrl: String =
     s"http://hearthstats.net/constructeds/$id/edit"
