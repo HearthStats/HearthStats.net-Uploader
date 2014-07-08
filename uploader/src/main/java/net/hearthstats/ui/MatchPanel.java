@@ -160,7 +160,7 @@ public class MatchPanel extends JPanel {
     }
   }
 
-  public void setCurrentMatchEnabledi(Boolean enabled) {
+  public void setCurrentMatchEnabled(Boolean enabled) {
     _currentMatchEnabled = enabled;
     _currentYourClassSelector.setEnabled(enabled);
     _currentOpponentClassSelect.setEnabled(enabled);

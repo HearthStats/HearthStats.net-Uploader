@@ -480,7 +480,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
 
     case MODE =>
       _playingInMatch = false
-      matchPanel.setCurrentMatchEnabledi(false)
+      matchPanel.setCurrentMatchEnabled(false)
       if (Config.showModeNotification) {
         debugLog.debug(HearthstoneAnalyser.getMode + " level " + HearthstoneAnalyser.getRankLevel)
         if ("Ranked" == HearthstoneAnalyser.getMode) {
@@ -509,7 +509,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
 
     case RESULT =>
       _playingInMatch = false
-      matchPanel.setCurrentMatchEnabledi(false)
+      matchPanel.setCurrentMatchEnabled(false)
       _notify(HearthstoneAnalyser.getResult + " Detected")
       Log.info(HearthstoneAnalyser.getResult + " Detected")
       checkMatchResult(HearthstoneAnalyser.hsMatch)
@@ -544,7 +544,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
         }
       }
       if (HearthstoneAnalyser.screen.group == ScreenGroup.MATCH_START) {
-        matchPanel.setCurrentMatchEnabledi(true)
+        matchPanel.setCurrentMatchEnabled(true)
         _playingInMatch = true
       }
       if (HearthstoneAnalyser.screen.group != ScreenGroup.MATCH_END &&
@@ -595,7 +595,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
       Log.info("API Result: " + API.message)
       val lastMatch = HearthstoneAnalyser.hsMatch
       lastMatch.id = API.lastMatchId
-      matchPanel.setCurrentMatchEnabledi(false)
+      matchPanel.setCurrentMatchEnabled(false)
       matchPanel.updateCurrentMatchUi()
       matchPanel.setLastMatch(lastMatch)
       if (API.message.matches(".*(Edit match|Arena match successfully created).*")) {
