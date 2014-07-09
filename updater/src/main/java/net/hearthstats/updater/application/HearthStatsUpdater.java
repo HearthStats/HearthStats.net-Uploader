@@ -3,26 +3,30 @@ package net.hearthstats.updater.application;
 import net.hearthstats.updater.UpdaterConfiguration;
 import net.hearthstats.updater.exception.UpdaterException;
 
+import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 
-class HearthStatsUpdater {
+class HearthStatsUpdater implements ActionListener {
 
   private static final Set<String> FILES_TO_SKIP = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
     "instructions-osx.txt"
   )));
 
+  private static final int BUFFER_SIZE = 8096;  // 8kb
 
   private final ProgressWindow window;
 
@@ -31,8 +35,10 @@ class HearthStatsUpdater {
   private final String hearthstatsLocation;
   private final String downloadFile;
 
+  private SwingWorker downloadWorker;
+
   private HearthStatsUpdater(String version, long assetId, String hearthstatsLocation, String downloadFile) {
-    window = new ProgressWindow();
+    window = new ProgressWindow(this);
     this.version = version;
     this.assetId = assetId;
     this.hearthstatsLocation = hearthstatsLocation;
@@ -43,114 +49,196 @@ class HearthStatsUpdater {
 
 
   private void download() {
-    window.log("Downloading version " + version + ". Please be patient ...");
-    String assetUrlString = UpdaterConfiguration.getAssetApiUrl(assetId);
+    downloadWorker = new SwingWorker() {
+      private boolean errorOccurred = false;
 
-    try {
-      URL assetUrl = new URL(assetUrlString);
+      @Override
+      protected Object doInBackground() throws Exception {
 
-      HttpURLConnection connection = (HttpURLConnection) assetUrl.openConnection();
-      connection.addRequestProperty("User-Agent", UpdaterConfiguration.getClientUserAgent());
-      connection.addRequestProperty("Accept", UpdaterConfiguration.getClientAccept());
-      connection.addRequestProperty("Media-Type", "application/octet-stream");
+        window.setProgress("Starting download...");
+        window.log("Downloading version " + version + " of the HearthStats Uploader.");
+        window.enableCancelButton();
 
-      // During development you can set an OAuth token to test with draft releases.
-      if (!UpdaterConfiguration.getGitHubOAuthToken().isEmpty()) {
-        connection.addRequestProperty("Authorization", "token " + UpdaterConfiguration.getGitHubOAuthToken());
+        String assetUrlString = UpdaterConfiguration.getAssetApiUrl(assetId);
+        String currentUrlString = assetUrlString;
+
+        try {
+          URL assetUrl = new URL(assetUrlString);
+
+          HttpURLConnection connection = (HttpURLConnection) assetUrl.openConnection();
+          connection.addRequestProperty("User-Agent", UpdaterConfiguration.getClientUserAgent());
+          connection.addRequestProperty("Accept", "application/octet-stream");
+
+          // During development you can set an OAuth token to test with draft releases.
+          if (!UpdaterConfiguration.getGitHubOAuthToken().isEmpty()) {
+            connection.addRequestProperty("Authorization", "token " + UpdaterConfiguration.getGitHubOAuthToken());
+          }
+
+          // Do not redirect automatically because we should not pass GitHub authorisation tokens to a redirected URL,
+          // such as to Amazon S3 where most GitHub binaries are stored.
+          connection.setInstanceFollowRedirects(false);
+
+          logRequestHeaders(connection);
+          connection.connect();
+          logResponseHeaders(connection);
+
+          int responseCode = connection.getResponseCode();
+          if (responseCode == 302 || responseCode == 307) {
+            // We have been redirected to the download, which is the normal behaviour
+            String redirectUrlString = connection.getHeaderField("location");
+            currentUrlString = redirectUrlString;
+            connection.disconnect();
+
+            URL redirectUrl = new URL(redirectUrlString);
+            System.out.println("Downloading from " + urlWithoutQuery(redirectUrl));
+            connection = (HttpURLConnection) redirectUrl.openConnection();
+            connection.addRequestProperty("User-Agent", UpdaterConfiguration.getClientUserAgent());
+
+            logRequestHeaders(connection);
+            connection.connect();
+            logResponseHeaders(connection);
+          }
+
+          // Download the file
+          byte[] buffer = new byte[BUFFER_SIZE];
+          int bytesRead = -1;
+          long totalBytesRead = 0;
+          long fileSize = connection.getContentLengthLong();
+
+          window.setProgress("Downloaded", 0, (int) fileSize);
+          window.log(String.format("File size is %1$.1fMB.", fileSize / 1048576f));
+          try (InputStream in = connection.getInputStream();
+               FileOutputStream fos = new FileOutputStream(downloadFile)) {
+            while ((bytesRead = in.read(buffer)) != -1 && !isCancelled()) {
+              fos.write(buffer, 0, bytesRead);
+              totalBytesRead += bytesRead;
+              int percentCompleted = (int) (totalBytesRead * 100 / fileSize);
+              setProgress(percentCompleted > 100 ? 100 : percentCompleted);
+              window.setProgress("Downloaded", (int) totalBytesRead, (int) fileSize);
+            }
+          }
+
+        } catch (IOException e) {
+          String error = "Unable to open connection to URL " + currentUrlString + " due to exception " + e.getMessage();
+          window.log(error);
+          errorOccurred = true;
+          throw new UpdaterException(error, e);
+        }
+
+        return null;
       }
 
-      connection.setInstanceFollowRedirects(true);
 
-      connection.connect();
+      @Override
+      protected void done() {
+        window.disableCancelButton();
 
-      try (ReadableByteChannel rbc = Channels.newChannel(connection.getInputStream());
-           FileOutputStream fos = new FileOutputStream(downloadFile)) {
-        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        if (!isCancelled() && !errorOccurred) {
+          window.setProgress("Download Complete");
+          window.log("Download complete.");
+          extractZip();
+        } else {
+          window.setProgress("Download Cancelled");
+          window.log("Download cancelled. Please restart the updater if you want to try again.");
+        }
       }
+    };
 
-    } catch (IOException e) {
-      String error = "Unable to open connection to URL " + assetUrlString + " due to exception " + e.getMessage();
-      window.log(error);
-      throw new UpdaterException(error, e);
-    }
+    downloadWorker.execute();
 
   }
 
+
   private void extractZip() {
-    window.log("v" + version + " downloaded, now extracting...");
+    SwingWorker extractWorker = new SwingWorker() {
+      private boolean errorOccurred = false;
 
-    File updateZip = new File(downloadFile);
-    if (updateZip.isFile()) {
-      unZipIt(updateZip.getPath(), hearthstatsLocation);
-      window.log("Done");
-    } else {
-      window.log("Updater Error: unable to locate " + updateZip.getPath());
-    }
+      @Override
+      protected Object doInBackground() throws Exception {
+        window.log("Extracting " + version + " to " + hearthstatsLocation + "...");
 
+        File updateZip = new File(downloadFile);
+        if (updateZip.isFile()) {
+          byte[] buffer = new byte[1024];
+
+          try {
+            // create output directory if it does not exist
+            File folder = new File(hearthstatsLocation);
+            if (!folder.exists()) {
+              folder.mkdir();
+            }
+
+            // get the zip file content
+            ZipInputStream zis = new ZipInputStream(new FileInputStream(updateZip.getPath()));
+            // get the zipped file list entry
+            ZipEntry ze = zis.getNextEntry();
+
+            while (ze != null) {
+              String fileName = ze.getName();
+              if (!FILES_TO_SKIP.contains(fileName)) {
+                File newFile = new File(hearthstatsLocation + File.separator + fileName);
+                System.out.println("Unzipping file: " + newFile.getAbsoluteFile());
+
+                // Create parent folders for files in the archive because FileOutputStream expects them to exist
+                new File(newFile.getParent()).mkdirs();
+
+                if (!ze.isDirectory()) {
+                  FileOutputStream fos = new FileOutputStream(newFile);
+                  try {
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                      fos.write(buffer, 0, len);
+                    }
+                  } finally {
+                    fos.close();
+                  }
+                }
+              }
+              ze = zis.getNextEntry();
+            }
+
+            zis.closeEntry();
+            zis.close();
+
+            System.out.println("Done");
+
+          } catch (IOException ex) {
+            String error = "Unable to uncompress file " + updateZip.getPath() + " due to exception " + ex.getMessage();
+            window.log(error);
+            errorOccurred = true;
+            throw new UpdaterException(error, ex);
+          }
+
+          window.log("HearthStats Uploader is now updated.");
+        } else {
+          window.log("Updater Error: unable to locate " + updateZip.getPath());
+        }
+
+        return null;
+      }
+
+      @Override
+      protected void done() {
+        if (!isCancelled() && !errorOccurred) {
+          runMain();
+        }
+      }
+
+    };
+
+    extractWorker.execute();
   }
 
   private void unZipIt(String zipFile, String outputFolder) {
 
-    byte[] buffer = new byte[1024];
 
-    try {
-
-      // create output directory is not exists
-      File folder = new File(outputFolder);
-      if (!folder.exists()) {
-        folder.mkdir();
-      }
-
-      // get the zip file content
-      ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
-      // get the zipped file list entry
-      ZipEntry ze = zis.getNextEntry();
-
-      while (ze != null) {
-
-        String fileName = ze.getName();
-        if (!FILES_TO_SKIP.contains(fileName)) {
-          File newFile = new File(outputFolder + File.separator + fileName);
-
-          System.out.println("file unzip : " + newFile.getAbsoluteFile());
-          window.log("file unzip : " + newFile.getAbsoluteFile());
-
-          // create all non exists folders
-          // else you will hit FileNotFoundException for compressed folder
-          new File(newFile.getParent()).mkdirs();
-
-          if (!ze.isDirectory()) {
-            FileOutputStream fos = new FileOutputStream(newFile);
-            try {
-              int len;
-              while ((len = zis.read(buffer)) > 0) {
-                fos.write(buffer, 0, len);
-              }
-            } finally {
-              fos.close();
-            }
-          }
-        }
-
-        ze = zis.getNextEntry();
-      }
-
-      zis.closeEntry();
-      zis.close();
-
-      System.out.println("Done");
-
-    } catch (IOException ex) {
-      String error = "Unable to uncompres file " + zipFile + " due to exception " + ex.getMessage();
-      window.log(error);
-      throw new UpdaterException(error, ex);
-    }
   }
 
 
   public void runMain() {
     window.log("Update complete. Attempting to restart...");
     try {
+      // Attempt to open HearthStats
       switch(getOperatingSystem()) {
         case "WINDOWS":
           Runtime.getRuntime().exec("HearthStats.exe");
@@ -160,9 +248,24 @@ class HearthStatsUpdater {
           break;
       }
       window.close();
+
+      // If no exception occurred then quit
+      System.exit(0);
+
     } catch (Exception e) {
       window.log("Error: " + e.getMessage());
       e.printStackTrace();
+    }
+  }
+
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    if (e.getID() == ProgressWindow.EVENT_CANCEL) {
+      if (downloadWorker != null && !downloadWorker.isDone()) {
+        System.out.println("Cancel download has been requested");
+        downloadWorker.cancel(false);
+      }
     }
   }
 
@@ -182,11 +285,6 @@ class HearthStatsUpdater {
 
     updater.download();
 
-    updater.extractZip();
-
-    updater.runMain();
-
-    System.exit(0);
   }
 
 
@@ -221,6 +319,37 @@ class HearthStatsUpdater {
     } else {
       return null;
     }
+  }
+
+
+  private static String urlWithoutQuery(URL url) {
+    if (url == null) {
+      return "";
+    } else {
+      return url.getProtocol()
+        + "://"
+        + url.getHost()
+        + url.getPath();
+    }
+  }
+
+
+  private static void logRequestHeaders(HttpURLConnection connection) {
+    System.out.println("-----------------------------------------------------------------");
+    System.out.println("Request headers for " + connection.getURL().toExternalForm());
+    for (Map.Entry<String, List<String>> entry : connection.getRequestProperties().entrySet()) {
+      System.out.println("  " + entry.getKey() + "=" + entry.getValue());
+    }
+  }
+
+
+  private static void logResponseHeaders(HttpURLConnection connection) {
+    System.out.println("-----------------------------------------------------------------");
+    System.out.println("Response headers for " + connection.getURL().toExternalForm());
+    for (Map.Entry<String, List<String>> entry : connection.getHeaderFields().entrySet()) {
+      System.out.println(" " + entry.getKey() + "=" + entry.getValue());
+    }
+    System.out.println("-----------------------------------------------------------------");
   }
 
 
