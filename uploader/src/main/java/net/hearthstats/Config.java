@@ -214,7 +214,11 @@ public class Config {
     }
 
     public static boolean showYourTurnNotification() {
-        return getBooleanSetting( "notifications", "yourturn", true );
+      return getBooleanSetting("notifications", "yourturn", true);
+    }
+
+    public static boolean showOpponentName() {
+      return getBooleanSetting("options", "opponentName", true);
     }
 
     public static boolean showHsClosedNotification() {

@@ -17,7 +17,6 @@ import net.hearthstats.Config;
 import net.hearthstats.Monitor;
 import net.hearthstats.config.*;
 import net.hearthstats.log.Log;
-import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.util.TranslationCard;
 import net.miginfocom.swing.MigLayout;
 
@@ -41,6 +40,7 @@ public class OptionsPanel extends JPanel {
   private JCheckBox _minToTrayField;
   private JCheckBox _startMinimizedField;
   private JCheckBox _showYourTurnNotificationField;
+  private JCheckBox _opponentNameDetectionField;
   private JCheckBox _showDeckOverlay;
   private Monitor monitor;
   private Logger debugLog = LoggerFactory.getLogger(getClass());
@@ -159,6 +159,12 @@ public class OptionsPanel extends JPanel {
 
     _updateNotificationCheckboxes();
 
+    // show opponent name field
+    add(new JLabel(""), "skip,right");
+    _opponentNameDetectionField = new JCheckBox(t("options.opponent.name.detection"));
+    _opponentNameDetectionField.setSelected(Config.showOpponentName());
+    add(_opponentNameDetectionField, "wrap");
+
     // show deck overlay
     add(new JLabel(""), "skip,right");
     _showDeckOverlay = new JCheckBox(t("options.ui.deckOverlay"));
@@ -246,7 +252,7 @@ public class OptionsPanel extends JPanel {
 
 
   private void _saveOptions(Environment environment) {
-    debugLog.debug("Saving options...");
+    debugLog.debug("Saving options..."); 
 
     MonitoringMethod monitoringMethod = MonitoringMethod.values()[monitoringMethodField
         .getSelectedIndex()];
