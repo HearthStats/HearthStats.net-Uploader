@@ -2,16 +2,16 @@ package net.hearthstats.osx
 
 import net.hearthstats.config.{Application, NotificationType, OS, Environment}
 import net.hearthstats.notification.{ DialogNotificationQueue, NotificationQueue }
-import java.io.{IOException, File}
+import java.io.File
 import net.hearthstats.{Config, ProgramHelper}
-import net.hearthstats.log.Log
 import net.hearthstats.updater.api.model.Release
+import grizzled.slf4j.Logging
 import org.apache.commons.lang3.builder.ToStringBuilder
 
 /**
  * Mac OS X environment.
  */
-class EnvironmentOsx extends Environment {
+class EnvironmentOsx extends Environment with Logging {
 
   val os: OS = OS.OSX
 
@@ -50,11 +50,11 @@ class EnvironmentOsx extends Environment {
     Application.copyFileFromJarTo("/updater.jar", updaterFile.getPath)
 
     if (updaterFile.exists) {
-      System.out.println(s"Found updater.jar in ${updaterFile.getPath}")
+      logger.debug(s"Found updater.jar in ${updaterFile.getPath}")
       val javaLibraryPath: File = new File(Config.getJavaLibraryPath)
       val bundlePath: File = javaLibraryPath.getParentFile.getParentFile.getParentFile
       val javaHome: String = System.getProperty("java.home")
-//      val command: Array[String] = Array[String](javaHome + "/bin/java", "-Dhearthstats.location=" + bundlePath.getAbsolutePath, "-jar", updaterFile.getPath)
+
       val command: Array[String] = Array[String](
         javaHome + "/bin/java",
         "-jar", updaterFile.getPath,
@@ -62,19 +62,20 @@ class EnvironmentOsx extends Environment {
         "assetId=" + release.getOsxAsset.getId,
         "hearthstatsLocation=" + bundlePath.getAbsolutePath,
         "downloadFile=" + extractionFolder + "/update-" + release.getVersion + ".zip")
-      System.out.println("EXEC: " + ToStringBuilder.reflectionToString(command))
+      logger.info("Running updater command: " + command.mkString(" "));
+
       try {
         Runtime.getRuntime.exec(command)
-        return null
+        null
       }
       catch {
-        case e: IOException => {
-          return "Unable to run updater due to error: " + e.getMessage
+        case e: Exception => {
+          s"Unable to run updater due to error: ${e.getMessage}"
         }
       }
     }
     else {
-      return "Unable to locate " + updaterFile.getPath
+      s"Unable to locate ${updaterFile.getPath}"
     }
   }
 }

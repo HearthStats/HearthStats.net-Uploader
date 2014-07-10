@@ -53,7 +53,15 @@ public final class Updater {
   public static void run(Environment environment, Release release) {
     Log.info("Extracting and running updater ...");
 
-    String errorMessage = environment.performApplicationUpdate(release);
+    String errorMessage = null;
+    try {
+      errorMessage = environment.performApplicationUpdate(release);
+    } catch (Exception e) {
+      debugLog.warn("Unable to run updater", e);
+      if (errorMessage == null) {
+        errorMessage = e.getMessage();
+      }
+    }
 
     if (errorMessage == null) {
       // There was no error, so the updater should be running now
