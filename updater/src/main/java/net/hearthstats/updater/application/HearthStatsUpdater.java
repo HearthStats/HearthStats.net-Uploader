@@ -7,13 +7,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -56,7 +52,7 @@ class HearthStatsUpdater implements ActionListener {
       protected Object doInBackground() throws Exception {
 
         window.setProgress("Starting download...");
-        window.log("Downloading version " + version + " of the HearthStats Uploader.");
+        window.log("Downloading version " + version + " of the HearthStats Companion.");
         window.enableCancelButton();
 
         String assetUrlString = UpdaterConfiguration.getAssetApiUrl(assetId);
@@ -209,7 +205,7 @@ class HearthStatsUpdater implements ActionListener {
             throw new UpdaterException(error, ex);
           }
 
-          window.log("HearthStats Uploader is now updated.");
+          window.log("HearthStats Companion is now updated.");
         } else {
           window.log("Updater Error: unable to locate " + updateZip.getPath());
         }
@@ -227,11 +223,6 @@ class HearthStatsUpdater implements ActionListener {
     };
 
     extractWorker.execute();
-  }
-
-  private void unZipIt(String zipFile, String outputFolder) {
-
-
   }
 
 

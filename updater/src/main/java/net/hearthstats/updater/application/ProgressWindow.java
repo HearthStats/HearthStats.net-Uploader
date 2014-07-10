@@ -32,10 +32,10 @@ class ProgressWindow {
   public ProgressWindow(ActionListener actionListener) {
     this.actionListener = actionListener;
 
-    frame = new JFrame("Updating HearthStats Uploader");
+    frame = new JFrame("Updating HearthStats Companion");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.setLayout(new BorderLayout());
-    frame.setContentPane(new ImagePanel());
+    frame.setContentPane(new ImagePanel("/net/hearthstats/updater/background.jpg", 0, 0, false));
 
     Container container = frame.getContentPane();
     createComponents(container);
@@ -107,47 +107,65 @@ class ProgressWindow {
     container.setMaximumSize(windowSize);
 
     // Heading panel that contains the HearthStats Uploader text
-    final JPanel headingPanel = new JPanel();
+//    final JPanel headingPanel = new JPanel();
+    final JPanel headingPanel = new ImagePanel("/net/hearthstats/updater/logo.png", 12, 12, true);
     headingPanel.setLayout(new GridBagLayout());
     headingPanel.setBackground(new Color(0x212121));
     container.add(headingPanel, BorderLayout.NORTH);
 
-    // Hearth
-    hearthLabel = new JLabel();
-    hearthLabel.setFont(new Font(hearthLabel.getFont().getName(), Font.BOLD, 20));
-    hearthLabel.setForeground(new Color(-1));
-    hearthLabel.setText("Hearth");
+//    // Hearth
+//    hearthLabel = new JLabel();
+//    hearthLabel.setFont(new Font(hearthLabel.getFont().getName(), Font.BOLD, 20));
+//    hearthLabel.setForeground(new Color(-1));
+//    hearthLabel.setText("Hearth");
+//    GridBagConstraints gbc = new GridBagConstraints();
+//    gbc.gridx = 0;
+//    gbc.gridy = 0;
+//    gbc.anchor = GridBagConstraints.WEST;
+//    gbc.insets = new Insets(10, 10, 10, 0);
+//    headingPanel.add(hearthLabel, gbc);
+//
+//    // Stats
+//    statsLabel = new JLabel();
+//    statsLabel.setFont(new Font(statsLabel.getFont().getName(), Font.BOLD, 20));
+//    statsLabel.setForeground(new Color(0xE02222));
+//    statsLabel.setText("Stats");
+//    gbc = new GridBagConstraints();
+//    gbc.gridx = 1;
+//    gbc.gridy = 0;
+//    gbc.anchor = GridBagConstraints.WEST;
+//    gbc.insets = new Insets(10, 0, 10, 0);
+//    headingPanel.add(statsLabel, gbc);
+//
+//    // Uploader
+//    uploaderLabel = new JLabel();
+//    uploaderLabel.setFont(new Font(uploaderLabel.getFont().getName(), Font.BOLD, 20));
+//    uploaderLabel.setForeground(new Color(-1));
+//    uploaderLabel.setText("Uploader");
+//    gbc = new GridBagConstraints();
+//    gbc.gridx = 2;
+//    gbc.gridy = 0;
+//    gbc.weightx = 1.0;
+//    gbc.anchor = GridBagConstraints.WEST;
+//    gbc.insets = new Insets(10, 8, 10, 10);
+//    headingPanel.add(uploaderLabel, gbc);
+
+    headingPanel.setMinimumSize(new Dimension(500, 66));
+    headingPanel.setPreferredSize(new Dimension(500, 66));
+
     GridBagConstraints gbc = new GridBagConstraints();
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    gbc.anchor = GridBagConstraints.WEST;
-    gbc.insets = new Insets(10, 10, 10, 0);
-    headingPanel.add(hearthLabel, gbc);
+//    Icon imageIcon = new ImageIcon(getClass().getResource("/net/hearthstats/updater/logo-inline.png"));
+//
+//    BufferedImage image = ImageIO.read(getClass().getResource("/net/hearthstats/updater/background.jpg"));
+//    image.getScaledInstance();
+//    imageIcon.
+//    JLabel imageLabel = new JLabel(imageIcon);
+//    gbc.gridx = 0;
+//    gbc.gridy = 0;
+//    gbc.anchor = GridBagConstraints.WEST;
+//    gbc.insets = new Insets(10, 10, 10, 0);
+//    headingPanel.add(imageLabel, gbc);
 
-    // Stats
-    statsLabel = new JLabel();
-    statsLabel.setFont(new Font(statsLabel.getFont().getName(), Font.BOLD, 20));
-    statsLabel.setForeground(new Color(0xE02222));
-    statsLabel.setText("Stats");
-    gbc = new GridBagConstraints();
-    gbc.gridx = 1;
-    gbc.gridy = 0;
-    gbc.anchor = GridBagConstraints.WEST;
-    gbc.insets = new Insets(10, 0, 10, 0);
-    headingPanel.add(statsLabel, gbc);
-
-    // Uploader
-    uploaderLabel = new JLabel();
-    uploaderLabel.setFont(new Font(uploaderLabel.getFont().getName(), Font.BOLD, 20));
-    uploaderLabel.setForeground(new Color(-1));
-    uploaderLabel.setText("Uploader");
-    gbc = new GridBagConstraints();
-    gbc.gridx = 2;
-    gbc.gridy = 0;
-    gbc.weightx = 1.0;
-    gbc.anchor = GridBagConstraints.WEST;
-    gbc.insets = new Insets(10, 8, 10, 10);
-    headingPanel.add(uploaderLabel, gbc);
 
     // Main panel containing the progress bar and log
     final JPanel panel3 = new JPanel();
@@ -167,7 +185,7 @@ class ProgressWindow {
     gbc.gridwidth = 2;
     gbc.weightx = 1.0;
     gbc.fill = GridBagConstraints.HORIZONTAL;
-    gbc.insets = new Insets(10, 10, 0, 10);
+    gbc.insets = new Insets(10, 12, 0, 12);
     panel3.add(progressLabel, gbc);
 
     // Progress bar
@@ -178,7 +196,7 @@ class ProgressWindow {
     gbc.gridy = 1;
     gbc.weightx = 1.0;
     gbc.fill = GridBagConstraints.HORIZONTAL;
-    gbc.insets = new Insets(3, 10, 3, 0);
+    gbc.insets = new Insets(3, 12, 3, 0);
     panel3.add(downloadProgressBar, gbc);
 
     // Cancel button next to the progress bar
@@ -196,7 +214,7 @@ class ProgressWindow {
     gbc.gridx = 1;
     gbc.gridy = 1;
     gbc.fill = GridBagConstraints.HORIZONTAL;
-    gbc.insets = new Insets(0, 8, 0, 8);
+    gbc.insets = new Insets(0, 8, 0, 10);
     panel3.add(cancelButton, gbc);
 
     // Text area for the logs
@@ -224,7 +242,7 @@ class ProgressWindow {
     gbc.gridwidth = 2;
     gbc.weighty = 1.0;
     gbc.fill = GridBagConstraints.BOTH;
-    gbc.insets = new Insets(10, 10, 10, 10);
+    gbc.insets = new Insets(10, 12, 12, 12);
     panel3.add(logScrollPane, gbc);
 
   }
