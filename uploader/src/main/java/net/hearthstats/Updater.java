@@ -38,18 +38,6 @@ public final class Updater {
   }
 
 
-  public static String getAvailableVersion() {
-    Release release = getLatestRelease();
-    return release == null ? null : release.getVersion();
-  }
-
-
-  public static String getRecentChanges() {
-    Release release = getLatestRelease();
-    return release == null ? null : release.getBody();
-  }
-
-
   public static void run(Environment environment, Release release) {
     Log.info("Extracting and running updater ...");
 

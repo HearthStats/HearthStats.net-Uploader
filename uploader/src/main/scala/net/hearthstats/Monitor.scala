@@ -237,8 +237,8 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
             val dialogButton = YES_NO_OPTION
             var dialogResult = showConfirmDialog(
               this,
-              s"""A new version of this uploader is available
-                  |${Updater.getRecentChanges}
+              s"""A new version of this uploader is available: ${latestRelease.getVersion}
+                  |${latestRelease.getBody}
                   |            
                   |
                   | ${t("would_u_like_to_install_update")}""".stripMargin,
