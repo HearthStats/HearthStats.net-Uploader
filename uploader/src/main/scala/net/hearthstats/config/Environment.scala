@@ -3,6 +3,7 @@ package net.hearthstats.config
 import net.hearthstats.notification.NotificationQueue
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
+import net.hearthstats.updater.api.model.Release
 
 /**
  * Represents the environment-specific information that varies between OS X and Windows.
@@ -43,6 +44,12 @@ abstract class Environment {
    * Creates a new NotificationQueue object of the requested type, if suitable for the current environment.
    */
   def newNotificationQueue(notificationType: NotificationType): NotificationQueue
+
+
+  /**
+   * Performs an update of the HearthStats Uploader. This method should quit the uploader then start the update.
+   */
+  def performApplicationUpdate(release: Release): String
 
 }
 
