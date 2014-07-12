@@ -5,11 +5,13 @@ import net.hearthstats.config.OS;
 import net.hearthstats.log.Log;
 import net.hearthstats.updater.api.GitHubReleases;
 import net.hearthstats.updater.api.model.Release;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.File;
+import java.io.FileFilter;
 import java.net.URI;
 
 
@@ -76,16 +78,25 @@ public final class Updater {
 
 
   public static void cleanUp() {
-		removeFile(Config.getExtractionFolder() + "/updater.jar");
-		removeFile(Config.getExtractionFolder() + "/update.zip");
+    removeFile(Config.getExtractionFolder(), "updater.jar");
+    removeFile(Config.getExtractionFolder(), "update-*.zip");
 	}
 
 
-	private static void removeFile(String path) {
-		File file = new File(path);
-		if (file.isFile()) {
-			file.delete();
-		}
+  /**
+   * Deletes a file or files in the given path.
+   * @param path The path where the file or files are located.
+   * @param filename The file or files to delete. Accepts wildcards * and ?.
+   */
+	private static void removeFile(String path, String filename) {
+    debugLog.debug("Deleting {}/{}", path, filename);
+    File dir = new File(path);
+    FileFilter fileFilter = new WildcardFileFilter(filename);
+    File[] files = dir.listFiles(fileFilter);
+    for (File file : files) {
+      debugLog.info("Deleting file {}", file.getAbsolutePath());
+      file.delete();
+    }
 	}
 
 }
