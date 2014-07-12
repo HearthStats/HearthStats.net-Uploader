@@ -9,9 +9,6 @@ import java.util.Properties;
 import java.util.prefs.Preferences;
 
 
-/**
- * Created by charlie on 6/07/2014.
- */
 public class UpdaterConfiguration {
 
   public static final String GITHUB_API_RELEASES = "github.api.releases";
@@ -69,4 +66,15 @@ public class UpdaterConfiguration {
   public static String getGitHubOAuthToken() {
     return prop("github.oauthtoken");
   }
+
+
+  public static boolean getIncludeDraftReleases() {
+    try {
+      return Boolean.valueOf(prop("updater.includeDraftReleases"));
+    } catch (Exception ex) {
+      System.err.println("Ignoring exception parsing updater.includeDraftReleases: " + ex.getMessage());
+      return false;
+    }
+  }
+
 }

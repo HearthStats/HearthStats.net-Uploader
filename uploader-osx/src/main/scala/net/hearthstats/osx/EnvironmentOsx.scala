@@ -45,37 +45,40 @@ class EnvironmentOsx extends Environment with Logging {
    * Performs an update of the HearthStats Uploader. This method should quit the uploader then start the update.
    */
   def performApplicationUpdate(release: Release): String = {
-    val updaterFile: File = new File(extractionFolder + "/updater.jar")
+    if (release.getOsxAsset == null) {
+      s"No Mac OS X download found for version ${release.getVersion}"
+    } else {
+      val updaterFile: File = new File(extractionFolder + "/updater.jar")
+      Application.copyFileFromJarTo("/updater.jar", updaterFile.getPath)
 
-    Application.copyFileFromJarTo("/updater.jar", updaterFile.getPath)
+      if (updaterFile.exists) {
+        logger.debug(s"Found updater.jar in ${updaterFile.getPath}")
+        val javaLibraryPath: File = new File(Config.getJavaLibraryPath)
+        val bundlePath: File = javaLibraryPath.getParentFile.getParentFile.getParentFile
+        val javaHome: String = System.getProperty("java.home")
 
-    if (updaterFile.exists) {
-      logger.debug(s"Found updater.jar in ${updaterFile.getPath}")
-      val javaLibraryPath: File = new File(Config.getJavaLibraryPath)
-      val bundlePath: File = javaLibraryPath.getParentFile.getParentFile.getParentFile
-      val javaHome: String = System.getProperty("java.home")
+        val command: Array[String] = Array[String](
+          javaHome + "/bin/java",
+          "-jar", updaterFile.getPath,
+          "version=" + release.getVersion,
+          "assetId=" + release.getOsxAsset.getId,
+          "hearthstatsLocation=" + bundlePath.getAbsolutePath,
+          "downloadFile=" + extractionFolder + "/update-" + release.getVersion + ".zip")
+        logger.info("Running updater command: " + command.mkString(" "));
 
-      val command: Array[String] = Array[String](
-        javaHome + "/bin/java",
-        "-jar", updaterFile.getPath,
-        "version=" + release.getVersion,
-        "assetId=" + release.getOsxAsset.getId,
-        "hearthstatsLocation=" + bundlePath.getAbsolutePath,
-        "downloadFile=" + extractionFolder + "/update-" + release.getVersion + ".zip")
-      logger.info("Running updater command: " + command.mkString(" "));
-
-      try {
-        Runtime.getRuntime.exec(command)
-        null
-      }
-      catch {
-        case e: Exception => {
-          s"Unable to run updater due to error: ${e.getMessage}"
+        try {
+          Runtime.getRuntime.exec(command)
+          null
+        }
+        catch {
+          case e: Exception => {
+            s"Unable to run updater due to error: ${e.getMessage}"
+          }
         }
       }
-    }
-    else {
-      s"Unable to locate ${updaterFile.getPath}"
+      else {
+        s"Unable to locate ${updaterFile.getPath}"
+      }
     }
   }
 }

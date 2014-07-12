@@ -61,32 +61,35 @@ class EnvironmentWin extends Environment with Logging {
    * Performs an update of the HearthStats Uploader. This method should quit the uploader then start the update.
    */
   def performApplicationUpdate(release: Release): String = {
-    val updaterFile: File = new File(extractionFolder + "/updater.jar")
-
-    Application.copyFileFromJarTo("/updater.jar", updaterFile.getPath)
-
-    if (updaterFile.exists) {
-      logger.debug(s"Found updater.jar in ${updaterFile.getPath}")
-
-      val command: Array[String] = Array[String](
-        "java",
-        "-jar", updaterFile.getPath,
-        "version=" + release.getVersion,
-        "assetId=" + release.getWindowsAsset.getId,
-        "hearthstatsLocation=" + (new File(".")).getAbsolutePath,
-        "downloadFile=" + extractionFolder + "/update-" + release.getVersion + ".zip")
-      logger.info("Running updater command: " + command.mkString(" "));
-
-      try {
-        Runtime.getRuntime().exec(command);
-        null
-      } catch {
-        case e: Exception => {
-          s"Unable to run updater due to error: ${e.getMessage}"
-        }
-      }
+    if (release.getWindowsAsset == null) {
+      s"No Windows download found for version ${release.getVersion}"
     } else {
-      s"Unable to locate ${updaterFile.getPath}"
+      val updaterFile: File = new File(extractionFolder + "/updater.jar")
+      Application.copyFileFromJarTo("/updater.jar", updaterFile.getPath)
+
+      if (updaterFile.exists) {
+        logger.debug(s"Found updater.jar in ${updaterFile.getPath}")
+
+        val command: Array[String] = Array[String](
+          "java",
+          "-jar", updaterFile.getPath,
+          "version=" + release.getVersion,
+          "assetId=" + release.getWindowsAsset.getId,
+          "hearthstatsLocation=" + (new File(".")).getAbsolutePath,
+          "downloadFile=" + extractionFolder + "/update-" + release.getVersion + ".zip")
+        logger.info("Running updater command: " + command.mkString(" "));
+
+        try {
+          Runtime.getRuntime().exec(command);
+          null
+        } catch {
+          case e: Exception => {
+            s"Unable to run updater due to error: ${e.getMessage}"
+          }
+        }
+      } else {
+        s"Unable to locate ${updaterFile.getPath}"
+      }
     }
   }
 }

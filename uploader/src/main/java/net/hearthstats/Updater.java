@@ -1,6 +1,7 @@
 package net.hearthstats;
 
 import net.hearthstats.config.Environment;
+import net.hearthstats.config.OS;
 import net.hearthstats.log.Log;
 import net.hearthstats.updater.api.GitHubReleases;
 import net.hearthstats.updater.api.model.Release;
@@ -26,7 +27,11 @@ public final class Updater {
     if (cachedlatestRelease == null) {
       try {
         debugLog.debug("Loading latest release information from GitHub");
-        cachedlatestRelease = GitHubReleases.getLatestRelease(true);
+        if (Config.os == OS.OSX) {
+          cachedlatestRelease = GitHubReleases.getLatestReleaseForOSX();
+        } else if (Config.os == OS.WINDOWS) {
+          cachedlatestRelease = GitHubReleases.getLatestReleaseForWindows();
+        }
         if (cachedlatestRelease == null) {
           Log.warn("Unable to check latest release of HearthStats Uploader");
         }
