@@ -1,6 +1,7 @@
 package net.hearthstats
 
 import net.hearthstats.util.Rank
+import net.hearthstats.util.Translations.t
 import org.apache.commons.lang3.StringUtils
 import org.json.simple.JSONObject
 //remove if not needed
@@ -24,31 +25,49 @@ class HearthstoneMatch(var mode: String = null,
   //needed for java calls
   def this() = this(mode = null)
 
-  private def _propertyOrUnknown(propertyVal: String): String = {
+  private def propertyOrUnknown(propertyVal: String): String = {
     if (propertyVal == null) "[undetected]" else propertyVal
   }
 
-  override def toString: String = {
-    val deck = DeckUtils.getDeckFromSlot(deckSlot)
-    _propertyOrUnknown(mode) +
-      (if ("Ranked" == mode) " level " + rankLevel else "") +
-      " " +
-      (if (coin) "" else "no ") +
-      "coin " +
-      _propertyOrUnknown(userClass) +
-      " vs. " +
-      _propertyOrUnknown(opponentClass) +
-      " " +
-      "(" +
-      _propertyOrUnknown(opponentName) +
-      ") " +
-      result +
-      " " +
-      (if (deck == null) "" else " deck: " + deck.name) +
-      " (" +
-      numTurns +
-      " turns)"
+  override def toString: String =
+    describeMode + " " +
+    describeCoin + " " +
+    describePlayers + " " +
+    describeResult + " " +
+    describeDeck + " " +
+    describeTurns + " "
+
+
+  def describeMode: String = mode match {
+    case "Arena" => t("match.end.mode.arena")
+    case "Casual" => t("match.end.mode.casual")
+    case "Ranked" => t("match.end.mode.ranked", rankLevel)
   }
+
+  def describeCoin: String = coin match {
+    case true => t("match.end.coin.true")
+    case _ => t("match.end.coin.false")
+  }
+
+  def describePlayers: String = opponentName match {
+    case null => t("match.end.vs.unnamed", propertyOrUnknown(userClass), propertyOrUnknown(opponentClass))
+    case _ => t("match.end.vs.named", propertyOrUnknown(userClass), propertyOrUnknown(opponentClass), opponentName)
+  }
+
+  def describeResult: String = result
+
+  def describeDeck: String = mode match {
+    case "Arena" => ""
+    case _ => {
+      val deck = DeckUtils.getDeckFromSlot(deckSlot)
+      t("match.end.deck.name", deck match {
+        case Some(d) => d.name
+        case None => "[unknown]"
+      })
+    }
+  }
+
+  def describeTurns: String = t("match.end.turns", numTurns)
 
   def toJsonObject: JSONObject = {
     val r = result match {
