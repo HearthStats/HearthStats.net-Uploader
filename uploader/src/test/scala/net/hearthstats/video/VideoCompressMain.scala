@@ -1,7 +1,8 @@
 package net.hearthstats.video
 
-import com.xuggle.mediatool.ToolFactory
 import java.io.File
+
+import com.xuggle.mediatool.ToolFactory
 
 object VideoCompressMain extends App {
   val reader = ToolFactory.makeReader("""C:\Users\tyrcho\AppData\Local\Temp\HSReplay5395579179633114373video.mp4""")

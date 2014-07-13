@@ -1,28 +1,20 @@
 package net.hearthstats.video
 
 import java.awt.geom.AffineTransform
-import java.awt.image.AffineTransformOp
-import java.awt.image.BufferedImage
+import java.awt.image.{AffineTransformOp, BufferedImage}
 import java.io.File
 import java.nio.ByteBuffer
-import java.util.ArrayList
-import java.util.Arrays
+import java.util.{ArrayList, Arrays}
 
+import scala.concurrent.{Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.concurrent.Promise
 
-import org.jcodec.codecs.h264.H264Encoder
-import org.jcodec.codecs.h264.H264Utils
+import org.jcodec.codecs.h264.{H264Encoder, H264Utils}
 import org.jcodec.common.NIOUtils
-import org.jcodec.common.model.ColorSpace
-import org.jcodec.common.model.Picture
-import org.jcodec.containers.mp4.Brand
-import org.jcodec.containers.mp4.MP4Packet
-import org.jcodec.containers.mp4.TrackType
+import org.jcodec.common.model.{ColorSpace, Picture}
+import org.jcodec.containers.mp4.{Brand, MP4Packet, TrackType}
 import org.jcodec.containers.mp4.muxer.MP4Muxer
-import org.jcodec.scale.AWTUtil
-import org.jcodec.scale.RgbToYuv420
+import org.jcodec.scale.{AWTUtil, RgbToYuv420}
 
 import com.xuggle.mediatool.ToolFactory
 
