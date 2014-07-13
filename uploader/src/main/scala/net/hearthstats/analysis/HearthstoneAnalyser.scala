@@ -4,7 +4,11 @@ import java.awt.image.BufferedImage
 import java.text.MessageFormat
 import java.util.Observable
 import java.util.ResourceBundle
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import org.apache.commons.lang3.StringUtils
+
 import grizzled.slf4j.Logging
 import net.hearthstats.BackgroundImageSave
 import net.hearthstats.Config
@@ -26,13 +30,144 @@ import net.hearthstats.state.ScreenGroup
 import net.hearthstats.state.ScreenGroup.MATCH_END
 import net.hearthstats.state.ScreenGroup.MATCH_PLAYING
 import net.hearthstats.state.ScreenGroup.MATCH_START
-import net.hearthstats.state.UniquePixel._
+import net.hearthstats.state.UniquePixel
+import net.hearthstats.state.UniquePixel.BACKGROUND_PLAY_1
+import net.hearthstats.state.UniquePixel.BACKGROUND_PLAY_2
+import net.hearthstats.state.UniquePixel.BACKGROUND_PLAY_3
+import net.hearthstats.state.UniquePixel.BACKGROUND_PLAY_4
+import net.hearthstats.state.UniquePixel.BACKGROUND_PLAY_5
+import net.hearthstats.state.UniquePixel.BACKGROUND_PLAY_6
+import net.hearthstats.state.UniquePixel.BACKGROUND_PLAY_7
+import net.hearthstats.state.UniquePixel.BACKGROUND_PLAY_8
+import net.hearthstats.state.UniquePixel.BACKGROUND_PLAY_9
+import net.hearthstats.state.UniquePixel.COIN_1
+import net.hearthstats.state.UniquePixel.COIN_2
+import net.hearthstats.state.UniquePixel.COIN_3
+import net.hearthstats.state.UniquePixel.COIN_4
+import net.hearthstats.state.UniquePixel.COIN_5
+import net.hearthstats.state.UniquePixel.DECK_SLOT_1A
+import net.hearthstats.state.UniquePixel.DECK_SLOT_1B
+import net.hearthstats.state.UniquePixel.DECK_SLOT_2A
+import net.hearthstats.state.UniquePixel.DECK_SLOT_2B
+import net.hearthstats.state.UniquePixel.DECK_SLOT_3A
+import net.hearthstats.state.UniquePixel.DECK_SLOT_3B
+import net.hearthstats.state.UniquePixel.DECK_SLOT_4A
+import net.hearthstats.state.UniquePixel.DECK_SLOT_4B
+import net.hearthstats.state.UniquePixel.DECK_SLOT_5A
+import net.hearthstats.state.UniquePixel.DECK_SLOT_5B
+import net.hearthstats.state.UniquePixel.DECK_SLOT_6A
+import net.hearthstats.state.UniquePixel.DECK_SLOT_6B
+import net.hearthstats.state.UniquePixel.DECK_SLOT_7A
+import net.hearthstats.state.UniquePixel.DECK_SLOT_7B
+import net.hearthstats.state.UniquePixel.DECK_SLOT_8A
+import net.hearthstats.state.UniquePixel.DECK_SLOT_8B
+import net.hearthstats.state.UniquePixel.DECK_SLOT_9A
+import net.hearthstats.state.UniquePixel.DECK_SLOT_9B
+import net.hearthstats.state.UniquePixel.DEFEAT_REL_1A
+import net.hearthstats.state.UniquePixel.DEFEAT_REL_1B
+import net.hearthstats.state.UniquePixel.DEFEAT_REL_1C
+import net.hearthstats.state.UniquePixel.DEFEAT_REL_1D
+import net.hearthstats.state.UniquePixel.DEFEAT_REL_1E
+import net.hearthstats.state.UniquePixel.DEFEAT_REL_2A
+import net.hearthstats.state.UniquePixel.MODE_CASUAL_1A
+import net.hearthstats.state.UniquePixel.MODE_CASUAL_1B
+import net.hearthstats.state.UniquePixel.MODE_CASUAL_2A
+import net.hearthstats.state.UniquePixel.MODE_CASUAL_2B
+import net.hearthstats.state.UniquePixel.MODE_CASUAL_3A
+import net.hearthstats.state.UniquePixel.MODE_CASUAL_3B
+import net.hearthstats.state.UniquePixel.MODE_RANKED_1A
+import net.hearthstats.state.UniquePixel.MODE_RANKED_1B
+import net.hearthstats.state.UniquePixel.MODE_RANKED_2A
+import net.hearthstats.state.UniquePixel.MODE_RANKED_2B
+import net.hearthstats.state.UniquePixel.MODE_RANKED_3A
+import net.hearthstats.state.UniquePixel.MODE_RANKED_3B
+import net.hearthstats.state.UniquePixel.NAME_OPPONENT_1A
+import net.hearthstats.state.UniquePixel.NAME_OPPONENT_1B
+import net.hearthstats.state.UniquePixel.NAME_OPPONENT_1C
+import net.hearthstats.state.UniquePixel.NAME_OPPONENT_2A
+import net.hearthstats.state.UniquePixel.NAME_OPPONENT_2B
+import net.hearthstats.state.UniquePixel.NAME_OPPONENT_2C
+import net.hearthstats.state.UniquePixel.NEW_ARENA_RUN_A
+import net.hearthstats.state.UniquePixel.NEW_ARENA_RUN_B
+import net.hearthstats.state.UniquePixel.NEW_ARENA_RUN_C
+import net.hearthstats.state.UniquePixel.NEW_ARENA_RUN_D
+import net.hearthstats.state.UniquePixel.NEW_ARENA_RUN_E
+import net.hearthstats.state.UniquePixel.OPPONENT_DRUID_1
+import net.hearthstats.state.UniquePixel.OPPONENT_DRUID_2
+import net.hearthstats.state.UniquePixel.OPPONENT_DRUID_3
+import net.hearthstats.state.UniquePixel.OPPONENT_HUNTER_1
+import net.hearthstats.state.UniquePixel.OPPONENT_HUNTER_2
+import net.hearthstats.state.UniquePixel.OPPONENT_HUNTER_3
+import net.hearthstats.state.UniquePixel.OPPONENT_MAGE_1
+import net.hearthstats.state.UniquePixel.OPPONENT_MAGE_2
+import net.hearthstats.state.UniquePixel.OPPONENT_MAGE_3
+import net.hearthstats.state.UniquePixel.OPPONENT_PALADIN_1
+import net.hearthstats.state.UniquePixel.OPPONENT_PALADIN_2
+import net.hearthstats.state.UniquePixel.OPPONENT_PALADIN_3
+import net.hearthstats.state.UniquePixel.OPPONENT_PRIEST_1
+import net.hearthstats.state.UniquePixel.OPPONENT_PRIEST_2
+import net.hearthstats.state.UniquePixel.OPPONENT_PRIEST_3
+import net.hearthstats.state.UniquePixel.OPPONENT_ROGUE_1
+import net.hearthstats.state.UniquePixel.OPPONENT_ROGUE_2
+import net.hearthstats.state.UniquePixel.OPPONENT_ROGUE_3
+import net.hearthstats.state.UniquePixel.OPPONENT_SHAMAN_1
+import net.hearthstats.state.UniquePixel.OPPONENT_SHAMAN_2
+import net.hearthstats.state.UniquePixel.OPPONENT_SHAMAN_3
+import net.hearthstats.state.UniquePixel.OPPONENT_WARLOCK_1
+import net.hearthstats.state.UniquePixel.OPPONENT_WARLOCK_2
+import net.hearthstats.state.UniquePixel.OPPONENT_WARLOCK_3
+import net.hearthstats.state.UniquePixel.OPPONENT_WARRIOR_1
+import net.hearthstats.state.UniquePixel.OPPONENT_WARRIOR_2
+import net.hearthstats.state.UniquePixel.OPPONENT_WARRIOR_3
+import net.hearthstats.state.UniquePixel.TURN_OPPONENT_1A
+import net.hearthstats.state.UniquePixel.TURN_OPPONENT_1B
+import net.hearthstats.state.UniquePixel.TURN_OPPONENT_2A
+import net.hearthstats.state.UniquePixel.TURN_OPPONENT_2B
+import net.hearthstats.state.UniquePixel.TURN_OPPONENT_3A
+import net.hearthstats.state.UniquePixel.TURN_OPPONENT_3B
+import net.hearthstats.state.UniquePixel.TURN_YOUR_1A
+import net.hearthstats.state.UniquePixel.TURN_YOUR_1B
+import net.hearthstats.state.UniquePixel.TURN_YOUR_2A
+import net.hearthstats.state.UniquePixel.TURN_YOUR_2B
+import net.hearthstats.state.UniquePixel.VICTORY_DEFEAT_REFBOX_BR
+import net.hearthstats.state.UniquePixel.VICTORY_DEFEAT_REFBOX_TL
+import net.hearthstats.state.UniquePixel.VICTORY_REL_1A
+import net.hearthstats.state.UniquePixel.VICTORY_REL_1B
+import net.hearthstats.state.UniquePixel.VICTORY_REL_2A
+import net.hearthstats.state.UniquePixel.VICTORY_REL_2B
+import net.hearthstats.state.UniquePixel.VICTORY_REL_2C
+import net.hearthstats.state.UniquePixel.YOUR_DRUID_1
+import net.hearthstats.state.UniquePixel.YOUR_DRUID_2
+import net.hearthstats.state.UniquePixel.YOUR_DRUID_3
+import net.hearthstats.state.UniquePixel.YOUR_HUNTER_1
+import net.hearthstats.state.UniquePixel.YOUR_HUNTER_2
+import net.hearthstats.state.UniquePixel.YOUR_HUNTER_3
+import net.hearthstats.state.UniquePixel.YOUR_HUNTER_GOLDEN_1
+import net.hearthstats.state.UniquePixel.YOUR_HUNTER_GOLDEN_2
+import net.hearthstats.state.UniquePixel.YOUR_HUNTER_GOLDEN_3
+import net.hearthstats.state.UniquePixel.YOUR_MAGE_1
+import net.hearthstats.state.UniquePixel.YOUR_MAGE_2
+import net.hearthstats.state.UniquePixel.YOUR_MAGE_3
+import net.hearthstats.state.UniquePixel.YOUR_PALADIN_1
+import net.hearthstats.state.UniquePixel.YOUR_PALADIN_2
+import net.hearthstats.state.UniquePixel.YOUR_PALADIN_3
+import net.hearthstats.state.UniquePixel.YOUR_PRIEST_1
+import net.hearthstats.state.UniquePixel.YOUR_PRIEST_2
+import net.hearthstats.state.UniquePixel.YOUR_PRIEST_3
+import net.hearthstats.state.UniquePixel.YOUR_ROGUE_1
+import net.hearthstats.state.UniquePixel.YOUR_ROGUE_2
+import net.hearthstats.state.UniquePixel.YOUR_ROGUE_3
+import net.hearthstats.state.UniquePixel.YOUR_SHAMAN_1
+import net.hearthstats.state.UniquePixel.YOUR_SHAMAN_2
+import net.hearthstats.state.UniquePixel.YOUR_SHAMAN_3
+import net.hearthstats.state.UniquePixel.YOUR_WARLOCK_1
+import net.hearthstats.state.UniquePixel.YOUR_WARLOCK_2
+import net.hearthstats.state.UniquePixel.YOUR_WARLOCK_3
+import net.hearthstats.state.UniquePixel.YOUR_WARRIOR_1
+import net.hearthstats.state.UniquePixel.YOUR_WARRIOR_2
+import net.hearthstats.state.UniquePixel.YOUR_WARRIOR_3
 import net.hearthstats.util.MatchOutcome
 import net.hearthstats.util.Rank
-import net.hearthstats.state.UniquePixel
-import net.hearthstats.HearthstoneMatch
-import net.hearthstats.video.SequenceEncoder
-import java.io.File
 import net.hearthstats.video.SequenceEncoder
 
 /**
@@ -194,8 +329,10 @@ object HearthstoneAnalyser extends Observable with Logging {
           }
 
         case MATCH_END =>
-          videoEncoder.finish()
-          Log.info("Video replay of your match is saved in " + videoEncoder.out.getAbsolutePath)
+          videoEncoder.finish().onSuccess {
+            case fileName =>
+              Log.info("Video replay of your match is saved in " + fileName)
+          }
 
         case _ =>
       }
