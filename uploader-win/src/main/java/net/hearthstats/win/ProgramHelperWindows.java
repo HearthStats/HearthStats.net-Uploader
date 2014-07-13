@@ -14,8 +14,8 @@ import com.sun.jna.platform.win32.WinGDI.BITMAPINFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC;
 import com.sun.jna.ptr.PointerByReference;
-import net.hearthstats.Config;
 import net.hearthstats.ProgramHelper;
+import net.hearthstats.config.Environment;
 import net.hearthstats.win.jna.extra.GDI32Extra;
 import net.hearthstats.win.jna.extra.User32Extra;
 import net.hearthstats.win.jna.extra.WinGDIExtra;
@@ -120,7 +120,7 @@ public class ProgramHelperWindows extends ProgramHelper {
               // The window handle has changed, so try to find the location the HearthStats executable. This is used to
               // find the HS log file. Only compatible with Windows Vista and later, so we skip for Windows XP.
               lastKnownWindowHandleId = windowHandleId;
-              if (Config.isOsVersionAtLeast(6, 0)) {
+              if (Environment.isOsVersionAtLeast(6, 0)) {
                 debugLog.debug("Windows version is Vista or later so the location of the Hearthstone is being determined from the process");
                 Kernel32.QueryFullProcessImageNameW(process, 0, processFileNameBuffer, lpdwSize);
                 String processFileNameString = Native.toString(processFileNameBuffer);
@@ -155,6 +155,11 @@ public class ProgramHelperWindows extends ProgramHelper {
     }
     windowHandleId = null;
     return false;
+  }
+
+
+  public String getHearthstoneProcessFolder() {
+    return hearthstoneProcessFolder;
   }
 
 
@@ -274,36 +279,4 @@ public class ProgramHelperWindows extends ProgramHelper {
     public static native int GetWindowTextW(HWND hWnd, char[] lpString, int nMaxCount);
   }
 
-
-  @Override
-  public String hearthstoneConfigFolder() {
-    String appdata = System.getenv("LOCALAPPDATA");
-    if (StringUtils.isBlank(appdata)) {
-      throw new RuntimeException("Cannot find LOCALAPPDATA directory");
-    }
-    File folder = new File(appdata + "/Blizzard/Hearthstone");
-    return folder.getAbsolutePath();
-  }
-
-
-  @Override
-  public String hearthstoneLogFile() {
-    String logLocation;
-    if (hearthstoneProcessFolder != null) {
-      logLocation = hearthstoneProcessFolder + "\\Hearthstone_Data\\output_log.txt";
-    } else {
-      logLocation = System.getenv("PROGRAMFILES(X86)");
-      if (StringUtils.isBlank(logLocation)) {
-        logLocation = System.getenv("PROGRAMFILES");
-        if (StringUtils.isBlank(logLocation)) {
-          throw new RuntimeException(
-            "Cannot find Program Files directory");
-        }
-      }
-      logLocation = logLocation + "\\Hearthstone\\Hearthstone_Data\\output_log.txt";
-    }
-
-    File logFile = new File(logLocation);
-    return logFile.getAbsolutePath();
-  }
 }

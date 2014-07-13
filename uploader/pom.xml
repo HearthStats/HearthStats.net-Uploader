@@ -42,6 +42,12 @@
 	</repositories>
 
 	<dependencies>
+        <dependency>
+            <groupId>net.hearthstats</groupId>
+            <artifactId>updater</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
 		<dependency>
 			<artifactId>scala-library</artifactId>
 			<groupId>org.scala-lang</groupId>

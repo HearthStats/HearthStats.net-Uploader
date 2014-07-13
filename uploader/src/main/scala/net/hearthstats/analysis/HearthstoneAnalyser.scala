@@ -55,8 +55,6 @@ object HearthstoneAnalyser extends Observable with Logging {
   private val opponentNameUnrankedOcr = new OpponentNameUnrankedOcr
   private val rankLevelOcr = new RankLevelOcr
 
-  private var lastImage: BufferedImage = _
-
   var screen: Screen = null
 
   var isNewArena: Boolean = false
@@ -84,9 +82,6 @@ object HearthstoneAnalyser extends Observable with Logging {
   private var iterationsSinceOpponentTurn: Int = 0
 
   def analyze(image: BufferedImage) {
-    if (lastImage != null)
-      lastImage.flush()
-    lastImage = image
     val matchedScreen =
       if (iterationsSinceScreenMatched < 10) screenAnalyser.identifyScreen(image, screen)
       else screenAnalyser.identifyScreen(image, null)

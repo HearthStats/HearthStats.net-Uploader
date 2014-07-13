@@ -6,23 +6,21 @@ import javax.swing.JButton
 import javax.swing.JComboBox
 import javax.swing.JLabel
 import javax.swing.JPanel
-import net.hearthstats.API
-import net.hearthstats.Constants
-import net.hearthstats.DeckUtils
-import net.hearthstats.Main
+import net.hearthstats._
 import net.miginfocom.swing.MigLayout
 import org.json.simple.JSONObject
 import scala.collection.JavaConversions._
 import Constants._
 import scala.swing.Swing._
 import java.awt.BorderLayout
-import net.hearthstats.Deck
 import javax.swing.JOptionPane
-import net.hearthstats.Config
 import net.hearthstats.util.HsRobot
 import net.hearthstats.util.Browse
+import net.hearthstats.util.HsRobot
+import scala.Some
 
-class DecksTab extends JPanel {
+class DecksTab(val monitor: Monitor) extends JPanel {
+
   val deckSlotComboBoxes = 1 to 9 map { new DeckSlotPanel(_) }
 
   setLayout(new MigLayout)
@@ -122,7 +120,7 @@ class DecksTab extends JPanel {
       }
     }
 
-    def doCreate(d: Deck) = HsRobot(Config.programHelper.getHSWindowBounds).create(d)
+    def doCreate(d: Deck) = HsRobot(monitor._hsHelper.getHSWindowBounds).create(d)
   }
 
   class DeckSlotPanel(slot: Int) extends JPanel {

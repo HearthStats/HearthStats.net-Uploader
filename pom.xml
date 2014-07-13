@@ -20,8 +20,6 @@
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-		<main.class>net.hearthstats.Main</main.class>
 	</properties>
 
 	<scm>
@@ -32,7 +30,8 @@
 
 
 	<modules>
-		<module>uploader</module>
+        <module>updater</module>
+        <module>uploader</module>
 	</modules>
 
 	<profiles>

@@ -424,20 +424,6 @@ public class ProgramHelperOsx extends ProgramHelper {
     }
 
 	@Override
-	public String hearthstoneConfigFolder() {
-		File folder = new File(System.getProperty("user.home")
-				+ "/Library/Preferences/Blizzard/Hearthstone");
-		return folder.getAbsolutePath();
-	}
-
-	@Override
-	public String hearthstoneLogFile() {
-		File logFile = new File(System.getProperty("user.home")
-				+ "/Library/Logs/Unity/Player.log");
-		return logFile.getAbsolutePath();
-	}
-
-	@Override
 	public Rectangle getHSWindowBounds() {
 
     final NSAutoreleasePool pool = NSAutoreleasePool.new_();

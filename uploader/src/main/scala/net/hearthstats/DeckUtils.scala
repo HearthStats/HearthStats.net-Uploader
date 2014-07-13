@@ -21,13 +21,13 @@ object DeckUtils {
     }
   }
 
-  def getDeckFromSlot(slotNum: java.lang.Integer): Deck = {
+  def getDeckFromSlot(slotNum: java.lang.Integer): Option[Deck] = {
     getDecks
     for (
       i <- 0 until _decks.size if _decks.get(i).get("slot") != null &&
         _decks.get(i).get("slot").toString == slotNum.toString
-    ) return Deck.fromJson(_decks.get(i))
-    null
+    ) return Some(Deck.fromJson(_decks.get(i)))
+    None
   }
 
   def getDecks: List[JSONObject] = {

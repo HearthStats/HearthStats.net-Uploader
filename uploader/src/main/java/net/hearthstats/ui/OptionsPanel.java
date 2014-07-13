@@ -15,9 +15,7 @@ import javax.swing.JTextField;
 
 import net.hearthstats.Config;
 import net.hearthstats.Monitor;
-import net.hearthstats.config.GameLanguage;
-import net.hearthstats.config.MatchPopup;
-import net.hearthstats.config.MonitoringMethod;
+import net.hearthstats.config.*;
 import net.hearthstats.log.Log;
 import net.hearthstats.notification.DialogNotificationQueue;
 import net.hearthstats.util.TranslationCard;
@@ -47,7 +45,7 @@ public class OptionsPanel extends JPanel {
   private Monitor monitor;
   private Logger debugLog = LoggerFactory.getLogger(getClass());
 
-  public OptionsPanel(Monitor monitor) {
+  public OptionsPanel(final Monitor monitor) {
 
     this.monitor = monitor;
     MigLayout layout = new MigLayout();
@@ -85,8 +83,12 @@ public class OptionsPanel extends JPanel {
       }
     });
     _updateGameLanguage();
+    add(gameLanguageField, "");
 
-    add(gameLanguageField, "wrap");
+    HelpIcon gameLanguageHelpIcon = new HelpIcon(
+      "https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Game-Language",
+      "Help on game language options");
+    add(gameLanguageHelpIcon, "wrap");
 
     // check for updates
     add(new JLabel(t("options.label.updates") + " "), "skip,right");
@@ -108,7 +110,7 @@ public class OptionsPanel extends JPanel {
 
     // When running on Mac OS X 10.8 or later, the format of the
     // notifications can be changed
-    if (Config.isOsxNotificationsSupported()) {
+    if (monitor.environment().osxNotificationsSupported()) {
       add(new JLabel(""), "skip,right");
       JLabel notificationsFormatLabel = new JLabel(t("options.label.notifyformat.label"));
       add(notificationsFormatLabel, "split 2, gapleft 27");
@@ -227,7 +229,7 @@ public class OptionsPanel extends JPanel {
     saveOptionsButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        _saveOptions();
+        _saveOptions(monitor.environment());
       }
     });
     add(saveOptionsButton, "wrap");
@@ -247,7 +249,7 @@ public class OptionsPanel extends JPanel {
   }
 
 
-  private void _saveOptions() {
+  private void _saveOptions(Environment environment) {
     debugLog.debug("Saving options...");
 
     MonitoringMethod monitoringMethod = MonitoringMethod.values()[monitoringMethodField
@@ -273,10 +275,9 @@ public class OptionsPanel extends JPanel {
     Config.setStartMinimized(_startMinimizedField.isSelected());
 
     if (_notificationsFormat != null) {
-      // This control only appears on OS X machines, will be null on
-      // Windows machines
+      // This control only appears on OS X machines, will be null on Windows machines
       Config.setUseOsxNotifications(_notificationsFormat.getSelectedIndex() == 0);
-      monitor.setNotificationQueue(DialogNotificationQueue.newNotificationQueue());
+      monitor.setNotificationQueue(environment.newNotificationQueue(Config.notificationType()));
     }
 
     monitor.setupLogMonitoring();

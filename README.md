@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/HearthStats/HearthStats.net-Uploader.svg?branch=master)](https://travis-ci.org/HearthStats/HearthStats.net-Uploader)
 [![Coverage Status](https://img.shields.io/coveralls/HearthStats/HearthStats.net-Uploader.svg)](https://coveralls.io/r/HearthStats/HearthStats.net-Uploader?branch=master)
 [![Stories in Ready](https://badge.waffle.io/HearthStats/HearthStats.net-Uploader.png?label=Ready)](https://waffle.io/HearthStats/HearthStats.net-Uploader)
+[![Gitter chat](https://badges.gitter.im/HearthStats.png)](https://gitter.im/HearthStats)
 
 HearthStats.net Uploader
 ========================

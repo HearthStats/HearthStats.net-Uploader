@@ -51,6 +51,7 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) {
 
   private def mapKey(c: Char): Option[Int] = c match {
     case ' ' => Some(VK_SPACE)
+    case '-' => Some(VK_SPACE)
     case ''' => Some(VK_SPACE)
     case '\n' => Some(VK_ENTER)
     case alpha if 'a' <= c && 'z' >= c => Some(c - 'a' + VK_A)
