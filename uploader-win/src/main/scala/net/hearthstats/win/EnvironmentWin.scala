@@ -1,14 +1,17 @@
 package net.hearthstats.win
 
-import net.hearthstats.config.{NotificationType, OS, Environment}
+import net.hearthstats.config.{Application, NotificationType, OS, Environment}
 import net.hearthstats.notification.{ DialogNotificationQueue, NotificationQueue }
 import java.io.File
 import org.apache.commons.lang3.StringUtils
+import net.hearthstats.updater.api.model.Release
+import grizzled.slf4j.Logging
+import org.apache.commons.lang3.builder.ToStringBuilder
 
 /**
  * Windows environment.
  */
-class EnvironmentWin extends Environment {
+class EnvironmentWin extends Environment with Logging {
 
   val os: OS = OS.WINDOWS
 
@@ -53,4 +56,40 @@ class EnvironmentWin extends Environment {
 
   // Windows only supports the DialogNotificationQueue, so always return that regardless of what is requested.
   def newNotificationQueue(notificationType: NotificationType): NotificationQueue = new DialogNotificationQueue
+
+  /**
+   * Performs an update of the HearthStats Uploader. This method should quit the uploader then start the update.
+   */
+  def performApplicationUpdate(release: Release): String = {
+    if (release.getWindowsAsset == null) {
+      s"No Windows download found for version ${release.getVersion}"
+    } else {
+      val updaterFile: File = new File(extractionFolder + "/updater.jar")
+      Application.copyFileFromJarTo("/updater.jar", updaterFile.getPath)
+
+      if (updaterFile.exists) {
+        logger.debug(s"Found updater.jar in ${updaterFile.getPath}")
+
+        val command: Array[String] = Array[String](
+          "java",
+          "-jar", updaterFile.getPath,
+          "version=" + release.getVersion,
+          "assetId=" + release.getWindowsAsset.getId,
+          "hearthstatsLocation=" + (new File(".")).getAbsolutePath,
+          "downloadFile=" + extractionFolder + "/update-" + release.getVersion + ".zip")
+        logger.info("Running updater command: " + command.mkString(" "));
+
+        try {
+          Runtime.getRuntime().exec(command);
+          null
+        } catch {
+          case e: Exception => {
+            s"Unable to run updater due to error: ${e.getMessage}"
+          }
+        }
+      } else {
+        s"Unable to locate ${updaterFile.getPath}"
+      }
+    }
+  }
 }

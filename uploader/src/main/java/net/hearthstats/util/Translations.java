@@ -36,4 +36,11 @@ public final class Translations {
 		String message = _bundle.getString(key);
 		return MessageFormat.format(message, value0);
 	}
+
+  public static String t(String key, Object... values) {
+    String message = _bundle.getString(key);
+    return MessageFormat.format(message, values);
+  }
+
+
 }
