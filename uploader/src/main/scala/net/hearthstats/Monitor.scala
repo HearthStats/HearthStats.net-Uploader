@@ -328,12 +328,12 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     if ("Arena" == hsMatch.mode && HearthstoneAnalyser.isNewArena) {
       val run = new ArenaRun()
       run.setUserClass(hsMatch.userClass)
-      Log.info("Creating new " + run.getUserClass + "arena run")
-      _notify("Creating new " + run.getUserClass + "arena run")
+      Log.info("Creating new " + run.getUserClass + " arena run")
+      _notify("Creating new " + run.getUserClass + " arena run")
       API.createArenaRun(run)
       HearthstoneAnalyser.setIsNewArena(false)
     }
-    val header = "Submitting match result"
+    val header = t("match.end.submitting")
     val message = hsMatch.toString
     _notify(header, message)
     Log.matchResult(header + ": " + message)
@@ -469,14 +469,14 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
 
     case DECK_SLOT =>
       val deck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot)
-      if (deck == null) {
+      if (deck.isEmpty) {
         _tabbedPane.setSelectedIndex(2)
         bringWindowToFront()
         Main.showMessageDialog(this, "Unable to determine what deck you have in slot #" + HearthstoneAnalyser.getDeckSlot +
           "\n\nPlease set your decks in the \"Decks\" tab.")
       } else {
-        _notify("Deck Detected", deck.name)
-        Log.info("Deck Detected: " + deck.name + " Detected")
+        _notify("Deck Detected", deck.get.name)
+        Log.info("Deck Detected: " + deck.get.name + " Detected")
       }
 
     case MODE =>
@@ -534,14 +534,14 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
         matchPanel.resetMatchClassSelectors()
         if (Config.showDeckOverlay && "Arena" != HearthstoneAnalyser.getMode) {
           val selectedDeck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot)
-          if (selectedDeck != null && selectedDeck.isValid) {
-            ClickableDeckBox.showBox(selectedDeck, hearthstoneLogMonitor.cardEvents)
+          if (selectedDeck.isDefined && selectedDeck.get.isValid) {
+            ClickableDeckBox.showBox(selectedDeck.get, hearthstoneLogMonitor.cardEvents)
           } else {
             val message =
-              if (selectedDeck == null)
+              if (selectedDeck.isEmpty)
                 "Invalid or empty deck, edit it on HearthStats.net to display deck overlay (you will need to restart the uploader)"
               else
-                s"Invalid or empty deck, <a href='http://hearthstats.net/decks/${selectedDeck.slug}/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart the uploader)"
+                s"Invalid or empty deck, <a href='http://hearthstats.net/decks/${selectedDeck.get.slug}/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart the uploader)"
             _notify(message)
             Log.info(message)
           }

@@ -39,6 +39,8 @@ import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Option;
+
 
 /**
  * A popup to display at the end of the match that allows the match details to
@@ -288,14 +290,14 @@ public class MatchEndPopup extends JPanel {
     String[] deckSlotList = new String[10];
     deckSlotList[0] = undetectedLabel();
     for (int i = 1; i <= 9; i++) {
-      Deck deck = DeckUtils.getDeckFromSlot(i);
+      Option<Deck> deck = DeckUtils.getDeckFromSlot(i);
       StringBuilder sb = new StringBuilder();
       sb.append(t("deck_slot.label", i));
       sb.append(" ");
-      if (deck == null) {
+      if (deck.isEmpty()) {
         sb.append(t("undetected"));
       } else {
-        sb.append(deck.name());
+        sb.append(deck.get().name());
       }
       deckSlotList[i] = sb.toString();
     }
