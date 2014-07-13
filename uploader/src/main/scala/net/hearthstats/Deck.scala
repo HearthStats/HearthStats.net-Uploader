@@ -5,12 +5,12 @@ import Deck._
 import org.apache.commons.lang3.StringUtils
 
 case class Deck(
-  id: Int,
-  name: String,
-  slug: String,
-  cards: List[Card],
-  hero: String,
-  activeSlot: Option[Int]) {
+  id: Int = -1,
+  name: String = "",
+  slug: String = "",
+  cards: List[Card] = List.empty,
+  hero: String = "Shaman",
+  activeSlot: Option[Int] = None) {
 
   def isValid =
     cards != null && 30 == cardCount
@@ -40,7 +40,7 @@ object Deck {
       activeSlot = Option(json.get("slot")).map(_.toString.toInt))
   }
 
-  private def parseDeckString(ds: String): List[Card] = {
+  def parseDeckString(ds: String): List[Card] = {
     val cardData = CardUtils.cards
     val cards = for {
       card <- ds.split(",").toList
