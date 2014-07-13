@@ -83,8 +83,12 @@ public class OptionsPanel extends JPanel {
       }
     });
     _updateGameLanguage();
+    add(gameLanguageField, "");
 
-    add(gameLanguageField, "wrap");
+    HelpIcon gameLanguageHelpIcon = new HelpIcon(
+      "https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Game-Language",
+      "Help on game language options");
+    add(gameLanguageHelpIcon, "wrap");
 
     // check for updates
     add(new JLabel(t("options.label.updates") + " "), "skip,right");
