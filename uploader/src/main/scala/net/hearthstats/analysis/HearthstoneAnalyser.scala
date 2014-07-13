@@ -31,6 +31,9 @@ import net.hearthstats.util.MatchOutcome
 import net.hearthstats.util.Rank
 import net.hearthstats.state.UniquePixel
 import net.hearthstats.HearthstoneMatch
+import net.hearthstats.video.SequenceEncoder
+import java.io.File
+import net.hearthstats.video.SequenceEncoder
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
@@ -54,6 +57,8 @@ object HearthstoneAnalyser extends Observable with Logging {
   private val opponentNameRankedOcr = new OpponentNameRankedOcr
   private val opponentNameUnrankedOcr = new OpponentNameUnrankedOcr
   private val rankLevelOcr = new RankLevelOcr
+
+  var videoEncoder = new SequenceEncoder
 
   var screen: Screen = null
 
@@ -82,6 +87,7 @@ object HearthstoneAnalyser extends Observable with Logging {
   private var iterationsSinceOpponentTurn: Int = 0
 
   def analyze(image: BufferedImage) {
+    videoEncoder.encodeImage(image)
     val matchedScreen =
       if (iterationsSinceScreenMatched < 10) screenAnalyser.identifyScreen(image, screen)
       else screenAnalyser.identifyScreen(image, null)
@@ -172,6 +178,7 @@ object HearthstoneAnalyser extends Observable with Logging {
             hsMatch.mode = mode
             hsMatch.deckSlot = deckSlot
             hsMatch.rankLevel = rankLevel
+            videoEncoder = new SequenceEncoder
           }
           arenaRunEndDetected = false
           isYourTurn = false
@@ -187,6 +194,8 @@ object HearthstoneAnalyser extends Observable with Logging {
           }
 
         case MATCH_END =>
+          videoEncoder.finish()
+          Log.info("Video replay of your match is saved in " + videoEncoder.out.getAbsolutePath)
 
         case _ =>
       }
