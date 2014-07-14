@@ -1,28 +1,25 @@
 package net.hearthstats.analysis
 
-import com.github.nscala_time.time.Imports._
 import java.awt.image.BufferedImage
 import java.text.MessageFormat
 import java.util.{ Observable, ResourceBundle }
+
 import scala.concurrent.ExecutionContext.Implicits.global
+
 import org.apache.commons.lang3.StringUtils
+
 import grizzled.slf4j.Logging
 import net.hearthstats.{ BackgroundImageSave, Config, HearthstoneMatch, Main }
 import net.hearthstats.log.Log
-import net.hearthstats.ocr._
+import net.hearthstats.modules.{ ReplayHandler, VideoEncoderFactory }
+import net.hearthstats.ocr.{ OcrException, OpponentNameRankedOcr, OpponentNameUnrankedOcr, RankLevelOcr }
 import net.hearthstats.state.{ PixelLocation, Screen }
-import net.hearthstats.state.Screen._
+import net.hearthstats.state.Screen.{ ARENA_LOBBY, MATCH_STARTINGHAND, MATCH_VS, PLAY_LOBBY, PRACTICE_LOBBY }
 import net.hearthstats.state.ScreenGroup
-import net.hearthstats.state.ScreenGroup._
+import net.hearthstats.state.ScreenGroup.{ MATCH_END, MATCH_PLAYING, MATCH_START }
 import net.hearthstats.state.UniquePixel
 import net.hearthstats.state.UniquePixel._
 import net.hearthstats.util.{ MatchOutcome, Rank }
-import net.hearthstats.modules.VideoEncoderFactory
-import net.hearthstats.modules.FileUploaderFactory
-import java.io.File
-import org.joda.time.format.ISODateTimeFormat
-import net.hearthstats.API
-import net.hearthstats.modules.ReplayHandler
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
@@ -187,7 +184,9 @@ object HearthstoneAnalyser extends Observable with Logging {
           videoEncoder.finish().onSuccess {
             case fileName =>
               ReplayHandler.handleNewReplay(fileName, lastMatch).onSuccess {
-                case () => Log.info("Video replay of your match successfully uploaded")
+                case name =>
+                  Log.info(s"Video replay of your match $name successfully uploaded")
+                //TODO : notification
               }
           }
 

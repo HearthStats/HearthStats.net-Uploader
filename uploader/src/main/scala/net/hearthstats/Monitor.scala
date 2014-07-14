@@ -341,7 +341,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
       _analytics.trackEvent("app", "Submit" + hsMatch.mode + "Match")
     }
     API.createMatch(hsMatch)
-    HearthstoneAnalyser.hsMatch = new HearthstoneMatch(user = Config.getUserKey)
+    HearthstoneAnalyser.hsMatch = new HearthstoneMatch
   }
 
   protected def _handleHearthstoneFound() {

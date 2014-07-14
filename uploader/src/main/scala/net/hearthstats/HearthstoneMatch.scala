@@ -24,8 +24,7 @@ class HearthstoneMatch(var mode: String = null,
   var duration: Int = -1,
   var notes: String = null,
   var id: Int = -1,
-  var initialized: Boolean = false,
-  val user: String = "unknown") {
+  var initialized: Boolean = false) {
   //needed for java calls
   def this() = this(mode = null)
 

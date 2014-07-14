@@ -9,7 +9,7 @@ object ReplayHandlerMain extends App {
   val future = ReplayHandler.handleNewReplay("""C:\Users\tyrcho\hearthstats\videos\201407142352_Druid_VS_Warlock.mp4""",
     new HearthstoneMatch(userClass = "Druid", opponentClass = "Warlock"))
   future.onSuccess {
-    case () => println("uploaded")
+    case n => println(s"uploaded $n")
   }
   Await.ready(future, 10.minutes)
 }
