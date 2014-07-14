@@ -138,11 +138,11 @@ class Monitor(val environment: Environment) extends Observer {
         }
         mainFrame.updateTitle()
         // We need to manually trigger GC due to memory leakage that occurs on Windows 8 if we leave GC to the JVM
-        if (nextGcTime > System.currentTimeMillis())
+        if (nextGcTime > System.currentTimeMillis)
           Thread.sleep(POLLING_INTERVAL_IN_MS)
         else {
           System.gc()
-          nextGcTime = System.currentTimeMillis() + GC_INTERVAL_IN_MS
+          nextGcTime = System.currentTimeMillis + GC_INTERVAL_IN_MS
         }
       } catch {
         case ex: Exception => {
@@ -233,18 +233,19 @@ class Monitor(val environment: Environment) extends Observer {
     case MODE =>
       _playingInMatch = false
       mainFrame.matchPanel.setCurrentMatchEnabled(false)
+      val mode = HearthstoneAnalyser.getMode
       if (Config.showModeNotification) {
-        debugLog.debug(HearthstoneAnalyser.getMode + " level " + HearthstoneAnalyser.getRankLevel)
-        if ("Ranked" == HearthstoneAnalyser.getMode) {
-          mainFrame.notify(HearthstoneAnalyser.getMode + " Mode Detected", "Rank Level " + HearthstoneAnalyser.getRankLevel)
+        debugLog.debug(mode + " level " + HearthstoneAnalyser.getRankLevel)
+        if ("Ranked" == mode) {
+          mainFrame.notify(mode + " Mode Detected", "Rank Level " + HearthstoneAnalyser.getRankLevel)
         } else {
-          mainFrame.notify(HearthstoneAnalyser.getMode + " Mode Detected")
+          mainFrame.notify(mode + " Mode Detected")
         }
       }
-      if ("Ranked" == HearthstoneAnalyser.getMode) {
-        Log.info(HearthstoneAnalyser.getMode + " Mode Detected - Level " + HearthstoneAnalyser.getRankLevel)
+      if ("Ranked" == mode) {
+        Log.info(mode + " Mode Detected - Level " + HearthstoneAnalyser.getRankLevel)
       } else {
-        Log.info(HearthstoneAnalyser.getMode + " Mode Detected")
+        Log.info(mode + " Mode Detected")
       }
 
     case NEW_ARENA =>
@@ -270,54 +271,7 @@ class Monitor(val environment: Environment) extends Observer {
       mainFrame.matchPanel.updateCurrentMatchUi()
 
     case SCREEN =>
-      val inGameModeScreen = Seq(Screen.ARENA_END, ARENA_LOBBY, PLAY_LOBBY) contains HearthstoneAnalyser.screen
-      if (inGameModeScreen) {
-        if (_playingInMatch && HearthstoneAnalyser.getResult == null) {
-          _playingInMatch = false
-          mainFrame.notify("Detection Error", "Match result was not detected.")
-          Log.info("Detection Error: Match result was not detected.")
-          checkMatchResult(HearthstoneAnalyser.hsMatch)
-        }
-        _playingInMatch = false
-      }
-      if (HearthstoneAnalyser.screen == FINDING_OPPONENT) {
-        setupLogMonitoring()
-        mainFrame.matchPanel.resetMatchClassSelectors()
-        if (Config.showDeckOverlay && "Arena" != HearthstoneAnalyser.getMode) {
-          val selectedDeck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot)
-          if (selectedDeck.isDefined && selectedDeck.get.isValid) {
-            ClickableDeckBox.showBox(selectedDeck.get, hearthstoneLogMonitor.cardEvents)
-          } else {
-            val message =
-              if (selectedDeck.isEmpty)
-                "Invalid or empty deck, edit it on HearthStats.net to display deck overlay (you will need to restart the uploader)"
-              else
-                s"Invalid or empty deck, <a href='http://hearthstats.net/decks/${selectedDeck.get.slug}/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart the uploader)"
-            mainFrame.notify(message)
-            Log.info(message)
-          }
-        }
-      }
-      if (HearthstoneAnalyser.screen.group == ScreenGroup.MATCH_START) {
-        mainFrame.matchPanel.setCurrentMatchEnabled(true)
-        _playingInMatch = true
-      }
-      if (HearthstoneAnalyser.screen.group != ScreenGroup.MATCH_END &&
-        DO_NOT_NOTIFY_SCREENS.contains(HearthstoneAnalyser.screen) &&
-        Config.showScreenNotification)
-        if (HearthstoneAnalyser.screen == PRACTICE_LOBBY)
-          mainFrame.notify(HearthstoneAnalyser.screen.title + " Screen Detected", "Results are not tracked in practice mode")
-        else
-          mainFrame.notify(HearthstoneAnalyser.screen.title + " Screen Detected")
-
-      if (HearthstoneAnalyser.screen == PRACTICE_LOBBY)
-        Log.info(HearthstoneAnalyser.screen.title + " Screen Detected. Result tracking disabled.")
-      else {
-        if (HearthstoneAnalyser.screen == MATCH_VS) {
-          Log.divider()
-        }
-        Log.info(HearthstoneAnalyser.screen.title + " Screen Detected")
-      }
+      handleScreenChange()
 
     case YOUR_CLASS =>
       mainFrame.notify("Playing as " + HearthstoneAnalyser.getYourClass)
@@ -337,7 +291,54 @@ class Monitor(val environment: Environment) extends Observer {
     case _ =>
       mainFrame.notify("Unhandled event")
       Log.info("Unhandled event")
+  }
 
+  private def handleScreenChange(): Unit = HearthstoneAnalyser.screen match {
+    case Screen.ARENA_END | ARENA_LOBBY | PLAY_LOBBY =>
+      if (_playingInMatch && HearthstoneAnalyser.getResult == null) {
+        _playingInMatch = false
+        mainFrame.notify("Detection Error", "Match result was not detected.")
+        Log.info("Detection Error: Match result was not detected.")
+        checkMatchResult(HearthstoneAnalyser.hsMatch)
+      }
+      _playingInMatch = false
+
+    case FINDING_OPPONENT =>
+      setupLogMonitoring()
+      mainFrame.matchPanel.resetMatchClassSelectors()
+      if (Config.showDeckOverlay && "Arena" != HearthstoneAnalyser.getMode) {
+        val selectedDeck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot)
+        if (selectedDeck.isDefined && selectedDeck.get.isValid) {
+          ClickableDeckBox.showBox(selectedDeck.get, hearthstoneLogMonitor.cardEvents)
+        } else {
+          val message =
+            if (selectedDeck.isEmpty)
+              "Invalid or empty deck, edit it on HearthStats.net to display deck overlay (you will need to restart the uploader)"
+            else
+              s"Invalid or empty deck, <a href='http://hearthstats.net/decks/${selectedDeck.get.slug}/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart the uploader)"
+          mainFrame.notify(message)
+          Log.info(message)
+        }
+      }
+
+    case s if s.group == ScreenGroup.MATCH_START =>
+      mainFrame.matchPanel.setCurrentMatchEnabled(true)
+      _playingInMatch = true
+
+    case s if (s.group == ScreenGroup.MATCH_END && DO_NOT_NOTIFY_SCREENS.contains(s) && Config.showScreenNotification) =>
+      if (HearthstoneAnalyser.screen == PRACTICE_LOBBY)
+        mainFrame.notify(HearthstoneAnalyser.screen.title + " Screen Detected", "Results are not tracked in practice mode")
+      else
+        mainFrame.notify(HearthstoneAnalyser.screen.title + " Screen Detected")
+
+    case PRACTICE_LOBBY =>
+      Log.info(HearthstoneAnalyser.screen.title + " Screen Detected. Result tracking disabled.")
+
+    case MATCH_VS =>
+      Log.divider()
+
+    case s =>
+      Log.info(s.title + " Screen Detected")
   }
 
   private def _handleApiEvent(changed: AnyRef) = changed.toString match {
