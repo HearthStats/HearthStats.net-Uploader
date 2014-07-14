@@ -28,11 +28,11 @@
   <versionInfo>
     <fileVersion>0.0.0.0</fileVersion>
     <txtFileVersion>Unknown</txtFileVersion>
-    <fileDescription>HearthStats.net Uploader</fileDescription>
+    <fileDescription>HearthStats Companion</fileDescription>
     <copyright>See https://github.com/HearthStats/HearthStats.net-Uploader for license</copyright>
     <productVersion>0.0.0.0</productVersion>
     <txtProductVersion>Unknown</txtProductVersion>
-    <productName>HearthStats.net Uploader</productName>
+    <productName>HearthStats Companion</productName>
     <companyName></companyName>
     <internalName>HearthStats</internalName>
     <originalFilename>HearthStats.exe</originalFilename>

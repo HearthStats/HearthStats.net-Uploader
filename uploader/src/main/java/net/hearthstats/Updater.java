@@ -35,10 +35,10 @@ public final class Updater {
           cachedlatestRelease = GitHubReleases.getLatestReleaseForWindows();
         }
         if (cachedlatestRelease == null) {
-          Log.warn("Unable to check latest release of HearthStats Uploader");
+          Log.warn("Unable to check latest release of HearthStats Companion");
         }
       } catch (Exception e) {
-        Log.warn("Unable to check latest release of HearthStats Uploader due to error: " + e.getMessage(), e);
+        Log.warn("Unable to check latest release of HearthStats Companion due to error: " + e.getMessage(), e);
       }
     }
     return cachedlatestRelease;

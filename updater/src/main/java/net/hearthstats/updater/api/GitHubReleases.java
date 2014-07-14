@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * <p>Provides access to the GitHub Releases API.</p>
  *
- * <p>Use this class to find out what the latest release of the HearthStats Uploader is on GitHub.</p>
+ * <p>Use this class to find out what the latest release of the HearthStats Companion is on GitHub.</p>
  */
 public class GitHubReleases {
 
