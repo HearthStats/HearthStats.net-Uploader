@@ -18,6 +18,10 @@
 	<properties>
 		<product.name>HearthStats.net Uploader (video)</product.name>
 		<scala.version>2.11.1</scala.version>
+		<project.youtube.version>v3-rev107-1.18.0-rc</project.youtube.version>
+		<project.youtube.analytics.version>v1-rev24-1.17.0-rc</project.youtube.analytics.version>
+		<project.http.version>1.18.0-rc</project.http.version>
+		<project.oauth.version>1.18.0-rc</project.oauth.version>
 	</properties>
 
 	<repositories>
@@ -73,6 +77,30 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-youtube</artifactId>
+			<version>${project.youtube.version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.google.http-client</groupId>
+			<artifactId>google-http-client-jackson2</artifactId>
+			<version>${project.http.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.oauth-client</groupId>
+			<artifactId>google-oauth-client-jetty</artifactId>
+			<version>${project.oauth.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.collections</groupId>
+			<artifactId>google-collections</artifactId>
+			<version>1.0</version>
+		</dependency>
 
 		<!-- logs -->
 		<dependency>
