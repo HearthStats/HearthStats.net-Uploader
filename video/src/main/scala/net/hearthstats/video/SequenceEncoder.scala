@@ -20,6 +20,7 @@ import com.xuggle.mediatool.ToolFactory
 
 class SequenceEncoder extends VideoEncoder {
   val out: File = File.createTempFile("HSReplay", "video.mp4")
+  val framesPerSec = 10
 
   val ch = NIOUtils.writableFileChannel(out)
   val transform = new RgbToYuv420(0, 0)
@@ -29,7 +30,7 @@ class SequenceEncoder extends VideoEncoder {
   val _out = ByteBuffer.allocate(1920 * 1080 * 6)
   var frameNo = 0
   val muxer = new MP4Muxer(ch, Brand.MP4)
-  val outTrack = muxer.addTrackForCompressed(TrackType.VIDEO, 25)
+  val outTrack = muxer.addTrackForCompressed(TrackType.VIDEO, framesPerSec)
   var closed = false
 
   override def encodeImage(bi: BufferedImage): Unit =
@@ -43,7 +44,7 @@ class SequenceEncoder extends VideoEncoder {
       spsList.clear()
       ppsList.clear()
       H264Utils.encodeMOVPacket(result, spsList, ppsList)
-      outTrack.addFrame(new MP4Packet(result, frameNo, 25, 1, frameNo, false, null, frameNo, 0))
+      outTrack.addFrame(new MP4Packet(result, frameNo, framesPerSec, 1, frameNo, false, null, frameNo, 0))
       frameNo += 1
     }
 
