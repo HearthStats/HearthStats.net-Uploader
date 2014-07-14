@@ -1,11 +1,14 @@
 package net.hearthstats
 
-import net.hearthstats.util.Rank
-import net.hearthstats.util.Translations.t
+import scala.collection.JavaConversions.mutableMapAsJavaMap
+
 import org.apache.commons.lang3.StringUtils
 import org.json.simple.JSONObject
-//remove if not needed
-import scala.collection.JavaConversions._
+
+import com.github.nscala_time.time.Imports.DateTime
+
+import net.hearthstats.util.Rank
+import net.hearthstats.util.Translations.t
 
 //TODO use options
 //TODO avoid mutable 
@@ -21,9 +24,12 @@ class HearthstoneMatch(var mode: String = null,
   var duration: Int = -1,
   var notes: String = null,
   var id: Int = -1,
-  var initialized: Boolean = false) {
+  var initialized: Boolean = false,
+  val user: String = "unknown") {
   //needed for java calls
   def this() = this(mode = null)
+
+  val startedAt = DateTime.now
 
   private def propertyOrUnknown(propertyVal: String): String = {
     if (propertyVal == null) "[undetected]" else propertyVal
@@ -31,12 +37,11 @@ class HearthstoneMatch(var mode: String = null,
 
   override def toString: String =
     describeMode + " " +
-    describeCoin + " " +
-    describePlayers + " " +
-    describeResult + " " +
-    describeDeck + " " +
-    describeTurns + " "
-
+      describeCoin + " " +
+      describePlayers + " " +
+      describeResult + " " +
+      describeDeck + " " +
+      describeTurns + " "
 
   def describeMode: String = mode match {
     case "Arena" => t("match.end.mode.arena")

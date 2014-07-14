@@ -91,6 +91,12 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>com.github.nscala-time</groupId>
+			<artifactId>nscala-time_2.11</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+
 		<!-- logs -->
 		<dependency>
 			<groupId>org.clapper</groupId>

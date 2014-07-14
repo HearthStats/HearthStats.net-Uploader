@@ -1,5 +1,6 @@
 package net.hearthstats.analysis
 
+import com.github.nscala_time.time.Imports._
 import java.awt.image.BufferedImage
 import java.text.MessageFormat
 import java.util.{ Observable, ResourceBundle }
@@ -8,15 +9,20 @@ import org.apache.commons.lang3.StringUtils
 import grizzled.slf4j.Logging
 import net.hearthstats.{ BackgroundImageSave, Config, HearthstoneMatch, Main }
 import net.hearthstats.log.Log
-import net.hearthstats.ocr.{ OcrException, OpponentNameRankedOcr, OpponentNameUnrankedOcr, RankLevelOcr }
+import net.hearthstats.ocr._
 import net.hearthstats.state.{ PixelLocation, Screen }
-import net.hearthstats.state.Screen.{ ARENA_LOBBY, MATCH_STARTINGHAND, MATCH_VS, PLAY_LOBBY, PRACTICE_LOBBY }
+import net.hearthstats.state.Screen._
 import net.hearthstats.state.ScreenGroup
-import net.hearthstats.state.ScreenGroup.{ MATCH_END, MATCH_PLAYING, MATCH_START }
+import net.hearthstats.state.ScreenGroup._
 import net.hearthstats.state.UniquePixel
 import net.hearthstats.state.UniquePixel._
 import net.hearthstats.util.{ MatchOutcome, Rank }
-import net.hearthstats.video.VideoEncoderFactory
+import net.hearthstats.modules.VideoEncoderFactory
+import net.hearthstats.modules.FileUploaderFactory
+import java.io.File
+import org.joda.time.format.ISODateTimeFormat
+import net.hearthstats.API
+import net.hearthstats.modules.ReplayHandler
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
@@ -41,7 +47,7 @@ object HearthstoneAnalyser extends Observable with Logging {
   private val opponentNameUnrankedOcr = new OpponentNameUnrankedOcr
   private val rankLevelOcr = new RankLevelOcr
 
-  var videoEncoder = VideoEncoderFactory.newVideo
+  var videoEncoder = VideoEncoderFactory.newVideo()
 
   var screen: Screen = null
 
@@ -177,9 +183,12 @@ object HearthstoneAnalyser extends Observable with Logging {
           }
 
         case MATCH_END =>
+          val lastMatch = hsMatch
           videoEncoder.finish().onSuccess {
             case fileName =>
-              Log.info("Video replay of your match is saved in " + fileName)
+              ReplayHandler.handleNewReplay(fileName, lastMatch).onSuccess {
+                case () => Log.info("Video replay of your match successfully uploaded")
+              }
           }
 
         case _ =>
@@ -410,8 +419,7 @@ object HearthstoneAnalyser extends Observable with Logging {
       Array(YOUR_ROGUE_GOLDEN_1, YOUR_ROGUE_GOLDEN_2, YOUR_ROGUE_GOLDEN_3) -> "Rogue",
       Array(YOUR_SHAMAN_GOLDEN_1, YOUR_SHAMAN_GOLDEN_2, YOUR_SHAMAN_GOLDEN_3) -> "Shaman",
       Array(YOUR_WARLOCK_GOLDEN_1, YOUR_WARLOCK_GOLDEN_2, YOUR_WARLOCK_GOLDEN_3) -> "Warlock",
-      Array(YOUR_WARRIOR_GOLDEN_1, YOUR_WARRIOR_GOLDEN_2, YOUR_WARRIOR_GOLDEN_3) -> "Warrior"
-    ))
+      Array(YOUR_WARRIOR_GOLDEN_1, YOUR_WARRIOR_GOLDEN_2, YOUR_WARRIOR_GOLDEN_3) -> "Warrior"))
 
   def imageIdentifyOpponentClass(image: BufferedImage): Option[String] =
     identify(image, Seq(
@@ -432,8 +440,7 @@ object HearthstoneAnalyser extends Observable with Logging {
       Array(OPPONENT_ROGUE_GOLDEN_1, OPPONENT_ROGUE_GOLDEN_2, OPPONENT_ROGUE_GOLDEN_3) -> "Rogue",
       Array(OPPONENT_SHAMAN_GOLDEN_1, OPPONENT_SHAMAN_GOLDEN_2, OPPONENT_SHAMAN_GOLDEN_3) -> "Shaman",
       Array(OPPONENT_WARLOCK_GOLDEN_1, OPPONENT_WARLOCK_GOLDEN_2, OPPONENT_WARLOCK_GOLDEN_3) -> "Warlock",
-      Array(OPPONENT_WARRIOR_GOLDEN_1, OPPONENT_WARRIOR_GOLDEN_2, OPPONENT_WARRIOR_GOLDEN_3) -> "Warrior"
-    ))
+      Array(OPPONENT_WARRIOR_GOLDEN_1, OPPONENT_WARRIOR_GOLDEN_2, OPPONENT_WARRIOR_GOLDEN_3) -> "Warrior"))
 
   private def analyzeRankLevel(image: BufferedImage) {
     try {

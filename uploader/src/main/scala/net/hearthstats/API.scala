@@ -20,6 +20,16 @@ object API extends Observable with Logging {
   var lastMatchId = -1
   var message = ""
 
+  lazy val awsKeys: Seq[String] = _get("users/premium") match {
+    case None =>
+      Log.info("You are not a premium user")
+      Nil
+    case Some(resultObj) =>
+      val json = resultObj.asInstanceOf[JSONObject]
+      for (i <- Seq("aws_access_key", "aws_secret_key"))
+        yield json.get(i).asInstanceOf[String]
+  }
+
   def endCurrentArenaRun(): Option[ArenaRun] = {
     _get("arena_runs/end") match {
       case None =>
@@ -95,24 +105,33 @@ object API extends Observable with Logging {
 
   //can return JSONObject or JSONArray
   private def _parseResult(resultString: String): Option[AnyRef] = {
+
     val parser = new JSONParser
     try {
       val result = parser.parse(resultString).asInstanceOf[JSONObject]
+
+      def flatResult =
+        try Some(result.asInstanceOf[JSONObject]) catch {
+          case e2: Exception =>
+            _throwError(s"could not parse $resultString")
+            None
+        }
+
       if (result.get("status").toString.matches("success")) {
         try {
           message = result.get("message").toString
         } catch {
           case e: Exception => message = null
         }
-        try {
-          Some(result.get("data").asInstanceOf[JSONObject])
-        } catch {
-          case e: Exception => try {
-            Some(result.get("data").asInstanceOf[JSONArray])
-          } catch {
-            case e1: Exception => None
+        val data = result.get("data")
+        if (data != null)
+          try Some(data.asInstanceOf[JSONObject]) catch {
+            case e: Exception =>
+              try Some(data.asInstanceOf[JSONArray]) catch {
+                case e1: Exception => flatResult
+              }
           }
-        }
+        else flatResult
       } else {
         _throwError(result.get("message").asInstanceOf[String])
         None
