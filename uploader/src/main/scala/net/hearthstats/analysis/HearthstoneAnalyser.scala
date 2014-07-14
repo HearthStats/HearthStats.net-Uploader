@@ -2,35 +2,21 @@ package net.hearthstats.analysis
 
 import java.awt.image.BufferedImage
 import java.text.MessageFormat
-import java.util.Observable
-import java.util.ResourceBundle
+import java.util.{ Observable, ResourceBundle }
+
 import org.apache.commons.lang3.StringUtils
+
 import grizzled.slf4j.Logging
-import net.hearthstats.BackgroundImageSave
-import net.hearthstats.Config
-import net.hearthstats.HearthstoneMatch
-import net.hearthstats.Main
+import net.hearthstats.{ BackgroundImageSave, Config, HearthstoneMatch, Main }
 import net.hearthstats.log.Log
-import net.hearthstats.ocr.OcrException
-import net.hearthstats.ocr.OpponentNameRankedOcr
-import net.hearthstats.ocr.OpponentNameUnrankedOcr
-import net.hearthstats.ocr.RankLevelOcr
-import net.hearthstats.state.PixelLocation
-import net.hearthstats.state.Screen
-import net.hearthstats.state.Screen.ARENA_LOBBY
-import net.hearthstats.state.Screen.MATCH_STARTINGHAND
-import net.hearthstats.state.Screen.MATCH_VS
-import net.hearthstats.state.Screen.PLAY_LOBBY
-import net.hearthstats.state.Screen.PRACTICE_LOBBY
+import net.hearthstats.ocr.{ OcrException, OpponentNameRankedOcr, OpponentNameUnrankedOcr, RankLevelOcr }
+import net.hearthstats.state.{ PixelLocation, Screen }
+import net.hearthstats.state.Screen._
 import net.hearthstats.state.ScreenGroup
-import net.hearthstats.state.ScreenGroup.MATCH_END
-import net.hearthstats.state.ScreenGroup.MATCH_PLAYING
-import net.hearthstats.state.ScreenGroup.MATCH_START
-import net.hearthstats.state.UniquePixel._
-import net.hearthstats.util.MatchOutcome
-import net.hearthstats.util.Rank
+import net.hearthstats.state.ScreenGroup._
 import net.hearthstats.state.UniquePixel
-import net.hearthstats.HearthstoneMatch
+import net.hearthstats.state.UniquePixel._
+import net.hearthstats.util.{ MatchOutcome, Rank }
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
