@@ -6,7 +6,7 @@ jdk:
 install: true
 script: mvn package -Ptravis
 after_success:
-  - mvn test cobertura:cobertura coveralls:cobertura -Ptravis
+  - mvn test cobertura:cobertura coveralls:cobertura -Pcoverall
 
 
 notifications:

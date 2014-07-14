@@ -67,12 +67,15 @@
 		</profile>
 		<profile>
 			<id>travis</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
 			<modules>
 				<module>video</module>
 				<module>uploader-osx</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>coverall</id>
+			<modules>
+				<module>video</module>
 			</modules>
 		</profile>
 	</profiles>
