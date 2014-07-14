@@ -4,9 +4,9 @@ jdk:
   - oraclejdk7
 
 install: true
-script: mvn package -Posx
+script: mvn package -Ptravis
 after_success:
-  - mvn test cobertura:cobertura coveralls:cobertura -Posx
+  - mvn test cobertura:cobertura coveralls:cobertura -Ptravis
 
 
 notifications:

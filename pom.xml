@@ -65,6 +65,16 @@
 				<module>uploader-osx</module>
 			</modules>
 		</profile>
+		<profile>
+			<id>travis</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<modules>
+				<module>video</module>
+				<module>uploader-osx</module>
+			</modules>
+		</profile>
 	</profiles>
 
 
