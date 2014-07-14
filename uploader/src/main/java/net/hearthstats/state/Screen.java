@@ -153,6 +153,12 @@ public enum Screen {
                     Pixel.PRACTICE_LOBBY_Q
             )),
 
+  // VERSUS_LOBBY (
+  // "Versus Lobby",
+  // ScreenGroup.PLAY,
+  // EnumSet.noneOf(Pixel.class),
+  // EnumSet.noneOf(Pixel.class)),
+
     FINDING_OPPONENT (
             "Finding Opponent",
             ScreenGroup.GENERAL,
