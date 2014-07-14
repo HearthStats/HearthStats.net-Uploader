@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>net.hearthstats</groupId>
+		<version>0.18.2-SNAPSHOT</version>
+		<artifactId>uploader-parent</artifactId>
+	</parent>
+	<artifactId>modules</artifactId>
+
+	<packaging>jar</packaging>
+	<name>Modules API</name>
+	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
+
+	<properties>
+		<product.name>HearthStats.net Uploader (modules)</product.name>
+		<scala.version>2.11.1</scala.version>
+	</properties>
+
+
+	<dependencies>
+		<dependency>
+			<artifactId>scala-library</artifactId>
+			<groupId>org.scala-lang</groupId>
+			<version>${scala.version}</version>
+		</dependency>
+	
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

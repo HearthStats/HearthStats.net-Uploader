@@ -3,11 +3,8 @@ package net.hearthstats.analysis
 import java.awt.image.BufferedImage
 import java.text.MessageFormat
 import java.util.{ Observable, ResourceBundle }
-
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import org.apache.commons.lang3.StringUtils
-
 import grizzled.slf4j.Logging
 import net.hearthstats.{ BackgroundImageSave, Config, HearthstoneMatch, Main }
 import net.hearthstats.log.Log
@@ -19,7 +16,7 @@ import net.hearthstats.state.ScreenGroup.{ MATCH_END, MATCH_PLAYING, MATCH_START
 import net.hearthstats.state.UniquePixel
 import net.hearthstats.state.UniquePixel._
 import net.hearthstats.util.{ MatchOutcome, Rank }
-import net.hearthstats.video.SequenceEncoder
+import net.hearthstats.video.VideoEncoderFactory
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
@@ -44,7 +41,7 @@ object HearthstoneAnalyser extends Observable with Logging {
   private val opponentNameUnrankedOcr = new OpponentNameUnrankedOcr
   private val rankLevelOcr = new RankLevelOcr
 
-  var videoEncoder = new SequenceEncoder
+  var videoEncoder = VideoEncoderFactory.newVideo
 
   var screen: Screen = null
 
@@ -164,7 +161,7 @@ object HearthstoneAnalyser extends Observable with Logging {
             hsMatch.mode = mode
             hsMatch.deckSlot = deckSlot
             hsMatch.rankLevel = rankLevel
-            videoEncoder = new SequenceEncoder
+            videoEncoder = VideoEncoderFactory.newVideo
           }
           arenaRunEndDetected = false
           isYourTurn = false

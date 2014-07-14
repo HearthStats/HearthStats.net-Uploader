@@ -30,11 +30,18 @@
 
 
 	<modules>
+        <module>modules</module>
         <module>updater</module>
         <module>uploader</module>
 	</modules>
 
 	<profiles>
+		<profile>
+			<id>video</id>
+			<modules>
+				<module>video</module>
+			</modules>
+		</profile>
 		<profile>
 			<id>windows</id>
 			<modules>
@@ -53,6 +60,7 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<modules>
+				<module>video</module>
 				<module>uploader-win</module>
 				<module>uploader-osx</module>
 			</modules>
