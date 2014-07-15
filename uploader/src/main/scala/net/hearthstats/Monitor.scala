@@ -104,7 +104,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     } else {
       Log.warn(t("error.userkey_not_entered"))
       bringWindowToFront()
-      showMessageDialog(this, "HearthStats.net " + t("error.title") + ":\n\n" + t("you_need_to_enter_userkey") +
+      showMessageDialog(this, t("error.title") + ":\n\n" + t("you_need_to_enter_userkey") +
         "\n\n" +
         t("get_it_at_hsnet_profiles"))
       val d = Desktop.getDesktop
@@ -147,7 +147,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
 
   private def showWelcomeLog() {
     debugLog.debug("Showing welcome log messages")
-    Log.welcome("HearthStats.net " + t("Uploader") + " v" + Config.getVersionWithOs)
+    Log.welcome("HearthStats " + t("Companion") + " v" + Config.getVersionWithOs)
     Log.help(t("welcome_1_set_decks"))
     if (environment.os == OS.OSX) {
       Log.help(t("welcome_2_run_hearthstone"))
@@ -232,17 +232,17 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
         var latestRelease = Updater.getLatestRelease
         if (latestRelease != null) {
           Log.info(t("latest_v_available") + " " + latestRelease.getVersion)
-          if (!latestRelease.getVersion.matches(Config.getVersion)) {
+          if (!latestRelease.getVersion.equalsIgnoreCase("v" + Config.getVersion)) {
             bringWindowToFront()
             val dialogButton = YES_NO_OPTION
             var dialogResult = showConfirmDialog(
               this,
-              s"""A new version of this uploader is available: ${latestRelease.getVersion}
+              s"""A new version of HearthStats Companion is available: ${latestRelease.getVersion}
                   |${latestRelease.getBody}
                   |            
                   |
                   | ${t("would_u_like_to_install_update")}""".stripMargin,
-              "HearthStats.net " + t("uploader_updates_avail"),
+              "HearthStats " + t("uploader_updates_avail"),
               dialogButton)
             if (dialogResult == YES_OPTION) {
               Updater.run(environment, latestRelease)
@@ -294,7 +294,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
   }
 
   protected def _updateTitle() {
-    var title = "HearthStats.net Uploader"
+    var title = "HearthStats Companion"
     if (_hearthstoneDetected) {
       if (HearthstoneAnalyser.screen != null) {
         title += " - " + HearthstoneAnalyser.screen.title
@@ -398,7 +398,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
           ex.printStackTrace(System.err)
           debugLog.error("  - exception which is not being handled:", ex)
           Log.error("ERROR: " + ex.getMessage +
-            ". You will need to restart HearthStats.net Uploader.", ex)
+            ". You will need to restart HearthStats Companion.", ex)
           error = true
         }
       } finally {
@@ -539,9 +539,9 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
           } else {
             val message =
               if (selectedDeck.isEmpty)
-                "Invalid or empty deck, edit it on HearthStats.net to display deck overlay (you will need to restart the uploader)"
+                "Invalid or empty deck, edit it on HearthStats.net to display deck overlay (you will need to restart HearthStats Companion)"
               else
-                s"Invalid or empty deck, <a href='http://hearthstats.net/decks/${selectedDeck.get.slug}/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart the uploader)"
+                s"Invalid or empty deck, <a href='http://hearthstats.net/decks/${selectedDeck.get.slug}/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart HearthStats Companion)"
             _notify(message)
             Log.info(message)
           }
@@ -617,7 +617,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     if (changed.toString.matches(".*minimized.*"))
       _notify("Hearthstone Minimized", "Warning! No detection possible while minimized.")
     if (changed.toString.matches(".*fullscreen.*"))
-      showMessageDialog(this, "Hearthstats.net Uploader Warning! \n\nNo detection possible while Hearthstone is in fullscreen mode.\n\nPlease set Hearthstone to WINDOWED mode and close and RESTART Hearthstone.\n\nSorry for the inconvenience.")
+      showMessageDialog(this, "Hearthstats Companion Warning! \n\nNo detection possible while Hearthstone is in fullscreen mode.\n\nPlease set Hearthstone to WINDOWED mode and close and RESTART Hearthstone.\n\nSorry for the inconvenience.")
     if (changed.toString.matches(".*restored.*"))
       _notify("Hearthstone Restored", "Resuming detection ...")
   }
@@ -672,7 +672,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
       popup.add(restoreButton)
       popup.add(exitButton)
       val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
-      val trayIcon = new TrayIcon(icon, "HearthStats.net Uploader", popup)
+      val trayIcon = new TrayIcon(icon, "HearthStats Companion", popup)
       trayIcon.setImageAutoSize(true)
       trayIcon.addMouseListener(new MouseAdapter {
         override def mousePressed(e: MouseEvent) {

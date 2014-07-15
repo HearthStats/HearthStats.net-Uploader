@@ -6,7 +6,7 @@ import net.hearthstats.log.Log
 import net.hearthstats.Main
 
 /**
- * Represents information about the HearthStats Uploader application, such a version and location.
+ * Represents information about the HearthStats Companion application, such a version and location.
  */
 object Application {
 

@@ -194,6 +194,7 @@ object HearthstoneAnalyser extends Observable with Logging {
       }
       setScreen(newScreen)
     }
+    iterationsSinceFindingOpponent = 0
     true
   }
 

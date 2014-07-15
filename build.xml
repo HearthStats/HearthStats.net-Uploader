@@ -176,8 +176,8 @@
         <!-- Build an OS X application bundle using Oracle's appbundler -->
         <bundleapp outputdirectory="./target"
                    name="HearthStats"
-                   displayname="HearthStats.net Uploader"
-                   identifier="net.hearthstats.HearthStatsUploader"
+                   displayname="HearthStats Companion"
+                   identifier="net.hearthstats.HearthStatsCompanion"
                    shortversion="${hearthstats.version}"
                    applicationCategory="public.app-category.games"
                    icon="./src/main/resources/images/icon.icns"

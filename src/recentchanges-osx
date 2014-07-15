@@ -1,11 +1,9 @@
-v0.18.2
-* Fixed error that occurred at end of Arena runs
-* Fixed problems caused by deleting decks and empty deck slots
+v0.19.0
+NEW NAME: The uploader is now known as HearthStats Companion!
 
-v0.18.1
-* Fixed bug that caused problems submitting matches to HearthStats
-
-v0.18.0
-* New auto deck import feature
-* Improvements to deck overlay
-* Lots of bug fixes
+This is a big release with:
+* Detection of golden heroes
+* Improved deck overlay with optional card preview
+* Support for Hearthstone running in French
+* Improved updater that shows your download progress
+* LOTS of bug fixes

@@ -13,11 +13,11 @@ import net.hearthstats.util.Translations.t
 //TODO use options
 //TODO avoid mutable 
 class HearthstoneMatch(var mode: String = null,
-  var userClass: String = null,
+  private var _userClass: String = null,
   var opponentClass: String = null,
   var coin: Boolean = false,
   var result: String = null,
-  var deckSlot: Int = -1,
+  private var _deckSlot: Int = -1,
   var opponentName: String = null,
   var rankLevel: Rank = null,
   var numTurns: Int = -1,
@@ -25,8 +25,44 @@ class HearthstoneMatch(var mode: String = null,
   var notes: String = null,
   var id: Int = -1,
   var initialized: Boolean = false) {
+  private var _userClassUnconfirmed: Boolean = true
   //needed for java calls
   def this() = this(mode = null)
+
+
+  def deckSlot: Int = _deckSlot
+
+  /**
+   * Sets the deck slot being used for this match. This will apply the hero class of that deck to
+   * the match, unless a hero class has already been detected and set.
+   * @param value
+   */
+  def deckSlot_=(value: Int) {
+    _deckSlot = value
+    if (_userClassUnconfirmed) {
+      val deck = DeckUtils.getDeckFromSlot(value)
+      if (deck.isDefined) {
+        // Set the user class, but it may be overridden later if it's detected to be different
+        _userClass = deck.get.hero
+      }
+    }
+  }
+
+  def userClass: String = _userClass
+
+  def userClass_=(value: String) {
+    _userClassUnconfirmed = value == null
+    _userClass = value
+  }
+
+  /**
+   * Whether the user class is unconfirmed; it may be set based on the selected deck, but if unconfirmed
+   * then it hasn't been detected yet. This value is set automatically when you set a userClass on the match.
+   *
+   * @return true if the user class is unconfirmed and thus may be wrong, false if the class has been detected
+   */
+  def userClassUnconfirmed: Boolean = _userClassUnconfirmed
+
 
   val startedAt = DateTime.now
 

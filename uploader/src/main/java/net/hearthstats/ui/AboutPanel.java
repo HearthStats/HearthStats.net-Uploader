@@ -31,7 +31,7 @@ public class AboutPanel extends JScrollPane {
   private static JEditorPane contributors() {
     Map<String, String> localeStrings = new HashMap<String, String>();
     localeStrings.put("Author", t("Author"));
-    localeStrings.put("version", t("Uploader") + " v" + Config.getVersion());
+    localeStrings.put("version", t("Companion") + " v" + Config.getVersion());
     localeStrings.put("utility_l1", t("about.utility_l1"));
     localeStrings.put("utility_l2", t("about.utility_l2"));
     localeStrings.put("utility_l3", t("about.utility_l3"));

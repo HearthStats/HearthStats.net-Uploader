@@ -208,7 +208,7 @@ public class OptionsPanel extends JPanel {
       public void actionPerformed(ActionEvent e) {
         if (!_analyticsField.isSelected()) {
           int dialogResult = JOptionPane.showConfirmDialog(OptionsPanel.this,
-              "A lot of work has gone into this uploader.\n"
+              "A lot of work has gone into HearthStats Companion.\n"
                   + "It is provided for free, and all we ask in return\n"
                   + "is that you let us track basic, anonymous statistics\n"
                   + "about how frequently it is being used."

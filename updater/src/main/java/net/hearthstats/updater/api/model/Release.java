@@ -63,7 +63,7 @@ public class Release {
 
   public ReleaseAsset getOsxAsset() {
     for (ReleaseAsset asset : assets) {
-      if (asset.getLabel().equals("Mac OS X (zip)")) {
+      if ("Mac OS X (zip)".equals(asset.getLabel())) {
         return asset;
       }
     }
@@ -72,7 +72,7 @@ public class Release {
 
   public ReleaseAsset getWindowsAsset() {
     for (ReleaseAsset asset : assets) {
-      if (asset.getLabel().equals("Windows (zip)")) {
+      if ("Windows (zip)".equals(asset.getLabel())) {
         return asset;
       }
     }
