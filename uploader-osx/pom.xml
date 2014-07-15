@@ -12,7 +12,7 @@
 	<artifactId>uploader-osx</artifactId>
 
 	<packaging>jar</packaging>
-	<name>Uploader OS X</name>
+	<name>HearthStats Companion OS X</name>
 	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
 
 	<properties>
@@ -133,8 +133,8 @@
 									<fileset dir="target/HearthStats.app" />
 								</delete>
 
-								<bundleapp outputdirectory="target" name="HearthStats" displayname="HearthStats.net Uploader"
-                                           identifier="net.hearthstats.HearthStatsUploader" shortversion="${project.version}"
+								<bundleapp outputdirectory="target" name="HearthStats" displayname="HearthStats Companion"
+                                           identifier="net.hearthstats.HearthStatsCompanion" shortversion="${project.version}"
                                            applicationCategory="public.app-category.games" icon="src/main/resources/images/icon.icns"
                                            mainclassname="net/hearthstats/osx/HearthStatsOsx">
 									<classpath file="target/HearthStatsUploader-OSX.jar" />

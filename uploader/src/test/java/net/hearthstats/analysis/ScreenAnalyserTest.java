@@ -318,7 +318,7 @@ public class ScreenAnalyserTest {
     private void writeHtmlHeader(BufferedWriter output, int page, int pageCount) throws IOException {
         output.write("<html>" +
                 "<head>" +
-                "<title>HeartStats.net Uploader - Match Test</title>" +
+                "<title>HeartStats Companion - Match Test</title>" +
                 "<style type=\"text/css\">" +
                     "html, body, p, div, th, td { font-family: Helvetica, Arial; } " +
                     ".nav { background-color: #f8f8f8; padding: 10px 20px; text-align: center; font-size: 123%; margin: 10px 0; } " +
@@ -331,7 +331,7 @@ public class ScreenAnalyserTest {
                     ".cl { color: #000000; text-align: center; font-weight: bold; } " +
                     "tr, td, th { vertical-align: middle; padding: 5px 8px; } " +
                 "</style></head>");
-        output.write("<body><h1>HeartStats.net Uploader Match Test</h1><p>This test was executed at ");
+        output.write("<body><h1>HeartStats Companion Match Test</h1><p>This test was executed at ");
         output.write(String.format("%1$tr, %1$te %1$tb %1$tY", new Date()));
         output.write(".</p>");
         writeHtmlPageNav(output, page, pageCount);

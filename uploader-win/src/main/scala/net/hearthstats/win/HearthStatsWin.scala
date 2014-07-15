@@ -9,7 +9,7 @@ import javax.swing.{JOptionPane, JLabel}
 import grizzled.slf4j.Logging
 
 /**
- * Main object for the Windows application, starts up the HearthStats Uploader.
+ * Main object for the Windows application, starts up the HearthStats Companion.
  */
 object HearthStatsWin extends Logging with App {
 
@@ -54,21 +54,21 @@ object HearthStatsWin extends Logging with App {
       title = "Expected libraries are not installed"
       if ("amd64" == Environment.systemProperty("os.arch")) {
         message = Array[JLabel](
-          new JLabel("The HearthStats Uploader requires the Visual C++ Redistributable to be installed."),
+          new JLabel("The HearthStats Companion requires the Visual C++ Redistributable to be installed."),
           new JLabel("Please download the 64-bit installer (vcredist_x64.exe) from"),
           HyperLinkHandler.getUrlLabel("http://www.microsoft.com/en-US/download/details.aspx?id=30679"),
-          new JLabel("and install it before using the HearthStats Uploader."))
+          new JLabel("and install it before using the HearthStats Companion."))
       } else {
         message = Array[JLabel](
-          new JLabel("The HearthStats Uploader requires the Visual C++ Redistributable to be installed."),
+          new JLabel("The HearthStats Companion requires the Visual C++ Redistributable to be installed."),
           new JLabel("Please download the installer from"),
           HyperLinkHandler.getUrlLabel("http://www.microsoft.com/en-US/download/details.aspx?id=30679"),
-          new JLabel("and install it before using the HearthStats Uploader."))
+          new JLabel("and install it before using the HearthStats Companion."))
       }
     } else {
       title = e.getMessage
       message = Array[JLabel](
-        new JLabel("The HearthStats Uploader was unable to start because the OCR libraries could not be read."),
+        new JLabel("The HearthStats Companion was unable to start because the OCR libraries could not be read."),
         new JLabel("Is the app already running?"),
         new JLabel(" "),
         new JLabel("Exiting..."))

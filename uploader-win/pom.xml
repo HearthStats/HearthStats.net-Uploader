@@ -12,7 +12,7 @@
 	<artifactId>uploader-win</artifactId>
 
 	<packaging>jar</packaging>
-	<name>Uploader Windows</name>
+	<name>HearthStats Companion Windows</name>
 	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
 
     <properties>

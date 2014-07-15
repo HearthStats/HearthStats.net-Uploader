@@ -47,7 +47,7 @@ abstract class Environment {
 
 
   /**
-   * Performs an update of the HearthStats Uploader. This method should quit the uploader then start the update.
+   * Performs an update of the HearthStats Companion. This method should quit the app then start the update.
    */
   def performApplicationUpdate(release: Release): String
 

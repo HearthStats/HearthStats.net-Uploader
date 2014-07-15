@@ -59,7 +59,7 @@ public final class Main {
 
     try {
 
-      DialogNotification loadingNotification = new DialogNotification("HearthStats.net Uploader", "Loading ...");
+      DialogNotification loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...");
       loadingNotification.show();
 
       Updater.cleanUp();
@@ -85,7 +85,7 @@ public final class Main {
   private static void logSystemInformation(Environment environment) {
     if (debugLog.isInfoEnabled()) {
       debugLog.info("**********************************************************************");
-      debugLog.info("  Starting HearthStats.net Uploader {} on {}", Application.version(), environment.os());
+      debugLog.info("  Starting HearthStats Companion {} on {}", Application.version(), environment.os());
       debugLog.info("  os.name={}", Environment.systemProperty("os.name"));
       debugLog.info("  os.version={}", Environment.systemProperty("os.version"));
       debugLog.info("  os.arch={}", Environment.systemProperty("os.arch"));
