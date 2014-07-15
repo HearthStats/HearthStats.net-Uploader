@@ -6,6 +6,8 @@
 HearthStats Companion
 =====================
 
+(Previously known as the 'HearthStats Uploader')
+
 This is a Java based utility designed to run in the background and automatically
 upload your win ratios and other statistics to [HearthStats.net](http://HearthStats.net)
 while you play Hearthstone. This program uses screen grab analysis of your Hearthstone window
