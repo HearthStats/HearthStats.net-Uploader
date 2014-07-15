@@ -11,7 +11,7 @@ import net.hearthstats.API
  */
 object FileUploaderFactory extends ModuleFactory[FileUploader](
   "video uploader",
-  TempConfig.uploadVideoReplay && API.awsKeys.nonEmpty,
+  TempConfig.uploadVideoReplay && API.premiumUserId.isDefined,
   new FileUploader {},
   "net.hearthstats.upload.AwsUploader",
   API.awsKeys) {

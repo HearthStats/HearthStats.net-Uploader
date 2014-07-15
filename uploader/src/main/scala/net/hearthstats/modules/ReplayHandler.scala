@@ -1,16 +1,14 @@
 package net.hearthstats.modules
 
 import java.io.File
-
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ Future, Promise }
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import org.joda.time.format.DateTimeFormat
-
-import javax.swing.JOptionPane.{YES_NO_OPTION, YES_OPTION, showConfirmDialog}
-import net.hearthstats.{Config, HearthstoneMatch}
+import javax.swing.JOptionPane.{ YES_NO_OPTION, YES_OPTION, showConfirmDialog }
+import net.hearthstats.{ Config, HearthstoneMatch }
 import net.hearthstats.config.TempConfig
 import net.hearthstats.log.Log
+import net.hearthstats.API
 
 object ReplayHandler {
   val videoUploader = FileUploaderFactory.newUploader()
@@ -31,7 +29,7 @@ object ReplayHandler {
       val newFile = new File(TempConfig.recordedVideoFolder, newName)
       if (f.renameTo(newFile)) {
         Log.info("Video replay of your match is saved in " + newFile.getAbsolutePath)
-        for (_ <- videoUploader.uploadFile(newFile, Config.getUserKey)) yield newName
+        for (_ <- videoUploader.uploadFile(newFile, API.premiumUserId.get)) yield newName
       } else throw new IllegalArgumentException(s"Could not rename $f to $newFile")
     } else Promise[String].future
   }

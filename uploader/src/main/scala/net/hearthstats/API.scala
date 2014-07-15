@@ -30,6 +30,15 @@ object API extends Observable with Logging {
         yield json.get(i).asInstanceOf[String]
   }
 
+  lazy val premiumUserId: Option[String] = _get("users/premium") match {
+    case None =>
+      Log.info("You are not a premium user")
+      None
+    case Some(resultObj) =>
+      val json = resultObj.asInstanceOf[JSONObject]
+      Some(json.get("user").asInstanceOf[JSONObject].get("id").toString)
+  }
+
   def endCurrentArenaRun(): Option[ArenaRun] = {
     _get("arena_runs/end") match {
       case None =>

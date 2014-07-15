@@ -15,5 +15,5 @@ object TempConfig {
   }
   val uploadVideoReplay = true
   val awsBucket = "hearthstats-dev"
-  val awsVideoPrefix = "video"
+  val awsVideoPrefix = "prem-videos"
 }

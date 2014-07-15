@@ -5,6 +5,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import net.hearthstats.aws.HearthstatsAwsClient
 import grizzled.slf4j.Logging
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class AwsUploader(
   accessKey: String,
@@ -15,8 +17,11 @@ class AwsUploader(
 
   val awsClient = new HearthstatsAwsClient(accessKey, secretKey)
 
+  val dateFormat = new SimpleDateFormat("yyyy/MM/dd")
+
   override def uploadFile(f: File, user: String): Future[Unit] = {
-    val folder = s"$prefix/$user/"
+    val dateString = dateFormat.format(new Date)
+    val folder = s"$prefix/$user/$dateString/"
     info(s"uploading ${f.getName} to $bucketName in $folder")
     for (_ <- awsClient.storeFile(bucketName, folder, f))
       yield () // we are not doing anything with the result yet
