@@ -232,7 +232,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
         var latestRelease = Updater.getLatestRelease
         if (latestRelease != null) {
           Log.info(t("latest_v_available") + " " + latestRelease.getVersion)
-          if (!latestRelease.getVersion.matches(Config.getVersion)) {
+          if (!latestRelease.getVersion.equalsIgnoreCase("v" + Config.getVersion)) {
             bringWindowToFront()
             val dialogButton = YES_NO_OPTION
             var dialogResult = showConfirmDialog(
