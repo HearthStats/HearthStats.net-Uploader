@@ -48,7 +48,7 @@ to see how things are progressing.
   * On **Mac OS X**, you can run Hearthstone in **windowed mode** or **full-screen**
 * Look for notifications in the corner of your screen that indicate event detection
   * Notifications will only appear in windowed mode, not in full-screen mode
-* [Report any issues you find](https://github.com/HearthStats/HearthStats.net-Uploader/issues)
+* [Give us feedback and ideas!](http://help.hearthstats.net/forums/257732-hearthstats-companion)
 
 
 
@@ -68,7 +68,7 @@ Contributing to this Project
 There are several things you can do to help this project out:
 
 * Check out and participate in [the reddit thread](http://www.reddit.com/r/hearthstone/comments/1wa4rc/auto_uploader_for_hearthstatsnet_need_help_testing/)
-* Download and test early builds, making sure to [report any issues you find](https://github.com/HearthStats/HearthStats.net-Uploader/issues)
+* Download and test early builds, making sure to [report any issues you find](http://help.hearthstats.net/forums/257732-hearthstats-companion)
 * Fork this repository if you can hack, and create a pull request if you come up with things to contribute.
 * [Buy Jerome a cup of coffee via PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=F9XNSXLZNP9QQ) for his work on this app
 * Donate to HearthStats.net's founder Jeff through the site's [about us page](http://hearthstats.net/aboutus) 
