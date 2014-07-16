@@ -13,5 +13,9 @@ object VideoEncoderFactory extends ModuleFactory[VideoEncoder](
   new VideoEncoder {},
   "net.hearthstats.video.SequenceEncoder") {
 
-  def newVideo() = newInstance()
+  import TempConfig._
+  def newVideo() = newInstance(Seq(
+    Integer.valueOf(framesPerSec),
+    Integer.valueOf(videoWidth),
+    Integer.valueOf(videoHeight)))
 }

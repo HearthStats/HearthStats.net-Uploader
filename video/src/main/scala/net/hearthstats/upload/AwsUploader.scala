@@ -17,7 +17,7 @@ class AwsUploader(
 
   val awsClient = new HearthstatsAwsClient(accessKey, secretKey)
 
-  val dateFormat = new SimpleDateFormat("yyyy/MM/dd")
+  val dateFormat = new SimpleDateFormat("yyyy/MM")
 
   override def uploadFile(f: File, user: String): Future[Unit] = {
     val dateString = dateFormat.format(new Date)

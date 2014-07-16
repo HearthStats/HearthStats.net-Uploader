@@ -52,8 +52,13 @@ import net.hearthstats.config.{ Environment, OS, MonitoringMethod, MatchPopup }
 import net.hearthstats.ui.Button
 import scala.swing.Swing
 import net.hearthstats.state.Screen
+import net.hearthstats.config.TempConfig
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.ScheduledFuture
+import grizzled.slf4j.Logging
 
-class Monitor(val environment: Environment) extends JFrame with Observer {
+class Monitor(val environment: Environment) extends JFrame with Observer with Logging {
 
   val _hsHelper: ProgramHelper = environment.programHelper
   lazy val hearthstoneLogMonitor = new HearthstoneLogMonitor(environment.hearthstoneLogFile)
@@ -69,9 +74,12 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
   var _playingInMatch: Boolean = false
   var nextGcTime: Long = 0
 
+  val scheduler = Executors.newScheduledThreadPool(1)
+  var handler: ScheduledFuture[_] = _
+
   def start() {
     if (Config.analyticsEnabled) {
-      debugLog.debug("Enabling analytics")
+      debug("Enabling analytics")
       _analytics.trackEvent("app", "AppStart")
     }
     addWindowListener(new WindowAdapter {
@@ -86,7 +94,9 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     HearthstoneAnalyser.addObserver(this)
     _hsHelper.addObserver(this)
     if (_checkForUserKey()) {
-      poller.start()
+      handler = scheduler.scheduleAtFixedRate(new Runnable {
+        def run() = pollHsImpl()
+      }, POLLING_INTERVAL_IN_MS, POLLING_INTERVAL_IN_MS, TimeUnit.MILLISECONDS)
     } else {
       System.exit(1)
     }
@@ -146,7 +156,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
   }
 
   private def showWelcomeLog() {
-    debugLog.debug("Showing welcome log messages")
+    debug("Showing welcome log messages")
     Log.welcome("HearthStats " + t("Companion") + " v" + Config.getVersionWithOs)
     Log.help(t("welcome_1_set_decks"))
     if (environment.os == OS.OSX) {
@@ -206,7 +216,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
   }
 
   private def createAndShowGui() {
-    debugLog.debug("Creating GUI")
+    debug("Creating GUI")
     val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
     setIconImage(icon)
     setLocation(Config.getX, Config.getY)
@@ -347,18 +357,18 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
   protected def _handleHearthstoneFound() {
     if (!_hearthstoneDetected) {
       _hearthstoneDetected = true
-      debugLog.debug("  - hearthstoneDetected")
+      debug("  - hearthstoneDetected")
       if (Config.showHsFoundNotification) {
         _notify("Hearthstone found")
       }
       setupLogMonitoring()
     }
-    debugLog.debug("  - screen capture")
+    debug("  - screen capture")
     val image = _hsHelper.getScreenCapture
     if (image == null)
-      debugLog.debug("  - screen capture returned null")
+      debug("  - screen capture returned null")
     else if (image.getWidth >= 1024) {
-      debugLog.debug("  - analysing image")
+      debug("  - analysing image")
       HearthstoneAnalyser.analyze(image)
       image.flush()
     }
@@ -367,7 +377,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
   protected def _handleHearthstoneNotFound() {
     if (_hearthstoneDetected) {
       _hearthstoneDetected = false
-      debugLog.debug("  - changed hearthstoneDetected to false")
+      debug("  - changed hearthstoneDetected to false")
       if (Config.showHsClosedNotification) {
         _notify("Hearthstone closed")
         HearthstoneAnalyser.reset()
@@ -376,34 +386,29 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
   }
 
   private def pollHsImpl() {
-    var error = false
-    while (!error) {
-      try {
-        if (_hsHelper.foundProgram)
-          _handleHearthstoneFound()
-        else {
-          debugLog.debug("  - did not find Hearthstone")
-          _handleHearthstoneNotFound()
-        }
-        _updateTitle()
-        // We need to manually trigger GC due to memory leakage that occurs on Windows 8 if we leave GC to the JVM
-        if (nextGcTime > System.currentTimeMillis())
-          Thread.sleep(POLLING_INTERVAL_IN_MS)
-        else {
-          System.gc()
-          nextGcTime = System.currentTimeMillis() + GC_INTERVAL_IN_MS
-        }
-      } catch {
-        case ex: Exception => {
-          ex.printStackTrace(System.err)
-          debugLog.error("  - exception which is not being handled:", ex)
-          Log.error("ERROR: " + ex.getMessage +
-            ". You will need to restart HearthStats Companion.", ex)
-          error = true
-        }
-      } finally {
-        debugLog.debug("<-- finished")
+    try {
+      if (_hsHelper.foundProgram) {
+        _handleHearthstoneFound()
+      } else {
+        debug("  - did not find Hearthstone")
+        _handleHearthstoneNotFound()
       }
+      _updateTitle()
+      // We need to manually trigger GC due to memory leakage that occurs on Windows 8 if we leave GC to the JVM
+      if (nextGcTime < System.currentTimeMillis) {
+        System.gc()
+        nextGcTime = System.currentTimeMillis + GC_INTERVAL_IN_MS
+      }
+    } catch {
+      case ex: Exception =>
+        ex.printStackTrace(System.err)
+        error("  - exception which is not being handled:", ex)
+        Log.error(s"ERROR: ${ex.getMessage} - You will need to restart HearthStats Companion.", ex)
+        scheduler.schedule(new Runnable {
+          def run() { handler.cancel(true) }
+        }, 0, TimeUnit.MILLISECONDS)
+    } finally {
+      debug("<-- finished")
     }
   }
 
@@ -483,7 +488,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
       _playingInMatch = false
       matchPanel.setCurrentMatchEnabled(false)
       if (Config.showModeNotification) {
-        debugLog.debug(HearthstoneAnalyser.getMode + " level " + HearthstoneAnalyser.getRankLevel)
+        debug(HearthstoneAnalyser.getMode + " level " + HearthstoneAnalyser.getRankLevel)
         if ("Ranked" == HearthstoneAnalyser.getMode) {
           _notify(HearthstoneAnalyser.getMode + " Mode Detected", "Rank Level " + HearthstoneAnalyser.getRankLevel)
         } else {
@@ -634,13 +639,6 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     if (dispatcherClass.matches(".*ProgramHelper(Windows|Osx)?")) _handleProgramHelperEvent(changed)
   }
 
-  private var poller: Thread = new Thread(new Runnable() {
-
-    override def run() {
-      pollHsImpl()
-    }
-  })
-
   lazy val restoreButton = {
     val button = new MenuItem("Restore")
     button.setFont(new Font("Arial", Font.BOLD, 14))
@@ -691,21 +689,21 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
                   tray.add(trayIcon)
                   setVisible(false)
                 } catch {
-                  case ex: AWTException => debugLog.debug(ex.getMessage, ex)
+                  case ex: AWTException => debug(ex.getMessage, ex)
                 }
               case MAXIMIZED_BOTH | NORMAL =>
                 tray.remove(trayIcon)
                 setVisible(true)
-                debugLog.debug("Tray icon removed")
+                debug("Tray icon removed")
             }
           }
         }
       })
-    } else debugLog.debug("system tray not supported")
+    } else debug("system tray not supported")
   }
 
   def setMonitorHearthstoneLog(monitorHearthstoneLog: Boolean) {
-    debugLog.debug("setMonitorHearthstoneLog({})", monitorHearthstoneLog)
+    debug(s"setMonitorHearthstoneLog($monitorHearthstoneLog)")
     if (monitorHearthstoneLog) {
       val configWasCreated = _hsHelper.createConfig(environment)
       if (_hearthstoneDetected) {
@@ -720,9 +718,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
 }
 
 object Monitor {
-  val debugLog: Logger = LoggerFactory.getLogger(classOf[Monitor])
-
-  val POLLING_INTERVAL_IN_MS = 100
+  val POLLING_INTERVAL_IN_MS = 1000 / TempConfig.framesPerSec
   val GC_INTERVAL_IN_MS = 3000
   val DO_NOT_NOTIFY_SCREENS = EnumSet.of(
     COLLECTION,

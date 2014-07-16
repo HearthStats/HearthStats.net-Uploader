@@ -18,9 +18,12 @@ import org.jcodec.scale.{ AWTUtil, RgbToYuv420 }
 
 import com.xuggle.mediatool.ToolFactory
 
-class SequenceEncoder extends VideoEncoder {
+class SequenceEncoder(
+  framesPerSec: Integer = 10,
+  videoWidth: Integer = 800,
+  videoHeight: Integer = 600) extends VideoEncoder {
+
   val out: File = File.createTempFile("HSReplay", "video.mp4")
-  val framesPerSec = 10
 
   val ch = NIOUtils.writableFileChannel(out)
   val transform = new RgbToYuv420(0, 0)
@@ -35,7 +38,7 @@ class SequenceEncoder extends VideoEncoder {
 
   override def encodeImage(bi: BufferedImage): Unit =
     if (!closed) {
-      val resized = resize(bi, 800, 600)
+      val resized = resize(bi, videoWidth, videoHeight)
       val toEncode = Picture.create(resized.getWidth, resized.getHeight, ColorSpace.YUV420)
       for (i <- 0 until 3) Arrays.fill(toEncode.getData()(i), 0)
       transform.transform(AWTUtil.fromBufferedImage(resized), toEncode)
@@ -44,19 +47,19 @@ class SequenceEncoder extends VideoEncoder {
       spsList.clear()
       ppsList.clear()
       H264Utils.encodeMOVPacket(result, spsList, ppsList)
-      outTrack.addFrame(new MP4Packet(result, frameNo, framesPerSec, 1, frameNo, false, null, frameNo, 0))
+      outTrack.addFrame(new MP4Packet(result, frameNo, framesPerSec.toLong, 1, frameNo, false, null, frameNo, 0))
       frameNo += 1
     }
 
   /**
    * Returns the name of the compressed file.
    */
-  override def finish(): Future[String] =
+  override def finish(): Future[String] = out.synchronized {
     if (!closed) {
+      closed = true
       outTrack.addSampleEntry(H264Utils.createMOVSampleEntry(spsList, ppsList))
       muxer.writeHeader()
       NIOUtils.closeQuietly(ch)
-      closed = true
       Future {
         val reader = ToolFactory.makeReader(out.getAbsolutePath)
         val compressed = File.createTempFile("video", ".mp4").getAbsolutePath
@@ -66,8 +69,9 @@ class SequenceEncoder extends VideoEncoder {
         compressed
       }
     } else Promise[String].future // never completes
+  }
 
-  private def resize(bi: BufferedImage, x: Int = 640, y: Int = 480): BufferedImage = {
+  private def resize(bi: BufferedImage, x: Int, y: Int): BufferedImage = {
     val (h, w) = (bi.getHeight, bi.getWidth)
     if (w <= x && h <= y) bi
     else {
