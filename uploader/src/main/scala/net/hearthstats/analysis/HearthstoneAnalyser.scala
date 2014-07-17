@@ -179,17 +179,6 @@ object HearthstoneAnalyser extends Observable with Logging {
             Log.warn(t("warning.classdetection", Config.getExtractionFolder))
           }
 
-        case MATCH_END =>
-          val lastMatch = hsMatch
-          videoEncoder.finish().onSuccess {
-            case fileName =>
-              ReplayHandler.handleNewReplay(fileName, lastMatch).onSuccess {
-                case name =>
-                  Log.info(s"Video replay of your match $name successfully uploaded")
-                //TODO : notification
-              }
-          }
-
         case _ =>
       }
       setScreen(newScreen)

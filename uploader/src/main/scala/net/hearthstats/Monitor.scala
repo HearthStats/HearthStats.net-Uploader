@@ -57,6 +57,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.ScheduledFuture
 import grizzled.slf4j.Logging
+import net.hearthstats.modules.ReplayHandler
 
 class Monitor(val environment: Environment) extends JFrame with Observer with Logging {
 
@@ -351,6 +352,18 @@ class Monitor(val environment: Environment) extends JFrame with Observer with Lo
       _analytics.trackEvent("app", "Submit" + hsMatch.mode + "Match")
     }
     API.createMatch(hsMatch)
+
+    import scala.concurrent.ExecutionContext.Implicits.global
+    HearthstoneAnalyser.videoEncoder.finish().onSuccess {
+      case fileName =>
+        ReplayHandler.handleNewReplay(fileName, hsMatch).onSuccess {
+          case name =>
+            val msg = s"Video replay of your match $name successfully uploaded"
+            Log.info(msg)
+            _notify(msg)
+        }
+    }
+
     HearthstoneAnalyser.hsMatch = new HearthstoneMatch
   }
 
