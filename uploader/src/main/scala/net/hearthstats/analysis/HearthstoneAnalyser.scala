@@ -72,7 +72,7 @@ object HearthstoneAnalyser extends Observable with Logging {
   private var iterationsSinceYourTurn: Int = 0
   private var iterationsSinceOpponentTurn: Int = 0
 
-  def analyze(image: BufferedImage) {
+  def analyze(image: BufferedImage): Unit = videoEncoder.synchronized {
     videoEncoder.encodeImage(image)
     val matchedScreen =
       if (iterationsSinceScreenMatched < 10) screenAnalyser.identifyScreen(image, screen)

@@ -27,11 +27,11 @@
         <appender-ref ref="APP" />
     </logger>
 
-
     <!-- Send all other logs to the log file and the console. -->
     <!-- Change the level to DEBUG to enable full log output. -->
     <logger name="net.hearthstats" level="INFO"></logger>
 
+    <logger name="net.hearthstats.video" level="DEBUG"></logger>
 
     <root level="INFO">
         <appender-ref ref="FILE" />

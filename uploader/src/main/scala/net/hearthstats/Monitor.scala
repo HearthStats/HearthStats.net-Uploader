@@ -1,64 +1,48 @@
 package net.hearthstats
 
-import net.hearthstats.Constants.PROFILES_URL
-import net.hearthstats.util.Translations.t
-import java.awt.AWTException
-import java.awt.Desktop
-import java.awt.Dimension
-import java.awt.Font
-import java.awt.MenuItem
-import java.awt.PopupMenu
-import java.awt.SystemTray
-import java.awt.TrayIcon
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
-import java.awt.event.WindowStateListener
+import java.awt.{ AWTException, Desktop, Dimension, Font }
+import java.awt.{ MenuItem, PopupMenu, SystemTray, TrayIcon }
+import java.awt.Frame.{ ICONIFIED, MAXIMIZED_BOTH, NORMAL }
+import java.awt.event.{ ActionEvent, ActionListener, MouseAdapter, MouseEvent, WindowAdapter, WindowEvent, WindowStateListener }
 import java.io.IOException
 import java.net.URI
-import java.util.EnumSet
-import java.util.Observable
-import java.util.Observer
+import java.util.{ EnumSet, Observable, Observer }
+
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.swing.Swing
+
+import org.apache.commons.lang3.StringUtils
+
+import akka.actor.{ Actor, ActorSystem, Cancellable, Props }
+import akka.routing.RoundRobinRouter
+import grizzled.slf4j.Logging
 import javax.swing._
-import javax.swing.JPanel
-import javax.swing.JScrollPane
 import javax.swing.JOptionPane._
-import javax.swing.JTabbedPane
+import javax.swing.ScrollPaneConstants.{ HORIZONTAL_SCROLLBAR_AS_NEEDED, VERTICAL_SCROLLBAR_ALWAYS }
+import net.hearthstats.Constants.PROFILES_URL
 import net.hearthstats.analysis.AnalyserEvent
 import net.hearthstats.analysis.AnalyserEvent._
-import net.hearthstats.log.Log
-import net.hearthstats.log.LogPane
+import net.hearthstats.analysis.HearthstoneAnalyser
+import net.hearthstats.config.{ Environment, MatchPopup, MonitoringMethod, OS, TempConfig }
+import net.hearthstats.log.{ Log, LogPane }
 import net.hearthstats.logmonitor.HearthstoneLogMonitor
 import net.hearthstats.notification.NotificationQueue
+import net.hearthstats.state.Screen
 import net.hearthstats.state.Screen._
 import net.hearthstats.state.ScreenGroup
-import net.hearthstats.ui.AboutPanel
-import net.hearthstats.ui.ClickableDeckBox
-import net.hearthstats.ui.DecksTab
-import net.hearthstats.ui.MatchEndPopup
-import net.hearthstats.ui.MatchPanel
-import net.hearthstats.ui.OptionsPanel
-import org.apache.commons.lang3.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import Monitor._
-import net.hearthstats.analysis.HearthstoneAnalyser
-import java.awt.Frame._
-import javax.swing.ScrollPaneConstants._
-import net.hearthstats.config.{ Environment, OS, MonitoringMethod, MatchPopup }
-import net.hearthstats.ui.Button
-import scala.swing.Swing
-import net.hearthstats.state.Screen
-import net.hearthstats.config.TempConfig
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.ScheduledFuture
-import grizzled.slf4j.Logging
+import net.hearthstats.ui.{ AboutPanel, Button, ClickableDeckBox, DecksTab, MatchEndPopup, MatchPanel, OptionsPanel }
+import net.hearthstats.util.Translations.t
 
 class Monitor(val environment: Environment) extends JFrame with Observer with Logging {
+
+  val POLLING_INTERVAL_IN_MS = 1000 / TempConfig.framesPerSec
+  val GC_INTERVAL_IN_MS = 300
+  val DO_NOT_NOTIFY_SCREENS = EnumSet.of(
+    COLLECTION,
+    COLLECTION_ZOOM,
+    MAIN_TODAYSQUESTS,
+    TITLE)
 
   val _hsHelper: ProgramHelper = environment.programHelper
   lazy val hearthstoneLogMonitor = new HearthstoneLogMonitor(environment.hearthstoneLogFile)
@@ -68,14 +52,14 @@ class Monitor(val environment: Environment) extends JFrame with Observer with Lo
   val _tabbedPane = new JTabbedPane
   val optionsPanel = new OptionsPanel(this)
   val matchPanel = new MatchPanel
+  var poller: Cancellable = _
 
   var _hearthstoneDetected: Boolean = _
   var _notificationQueue: NotificationQueue = environment.newNotificationQueue(Config.notificationType())
   var _playingInMatch: Boolean = false
   var nextGcTime: Long = 0
 
-  val scheduler = Executors.newScheduledThreadPool(1)
-  var handler: ScheduledFuture[_] = _
+  val system = ActorSystem("HearthStatsCompanion")
 
   def start() {
     if (Config.analyticsEnabled) {
@@ -94,9 +78,8 @@ class Monitor(val environment: Environment) extends JFrame with Observer with Lo
     HearthstoneAnalyser.addObserver(this)
     _hsHelper.addObserver(this)
     if (_checkForUserKey()) {
-      handler = scheduler.scheduleAtFixedRate(new Runnable {
-        def run() = pollHsImpl()
-      }, POLLING_INTERVAL_IN_MS, POLLING_INTERVAL_IN_MS, TimeUnit.MILLISECONDS)
+      val delay = POLLING_INTERVAL_IN_MS.milliseconds
+      poller = system.scheduler.schedule(delay, delay, tickActor, Tick)
     } else {
       System.exit(1)
     }
@@ -104,6 +87,38 @@ class Monitor(val environment: Environment) extends JFrame with Observer with Lo
       Log.info(t("waiting_for_hs"))
     } else {
       Log.info(t("waiting_for_hs_windowed"))
+    }
+  }
+
+  val Tick = "tick"
+  val tickActor = system.actorOf(Props(new Actor {
+    def receive = {
+      case Tick => pollHsImpl()
+    }
+  }) withRouter (RoundRobinRouter(nrOfInstances = 4)))
+
+  private def pollHsImpl() {
+    try {
+      if (_hsHelper.foundProgram) {
+        _handleHearthstoneFound()
+      } else {
+        debug("  - did not find Hearthstone")
+        _handleHearthstoneNotFound()
+      }
+      _updateTitle()
+      // We need to manually trigger GC due to memory leakage that occurs on Windows 8 if we leave GC to the JVM
+      if (nextGcTime < System.currentTimeMillis) {
+        System.gc()
+        nextGcTime = System.currentTimeMillis + GC_INTERVAL_IN_MS
+      }
+    } catch {
+      case ex: Exception =>
+        ex.printStackTrace(System.err)
+        error("  - exception which is not being handled:", ex)
+        Log.error(s"ERROR: ${ex.getMessage} - You will need to restart HearthStats Companion.", ex)
+        poller.cancel()
+    } finally {
+      debug("<-- finished")
     }
   }
 
@@ -382,33 +397,6 @@ class Monitor(val environment: Environment) extends JFrame with Observer with Lo
         _notify("Hearthstone closed")
         HearthstoneAnalyser.reset()
       }
-    }
-  }
-
-  private def pollHsImpl() {
-    try {
-      if (_hsHelper.foundProgram) {
-        _handleHearthstoneFound()
-      } else {
-        debug("  - did not find Hearthstone")
-        _handleHearthstoneNotFound()
-      }
-      _updateTitle()
-      // We need to manually trigger GC due to memory leakage that occurs on Windows 8 if we leave GC to the JVM
-      if (nextGcTime < System.currentTimeMillis) {
-        System.gc()
-        nextGcTime = System.currentTimeMillis + GC_INTERVAL_IN_MS
-      }
-    } catch {
-      case ex: Exception =>
-        ex.printStackTrace(System.err)
-        error("  - exception which is not being handled:", ex)
-        Log.error(s"ERROR: ${ex.getMessage} - You will need to restart HearthStats Companion.", ex)
-        scheduler.schedule(new Runnable {
-          def run() { handler.cancel(true) }
-        }, 0, TimeUnit.MILLISECONDS)
-    } finally {
-      debug("<-- finished")
     }
   }
 
@@ -717,12 +705,3 @@ class Monitor(val environment: Environment) extends JFrame with Observer with Lo
   }
 }
 
-object Monitor {
-  val POLLING_INTERVAL_IN_MS = 1000 / TempConfig.framesPerSec
-  val GC_INTERVAL_IN_MS = 3000
-  val DO_NOT_NOTIFY_SCREENS = EnumSet.of(
-    COLLECTION,
-    COLLECTION_ZOOM,
-    MAIN_TODAYSQUESTS,
-    TITLE)
-}

@@ -68,6 +68,11 @@
 			<version>${scala.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.typesafe.akka</groupId>
+			<artifactId>akka-actor_2.11</artifactId>
+			<version>2.3.4</version>
+		</dependency>
+		<dependency>
 			<groupId>org.scala-lang.modules</groupId>
 			<artifactId>scala-swing_2.11</artifactId>
 			<version>1.0.1</version>
