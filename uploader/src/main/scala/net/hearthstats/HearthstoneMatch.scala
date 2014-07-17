@@ -29,7 +29,6 @@ class HearthstoneMatch(var mode: String = null,
   //needed for java calls
   def this() = this(mode = null)
 
-
   def deckSlot: Int = _deckSlot
 
   /**
@@ -63,7 +62,6 @@ class HearthstoneMatch(var mode: String = null,
    */
   def userClassUnconfirmed: Boolean = _userClassUnconfirmed
 
-
   val startedAt = DateTime.now
 
   private def propertyOrUnknown(propertyVal: String): String = {
@@ -82,6 +80,9 @@ class HearthstoneMatch(var mode: String = null,
     case "Arena" => t("match.end.mode.arena")
     case "Casual" => t("match.end.mode.casual")
     case "Ranked" => t("match.end.mode.ranked", rankLevel)
+    case "Practice" => t("match.end.mode.practice")
+    case "Friendly" => t("match.end.mode.friendly")
+    case _ => "unknown mode"
   }
 
   def describeCoin: String = coin match {
