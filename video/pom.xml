@@ -55,12 +55,6 @@
 			</exclusions>
 		</dependency>
 
-		<!-- 2 video libraries -->
-		<dependency>
-			<groupId>org.jcodec</groupId>
-			<artifactId>jcodec</artifactId>
-			<version>0.1.5</version>
-		</dependency>
 		<dependency>
 			<groupId>xuggle</groupId>
 			<artifactId>xuggle-xuggler</artifactId>

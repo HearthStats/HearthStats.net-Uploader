@@ -22,7 +22,7 @@ object TempConfig {
   val awsBucket = "hearthstats-dev"
   val awsVideoPrefix = "prem-videos"
   val framesPerSec = 25 // capture rate and videos FPS
-  val videoHeight = 600
-  val videoWidth = 800
+  val videoWidth = 2000
+  val videoHeight = 2000
 
 }
