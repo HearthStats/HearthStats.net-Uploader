@@ -322,14 +322,6 @@ class Monitor(val environment: Environment) extends Observer with Logging {
     case s if s.group == ScreenGroup.MATCH_START =>
       mainFrame.matchPanel.setCurrentMatchEnabled(true)
       _playingInMatch = true
-      def handleGameResult(): Unit = {
-        _playingInMatch = false
-        mainFrame.matchPanel.setCurrentMatchEnabled(false)
-        mainFrame.notify(HearthstoneAnalyser.hsMatch.describeResult + " Detected")
-        Log.info(HearthstoneAnalyser.hsMatch.describeResult + " Detected")
-        checkMatchResult(HearthstoneAnalyser.hsMatch)
-        mainFrame.matchPanel.updateCurrentMatchUi()
-      }
 
     case s if (s.group == ScreenGroup.MATCH_END && DO_NOT_NOTIFY_SCREENS.contains(s) && Config.showScreenNotification) =>
       if (HearthstoneAnalyser.screen == PRACTICE_LOBBY)

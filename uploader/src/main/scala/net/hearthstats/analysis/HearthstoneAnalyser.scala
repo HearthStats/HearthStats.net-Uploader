@@ -11,7 +11,7 @@ import net.hearthstats.log.Log
 import net.hearthstats.logmonitor.{ HeroDestroyedEvent, HeroEvent }
 import net.hearthstats.ocr.{ OcrException, OpponentNameRankedOcr, OpponentNameUnrankedOcr, RankLevelOcr }
 import net.hearthstats.state.{ PixelLocation, Screen }
-import net.hearthstats.state.Screen.{ ARENA_LOBBY, MATCH_STARTINGHAND, MATCH_VS, PLAY_LOBBY, PRACTICE_LOBBY }
+import net.hearthstats.state.Screen._
 import net.hearthstats.state.ScreenGroup
 import net.hearthstats.state.ScreenGroup.{ MATCH_END, MATCH_PLAYING, MATCH_START }
 import net.hearthstats.state.UniquePixel
@@ -99,6 +99,10 @@ object HearthstoneAnalyser extends Observable with Logging {
 
         case PRACTICE_LOBBY =>
           setMode("Practice")
+
+        case VERSUS_LOBBY =>
+          setMode("Versus")
+          testForDeckSlot(image)
 
         case ARENA_LOBBY =>
           setMode("Arena")

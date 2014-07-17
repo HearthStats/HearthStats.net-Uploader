@@ -349,7 +349,8 @@ public enum Screen {
                 Screen.PLAY_LOBBY,
                 Screen.PRACTICE_LOBBY,
                 Screen.ARENA_CHOOSE,
-                Screen.ARENA_LOBBY
+                Screen.ARENA_LOBBY,
+                Screen.VERSUS_LOBBY
         );
 
         MAIN_TODAYSQUESTS.nextScreens = EnumSet.of(
@@ -390,6 +391,11 @@ public enum Screen {
                 Screen.FINDING_OPPONENT
         );
 
+        VERSUS_LOBBY.nextScreens = EnumSet.of(
+            Screen.MAIN,
+            Screen.PLAY_LOBBY
+        );
+        
         FINDING_OPPONENT.nextScreens = EnumSet.of(
                 Screen.MAIN,
                 Screen.PLAY_LOBBY,
@@ -430,6 +436,7 @@ public enum Screen {
                 Screen.PLAY_LOBBY,
                 Screen.PRACTICE_LOBBY,
                 Screen.ARENA_LOBBY,
+                Screen.VERSUS_LOBBY,
                 Screen.ARENA_END
         );
 
