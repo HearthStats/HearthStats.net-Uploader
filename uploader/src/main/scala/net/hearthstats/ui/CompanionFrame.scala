@@ -98,7 +98,7 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
 
   def showWelcomeLog() {
     debug("Showing welcome log messages")
-    Log.welcome("HearthStats.net " + t("Uploader") + " v" + Config.getVersionWithOs)
+    Log.welcome("HearthStats " + t("Companion") + " v" + Config.getVersionWithOs)
     Log.help(t("welcome_1_set_decks"))
     if (environment.os == OS.OSX) {
       Log.help(t("welcome_2_run_hearthstone"))
@@ -252,7 +252,7 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
       popup.add(restoreButton)
       popup.add(exitButton)
       val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
-      val trayIcon = new TrayIcon(icon, "HearthStats.net Uploader", popup)
+      val trayIcon = new TrayIcon(icon, "HearthStats Companion", popup)
       trayIcon.setImageAutoSize(true)
       trayIcon.addMouseListener(new MouseAdapter {
         override def mousePressed(e: MouseEvent) {
@@ -291,7 +291,7 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
     } else {
       Log.warn(t("error.userkey_not_entered"))
       bringWindowToFront()
-      showMessageDialog(this, "HearthStats.net " + t("error.title") + ":\n\n" + t("you_need_to_enter_userkey") +
+      showMessageDialog(this, t("error.title") + ":\n\n" + t("you_need_to_enter_userkey") +
         "\n\n" +
         t("get_it_at_hsnet_profiles"))
       val d = Desktop.getDesktop
@@ -324,17 +324,17 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
         var latestRelease = Updater.getLatestRelease
         if (latestRelease != null) {
           Log.info(t("latest_v_available") + " " + latestRelease.getVersion)
-          if (!latestRelease.getVersion.matches(Config.getVersion)) {
+          if (!latestRelease.getVersion.equalsIgnoreCase("v" + Config.getVersion)) {
             bringWindowToFront()
             val dialogButton = YES_NO_OPTION
             var dialogResult = showConfirmDialog(
               this,
-              s"""A new version of this uploader is available: ${latestRelease.getVersion}
+              s"""A new version of HearthStats Companion is available: ${latestRelease.getVersion}
                   |${latestRelease.getBody}
                   |            
                   |
                   | ${t("would_u_like_to_install_update")}""".stripMargin,
-              "HearthStats.net " + t("uploader_updates_avail"),
+              "HearthStats " + t("uploader_updates_avail"),
               dialogButton)
             if (dialogResult == YES_OPTION) {
               Updater.run(environment, latestRelease)

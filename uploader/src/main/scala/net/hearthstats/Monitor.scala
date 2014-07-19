@@ -24,7 +24,6 @@ import net.hearthstats.ui.OptionsPanel
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import Monitor._
 import net.hearthstats.analysis.HearthstoneAnalyser
 import net.hearthstats.config.{ Environment, OS, MonitoringMethod, MatchPopup }
 import net.hearthstats.state.Screen
@@ -33,8 +32,10 @@ import scala.swing.Swing
 import net.hearthstats.ui.Button
 import javax.swing.JOptionPane
 import scala.swing.MainFrame
+import grizzled.slf4j.Logging
+import Monitor._
 
-class Monitor(val environment: Environment) extends Observer {
+class Monitor(val environment: Environment) extends Observer with Logging {
 
   val _hsHelper: ProgramHelper = environment.programHelper
   lazy val hearthstoneLogMonitor = new HearthstoneLogMonitor(environment.hearthstoneLogFile)
@@ -46,8 +47,9 @@ class Monitor(val environment: Environment) extends Observer {
   val mainFrame = new CompanionFrame(environment, this)
 
   def start() {
+    HearthstoneAnalyser.monitor = this
     if (Config.analyticsEnabled) {
-      debugLog.debug("Enabling analytics")
+      debug("Enabling analytics")
       _analytics.trackEvent("app", "AppStart")
     }
 
@@ -75,7 +77,8 @@ class Monitor(val environment: Environment) extends Observer {
     setMonitorHearthstoneLog(Config.monitoringMethod == MonitoringMethod.SCREEN_LOG)
   }
 
-  private def _submitMatchResult(hsMatch: HearthstoneMatch) {
+  var title = "HearthStats Companion"
+  private def _submitMatchResult(hsMatch: HearthstoneMatch): Unit = {
     if ("Arena" == hsMatch.mode && HearthstoneAnalyser.isNewArena) {
       val run = new ArenaRun()
       run.setUserClass(hsMatch.userClass)
@@ -92,24 +95,24 @@ class Monitor(val environment: Environment) extends Observer {
       _analytics.trackEvent("app", "Submit" + hsMatch.mode + "Match")
     }
     API.createMatch(hsMatch)
-    HearthstoneAnalyser.hsMatch = new HearthstoneMatch
+    hsMatch.submitted = true
   }
 
   protected def _handleHearthstoneFound() {
     if (!_hearthstoneDetected) {
       _hearthstoneDetected = true
-      debugLog.debug("  - hearthstoneDetected")
+      debug("  - hearthstoneDetected")
       if (Config.showHsFoundNotification) {
         mainFrame.notify("Hearthstone found")
       }
       setupLogMonitoring()
     }
-    debugLog.debug("  - screen capture")
+    debug("  - screen capture")
     val image = _hsHelper.getScreenCapture
     if (image == null)
-      debugLog.debug("  - screen capture returned null")
+      debug("  - screen capture returned null")
     else if (image.getWidth >= 1024) {
-      debugLog.debug("  - analysing image")
+      debug("  - analysing image")
       HearthstoneAnalyser.analyze(image)
       image.flush()
     }
@@ -118,7 +121,7 @@ class Monitor(val environment: Environment) extends Observer {
   protected def _handleHearthstoneNotFound() {
     if (_hearthstoneDetected) {
       _hearthstoneDetected = false
-      debugLog.debug("  - changed hearthstoneDetected to false")
+      debug("  - changed hearthstoneDetected to false")
       if (Config.showHsClosedNotification) {
         mainFrame.notify("Hearthstone closed")
         HearthstoneAnalyser.reset()
@@ -127,13 +130,13 @@ class Monitor(val environment: Environment) extends Observer {
   }
 
   private def pollHsImpl() {
-    var error = false
-    while (!error) {
+    var err = false
+    while (!err) {
       try {
         if (_hsHelper.foundProgram)
           _handleHearthstoneFound()
         else {
-          debugLog.debug("  - did not find Hearthstone")
+          debug("  - did not find Hearthstone")
           _handleHearthstoneNotFound()
         }
         mainFrame.updateTitle()
@@ -147,13 +150,13 @@ class Monitor(val environment: Environment) extends Observer {
       } catch {
         case ex: Exception => {
           ex.printStackTrace(System.err)
-          debugLog.error("  - exception which is not being handled:", ex)
+          error("  - exception which is not being handled:", ex)
           Log.error("ERROR: " + ex.getMessage +
-            ". You will need to restart HearthStats.net Uploader.", ex)
-          error = true
+            ". You will need to restart HearthStats Companion.", ex)
+          err = true
         }
       } finally {
-        debugLog.debug("<-- finished")
+        debug("<-- finished")
       }
     }
   }
@@ -165,47 +168,51 @@ class Monitor(val environment: Environment) extends Observer {
    * @param hsMatch
    *          The match to check and submit.
    */
-  private def checkMatchResult(hsMatch: HearthstoneMatch) {
-    mainFrame.matchPanel.updateMatchClassSelectorsIfSet(hsMatch)
-    val matchPopup = Config.showMatchPopup
-    val showPopup = matchPopup match {
-      case MatchPopup.ALWAYS => true
-      case MatchPopup.INCOMPLETE => !hsMatch.isDataComplete
-      case MatchPopup.NEVER => false
-      case _ => throw new UnsupportedOperationException("Unknown config option " + Config.showMatchPopup)
-    }
-    if (showPopup) {
-      Swing.onEDT {
-        try {
-          var matchHasValidationErrors = !hsMatch.isDataComplete
-          var infoMessage: String = null
-          do {
-            if (infoMessage == null) {
-              infoMessage = if ((matchPopup == MatchPopup.INCOMPLETE)) t("match.popup.message.incomplete") else t("match.popup.message.always")
-            }
-            mainFrame.bringWindowToFront()
-            val buttonPressed = MatchEndPopup.showPopup(mainFrame, hsMatch, infoMessage, t("match.popup.title"))
-            matchHasValidationErrors = !hsMatch.isDataComplete
-            buttonPressed match {
-              case Button.SUBMIT => if (matchHasValidationErrors) {
-                infoMessage = "Some match information is incomplete.<br>Please update these details then click Submit to submit the match to HearthStats:"
-              } else {
-                _submitMatchResult(hsMatch)
+  def checkMatchResult(hsMatch: HearthstoneMatch): Unit =
+    if (!hsMatch.submitted && hsMatch.initialized) {
+      mainFrame.matchPanel.updateMatchClassSelectorsIfSet(hsMatch)
+      val matchPopup = Config.showMatchPopup
+      val showPopup = matchPopup match {
+        case MatchPopup.ALWAYS => true
+        case MatchPopup.INCOMPLETE => !hsMatch.isDataComplete
+        case MatchPopup.NEVER => false
+        case _ => throw new UnsupportedOperationException("Unknown config option " + Config.showMatchPopup)
+      }
+      if (showPopup) {
+        Swing.onEDT {
+          try {
+            var matchHasValidationErrors = !hsMatch.isDataComplete
+            var infoMessage: String = null
+            do {
+              if (infoMessage == null) {
+                infoMessage = if ((matchPopup == MatchPopup.INCOMPLETE))
+                  t("match.popup.message.incomplete")
+                else
+                  t("match.popup.message.always")
               }
-              case Button.CANCEL => return
-            }
-          } while (matchHasValidationErrors);
+              mainFrame.bringWindowToFront()
+              val buttonPressed = MatchEndPopup.showPopup(mainFrame, hsMatch, infoMessage, t("match.popup.title"))
+              matchHasValidationErrors = !hsMatch.isDataComplete
+              buttonPressed match {
+                case Button.SUBMIT => if (matchHasValidationErrors) {
+                  infoMessage = "Some match information is incomplete.<br>Please update these details then click Submit to submit the match to HearthStats:"
+                } else {
+                  _submitMatchResult(hsMatch)
+                }
+                case Button.CANCEL => return
+              }
+            } while (matchHasValidationErrors);
+          } catch {
+            case e: Exception => Main.showErrorDialog("Error submitting match result", e)
+          }
+        }
+      } else
+        try {
+          _submitMatchResult(hsMatch)
         } catch {
           case e: Exception => Main.showErrorDialog("Error submitting match result", e)
         }
-      }
-    } else
-      try {
-        _submitMatchResult(hsMatch)
-      } catch {
-        case e: Exception => Main.showErrorDialog("Error submitting match result", e)
-      }
-  }
+    }
 
   private def handleAnalyserEvent(changed: AnalyserEvent) = changed match {
     case AnalyserEvent.ARENA_END =>
@@ -236,7 +243,7 @@ class Monitor(val environment: Environment) extends Observer {
       mainFrame.matchPanel.setCurrentMatchEnabled(false)
       val mode = HearthstoneAnalyser.getMode
       if (Config.showModeNotification) {
-        debugLog.debug(mode + " level " + HearthstoneAnalyser.getRankLevel)
+        debug(mode + " level " + HearthstoneAnalyser.getRankLevel)
         if ("Ranked" == mode) {
           mainFrame.notify(mode + " Mode Detected", "Rank Level " + HearthstoneAnalyser.getRankLevel)
         } else {
@@ -263,14 +270,8 @@ class Monitor(val environment: Environment) extends Observer {
       Log.info("Opponent: " + HearthstoneAnalyser.getOpponentName)
       mainFrame.matchPanel.updateCurrentMatchUi()
 
-    case RESULT =>
-      _playingInMatch = false
       mainFrame.matchPanel.setCurrentMatchEnabled(false)
-      mainFrame.notify(HearthstoneAnalyser.getResult + " Detected")
-      Log.info(HearthstoneAnalyser.getResult + " Detected")
-      checkMatchResult(HearthstoneAnalyser.hsMatch)
       mainFrame.matchPanel.updateCurrentMatchUi()
-
     case SCREEN =>
       handleScreenChange()
 
@@ -294,9 +295,18 @@ class Monitor(val environment: Environment) extends Observer {
       Log.info("Unhandled event")
   }
 
+  def handleGameResult(): Unit = {
+    _playingInMatch = false
+    mainFrame.matchPanel.setCurrentMatchEnabled(false)
+    mainFrame.notify(HearthstoneAnalyser.hsMatch.describeResult + " Detected")
+    Log.info(HearthstoneAnalyser.hsMatch.describeResult + " Detected")
+    checkMatchResult(HearthstoneAnalyser.hsMatch)
+    mainFrame.matchPanel.updateCurrentMatchUi()
+  }
+
   private def handleScreenChange(): Unit = HearthstoneAnalyser.screen match {
     case Screen.ARENA_END | ARENA_LOBBY | PLAY_LOBBY =>
-      if (_playingInMatch && HearthstoneAnalyser.getResult == null) {
+      if (_playingInMatch && HearthstoneAnalyser.hsMatch.result.isEmpty) {
         _playingInMatch = false
         mainFrame.notify("Detection Error", "Match result was not detected.")
         Log.info("Detection Error: Match result was not detected.")
@@ -312,6 +322,14 @@ class Monitor(val environment: Environment) extends Observer {
     case s if s.group == ScreenGroup.MATCH_START =>
       mainFrame.matchPanel.setCurrentMatchEnabled(true)
       _playingInMatch = true
+      def handleGameResult(): Unit = {
+        _playingInMatch = false
+        mainFrame.matchPanel.setCurrentMatchEnabled(false)
+        mainFrame.notify(HearthstoneAnalyser.hsMatch.describeResult + " Detected")
+        Log.info(HearthstoneAnalyser.hsMatch.describeResult + " Detected")
+        checkMatchResult(HearthstoneAnalyser.hsMatch)
+        mainFrame.matchPanel.updateCurrentMatchUi()
+      }
 
     case s if (s.group == ScreenGroup.MATCH_END && DO_NOT_NOTIFY_SCREENS.contains(s) && Config.showScreenNotification) =>
       if (HearthstoneAnalyser.screen == PRACTICE_LOBBY)
@@ -333,7 +351,7 @@ class Monitor(val environment: Environment) extends Observer {
         ClickableDeckBox.showBox(selectedDeck.get, hearthstoneLogMonitor.cardEvents)
       } else {
         val message = selectedDeck match {
-          case Some(deck) => s"Invalid or empty deck, <a href='http://hearthstats.net/decks/${deck.slug}/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart the uploader)"
+          case Some(deck) => s"Invalid or empty deck, <a href='http://hearthstats.net/decks/${deck.slug}/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart HearthStats Companion)"
           case None => "Invalid or empty deck, edit it on HearthStats.net to display deck overlay (you will need to restart the uploader)"
         }
         mainFrame.notify(message)
@@ -386,14 +404,13 @@ class Monitor(val environment: Environment) extends Observer {
   }
 
   private var poller: Thread = new Thread(new Runnable() {
-
     override def run() {
       pollHsImpl()
     }
   })
 
   def setMonitorHearthstoneLog(monitorHearthstoneLog: Boolean) {
-    debugLog.debug("setMonitorHearthstoneLog({})", monitorHearthstoneLog)
+    debug(s"setMonitorHearthstoneLog($monitorHearthstoneLog)")
     if (monitorHearthstoneLog) {
       val configWasCreated = _hsHelper.createConfig(environment)
       if (_hearthstoneDetected) {

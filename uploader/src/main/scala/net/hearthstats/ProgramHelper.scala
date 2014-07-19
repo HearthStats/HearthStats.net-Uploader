@@ -35,6 +35,9 @@ abstract class ProgramHelper extends Observable {
 
   def getHSWindowBounds: Rectangle
 
+  /**
+   * Returns true if config was created.
+   */
   def createConfig(environment: Environment): Boolean = {
     val logConfigFile = new File(s"${environment.hearthstoneConfigFolder}/log.config")
     if (logConfigFile.exists) {

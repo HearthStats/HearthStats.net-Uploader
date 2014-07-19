@@ -8,7 +8,7 @@ import javax.swing.{ JOptionPane, JLabel }
 import net.hearthstats.config.Environment
 
 /**
- * Main object for the OS X bundle, starts up the HearthStats Uploader.
+ * Main object for the OS X bundle, starts up the HearthStats Companion.
  */
 object HearthStatsOsx extends Logging with App {
   val environment = new EnvironmentOsx
@@ -59,14 +59,14 @@ object HearthStatsOsx extends Logging with App {
     if (e.isInstanceOf[UnsatisfiedLinkError]) {
       title = "Expected libraries are not installed"
       message = Array[JLabel](
-        new JLabel("The HearthStats Uploader was unable to start because expected system libraries were not found."),
+        new JLabel("The HearthStats Companion was unable to start because expected system libraries were not found."),
         new JLabel("Please check your log.txt file for details."),
         new JLabel(" "),
         new JLabel("Exiting..."))
     } else {
       title = e.getMessage
       message = Array[JLabel](
-        new JLabel("The HearthStats Uploader was unable to start because the OCR libraries could not be read."),
+        new JLabel("The HearthStats Companion was unable to start because the OCR libraries could not be read."),
         new JLabel("Is the app already running?"),
         new JLabel(" "),
         new JLabel("Exiting..."))

@@ -7,12 +7,12 @@
 
 	<groupId>net.hearthstats</groupId>
 	<artifactId>uploader-parent</artifactId>
-	<name>HearthStats.net Uploader</name>
-	<version>0.18.2-SNAPSHOT</version>
+	<name>HearthStats Companion</name>
+	<version>0.19.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
-		<product.name>HearthStats.net Uploader (parent pom)</product.name>
+		<product.name>HearthStats Companion (parent pom)</product.name>
 
 		<!-- parsedVersion will be populated automatically by the build-helper-maven-plugin -->
 		<project.longVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}</project.longVersion>

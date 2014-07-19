@@ -32,11 +32,14 @@ object Deck {
         case _ => Nil
       }
 
+    val klassId = json.get("klass_id")
+    val heroString = if (klassId == null) "" else Constants.hsClassOptions(klassId.toString.toInt)
+
     Deck(id = id,
       slug = json.get("slug").toString,
       name = json.get("name").toString,
       cards = cardList,
-      hero = Constants.hsClassOptions(json.get("klass_id").toString.toInt),
+      hero = heroString,
       activeSlot = Option(json.get("slot")).map(_.toString.toInt))
   }
 

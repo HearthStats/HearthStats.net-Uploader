@@ -5,17 +5,17 @@
 
 	<parent>
 		<groupId>net.hearthstats</groupId>
-		<version>0.18.2-SNAPSHOT</version>
+		<version>0.19.1-SNAPSHOT</version>
         <artifactId>uploader-parent</artifactId>
 	</parent>
 	<artifactId>uploader</artifactId>
 
 	<packaging>jar</packaging>
-	<name>Uploader Core</name>
+	<name>HearthStats Companion Core</name>
 	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
 
 	<properties>
-		<product.name>HearthStats.net Uploader (common)</product.name>
+		<product.name>HearthStats Companion (common)</product.name>
 		<scala.version>2.11.1</scala.version>
 	</properties>
 

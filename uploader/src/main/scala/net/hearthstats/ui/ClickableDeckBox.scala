@@ -28,12 +28,14 @@ import net.hearthstats.Config
 import java.awt.BorderLayout
 import javax.swing.JCheckBox
 import scala.swing.Swing._
+import scala.concurrent.Future
 
 class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
   extends JFrame(deck.name) {
 
-  val content = getContentPane
+  val imagesReady = CardUtils.downloadImages(deck.cards)
 
+  val content = getContentPane
   content.setLayout(new BorderLayout)
   val box = createVerticalBox
   val imageLabel = new JLabel
@@ -41,7 +43,7 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
   val cardLabels: Map[String, ClickableLabel] =
     (for {
       card <- deck.cards
-      cardLabel = new ClickableLabel(card)
+      cardLabel = new ClickableLabel(card, imagesReady)
     } yield {
       box.add(cardLabel)
       cardLabel.addMouseListener(new MouseHandler(card, imageLabel))
@@ -57,31 +59,33 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
 
   setAlwaysOnTop(true)
   setFocusableWindowState(true)
-
   setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
-  addWindowListener(new WindowAdapter {
-    override def windowClosing(e: WindowEvent): Unit = {
-      subscription.unsubscribe()
-      val p = getLocationOnScreen
-      Config.setDeckX(p.x)
-      Config.setDeckY(p.y)
-      val rect = getSize()
-      Config.setDeckWidth(rect.getWidth.toInt)
-      Config.setDeckHeight(rect.getHeight.toInt)
-      try {
-        Config.save()
-      } catch {
-        case e: Exception =>
-          Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
-      }
-    }
-  })
 
-  val subscription = cardEvents.subscribe {
+  val newEvents = cardEvents.publish
+  val connection = newEvents.connect
+  newEvents.subscribe {
     _ match {
       case CardEvent(card, DRAWN) => findLabel(card) map (_.decreaseRemaining())
       case CardEvent(card, REPLACED) => findLabel(card) map (_.increaseRemaining())
     }
+  }
+
+  override def dispose(): Unit = {
+    connection.unsubscribe()
+    println("unsub")
+    val p = getLocationOnScreen
+    Config.setDeckX(p.x)
+    Config.setDeckY(p.y)
+    val rect = getSize()
+    Config.setDeckWidth(rect.getWidth.toInt)
+    Config.setDeckHeight(rect.getHeight.toInt)
+    try {
+      Config.save()
+    } catch {
+      case e: Exception =>
+        Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
+    }
+    super.dispose()
   }
 
   private def findLabel(c: Card): Option[ClickableLabel] =
@@ -98,11 +102,9 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
 object ClickableDeckBox {
   val instances = collection.mutable.ArrayBuffer.empty[ClickableDeckBox]
 
-  def showBox(deck: Deck, cardEvents: ConnectableObservable[CardEvent]): ClickableDeckBox = {
+  def showBox(deck: Deck, cardEvents: Observable[CardEvent]): ClickableDeckBox = {
     for (d <- instances) d.dispose()
     instances.clear()
-    cardEvents.connect
-    CardUtils.downloadImages(deck.cards)
     val box = new ClickableDeckBox(deck, cardEvents)
     box.setLocation(Config.getDeckX, Config.getDeckY)
     box.setSize(Config.getDeckWidth, Config.getDeckHeight)

@@ -14,6 +14,7 @@ import rx.subjects.PublishSubject
 import rx.lang.scala.JavaConversions._
 import net.hearthstats.util.FileObserver
 import net.hearthstats.logmonitor.CardEvents._
+import rx.lang.scala.observables.ConnectableObservable
 
 class HearthstoneLogMonitor(logFile: String) {
   val debugLog = LoggerFactory.getLogger(classOf[HearthstoneLogMonitor])
@@ -33,7 +34,9 @@ class HearthstoneLogMonitor(logFile: String) {
   val zones = relevant.filter(l => l startsWith ZONE_PREFIX)
   screens.doOnEach(handleLoadingScreen _)
 
-  val cardEvents = relevant.map(zoneEvent).filter(_.isDefined).map(_.get).publish // remove None values
+  val gameEvents: Observable[GameEvent] = relevant.map(zoneEvent).filter(_.isDefined).map(_.get) // remove None values
+  val cardEvents: Observable[CardEvent] = gameEvents.ofType(classOf[CardEvent])
+  val heroEvents: Observable[HeroEvent] = gameEvents.ofType(classOf[HeroEvent])
 
   def stop(): Unit = {
     debugLog.debug(s"Stopping Hearthstone log monitor on file $logFile")
@@ -49,7 +52,7 @@ class HearthstoneLogMonitor(logFile: String) {
     }
   }
 
-  def zoneEvent(line: String): Option[CardEvent] = {
+  def zoneEvent(line: String): Option[GameEvent] = {
     line match {
       case ZONE_PROCESSCHANGES_REGEX(zoneId, local, cardName, id, cardZone, zonePos, cardId, player, fromZone, toZone) =>
 
@@ -149,7 +152,7 @@ class HearthstoneLogMonitor(logFile: String) {
             case ("GRAVEYARD", "FRIENDLY PLAY (Hero)", "FRIENDLY GRAVEYARD") =>
               // Your hero has died... you are defeated(?)
               debugLog.info("    Your hero " + cardName + " has been defeated")
-              None
+              Some(HeroDestroyedEvent(false))
             case ("GRAVEYARD", "FRIENDLY SECRET", "FRIENDLY GRAVEYARD") =>
               // Your secret was triggered... or possibly was destroyed?
               Log.info("    Your secret " + cardName + " was revealed")
@@ -169,7 +172,7 @@ class HearthstoneLogMonitor(logFile: String) {
             case ("GRAVEYARD", "OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
               // Opponent's hero has died... you are victorious(?)
               debugLog.info("    Opponent's hero " + cardName + " has been defeated")
-              None
+              Some(HeroDestroyedEvent(true))
             case ("GRAVEYARD", "OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
               Log.info("    Opponent's secret " + cardName + " was revealed")
               None

@@ -1,14 +1,9 @@
 package net.hearthstats
 
-import collection.JavaConversions._
-import java.net.URL
-import org.junit.Test
-import scala.collection.GenIterable
-import org.scalatest._
 import org.junit.runner.RunWith
+import org.scalatest.{ FlatSpec, Matchers }
+import net.hearthstats.util.{ MatchOutcome, Rank }
 import org.scalatest.junit.JUnitRunner
-import org.json.simple.JSONObject
-import net.hearthstats.util.Rank
 
 @RunWith(classOf[JUnitRunner])
 class APISpec extends FlatSpec with Matchers {
@@ -28,7 +23,7 @@ class APISpec extends FlatSpec with Matchers {
       "warlock",
       "druid",
       false,
-      "Win",
+      Some(MatchOutcome.VICTORY),
       1,
       "unkownopp",
       Rank.RANK_1,

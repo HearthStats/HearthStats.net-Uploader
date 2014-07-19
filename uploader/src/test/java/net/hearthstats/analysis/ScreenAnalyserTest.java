@@ -1,15 +1,8 @@
 package net.hearthstats.analysis;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 
@@ -22,6 +15,8 @@ import net.hearthstats.util.MatchOutcome;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import scala.Option;
 
 /**
  * This class tests the ScreenAnalyser against a folder of screenshots (which you need to provide yourself).
@@ -152,10 +147,10 @@ public class ScreenAnalyserTest {
                         }
                         if (primaryMatches.contains(Screen.MATCH_ORGRIMMAR_END) || primaryMatches.contains(Screen.MATCH_PANDARIA_END)
                                 || primaryMatches.contains(Screen.MATCH_STORMWIND_END) || primaryMatches.contains(Screen.MATCH_STRANGLETHORN_END)) {
-              MatchOutcome matchOutcome = HearthstoneAnalyser
+              Option<MatchOutcome> matchOutcome = HearthstoneAnalyser
                   .imageShowsVictoryOrDefeat(bufferedImage);
-                            writeScreenSpecificTest(output, "victory", matchOutcome == MatchOutcome.VICTORY);
-                            writeScreenSpecificTest(output, "defeat", matchOutcome == MatchOutcome.DEFEAT);
+              writeScreenSpecificTest(output, "victory", matchOutcome.get() == MatchOutcome.VICTORY);
+              writeScreenSpecificTest(output, "defeat", matchOutcome.get() == MatchOutcome.DEFEAT);
                         }
 
 
@@ -318,7 +313,7 @@ public class ScreenAnalyserTest {
     private void writeHtmlHeader(BufferedWriter output, int page, int pageCount) throws IOException {
         output.write("<html>" +
                 "<head>" +
-                "<title>HeartStats.net Uploader - Match Test</title>" +
+                "<title>HeartStats Companion - Match Test</title>" +
                 "<style type=\"text/css\">" +
                     "html, body, p, div, th, td { font-family: Helvetica, Arial; } " +
                     ".nav { background-color: #f8f8f8; padding: 10px 20px; text-align: center; font-size: 123%; margin: 10px 0; } " +
@@ -331,7 +326,7 @@ public class ScreenAnalyserTest {
                     ".cl { color: #000000; text-align: center; font-weight: bold; } " +
                     "tr, td, th { vertical-align: middle; padding: 5px 8px; } " +
                 "</style></head>");
-        output.write("<body><h1>HeartStats.net Uploader Match Test</h1><p>This test was executed at ");
+        output.write("<body><h1>HeartStats Companion Match Test</h1><p>This test was executed at ");
         output.write(String.format("%1$tr, %1$te %1$tb %1$tY", new Date()));
         output.write(".</p>");
         writeHtmlPageNav(output, page, pageCount);
