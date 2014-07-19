@@ -21,7 +21,8 @@ class HearthstoneMatch(var mode: String = null,
   var duration: Int = -1,
   var notes: String = null,
   var id: Int = -1,
-  var initialized: Boolean = false) {
+  var initialized: Boolean = false,
+  var submitted: Boolean = false) {
   private var _userClassUnconfirmed: Boolean = true
   //needed for java calls
   def this() = this(mode = null)

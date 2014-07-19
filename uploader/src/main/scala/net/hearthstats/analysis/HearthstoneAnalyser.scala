@@ -493,7 +493,6 @@ object HearthstoneAnalyser extends Observable with Logging {
   def getOpponentClass: String = hsMatch.opponentClass
   def getOpponentName: String = hsMatch.opponentName
   def getRankLevel: Rank = hsMatch.rankLevel
-  //  def getResult: String = hsMatch.des
   def getYourClass: String = hsMatch.userClass
 
   def setIsNewArena(isNew: Boolean) {

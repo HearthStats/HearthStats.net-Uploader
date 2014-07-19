@@ -326,7 +326,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     setTitle(title)
   }
 
-  private def _submitMatchResult(hsMatch: HearthstoneMatch) {
+  private def _submitMatchResult(hsMatch: HearthstoneMatch): Unit = {
     if ("Arena" == hsMatch.mode && HearthstoneAnalyser.isNewArena) {
       val run = new ArenaRun()
       run.setUserClass(hsMatch.userClass)
@@ -343,7 +343,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
       _analytics.trackEvent("app", "Submit" + hsMatch.mode + "Match")
     }
     API.createMatch(hsMatch)
-    HearthstoneAnalyser.hsMatch = new HearthstoneMatch
+    hsMatch.submitted = true
   }
 
   protected def _handleHearthstoneFound() {
@@ -416,47 +416,48 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
    * @param hsMatch
    *          The match to check and submit.
    */
-  def checkMatchResult(hsMatch: HearthstoneMatch) {
-    matchPanel.updateMatchClassSelectorsIfSet(hsMatch)
-    val matchPopup = Config.showMatchPopup
-    val showPopup = matchPopup match {
-      case MatchPopup.ALWAYS => true
-      case MatchPopup.INCOMPLETE => !hsMatch.isDataComplete
-      case MatchPopup.NEVER => false
-      case _ => throw new UnsupportedOperationException("Unknown config option " + Config.showMatchPopup)
-    }
-    if (showPopup) {
-      Swing.onEDT {
-        try {
-          var matchHasValidationErrors = !hsMatch.isDataComplete
-          var infoMessage: String = null
-          do {
-            if (infoMessage == null) {
-              infoMessage = if ((matchPopup == MatchPopup.INCOMPLETE)) t("match.popup.message.incomplete") else t("match.popup.message.always")
-            }
-            bringWindowToFront()
-            val buttonPressed = MatchEndPopup.showPopup(this, hsMatch, infoMessage, t("match.popup.title"))
-            matchHasValidationErrors = !hsMatch.isDataComplete
-            buttonPressed match {
-              case Button.SUBMIT => if (matchHasValidationErrors) {
-                infoMessage = "Some match information is incomplete.<br>Please update these details then click Submit to submit the match to HearthStats:"
-              } else {
-                _submitMatchResult(hsMatch)
+  def checkMatchResult(hsMatch: HearthstoneMatch): Unit =
+    if (!hsMatch.submitted && hsMatch.initialized) {
+      matchPanel.updateMatchClassSelectorsIfSet(hsMatch)
+      val matchPopup = Config.showMatchPopup
+      val showPopup = matchPopup match {
+        case MatchPopup.ALWAYS => true
+        case MatchPopup.INCOMPLETE => !hsMatch.isDataComplete
+        case MatchPopup.NEVER => false
+        case _ => throw new UnsupportedOperationException("Unknown config option " + Config.showMatchPopup)
+      }
+      if (showPopup) {
+        Swing.onEDT {
+          try {
+            var matchHasValidationErrors = !hsMatch.isDataComplete
+            var infoMessage: String = null
+            do {
+              if (infoMessage == null) {
+                infoMessage = if ((matchPopup == MatchPopup.INCOMPLETE)) t("match.popup.message.incomplete") else t("match.popup.message.always")
               }
-              case Button.CANCEL => return
-            }
-          } while (matchHasValidationErrors);
+              bringWindowToFront()
+              val buttonPressed = MatchEndPopup.showPopup(this, hsMatch, infoMessage, t("match.popup.title"))
+              matchHasValidationErrors = !hsMatch.isDataComplete
+              buttonPressed match {
+                case Button.SUBMIT => if (matchHasValidationErrors) {
+                  infoMessage = "Some match information is incomplete.<br>Please update these details then click Submit to submit the match to HearthStats:"
+                } else {
+                  _submitMatchResult(hsMatch)
+                }
+                case Button.CANCEL => return
+              }
+            } while (matchHasValidationErrors);
+          } catch {
+            case e: Exception => Main.showErrorDialog("Error submitting match result", e)
+          }
+        }
+      } else
+        try {
+          _submitMatchResult(hsMatch)
         } catch {
           case e: Exception => Main.showErrorDialog("Error submitting match result", e)
         }
-      }
-    } else
-      try {
-        _submitMatchResult(hsMatch)
-      } catch {
-        case e: Exception => Main.showErrorDialog("Error submitting match result", e)
-      }
-  }
+    }
 
   private def handleAnalyserEvent(changed: AnalyserEvent) = changed match {
     case AnalyserEvent.ARENA_END =>
