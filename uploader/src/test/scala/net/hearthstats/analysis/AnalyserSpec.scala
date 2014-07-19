@@ -17,9 +17,9 @@ class AnalyserSpec extends FlatSpec with Matchers {
 
   "The arena choose hero screen" should "be detected" in
     checkScreen("arena_choose", Screen.ARENA_CHOOSE)
-  //
-  //  "The versus lobby" should "be detected" in
-  //    checkScreen("versus_lobby", Screen.VERSUS_LOBBY)
+
+  "The versus lobby" should "be detected" in
+    checkScreen("versus_lobby", Screen.VERSUS_LOBBY)
 
   def checkScreen(fileName: String, screen: Screen) = {
     val img = ImageIO.read(getClass.getResourceAsStream(fileName + ".png"))

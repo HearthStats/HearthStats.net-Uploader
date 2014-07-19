@@ -13,6 +13,7 @@ import net.hearthstats.util.Coordinate;
 import net.hearthstats.util.MatchOutcome;
 
 import org.junit.Assert;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class ScreenAnalyserTest {
 
     private final static Logger log = LoggerFactory.getLogger(ScreenAnalyserTest.class);
 
-    private final static String IMAGE_PATH = "/tmp/hearthstats";
+  private final static String IMAGE_PATH = "tmp";
     private final static int PAGE_SIZE = 25;
 
     private int expectedWidth = 0;
@@ -38,7 +39,7 @@ public class ScreenAnalyserTest {
     private Map<PixelLocation, Coordinate> pixelMap;
 
 
-	// @Test
+  @Test
     public void htmlScreenMatchTest() throws Exception {
 
         log.debug("Starting check...");
