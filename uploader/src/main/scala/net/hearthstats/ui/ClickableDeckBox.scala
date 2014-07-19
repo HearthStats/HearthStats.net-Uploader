@@ -85,6 +85,7 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
       case e: Exception =>
         Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
     }
+    super.dispose()
   }
 
   private def findLabel(c: Card): Option[ClickableLabel] =
