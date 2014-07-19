@@ -1,15 +1,8 @@
 package net.hearthstats.analysis;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 
@@ -22,6 +15,8 @@ import net.hearthstats.util.MatchOutcome;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import scala.Option;
 
 /**
  * This class tests the ScreenAnalyser against a folder of screenshots (which you need to provide yourself).
@@ -152,10 +147,10 @@ public class ScreenAnalyserTest {
                         }
                         if (primaryMatches.contains(Screen.MATCH_ORGRIMMAR_END) || primaryMatches.contains(Screen.MATCH_PANDARIA_END)
                                 || primaryMatches.contains(Screen.MATCH_STORMWIND_END) || primaryMatches.contains(Screen.MATCH_STRANGLETHORN_END)) {
-              MatchOutcome matchOutcome = HearthstoneAnalyser
+              Option<MatchOutcome> matchOutcome = HearthstoneAnalyser
                   .imageShowsVictoryOrDefeat(bufferedImage);
-                            writeScreenSpecificTest(output, "victory", matchOutcome == MatchOutcome.VICTORY);
-                            writeScreenSpecificTest(output, "defeat", matchOutcome == MatchOutcome.DEFEAT);
+              writeScreenSpecificTest(output, "victory", matchOutcome.get() == MatchOutcome.VICTORY);
+              writeScreenSpecificTest(output, "defeat", matchOutcome.get() == MatchOutcome.DEFEAT);
                         }
 
 
