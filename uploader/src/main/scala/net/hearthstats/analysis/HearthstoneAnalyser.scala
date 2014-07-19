@@ -3,15 +3,13 @@ package net.hearthstats.analysis
 import java.awt.image.BufferedImage
 import java.text.MessageFormat
 import java.util.{ Observable, ResourceBundle }
-
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import org.apache.commons.lang3.StringUtils
-
 import grizzled.slf4j.Logging
 import net.hearthstats.{ BackgroundImageSave, Config, HearthstoneMatch, Main }
 import net.hearthstats.log.Log
 import net.hearthstats.modules.{ ReplayHandler, VideoEncoderFactory }
+import net.hearthstats.logmonitor.{ HeroDestroyedEvent, HeroEvent }
 import net.hearthstats.ocr.{ OcrException, OpponentNameRankedOcr, OpponentNameUnrankedOcr, RankLevelOcr }
 import net.hearthstats.state.{ PixelLocation, Screen }
 import net.hearthstats.state.Screen.{ ARENA_LOBBY, MATCH_STARTINGHAND, MATCH_VS, PLAY_LOBBY, PRACTICE_LOBBY }
@@ -20,6 +18,11 @@ import net.hearthstats.state.ScreenGroup.{ MATCH_END, MATCH_PLAYING, MATCH_START
 import net.hearthstats.state.UniquePixel
 import net.hearthstats.state.UniquePixel._
 import net.hearthstats.util.{ MatchOutcome, Rank }
+import net.hearthstats.util.{ MatchOutcome, Rank }
+import net.hearthstats.util.MatchOutcome._
+import rx.lang.scala.Subscription
+import net.hearthstats.config.TempConfig
+import net.hearthstats.Monitor
 
 /**
  * The main analyser for Hearthstone. Uses screenshots to determine what state the game is in,
@@ -45,6 +48,9 @@ object HearthstoneAnalyser extends Observable with Logging {
   private val rankLevelOcr = new RankLevelOcr
 
   var videoEncoder = VideoEncoderFactory.newVideo()
+
+  var monitor: Monitor = null
+  var heroEventSubscription: Option[Subscription] = None
 
   var screen: Screen = null
 
@@ -155,22 +161,11 @@ object HearthstoneAnalyser extends Observable with Logging {
       } else
         iterationsSinceFindingOpponent = 0
 
-      if (newScreen == Screen.ARENA_END)
-        setArenaRunEnd()
+      if (newScreen == Screen.ARENA_END) { setArenaRunEnd() }
       newScreen.group match {
         case MATCH_START =>
-          if (hsMatch.initialized == false) {
-            hsMatch.initialized = true
-            hsMatch.mode = mode
-            hsMatch.deckSlot = deckSlot
-            hsMatch.rankLevel = rankLevel
-            videoEncoder = VideoEncoderFactory.newVideo
-          }
-          arenaRunEndDetected = false
-          isYourTurn = false
-          iterationsSinceClassCheckingStarted = 0
-          iterationsSinceYourTurn = 0
-          iterationsSinceOpponentTurn = 0
+          handleMatchStart()
+          videoEncoder = VideoEncoderFactory.newVideo
 
         case MATCH_PLAYING =>
           startTimer()
@@ -185,6 +180,32 @@ object HearthstoneAnalyser extends Observable with Logging {
     }
     iterationsSinceFindingOpponent = 0
     true
+  }
+
+  def handleMatchStart(): Unit = {
+    if (hsMatch.initialized == false) {
+      hsMatch.initialized = true
+      hsMatch.result = None
+      hsMatch.mode = mode
+      hsMatch.deckSlot = deckSlot
+      hsMatch.rankLevel = rankLevel
+      val heroEvents = monitor.hearthstoneLogMonitor.heroEvents
+      heroEventSubscription.map(_.unsubscribe())
+      heroEventSubscription = Some(heroEvents.subscribe(heroEventHandler))
+    }
+    arenaRunEndDetected = false
+    isYourTurn = false
+    iterationsSinceClassCheckingStarted = 0
+    iterationsSinceYourTurn = 0
+    iterationsSinceOpponentTurn = 0
+  }
+
+  val heroEventHandler: HeroEvent => Unit = {
+    case HeroDestroyedEvent(opponent) =>
+      info("Result detected by log monitor")
+      if (TempConfig.useLogMonitoringForGameResult) {
+        endMatch(if (opponent) VICTORY else DEFEAT, true)
+      }
   }
 
   private def testForNewArenaRun(image: BufferedImage) {
@@ -287,19 +308,21 @@ object HearthstoneAnalyser extends Observable with Logging {
 
   private def testForVictoryOrDefeat(image: BufferedImage) {
     if (!victoryOrDefeatDetected) {
-      debug("Testing for victory or defeat")
+      info("Testing for victory or defeat")
       imageShowsVictoryOrDefeat(image) match {
-        case MatchOutcome.VICTORY =>
-          endTimer()
-          victoryOrDefeatDetected = true
-          setResult("Victory")
-        case MatchOutcome.DEFEAT =>
-          endTimer()
-          victoryOrDefeatDetected = true
-          setResult("Defeat")
+        case Some(outcome) =>
+          info("Result detected by screen capture")
+          endMatch(outcome)
         case _ =>
       }
     }
+  }
+
+  def endMatch(result: MatchOutcome, withCertainty: Boolean = false): Unit = {
+    endTimer()
+    victoryOrDefeatDetected = true
+    setResult(result, withCertainty)
+
   }
 
   private def setArenaRunEnd() {
@@ -336,10 +359,10 @@ object HearthstoneAnalyser extends Observable with Logging {
     individualPixelAnalyser.testAllPixelsMatch(image, Array(NAME_OPPONENT_1A, NAME_OPPONENT_1B, NAME_OPPONENT_1C)) &&
       individualPixelAnalyser.testAllPixelsMatch(image, Array(NAME_OPPONENT_2A, NAME_OPPONENT_2B, NAME_OPPONENT_2C))
 
-  def imageShowsVictoryOrDefeat(image: BufferedImage): MatchOutcome = {
+  def imageShowsVictoryOrDefeat(image: BufferedImage): Option[MatchOutcome] = {
     val referenceCoordinate =
       relativePixelAnalyser.findRelativePixel(image, VICTORY_DEFEAT_REFBOX_TL, VICTORY_DEFEAT_REFBOX_BR, 8, 11)
-    if (referenceCoordinate != null) {
+    if (null != referenceCoordinate) {
       val victory1Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate,
         Array(VICTORY_REL_1A, VICTORY_REL_1B))
       val victory2Matches = relativePixelAnalyser.countMatchingRelativePixels(image, referenceCoordinate,
@@ -355,10 +378,10 @@ object HearthstoneAnalyser extends Observable with Logging {
       if (matchedVictory && matchedDefeat) {
         warn("Matched both victory and defeat, which shouldn't be possible. Will try again next iteration.")
         null
-      } else if (matchedVictory) MatchOutcome.VICTORY
-      else if (matchedDefeat) MatchOutcome.DEFEAT
-      else null
-    } else null
+      } else if (matchedVictory) Some(MatchOutcome.VICTORY)
+      else if (matchedDefeat) Some(MatchOutcome.DEFEAT)
+      else None
+    } else None
   }
 
   /**
@@ -474,7 +497,6 @@ object HearthstoneAnalyser extends Observable with Logging {
   def getOpponentClass: String = hsMatch.opponentClass
   def getOpponentName: String = hsMatch.opponentName
   def getRankLevel: Rank = hsMatch.rankLevel
-  def getResult: String = hsMatch.result
   def getYourClass: String = hsMatch.userClass
 
   def setIsNewArena(isNew: Boolean) {
@@ -517,9 +539,20 @@ object HearthstoneAnalyser extends Observable with Logging {
     notifyObserversOfChangeTo(AnalyserEvent.OPPONENT_NAME)
   }
 
-  private def setResult(result: String) {
-    hsMatch.result = result
-    notifyObserversOfChangeTo(AnalyserEvent.RESULT)
+  private def setResult(result: MatchOutcome, withCertainty: Boolean = false) {
+    if (hsMatch.result.isEmpty) {
+      hsMatch.result = Some(result)
+      Log.info(s"Match result : $result")
+      monitor.handleGameResult()
+    } else if (withCertainty) {
+      if (hsMatch.result.get == result) {
+        Log.info(s"Image capture and log file agree on match result : $result")
+      } else {
+        Log.info(s"Log file overrides match result : $result")
+        hsMatch.result = Some(result)
+        monitor.handleGameResult()
+      }
+    }
   }
 
   private def setScreen(screen: Screen) {

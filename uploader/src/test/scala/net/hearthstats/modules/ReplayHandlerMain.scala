@@ -4,10 +4,11 @@ import net.hearthstats.HearthstoneMatch
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import net.hearthstats.util.MatchOutcome
 
 object ReplayHandlerMain extends App {
   val future = ReplayHandler.handleNewReplay("""C:\Users\tyrcho\AppData\Local\Temp\HSReplay578323316009031172video.mp4""",
-    new HearthstoneMatch(_userClass = "Druid", opponentClass = "Warlock", result = "Win", opponentName = "opp"))
+    new HearthstoneMatch(_userClass = "Druid", opponentClass = "Warlock", result = Some(MatchOutcome.VICTORY), opponentName = "opp"))
   future.onSuccess {
     case n => println(s"uploaded $n")
   }

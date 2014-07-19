@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils
 import org.json.simple.JSONObject
 
 import com.github.nscala_time.time.Imports.DateTime
-
+import net.hearthstats.util.MatchOutcome
 import net.hearthstats.util.Rank
 import net.hearthstats.util.Translations.t
 
@@ -16,7 +16,7 @@ class HearthstoneMatch(var mode: String = null,
   private var _userClass: String = null,
   var opponentClass: String = null,
   var coin: Boolean = false,
-  var result: String = null,
+  var result: Option[MatchOutcome] = None,
   private var _deckSlot: Int = -1,
   var opponentName: String = null,
   var rankLevel: Rank = null,
@@ -24,7 +24,8 @@ class HearthstoneMatch(var mode: String = null,
   var duration: Int = -1,
   var notes: String = null,
   var id: Int = -1,
-  var initialized: Boolean = false) {
+  var initialized: Boolean = false,
+  var submitted: Boolean = false) {
   private var _userClassUnconfirmed: Boolean = true
   //needed for java calls
   def this() = this(mode = null)
@@ -63,7 +64,6 @@ class HearthstoneMatch(var mode: String = null,
   def userClassUnconfirmed: Boolean = _userClassUnconfirmed
 
   val startedAt = DateTime.now
-
   private def propertyOrUnknown(propertyVal: String): String = {
     if (propertyVal == null) "[undetected]" else propertyVal
   }
@@ -95,7 +95,10 @@ class HearthstoneMatch(var mode: String = null,
     case _ => t("match.end.vs.named", propertyOrUnknown(userClass), propertyOrUnknown(opponentClass), opponentName)
   }
 
-  def describeResult: String = result
+  def describeResult: String = result match {
+    case Some(r) => r.toString
+    case None => "UnknownResult"
+  }
 
   def describeDeck: String = mode match {
     case "Arena" => ""
@@ -111,12 +114,6 @@ class HearthstoneMatch(var mode: String = null,
   def describeTurns: String = t("match.end.turns", numTurns)
 
   def toJsonObject: JSONObject = {
-    val r = result match {
-      case "Victory" | "Win" => "Win"
-      case "Defeat" | "Loss" => "Loss"
-      case "Draw" => "Draw"
-    }
-
     val map = collection.mutable.Map(
       "mode" -> mode,
       "slot" -> deckSlot,
@@ -124,7 +121,7 @@ class HearthstoneMatch(var mode: String = null,
       "oppclass" -> opponentClass,
       "oppname" -> opponentName,
       "coin" -> coin.toString,
-      "result" -> r,
+      "result" -> describeResult,
       "notes" -> notes,
       "numturns" -> numTurns,
       "duration" -> duration)

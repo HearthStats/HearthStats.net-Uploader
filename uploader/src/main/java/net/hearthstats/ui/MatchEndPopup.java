@@ -2,43 +2,25 @@ package net.hearthstats.ui;
 
 import static net.hearthstats.util.Translations.t;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.hearthstats.Constants;
-import net.hearthstats.Deck;
-import net.hearthstats.DeckUtils;
-import net.hearthstats.HearthstoneMatch;
+import net.hearthstats.*;
+import net.hearthstats.util.MatchOutcome;
 import net.hearthstats.util.Rank;
 import net.miginfocom.swing.MigLayout;
 
 import org.apache.commons.lang3.StringUtils;
 
 import scala.Option;
+import scala.Some;
 
 
 /**
@@ -333,14 +315,14 @@ public class MatchEndPopup extends JPanel {
     resultVictory = new JRadioButton(t("match.label.result_victory"));
     resultVictory.setMnemonic(KeyEvent.VK_V);
     resultVictory.setMargin(new Insets(0, 0, 0, 10));
-    if ("Victory".equals(match.result())) {
+    if (match.result().isDefined() && MatchOutcome.VICTORY == match.result().get()) {
       resultVictory.setSelected(true);
     }
     resultVictory.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (resultVictory.isSelected()) {
-          match.result_$eq("Victory");
+          match.result_$eq(Some.apply(MatchOutcome.VICTORY));
         }
       }
     });
@@ -356,7 +338,7 @@ public class MatchEndPopup extends JPanel {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (resultDefeat.isSelected()) {
-          match.result_$eq("Defeat");
+          match.result_$eq(Some.apply(MatchOutcome.DEFEAT));
         }
       }
     });
@@ -372,7 +354,7 @@ public class MatchEndPopup extends JPanel {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (resultDraw.isSelected()) {
-          match.result_$eq("Draw");
+          match.result_$eq(Some.apply(MatchOutcome.DRAW));
         }
       }
     });

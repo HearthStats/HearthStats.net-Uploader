@@ -25,4 +25,5 @@ object TempConfig {
   val videoWidth = 2000
   val videoHeight = 2000
 
+  val useLogMonitoringForGameResult = true
 }

@@ -1,6 +1,7 @@
 package net.hearthstats.ui
 
 import java.awt.AlphaComposite
+
 import java.awt.Color
 import java.awt.Color.BLACK
 import java.awt.Color.WHITE
@@ -13,16 +14,16 @@ import java.awt.Graphics2D
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.geom.AffineTransform
-
 import scala.swing.Swing.onEDT
-
 import javax.swing.BorderFactory
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 import net.hearthstats.Card
 import ClickableLabel._
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class ClickableLabel(card: Card) extends JLabel {
+class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   val backgroundSize = new Dimension(218, 35)
   val pictureSize = new Dimension(275, 384)
 
@@ -31,17 +32,31 @@ class ClickableLabel(card: Card) extends JLabel {
   var remaining = card.count
   var currentBack = cardBack
 
-  val cardImage = new ImageIcon(card.localURL)
+  var imagesAreReady = false
+  imagesReady.onSuccess {
+    case _ =>
+      imagesAreReady = true
+      revalidate()
+      repaint()
+  }
+
+  lazy val localCard = new ImageIcon(card.localURL)
+  def cardImage =
+    if (imagesAreReady)
+      localCard
+    else
+      cardBack
+
   val cost = card.cost.toString
   val name = card.name
   val imgDstX = 100
   val imgDstY = 0
   val imgDstW = 113
   val imgDstH = 35
-  val imgSrcX = 81 * cardImage.getIconWidth / pictureSize.getWidth.toInt
-  val imgSrcY: Int = 62 * cardImage.getIconHeight / pictureSize.getHeight.toInt
-  val imgSrcW: Int = 130 * cardImage.getIconWidth / pictureSize.getWidth.toInt
-  val imgSrcH: Int = 40 * cardImage.getIconHeight / pictureSize.getHeight.toInt
+  def imgSrcX = 81 * cardImage.getIconWidth / pictureSize.getWidth.toInt
+  def imgSrcY: Int = 62 * cardImage.getIconHeight / pictureSize.getHeight.toInt
+  def imgSrcW: Int = 130 * cardImage.getIconWidth / pictureSize.getWidth.toInt
+  def imgSrcH: Int = 40 * cardImage.getIconHeight / pictureSize.getHeight.toInt
 
   setMaximumSize(backgroundSize * 2)
   setPreferredSize(backgroundSize * 1)
