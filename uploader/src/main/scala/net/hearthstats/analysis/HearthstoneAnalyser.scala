@@ -101,7 +101,7 @@ object HearthstoneAnalyser extends Observable with Logging {
           setMode("Practice")
 
         case VERSUS_LOBBY =>
-          setMode("Versus")
+          setMode("Friendly")
           testForDeckSlot(image)
 
         case ARENA_LOBBY =>
