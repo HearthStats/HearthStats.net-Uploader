@@ -59,30 +59,31 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
 
   setAlwaysOnTop(true)
   setFocusableWindowState(true)
-
   setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
-  addWindowListener(new WindowAdapter {
-    override def windowClosing(e: WindowEvent): Unit = {
-      subscription.unsubscribe()
-      val p = getLocationOnScreen
-      Config.setDeckX(p.x)
-      Config.setDeckY(p.y)
-      val rect = getSize()
-      Config.setDeckWidth(rect.getWidth.toInt)
-      Config.setDeckHeight(rect.getHeight.toInt)
-      try {
-        Config.save()
-      } catch {
-        case e: Exception =>
-          Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
-      }
-    }
-  })
 
-  val subscription = cardEvents.subscribe {
+  val newEvents = cardEvents.publish
+  val connection = newEvents.connect
+  newEvents.subscribe {
     _ match {
       case CardEvent(card, DRAWN) => findLabel(card) map (_.decreaseRemaining())
       case CardEvent(card, REPLACED) => findLabel(card) map (_.increaseRemaining())
+    }
+  }
+
+  override def dispose(): Unit = {
+    connection.unsubscribe()
+    println("unsub")
+    val p = getLocationOnScreen
+    Config.setDeckX(p.x)
+    Config.setDeckY(p.y)
+    val rect = getSize()
+    Config.setDeckWidth(rect.getWidth.toInt)
+    Config.setDeckHeight(rect.getHeight.toInt)
+    try {
+      Config.save()
+    } catch {
+      case e: Exception =>
+        Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
     }
   }
 
