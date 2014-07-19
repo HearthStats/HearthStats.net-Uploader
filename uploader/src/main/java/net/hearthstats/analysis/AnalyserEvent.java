@@ -10,7 +10,6 @@ public enum AnalyserEvent {
     NEW_ARENA,
     OPPONENT_CLASS,
     OPPONENT_NAME,
-    RESULT,
     SCREEN,
     YOUR_CLASS,
     YOUR_TURN;

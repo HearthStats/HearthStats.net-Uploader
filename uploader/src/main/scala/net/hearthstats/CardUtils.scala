@@ -28,7 +28,7 @@ object CardUtils {
       originalName = json.get("name").toString,
       collectible = collectible != null && collectible.toString.toBoolean)).toMap
 
-  def downloadImages(cards: List[Card]) {
+  def downloadImages(cards: List[Card]): Future[Unit] = {
     import ExecutionContext.Implicits.global
     val futures = for (card <- cards) yield future {
       val file = card.localFile
@@ -47,14 +47,12 @@ object CardUtils {
         Log.debug(card.name + " already in cache, skipping")
     }
     val all = Future.sequence(futures)
+
     all.onComplete {
       case Success(_) => Log.info("All images downloaded successfully")
       case Failure(e) => Log.warn("Could not download an image", e)
     }
-    try {
-      Await.result(all, 10.seconds)
-    } catch {
-      case e: TimeoutException => Log.warn("Could not download an image after 10 seconds", e)
-    }
+
+    all.map(_ => ())
   }
 }
