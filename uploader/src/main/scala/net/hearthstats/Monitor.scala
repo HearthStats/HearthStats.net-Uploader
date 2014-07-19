@@ -416,7 +416,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
    * @param hsMatch
    *          The match to check and submit.
    */
-  private def checkMatchResult(hsMatch: HearthstoneMatch) {
+  def checkMatchResult(hsMatch: HearthstoneMatch) {
     matchPanel.updateMatchClassSelectorsIfSet(hsMatch)
     val matchPopup = Config.showMatchPopup
     val showPopup = matchPopup match {

@@ -172,7 +172,7 @@ class HearthstoneLogMonitor(logFile: String) {
             case ("GRAVEYARD", "OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
               // Opponent's hero has died... you are victorious(?)
               debugLog.info("    Opponent's hero " + cardName + " has been defeated")
-              Some(HeroDestroyedEvent(false))
+              Some(HeroDestroyedEvent(true))
             case ("GRAVEYARD", "OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
               Log.info("    Opponent's secret " + cardName + " was revealed")
               None

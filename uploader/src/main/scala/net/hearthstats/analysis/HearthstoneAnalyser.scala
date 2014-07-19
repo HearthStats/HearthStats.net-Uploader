@@ -156,8 +156,7 @@ object HearthstoneAnalyser extends Observable with Logging {
       } else
         iterationsSinceFindingOpponent = 0
 
-      if (newScreen == Screen.ARENA_END)
-        setArenaRunEnd()
+      if (newScreen == Screen.ARENA_END) { setArenaRunEnd() }
       newScreen.group match {
         case MATCH_START =>
           handleMatchStart()
@@ -179,15 +178,16 @@ object HearthstoneAnalyser extends Observable with Logging {
     true
   }
 
-  private def handleMatchStart(): Unit = {
+  def handleMatchStart(): Unit = {
     if (hsMatch.initialized == false) {
       hsMatch.initialized = true
+      hsMatch.result = None
       hsMatch.mode = mode
       hsMatch.deckSlot = deckSlot
       hsMatch.rankLevel = rankLevel
-      val newHeroEvents = monitor.hearthstoneLogMonitor.heroEvents.publish
+      val heroEvents = monitor.hearthstoneLogMonitor.heroEvents
       heroEventSubscription.map(_.unsubscribe())
-      heroEventSubscription = Some(newHeroEvents.subscribe(heroEventHandler))
+      heroEventSubscription = Some(heroEvents.subscribe(heroEventHandler))
     }
     arenaRunEndDetected = false
     isYourTurn = false

@@ -9,7 +9,7 @@ import rx.lang.scala.Observable
 import rx.subjects.PublishSubject
 import grizzled.slf4j.Logging
 
-case class FileObserver(file: File) {
+case class FileObserver(file: File) extends Logging {
   import FileObserver._
 
   val DEFAULT_DELAY_MS = 500
@@ -17,6 +17,8 @@ case class FileObserver(file: File) {
 
   private val subject = PublishSubject.create[String]
   private val tailer = Tailer.create(file, new SubjectAdapter, DEFAULT_DELAY_MS, true)
+
+  info("observing file " + file)
 
   def observable: Observable[String] = subject.asObservable.cache
   def stop() = {
