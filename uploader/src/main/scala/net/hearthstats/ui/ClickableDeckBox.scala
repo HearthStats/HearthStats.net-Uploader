@@ -28,12 +28,14 @@ import net.hearthstats.Config
 import java.awt.BorderLayout
 import javax.swing.JCheckBox
 import scala.swing.Swing._
+import scala.concurrent.Future
 
 class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
   extends JFrame(deck.name) {
 
-  val content = getContentPane
+  val imagesReady = CardUtils.downloadImages(deck.cards)
 
+  val content = getContentPane
   content.setLayout(new BorderLayout)
   val box = createVerticalBox
   val imageLabel = new JLabel
@@ -41,7 +43,7 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
   val cardLabels: Map[String, ClickableLabel] =
     (for {
       card <- deck.cards
-      cardLabel = new ClickableLabel(card)
+      cardLabel = new ClickableLabel(card, imagesReady)
     } yield {
       box.add(cardLabel)
       cardLabel.addMouseListener(new MouseHandler(card, imageLabel))
@@ -98,11 +100,9 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
 object ClickableDeckBox {
   val instances = collection.mutable.ArrayBuffer.empty[ClickableDeckBox]
 
-  def showBox(deck: Deck, cardEvents: ConnectableObservable[CardEvent]): ClickableDeckBox = {
+  def showBox(deck: Deck, cardEvents: Observable[CardEvent]): ClickableDeckBox = {
     for (d <- instances) d.dispose()
     instances.clear()
-    cardEvents.connect
-    CardUtils.downloadImages(deck.cards)
     val box = new ClickableDeckBox(deck, cardEvents)
     box.setLocation(Config.getDeckX, Config.getDeckY)
     box.setSize(Config.getDeckWidth, Config.getDeckHeight)
