@@ -13,37 +13,44 @@ import java.io.FileWriter
 import java.io.BufferedWriter
 import net.hearthstats.util.MatchOutcome
 import grizzled.slf4j.Logging
+import java.awt.Toolkit
+import java.awt.GraphicsEnvironment
 
 @RunWith(classOf[JUnitRunner])
 class LogResultDetectionSpec extends FlatSpec with Matchers with BeforeAndAfterEach with OneInstancePerTest with Logging {
-  val monitor = new Monitor(EnvironmentTest) {
-    override def checkMatchResult(hsMatch: HearthstoneMatch) {}
-  }
-  debug("mock log file :" + EnvironmentTest.hearthstoneLogFile)
-  HearthstoneAnalyser.monitor = monitor
-  HearthstoneAnalyser.addObserver(monitor)
-  monitor.setMonitorHearthstoneLog(true)
   val writer = new BufferedWriter(new FileWriter(EnvironmentTest.hearthstoneLogFile))
+
+  System.setProperty("java.awt.headless", "true")
+
+  if (!GraphicsEnvironment.getLocalGraphicsEnvironment.isHeadlessInstance) {
+    debug("mock log file :" + EnvironmentTest.hearthstoneLogFile)
+    val monitor = new Monitor(EnvironmentTest) {
+      override def checkMatchResult(hsMatch: HearthstoneMatch) {}
+    }
+    HearthstoneAnalyser.monitor = monitor
+    HearthstoneAnalyser.addObserver(monitor)
+    monitor.setMonitorHearthstoneLog(true)
+
+    "A game win" should "be detected" in {
+      sendGame(gameWonLog)
+      HearthstoneAnalyser.hsMatch.result shouldBe Some(MatchOutcome.VICTORY)
+    }
+
+    "A game lost" should "be detected" in {
+      sendGame(gameLostLog)
+      HearthstoneAnalyser.hsMatch.result shouldBe Some(MatchOutcome.DEFEAT)
+    }
+
+    "A game lost" should "override a game won detected in the screen capture" in {
+      HearthstoneAnalyser.hsMatch.result = Some(MatchOutcome.VICTORY)
+      sendGame(gameLostLog)
+      HearthstoneAnalyser.hsMatch.result shouldBe Some(MatchOutcome.DEFEAT)
+    }
+  }
 
   override def beforeEach() {
     HearthstoneAnalyser.hsMatch.initialized = false
     HearthstoneAnalyser.handleMatchStart()
-  }
-
-  "A game win" should "be detected" in {
-    sendGame(gameWonLog)
-    HearthstoneAnalyser.hsMatch.result shouldBe Some(MatchOutcome.VICTORY)
-  }
-
-  "A game lost" should "be detected" in {
-    sendGame(gameLostLog)
-    HearthstoneAnalyser.hsMatch.result shouldBe Some(MatchOutcome.DEFEAT)
-  }
-
-  "A game lost" should "override a game won detected in the screen capture" in {
-    HearthstoneAnalyser.hsMatch.result = Some(MatchOutcome.VICTORY)
-    sendGame(gameLostLog)
-    HearthstoneAnalyser.hsMatch.result shouldBe Some(MatchOutcome.DEFEAT)
   }
 
   def sendGame(msg: String) {
