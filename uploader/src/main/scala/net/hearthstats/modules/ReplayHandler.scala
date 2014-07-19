@@ -19,7 +19,7 @@ object ReplayHandler {
 
     val f = new File(fileName)
     val date = DateTimeFormat.forPattern("ddHHmm").print(startedAt)
-    val newName = s"${date}_${userClass}_${result}_VS_$opponentClass.mp4"
+    val newName = s"${date}_${userClass}_${result.get}_VS_$opponentClass.mp4"
     val newFile = new File(TempConfig.recordedVideoFolder, newName)
     if (f.renameTo(newFile)) {
       Log.info("Video replay of your match is saved in " + newFile.getAbsolutePath)
