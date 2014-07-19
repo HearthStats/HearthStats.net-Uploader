@@ -15,7 +15,7 @@ object ReplayHandler {
 
   def handleNewReplay(fileName: String, lastMatch: HearthstoneMatch): Future[String] = {
     import lastMatch._
-    val gameDesc = s"$userClass $result VS $opponentClass ($opponentName)"
+    val gameDesc = s"$userClass ${result.get} VS $opponentClass ($opponentName)"
 
     val f = new File(fileName)
     val date = DateTimeFormat.forPattern("ddHHmm").print(startedAt)
