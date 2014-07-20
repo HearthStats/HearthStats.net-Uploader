@@ -4,17 +4,18 @@ import java.awt.image.BufferedImage
 import java.text.MessageFormat
 import java.util.{ Observable, ResourceBundle }
 import org.apache.commons.lang3.StringUtils
+
 import grizzled.slf4j.Logging
 import net.hearthstats.{ BackgroundImageSave, Config, HearthstoneMatch, Main, Monitor }
 import net.hearthstats.log.Log
 import net.hearthstats.logmonitor.{ HeroDestroyedEvent, HeroEvent }
 import net.hearthstats.ocr.{ OcrException, OpponentNameRankedOcr, OpponentNameUnrankedOcr, RankLevelOcr }
 import net.hearthstats.state.{ PixelLocation, Screen }
-import net.hearthstats.state.Screen.{ ARENA_LOBBY, MATCH_STARTINGHAND, MATCH_VS, PLAY_LOBBY, PRACTICE_LOBBY }
+import net.hearthstats.state.Screen._
 import net.hearthstats.state.ScreenGroup
 import net.hearthstats.state.ScreenGroup.{ MATCH_END, MATCH_PLAYING, MATCH_START }
-import net.hearthstats.state.UniquePixel._
 import net.hearthstats.state.UniquePixel
+import net.hearthstats.state.UniquePixel._
 import net.hearthstats.util.{ MatchOutcome, Rank }
 import net.hearthstats.util.MatchOutcome._
 import rx.lang.scala.Subscription
@@ -98,6 +99,10 @@ object HearthstoneAnalyser extends Observable with Logging {
 
         case PRACTICE_LOBBY =>
           setMode("Practice")
+
+        case VERSUS_LOBBY =>
+          setMode("Friendly")
+          testForDeckSlot(image)
 
         case ARENA_LOBBY =>
           setMode("Arena")

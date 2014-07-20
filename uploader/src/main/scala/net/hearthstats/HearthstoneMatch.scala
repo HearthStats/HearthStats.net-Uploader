@@ -75,8 +75,10 @@ class HearthstoneMatch(var mode: String = null,
   def describeMode: String = mode match {
     case "Arena" => t("match.end.mode.arena")
     case "Casual" => t("match.end.mode.casual")
-    case "Practice" => "Practice" //will be overriden by a merge soon
     case "Ranked" => t("match.end.mode.ranked", rankLevel)
+    case "Practice" => t("match.end.mode.practice")
+    case "Friendly" => t("match.end.mode.friendly")
+    case _ => "unknown mode"
   }
 
   def describeCoin: String = coin match {

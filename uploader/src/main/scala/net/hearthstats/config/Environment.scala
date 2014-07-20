@@ -8,7 +8,7 @@ import net.hearthstats.updater.api.model.Release
 /**
  * Represents the environment-specific information that varies between OS X and Windows.
  */
-abstract class Environment {
+abstract class Environment extends Logging {
 
   /**
    * Which operating system this environment is running.
@@ -44,7 +44,6 @@ abstract class Environment {
    * Creates a new NotificationQueue object of the requested type, if suitable for the current environment.
    */
   def newNotificationQueue(notificationType: NotificationType): NotificationQueue
-
 
   /**
    * Performs an update of the HearthStats Companion. This method should quit the app then start the update.

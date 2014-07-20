@@ -153,6 +153,21 @@ public enum Screen {
                     Pixel.PRACTICE_LOBBY_Q
             )),
 
+    VERSUS_LOBBY (
+         "Versus Lobby",
+         ScreenGroup.PLAY,
+         EnumSet.of(
+             Pixel.VERSUS_LOBBY_E,
+             Pixel.VERSUS_LOBBY_F,
+             Pixel.VERSUS_LOBBY_H,
+             Pixel.VERSUS_LOBBY_P
+          ),
+          EnumSet.of(
+                 Pixel.VERSUS_LOBBY_C,
+                 Pixel.VERSUS_LOBBY_I,
+                 Pixel.VERSUS_LOBBY_Q
+          )),
+
     FINDING_OPPONENT (
             "Finding Opponent",
             ScreenGroup.GENERAL,
@@ -334,7 +349,8 @@ public enum Screen {
                 Screen.PLAY_LOBBY,
                 Screen.PRACTICE_LOBBY,
                 Screen.ARENA_CHOOSE,
-                Screen.ARENA_LOBBY
+                Screen.ARENA_LOBBY,
+                Screen.VERSUS_LOBBY
         );
 
         MAIN_TODAYSQUESTS.nextScreens = EnumSet.of(
@@ -375,6 +391,11 @@ public enum Screen {
                 Screen.FINDING_OPPONENT
         );
 
+        VERSUS_LOBBY.nextScreens = EnumSet.of(
+            Screen.MAIN,
+            Screen.MATCH_VS
+        );
+        
         FINDING_OPPONENT.nextScreens = EnumSet.of(
                 Screen.MAIN,
                 Screen.PLAY_LOBBY,
@@ -415,6 +436,7 @@ public enum Screen {
                 Screen.PLAY_LOBBY,
                 Screen.PRACTICE_LOBBY,
                 Screen.ARENA_LOBBY,
+                Screen.VERSUS_LOBBY,
                 Screen.ARENA_END
         );
 

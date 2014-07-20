@@ -27,14 +27,17 @@ import org.slf4j.LoggerFactory;
  *
  * @author gtch
  */
-public class RelativePixelAnalyserTest {
+public class RelativePixelAnalyserMain {
 
-    private final static Logger log = LoggerFactory.getLogger(RelativePixelAnalyserTest.class);
+    private final static Logger log = LoggerFactory.getLogger(RelativePixelAnalyserMain.class);
 
     private final static String IMAGE_PATH = "/tmp/hearthstats";
     private final static int PAGE_SIZE = 25;
 
-	// @Test
+  public static void main(String[] args) throws Exception {
+    new RelativePixelAnalyserMain().testFindRelativePixel();
+  }
+
     public void testFindRelativePixel() throws Exception {
 
         ScreenAnalyser analyser = new ScreenAnalyser();

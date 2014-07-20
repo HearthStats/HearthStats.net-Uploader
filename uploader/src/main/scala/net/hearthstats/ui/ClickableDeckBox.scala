@@ -72,14 +72,13 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
 
   override def dispose(): Unit = {
     connection.unsubscribe()
-    println("unsub")
-    val p = getLocationOnScreen
-    Config.setDeckX(p.x)
-    Config.setDeckY(p.y)
-    val rect = getSize()
-    Config.setDeckWidth(rect.getWidth.toInt)
-    Config.setDeckHeight(rect.getHeight.toInt)
     try {
+      val p = getLocationOnScreen
+      Config.setDeckX(p.x)
+      Config.setDeckY(p.y)
+      val rect = getSize()
+      Config.setDeckWidth(rect.getWidth.toInt)
+      Config.setDeckHeight(rect.getHeight.toInt)
       Config.save()
     } catch {
       case e: Exception =>
