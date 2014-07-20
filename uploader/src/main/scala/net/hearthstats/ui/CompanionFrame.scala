@@ -46,7 +46,7 @@ import java.awt.event.ActionListener
 import scala.swing.Swing
 import java.awt.event.ActionEvent
 import java.awt.MenuItem
-import net.hearthstats.Config
+import net.hearthstats.OldConfig
 import java.awt.Dimension
 import java.awt.PopupMenu
 import java.awt.event.MouseAdapter
@@ -65,13 +65,14 @@ import java.net.URI
 /**
  * Main Frame for HearthStats Companion.
  */
-class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFrame with Logging {
+class CompanionFrame(val environment: Environment, val monitor: Monitor) extends JFrame with Logging {
+  val config = environment.config
   val logText = new LogPane
   val logScroll = new JScrollPane(logText, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED)
   val tabbedPane = new JTabbedPane
   val optionsPanel = new OptionsPanel(this)
   val matchPanel = new MatchPanel
-  var notificationQueue: NotificationQueue = environment.newNotificationQueue(Config.notificationType())
+  var notificationQueue: NotificationQueue = environment.newNotificationQueue(config.notificationType)
 
   addWindowListener(new WindowAdapter {
     override def windowClosing(e: WindowEvent) {
@@ -82,23 +83,22 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
   showWelcomeLog()
 
   def handleClose() {
-    val p = getLocationOnScreen
-    Config.setX(p.x)
-    Config.setY(p.y)
-    val rect = getSize
-    Config.setWidth(rect.getWidth.toInt)
-    Config.setHeight(rect.getHeight.toInt)
     try {
-      Config.save()
+      val p = getLocationOnScreen
+      config.windowX = p.x
+      config.windowY = p.y
+      val rect = getSize
+      config.windowWidth = rect.getWidth.toInt
+      config.windowHeight = rect.getHeight.toInt
     } catch {
-      case t: Exception => Log.warn("Error occurred trying to write settings file, your settings may not be saved", t)
+      case t: Exception => Log.warn("Error occurred trying to save your settings, your window position may not be saved", t)
     }
     System.exit(0)
   }
 
   def showWelcomeLog() {
     debug("Showing welcome log messages")
-    Log.welcome("HearthStats " + t("Companion") + " v" + Config.getVersionWithOs)
+    Log.welcome("HearthStats " + t("Companion") + " v" + OldConfig.getVersionWithOs)
     Log.help(t("welcome_1_set_decks"))
     if (environment.os == OS.OSX) {
       Log.help(t("welcome_2_run_hearthstone"))
@@ -160,8 +160,8 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
     debug("Creating GUI")
     val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
     setIconImage(icon)
-    setLocation(Config.getX, Config.getY)
-    setSize(Config.getWidth, Config.getHeight)
+    setLocation(config.windowX, config.windowY)
+    setSize(config.windowWidth, config.windowHeight)
     add(tabbedPane)
     tabbedPane.add(logScroll, t("tab.log"))
     tabbedPane.add(matchPanel, t("tab.current_match"))
@@ -172,7 +172,7 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
     enableMinimizeToTray()
     setMinimumSize(new Dimension(500, 600))
     setVisible(true)
-    if (Config.startMinimized) setState(ICONIFIED)
+    if (OldConfig.startMinimized) setState(ICONIFIED)
     updateTitle()
   }
 
@@ -185,7 +185,7 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
   }
 
   def notify(header: String, message: String) {
-    if (Config.showNotifications) notificationQueue.add(header, message, false)
+    if (environment.config.notifyOverall) notificationQueue.add(header, message, false)
   }
 
   def updateTitle() {
@@ -264,7 +264,7 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
       })
       addWindowStateListener(new WindowStateListener {
         def windowStateChanged(e: WindowEvent) {
-          if (Config.minimizeToTray) {
+          if (OldConfig.minimizeToTray) {
             e.getNewState match {
               case ICONIFIED =>
                 try {
@@ -285,7 +285,7 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
   }
 
   def checkForUserKey(): Boolean = {
-    val userKeySet = Config.getUserKey != "your_userkey_here"
+    val userKeySet = OldConfig.getUserKey != "your_userkey_here"
     if (userKeySet) {
       true
     } else {
@@ -304,10 +304,10 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
       if (StringUtils.isEmpty(userkey)) {
         false
       } else {
-        Config.setUserKey(userkey)
+        OldConfig.setUserKey(userkey)
         try {
           optionsPanel.setUserKey(userkey)
-          Config.save()
+          OldConfig.save()
           Log.info(t("UserkeyStored"))
         } catch {
           case e: Exception => Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
@@ -318,13 +318,13 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
   }
 
   def checkForUpdates() {
-    if (Config.checkForUpdates()) {
+    if (OldConfig.checkForUpdates()) {
       Log.info(t("checking_for_updates..."))
       try {
         var latestRelease = Updater.getLatestRelease
         if (latestRelease != null) {
           Log.info(t("latest_v_available") + " " + latestRelease.getVersion)
-          if (!latestRelease.getVersion.equalsIgnoreCase("v" + Config.getVersion)) {
+          if (!latestRelease.getVersion.equalsIgnoreCase("v" + OldConfig.getVersion)) {
             bringWindowToFront()
             val dialogButton = YES_NO_OPTION
             var dialogResult = showConfirmDialog(
@@ -351,7 +351,7 @@ class CompanionFrame(environment: Environment, val monitor: Monitor) extends JFr
                 panel.add(lbl)
                 showOptionDialog(this, panel, t("updates_disabled_msg"), NO_OPTION,
                   QUESTION_MESSAGE, null, options.toArray, options(0))
-                Config.setCheckForUpdates(false)
+                OldConfig.setCheckForUpdates(false)
               }
             }
           }

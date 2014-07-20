@@ -13,7 +13,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import javax.swing.text.html.HTMLDocument;
 
-import net.hearthstats.Config;
+import net.hearthstats.OldConfig;
 import net.hearthstats.HyperLinkHandler;
 import net.hearthstats.log.Log;
 import net.hearthstats.log.LogPane;
@@ -31,7 +31,7 @@ public class AboutPanel extends JScrollPane {
   private static JEditorPane contributors() {
     Map<String, String> localeStrings = new HashMap<String, String>();
     localeStrings.put("Author", t("Author"));
-    localeStrings.put("version", t("Companion") + " v" + Config.getVersion());
+    localeStrings.put("version", t("Companion") + " v" + OldConfig.getVersion());
     localeStrings.put("utility_l1", t("about.utility_l1"));
     localeStrings.put("utility_l2", t("about.utility_l2"));
     localeStrings.put("utility_l3", t("about.utility_l3"));

@@ -1,7 +1,7 @@
 package net.hearthstats.logmonitor
 
 import org.slf4j.LoggerFactory
-import net.hearthstats.Config
+import net.hearthstats.OldConfig
 import org.apache.commons.io.input.Tailer
 import java.io.File
 import org.apache.commons.io.input.TailerListenerAdapter

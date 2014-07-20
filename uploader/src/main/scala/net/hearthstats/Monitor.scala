@@ -1,42 +1,26 @@
 package net.hearthstats
 
-import net.hearthstats.Constants.PROFILES_URL
-import net.hearthstats.util.Translations.t
 import java.io.IOException
-import java.net.URI
-import java.util.EnumSet
-import java.util.Observable
-import java.util.Observer
-import net.hearthstats.analysis.AnalyserEvent
-import net.hearthstats.analysis.AnalyserEvent._
-import net.hearthstats.log.Log
-import net.hearthstats.log.LogPane
-import net.hearthstats.logmonitor.HearthstoneLogMonitor
-import net.hearthstats.notification.NotificationQueue
-import net.hearthstats.state.Screen._
-import net.hearthstats.state.ScreenGroup
-import net.hearthstats.ui.AboutPanel
-import net.hearthstats.ui.ClickableDeckBox
-import net.hearthstats.ui.DecksTab
-import net.hearthstats.ui.MatchEndPopup
-import net.hearthstats.ui.MatchPanel
-import net.hearthstats.ui.OptionsPanel
-import org.apache.commons.lang3.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import net.hearthstats.analysis.HearthstoneAnalyser
-import net.hearthstats.config.{ Environment, OS, MonitoringMethod, MatchPopup }
-import net.hearthstats.state.Screen
-import net.hearthstats.ui.CompanionFrame
-import scala.swing.Swing
-import net.hearthstats.ui.Button
+import java.util.{EnumSet, Observable, Observer}
 import javax.swing.JOptionPane
-import scala.swing.MainFrame
+
 import grizzled.slf4j.Logging
-import Monitor._
+import net.hearthstats.Monitor._
+import net.hearthstats.analysis.AnalyserEvent._
+import net.hearthstats.analysis.{AnalyserEvent, HearthstoneAnalyser}
+import net.hearthstats.config.{Environment, MatchPopup, MonitoringMethod, OS}
+import net.hearthstats.log.Log
+import net.hearthstats.logmonitor.HearthstoneLogMonitor
+import net.hearthstats.state.Screen._
+import net.hearthstats.state.{Screen, ScreenGroup}
+import net.hearthstats.ui.{Button, ClickableDeckBox, CompanionFrame, MatchEndPopup}
+import net.hearthstats.util.Translations.t
+import org.slf4j.{Logger, LoggerFactory}
+
+import scala.swing.Swing
 
 class Monitor(val environment: Environment) extends Observer with Logging {
-
+  val config = environment.config
   val _hsHelper: ProgramHelper = environment.programHelper
   lazy val hearthstoneLogMonitor = new HearthstoneLogMonitor(environment.hearthstoneLogFile)
   val _analytics = AnalyticsTracker.tracker
@@ -48,7 +32,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
 
   def start() {
     HearthstoneAnalyser.monitor = this
-    if (Config.analyticsEnabled) {
+    if (OldConfig.analyticsEnabled) {
       debug("Enabling analytics")
       _analytics.trackEvent("app", "AppStart")
     }
@@ -74,7 +58,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
    * disabled
    */
   def setupLogMonitoring() {
-    setMonitorHearthstoneLog(Config.monitoringMethod == MonitoringMethod.SCREEN_LOG)
+    setMonitorHearthstoneLog(config.monitoringMethod == MonitoringMethod.SCREEN_LOG)
   }
 
   var title = "HearthStats Companion"
@@ -91,7 +75,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
     val message = hsMatch.toString
     mainFrame.notify(header, message)
     Log.matchResult(header + ": " + message)
-    if (Config.analyticsEnabled()) {
+    if (OldConfig.analyticsEnabled()) {
       _analytics.trackEvent("app", "Submit" + hsMatch.mode + "Match")
     }
     API.createMatch(hsMatch)
@@ -102,7 +86,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
     if (!_hearthstoneDetected) {
       _hearthstoneDetected = true
       debug("  - hearthstoneDetected")
-      if (Config.showHsFoundNotification) {
+      if (config.notifyHsFound) {
         mainFrame.notify("Hearthstone found")
       }
       setupLogMonitoring()
@@ -122,7 +106,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
     if (_hearthstoneDetected) {
       _hearthstoneDetected = false
       debug("  - changed hearthstoneDetected to false")
-      if (Config.showHsClosedNotification) {
+      if (config.notifyHsClosed) {
         mainFrame.notify("Hearthstone closed")
         HearthstoneAnalyser.reset()
       }
@@ -171,12 +155,12 @@ class Monitor(val environment: Environment) extends Observer with Logging {
   def checkMatchResult(hsMatch: HearthstoneMatch): Unit =
     if (!hsMatch.submitted && hsMatch.initialized) {
       mainFrame.matchPanel.updateMatchClassSelectorsIfSet(hsMatch)
-      val matchPopup = Config.showMatchPopup
+      val matchPopup = OldConfig.showMatchPopup
       val showPopup = matchPopup match {
         case MatchPopup.ALWAYS => true
         case MatchPopup.INCOMPLETE => !hsMatch.isDataComplete
         case MatchPopup.NEVER => false
-        case _ => throw new UnsupportedOperationException("Unknown config option " + Config.showMatchPopup)
+        case _ => throw new UnsupportedOperationException("Unknown config option " + OldConfig.showMatchPopup)
       }
       if (showPopup) {
         Swing.onEDT {
@@ -242,7 +226,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       _playingInMatch = false
       mainFrame.matchPanel.setCurrentMatchEnabled(false)
       val mode = HearthstoneAnalyser.getMode
-      if (Config.showModeNotification) {
+      if (config.notifyMode) {
         debug(mode + " level " + HearthstoneAnalyser.getRankLevel)
         if ("Ranked" == mode) {
           mainFrame.notify(mode + " Mode Detected", "Rank Level " + HearthstoneAnalyser.getRankLevel)
@@ -281,7 +265,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       mainFrame.matchPanel.updateCurrentMatchUi()
 
     case YOUR_TURN =>
-      if (Config.showYourTurnNotification)
+      if (config.notifyTurn)
         mainFrame.notify((if (HearthstoneAnalyser.isYourTurn) "Your" else "Opponent") + " turn detected")
       Log.info((if (HearthstoneAnalyser.isYourTurn) "Your" else "Opponent") + " turn detected")
       mainFrame.matchPanel.updateCurrentMatchUi()
@@ -323,7 +307,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       mainFrame.matchPanel.setCurrentMatchEnabled(true)
       _playingInMatch = true
 
-    case s if (s.group == ScreenGroup.MATCH_END && DO_NOT_NOTIFY_SCREENS.contains(s) && Config.showScreenNotification) =>
+    case s if (s.group == ScreenGroup.MATCH_END && DO_NOT_NOTIFY_SCREENS.contains(s) && config.notifyScreen) =>
       if (HearthstoneAnalyser.screen == PRACTICE_LOBBY)
         mainFrame.notify(HearthstoneAnalyser.screen.title + " Screen Detected", "Results are not tracked in practice mode")
       else
@@ -337,10 +321,10 @@ class Monitor(val environment: Environment) extends Observer with Logging {
   }
 
   private def showDeckOverlay(): Unit = {
-    if (Config.showDeckOverlay && "Arena" != HearthstoneAnalyser.getMode) {
+    if (OldConfig.showDeckOverlay && "Arena" != HearthstoneAnalyser.getMode) {
       val selectedDeck = DeckUtils.getDeckFromSlot(HearthstoneAnalyser.getDeckSlot)
       if (selectedDeck.isDefined && selectedDeck.get.isValid) {
-        ClickableDeckBox.showBox(selectedDeck.get, hearthstoneLogMonitor.cardEvents)
+        ClickableDeckBox.showBox(selectedDeck.get, hearthstoneLogMonitor.cardEvents, environment)
       } else {
         val message = selectedDeck match {
           case Some(deck) => s"Invalid or empty deck, <a href='http://hearthstats.net/decks/${deck.slug}/edit'>edit it on HearthStats.net</a> to display deck overlay (you will need to restart HearthStats Companion)"

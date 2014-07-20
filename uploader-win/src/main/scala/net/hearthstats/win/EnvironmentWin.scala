@@ -1,12 +1,12 @@
 package net.hearthstats.win
 
-import net.hearthstats.config.{Application, NotificationType, OS, Environment}
-import net.hearthstats.notification.{ DialogNotificationQueue, NotificationQueue }
 import java.io.File
-import org.apache.commons.lang3.StringUtils
-import net.hearthstats.updater.api.model.Release
+
 import grizzled.slf4j.Logging
-import org.apache.commons.lang3.builder.ToStringBuilder
+import net.hearthstats.config._
+import net.hearthstats.notification.{DialogNotificationQueue, NotificationQueue}
+import net.hearthstats.updater.api.model.Release
+import org.apache.commons.lang3.StringUtils
 
 /**
  * Windows environment.
@@ -14,6 +14,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder
 class EnvironmentWin extends Environment with Logging {
 
   val os: OS = OS.WINDOWS
+
+  val config = new UserConfig
 
   val programHelper: ProgramHelperWindows = new ProgramHelperWindows
 

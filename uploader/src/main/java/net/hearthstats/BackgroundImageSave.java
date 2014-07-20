@@ -44,7 +44,7 @@ public class BackgroundImageSave {
             @Override
             public void run() {
                 try {
-                    File outputfile = new File(Config.getExtractionFolder() + "/" + filename + ".png");
+                    File outputfile = new File(OldConfig.getExtractionFolder() + "/" + filename + ".png");
                     ImageIO.write(image, "png", outputfile);
                     debugLog.debug("Successfully saved image " + outputfile.getAbsolutePath());
                 } catch (Exception e) {

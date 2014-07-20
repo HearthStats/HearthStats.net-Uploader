@@ -16,6 +16,11 @@ abstract class Environment extends Logging {
   val os: OS
 
   /**
+   * The user's configuration of the application.
+   */
+  val config: Config
+
+  /**
    * The location where temporary files can be extracted.
    */
   val extractionFolder: String

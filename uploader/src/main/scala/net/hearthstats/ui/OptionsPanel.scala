@@ -4,42 +4,28 @@ import net.hearthstats.util.Translations.t
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import javax.swing._
-import net.hearthstats.Config
-import net.hearthstats.config.GameLanguage
-import net.hearthstats.config.MatchPopup
-import net.hearthstats.config.MonitoringMethod
+import net.hearthstats.OldConfig
+import net.hearthstats.config._
 import net.hearthstats.log.Log
 import net.hearthstats.util.TranslationCard
 import net.miginfocom.swing.MigLayout
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
-import net.hearthstats.config.Environment
 
 //TODO : this is a rough conversion from java to scala, needs tuning to be clean code
+// Has been partially converted to use the new config, only the notification checkboxes have been updated
 class OptionsPanel(var mainFrame: CompanionFrame) extends JPanel {
 
-  private var _userKeyField: JTextField = new JTextField()
+  private val config = mainFrame.environment.config
 
-  private var monitoringMethodField = new JComboBox(Array(t("options.label.monitoring.screen"), t("options.label.monitoring.log")))
+  private var _userKeyField: JTextField = new JTextField()
 
   private var gameLanguageField = new JComboBox(Array(t("options.label.game.language.eu"), t("options.label.game.language.fr")))
 
   private var _checkUpdatesField: JCheckBox = new JCheckBox(t("options.check_updates"))
 
-  private var _notificationsEnabledField: JCheckBox = new JCheckBox("Show notifications")
-
-  private var _notificationsFormat: JComboBox[String] = _
-
-  private var _showHsFoundField: JCheckBox = new JCheckBox(t("options.notification.hs_found"))
-
-  private var _showHsClosedField: JCheckBox = new JCheckBox(t("options.notification.hs_closed"))
-
-  private var _showScreenNotificationField: JCheckBox = new JCheckBox(t("options.notification.screen"))
-
-  private var _showModeNotificationField: JCheckBox = new JCheckBox(t("options.notification.mode"))
-
-  private var _showDeckNotificationField: JCheckBox = new JCheckBox(t("options.notification.deck"))
+  private var notificationsFormat: JComboBox[String] = _
 
   private var showMatchPopupField = new JComboBox(Array(t("options.label.matchpopup.always"), t("options.label.matchpopup.incomplete"), t("options.label.matchpopup.never")))
 
@@ -48,8 +34,6 @@ class OptionsPanel(var mainFrame: CompanionFrame) extends JPanel {
   private var _minToTrayField: JCheckBox = new JCheckBox(t("options.notification.min_to_tray"))
 
   private var _startMinimizedField: JCheckBox = new JCheckBox(t("options.notification.start_min"))
-
-  private var _showYourTurnNotificationField: JCheckBox = new JCheckBox(t("options.notification.turn"))
 
   private var _showDeckOverlay: JCheckBox = new JCheckBox(t("options.ui.deckOverlay"))
 
@@ -61,15 +45,20 @@ class OptionsPanel(var mainFrame: CompanionFrame) extends JPanel {
 
   add(new JLabel(t("options.label.userkey") + " "), "skip,right")
 
-  _userKeyField.setText(Config.getUserKey)
+  _userKeyField.setText(OldConfig.getUserKey)
 
   add(_userKeyField, "wrap")
 
   add(new JLabel(t("options.label.monitoring")), "skip,right")
 
-  monitoringMethodField.setSelectedIndex(Config.monitoringMethod().ordinal())
-
-  add(monitoringMethodField, "")
+  // Monitoring Method
+  addComboBox[MonitoringMethod](
+    Array(t("options.label.monitoring.screen"), t("options.label.monitoring.log")),
+    config.monitoringMethod, config.monitoringMethod_=, "",
+    (value: MonitoringMethod) => {
+      mainFrame.monitor.setupLogMonitoring()
+    }
+  )
 
   val monitoringHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Monitoring",
     "Help on monitoring options")
@@ -78,7 +67,7 @@ class OptionsPanel(var mainFrame: CompanionFrame) extends JPanel {
 
   add(new JLabel(t("options.label.game.language")), "skip,right")
 
-  gameLanguageField.setSelectedIndex(Config.gameLanguage().ordinal())
+  gameLanguageField.setSelectedIndex(OldConfig.gameLanguage().ordinal())
 
   gameLanguageField.addActionListener(new ActionListener() {
 
@@ -98,76 +87,67 @@ class OptionsPanel(var mainFrame: CompanionFrame) extends JPanel {
 
   add(new JLabel(t("options.label.updates") + " "), "skip,right")
 
-  _checkUpdatesField.setSelected(Config.checkForUpdates())
+  _checkUpdatesField.setSelected(OldConfig.checkForUpdates())
 
   add(_checkUpdatesField, "wrap")
 
-  add(new JLabel(t("options.label.notifications") + " "), "skip,right")
+  // Show Notifications
+  addLabel(t("options.label.notifications"))
+  private val notificationsEnabledField =
+    addCheckbox("Show notifications", config.notifyOverall, config.notifyOverall_=, "wrap", updateNotificationCheckboxes _)
 
-  _notificationsEnabledField.setSelected(Config.showNotifications())
-
-  _notificationsEnabledField.addActionListener(new ActionListener() {
-
-    override def actionPerformed(e: ActionEvent) {
-      _updateNotificationCheckboxes()
-    }
-  })
-
-  add(_notificationsEnabledField, "wrap")
-
+  // Notifications Format (only for OS X)
   if (mainFrame.monitor.environment.osxNotificationsSupported) {
     add(new JLabel(""), "skip,right")
     val notificationsFormatLabel = new JLabel(t("options.label.notifyformat.label"))
     add(notificationsFormatLabel, "split 2, gapleft 27")
-    _notificationsFormat = new JComboBox(Array(t("options.label.notifyformat.osx"), t("options.label.notifyformat.hearthstats")))
-    _notificationsFormat.setSelectedIndex(if (Config.useOsxNotifications()) 0 else 1)
-    add(_notificationsFormat, "")
+    notificationsFormat = addComboBox[NotificationType](
+      Array(t("options.label.notifyformat.hearthstats"), t("options.label.notifyformat.osx")),
+      config.notificationType, config.notificationType_=, "",
+      (value: NotificationType) => {
+        mainFrame.setNotificationQueue(mainFrame.environment.newNotificationQueue(value))
+      }
+    )
     val osxNotificationsHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-OS-X-Notifications",
       "Help on notification style options")
     add(osxNotificationsHelpIcon, "wrap")
   }
 
-  add(new JLabel(""), "skip,right")
+  // Hearthstone Found Notification
+  addLabel()
+  private val showHsFoundField =
+    addCheckbox(t("options.notification.hs_found"), config.notifyHsFound, config.notifyHsFound_=)
 
-  _showHsFoundField.setSelected(Config.showHsFoundNotification())
+  // Hearthstone Closed Notification
+  addLabel()
+  private val showHsClosedField =
+    addCheckbox(t("options.notification.hs_closed"), config.notifyHsClosed, config.notifyHsClosed_=)
 
-  add(_showHsFoundField, "wrap")
+  // Game Screen Changed Notification
+  addLabel()
+  private val showScreenNotificationField =
+    addCheckbox(t("options.notification.screen"), config.notifyScreen, config.notifyScreen_=)
 
-  add(new JLabel(""), "skip,right")
+  // Game Mode Changed Notification
+  addLabel()
+  private val showModeNotificationField =
+    addCheckbox(t("options.notification.mode"), config.notifyMode, config.notifyMode_=)
 
-  _showHsClosedField.setSelected(Config.showHsClosedNotification())
+  // Deck Changed Notification
+  addLabel()
+  private val showDeckNotificationField =
+    addCheckbox(t("options.notification.deck"), config.notifyDeck, config.notifyDeck_=)
 
-  add(_showHsClosedField, "wrap")
-
-  add(new JLabel(""), "skip,right")
-
-  _showScreenNotificationField.setSelected(Config.showScreenNotification())
-
-  add(_showScreenNotificationField, "wrap")
-
-  add(new JLabel(""), "skip,right")
-
-  _showModeNotificationField.setSelected(Config.showModeNotification())
-
-  add(_showModeNotificationField, "wrap")
-
-  add(new JLabel(""), "skip,right")
-
-  _showDeckNotificationField.setSelected(Config.showDeckNotification())
-
-  add(_showDeckNotificationField, "wrap")
-
-  add(new JLabel(""), "skip,right")
-
-  _showYourTurnNotificationField.setSelected(Config.showYourTurnNotification())
-
-  add(_showYourTurnNotificationField, "wrap")
-
-  _updateNotificationCheckboxes()
+  // Your Turn Notification
+  addLabel()
+  private val showYourTurnNotificationField =
+    addCheckbox(t("options.notification.turn"), config.notifyTurn, config.notifyTurn_=)
 
   add(new JLabel(""), "skip,right")
 
-  _showDeckOverlay.setSelected(Config.showDeckOverlay())
+  updateNotificationCheckboxes(notificationsEnabledField)
+
+  _showDeckOverlay.setSelected(OldConfig.showDeckOverlay())
 
   add(_showDeckOverlay, "")
 
@@ -178,7 +158,7 @@ class OptionsPanel(var mainFrame: CompanionFrame) extends JPanel {
 
   add(new JLabel(t("options.label.matchpopup")), "skip,right")
 
-  showMatchPopupField.setSelectedIndex(Config.showMatchPopup().ordinal())
+  showMatchPopupField.setSelectedIndex(OldConfig.showMatchPopup().ordinal())
 
   add(showMatchPopupField, "")
 
@@ -189,13 +169,13 @@ class OptionsPanel(var mainFrame: CompanionFrame) extends JPanel {
 
   add(new JLabel("Interface: "), "skip,right")
 
-  _minToTrayField.setSelected(Config.checkForUpdates())
+  _minToTrayField.setSelected(OldConfig.checkForUpdates())
 
   add(_minToTrayField, "wrap")
 
   add(new JLabel(""), "skip,right")
 
-  _startMinimizedField.setSelected(Config.startMinimized())
+  _startMinimizedField.setSelected(OldConfig.startMinimized())
 
   add(_startMinimizedField, "wrap")
 
@@ -217,7 +197,7 @@ class OptionsPanel(var mainFrame: CompanionFrame) extends JPanel {
     }
   })
 
-  _analyticsField.setSelected(Config.analyticsEnabled())
+  _analyticsField.setSelected(OldConfig.analyticsEnabled())
 
   add(_analyticsField, "wrap")
 
@@ -234,45 +214,47 @@ class OptionsPanel(var mainFrame: CompanionFrame) extends JPanel {
 
   add(saveOptionsButton, "wrap")
 
-  private def _updateNotificationCheckboxes() {
-    val isEnabled = _notificationsEnabledField.isSelected
-    if (_notificationsFormat != null) {
-      _notificationsFormat.setEnabled(isEnabled)
+  private def updateNotificationCheckboxes(notificationsCheckBox: JCheckBox) {
+    val isEnabled = notificationsCheckBox.isSelected
+    if (notificationsFormat != null) {
+      notificationsFormat.setEnabled(isEnabled)
     }
-    _showHsFoundField.setEnabled(isEnabled)
-    _showHsClosedField.setEnabled(isEnabled)
-    _showScreenNotificationField.setEnabled(isEnabled)
-    _showModeNotificationField.setEnabled(isEnabled)
-    _showDeckNotificationField.setEnabled(isEnabled)
+    showHsFoundField.setEnabled(isEnabled)
+    showHsClosedField.setEnabled(isEnabled)
+    showScreenNotificationField.setEnabled(isEnabled)
+    showModeNotificationField.setEnabled(isEnabled)
+    showDeckNotificationField.setEnabled(isEnabled)
   }
 
+  @Deprecated // TODO: this manual save should be removed because UserConfig saves automatically
   private def _saveOptions(environment: Environment) {
     debugLog.debug("Saving options...")
-    val monitoringMethod = MonitoringMethod.values()(monitoringMethodField.getSelectedIndex)
+//    val monitoringMethod = MonitoringMethod.values()(monitoringMethodField.getSelectedIndex)
     val gameLanguage = GameLanguage.values()(gameLanguageField.getSelectedIndex)
-    Config.setUserKey(_userKeyField.getText)
-    Config.setMonitoringMethod(monitoringMethod)
-    Config.setGameLanguage(gameLanguage)
-    Config.setCheckForUpdates(_checkUpdatesField.isSelected)
-    Config.setShowNotifications(_notificationsEnabledField.isSelected)
-    Config.setShowHsFoundNotification(_showHsFoundField.isSelected)
-    Config.setShowHsClosedNotification(_showHsClosedField.isSelected)
-    Config.setShowScreenNotification(_showScreenNotificationField.isSelected)
-    Config.setShowModeNotification(_showModeNotificationField.isSelected)
-    Config.setShowDeckNotification(_showDeckNotificationField.isSelected)
-    Config.setShowYourTurnNotification(_showYourTurnNotificationField.isSelected)
-    Config.setShowDeckOverlay(_showDeckOverlay.isSelected)
-    Config.setShowMatchPopup(MatchPopup.values()(showMatchPopupField.getSelectedIndex))
-    Config.setAnalyticsEnabled(_analyticsField.isSelected)
-    Config.setMinToTray(_minToTrayField.isSelected)
-    Config.setStartMinimized(_startMinimizedField.isSelected)
-    if (_notificationsFormat != null) {
-      Config.setUseOsxNotifications(_notificationsFormat.getSelectedIndex == 0)
-      mainFrame.setNotificationQueue(environment.newNotificationQueue(Config.notificationType()))
-    }
-    mainFrame.monitor.setupLogMonitoring()
+    OldConfig.setUserKey(_userKeyField.getText)
+//    OldConfig.setMonitoringMethod(monitoringMethod)
+    OldConfig.setGameLanguage(gameLanguage)
+    OldConfig.setCheckForUpdates(_checkUpdatesField.isSelected)
+//    OldConfig.setShowNotifications(_notificationsEnabledField.isSelected)
+//    environment.config.notifyOverall = _notificationsEnabledField.isSelected
+//    OldConfig.setShowHsFoundNotification(_showHsFoundField.isSelected)
+//    OldConfig.setShowHsClosedNotification(_showHsClosedField.isSelected)
+//    OldConfig.setShowScreenNotification(_showScreenNotificationField.isSelected)
+//    OldConfig.setShowModeNotification(_showModeNotificationField.isSelected)
+//    OldConfig.setShowDeckNotification(_showDeckNotificationField.isSelected)
+//    OldConfig.setShowYourTurnNotification(_showYourTurnNotificationField.isSelected)
+    OldConfig.setShowDeckOverlay(_showDeckOverlay.isSelected)
+    OldConfig.setShowMatchPopup(MatchPopup.values()(showMatchPopupField.getSelectedIndex))
+    OldConfig.setAnalyticsEnabled(_analyticsField.isSelected)
+    OldConfig.setMinToTray(_minToTrayField.isSelected)
+    OldConfig.setStartMinimized(_startMinimizedField.isSelected)
+//    if (_notificationsFormat != null) {
+//      OldConfig.setUseOsxNotifications(_notificationsFormat.getSelectedIndex == 0)
+//      mainFrame.setNotificationQueue(environment.newNotificationQueue(config.notificationType))
+//    }
+//    mainFrame.monitor.setupLogMonitoring()
     try {
-      Config.save()
+      OldConfig.save()
       debugLog.debug("...save complete")
       JOptionPane.showMessageDialog(this, "Options Saved")
     } catch {
@@ -290,4 +272,50 @@ class OptionsPanel(var mainFrame: CompanionFrame) extends JPanel {
   def setUserKey(userkey: String) {
     _userKeyField.setText(userkey)
   }
+
+
+  def addLabel(label: String = "") {
+    add(new JLabel(label), "skip,right")
+  }
+
+  def addCheckbox(label: String, getter: => Boolean, setter: Boolean => Unit, constraints: String = "wrap",
+                  onChange: JCheckBox => Unit = (checkbox: JCheckBox) => {}): JCheckBox = {
+    val checkBox = new JCheckBox(label)
+
+    // Set the checkbox to the current value from the config
+    checkBox.setSelected(getter)
+
+    // When the checkbox is clicked, update the config value
+    checkBox.addActionListener(new ActionListener {
+      def actionPerformed(e: ActionEvent) {
+        setter(checkBox.isSelected)
+        onChange(checkBox)
+      }
+    })
+
+    add(checkBox, constraints)
+    checkBox
+  }
+
+  def addComboBox[T <: Enum[T]](choices: Array[String], getter: => T, setter: T => Unit, constraints: String = "wrap",
+                                onChange: T => Unit = (value: T) => {}): JComboBox[String] = {
+    val comboBox = new JComboBox[String](choices)
+
+    // Set the combobox to the current value from the config
+    comboBox.setSelectedIndex(getter.ordinal())
+
+    comboBox.addActionListener(new ActionListener {
+      def actionPerformed(e: ActionEvent): Unit = {
+        // This is a lazy way to get an instance of the class, the old value isn't actually used
+        val oldValue = getter;
+        val newValue = oldValue.getClass.getEnumConstants.apply(comboBox.getSelectedIndex)
+        setter(newValue)
+        onChange(newValue)
+      }
+    })
+
+    add(comboBox, constraints)
+    comboBox
+  }
+
 }

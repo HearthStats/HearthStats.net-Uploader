@@ -1,6 +1,6 @@
 package net.hearthstats.util
 
-import net.hearthstats.{ProgramHelper, Config, DeckUtils}
+import net.hearthstats.{ProgramHelper, OldConfig, DeckUtils}
 import java.awt.Rectangle
 
 object RobotMain extends App {

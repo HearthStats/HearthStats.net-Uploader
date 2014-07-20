@@ -29,9 +29,9 @@ public final class Updater {
     if (cachedlatestRelease == null) {
       try {
         debugLog.debug("Loading latest release information from GitHub");
-        if (Config.os == OS.OSX) {
+        if (OldConfig.os == OS.OSX) {
           cachedlatestRelease = GitHubReleases.getLatestReleaseForOSX();
-        } else if (Config.os == OS.WINDOWS) {
+        } else if (OldConfig.os == OS.WINDOWS) {
           cachedlatestRelease = GitHubReleases.getLatestReleaseForWindows();
         }
         if (cachedlatestRelease == null) {
@@ -78,8 +78,8 @@ public final class Updater {
 
 
   public static void cleanUp() {
-    removeFile(Config.getExtractionFolder(), "updater.jar");
-    removeFile(Config.getExtractionFolder(), "update-*.zip");
+    removeFile(OldConfig.getExtractionFolder(), "updater.jar");
+    removeFile(OldConfig.getExtractionFolder(), "update-*.zip");
 	}
 
 
