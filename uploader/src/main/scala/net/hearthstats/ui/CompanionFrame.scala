@@ -66,13 +66,14 @@ import java.net.URI
  * Main Frame for HearthStats Companion.
  */
 class CompanionFrame(val environment: Environment, val monitor: Monitor) extends JFrame with Logging {
-  val config = environment.config
+  import environment.config._
+
   val logText = new LogPane
   val logScroll = new JScrollPane(logText, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED)
   val tabbedPane = new JTabbedPane
   val optionsPanel = new OptionsPanel(this)
   val matchPanel = new MatchPanel
-  var notificationQueue: NotificationQueue = environment.newNotificationQueue(config.notificationType)
+  var notificationQueue: NotificationQueue = environment.newNotificationQueue(notificationType)
 
   addWindowListener(new WindowAdapter {
     override def windowClosing(e: WindowEvent) {
@@ -85,11 +86,11 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
   def handleClose() {
     try {
       val p = getLocationOnScreen
-      config.windowX = p.x
-      config.windowY = p.y
+      windowX.set(p.x)
+      windowY.set(p.y)
       val rect = getSize
-      config.windowWidth = rect.getWidth.toInt
-      config.windowHeight = rect.getHeight.toInt
+      windowWidth.set(rect.getWidth.toInt)
+      windowHeight.set(rect.getHeight.toInt)
     } catch {
       case t: Exception => Log.warn("Error occurred trying to save your settings, your window position may not be saved", t)
     }
@@ -160,8 +161,8 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
     debug("Creating GUI")
     val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
     setIconImage(icon)
-    setLocation(config.windowX, config.windowY)
-    setSize(config.windowWidth, config.windowHeight)
+    setLocation(windowX, windowY)
+    setSize(windowWidth, windowHeight)
     add(tabbedPane)
     tabbedPane.add(logScroll, t("tab.log"))
     tabbedPane.add(matchPanel, t("tab.current_match"))
@@ -185,7 +186,7 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
   }
 
   def notify(header: String, message: String) {
-    if (environment.config.notifyOverall) notificationQueue.add(header, message, false)
+    if (notifyOverall) notificationQueue.add(header, message, false)
   }
 
   def updateTitle() {

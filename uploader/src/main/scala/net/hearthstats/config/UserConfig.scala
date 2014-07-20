@@ -12,113 +12,86 @@ import grizzled.slf4j.Logging
  * (as opposed to unit tests which may use a different Config implementation).
  */
 class UserConfig extends Config with Logging {
+  import UserConfig._
 
+  val notifyOverall = config("notify.overall", true)
+  val notifyHsFound = config("notify.hsfound", true)
+  val notifyHsClosed = config("notify.hsclosed", true)
+  val notifyScreen = config("notify.screen", true)
+  val notifyMode = config("notify.mode", true)
+  val notifyDeck = config("notify.deck", true)
+  val notifyTurn = config("notify.turn", true)
+
+  val notificationType = enumConfig("notify.osx", NotificationType.HEARTHSTATS)
+
+  val monitoringMethod = enumConfig("notify.osx", MonitoringMethod.getDefault)
+
+  val windowX = config("ui.window.x", 0)
+  val windowY = config("ui.window.y", 0)
+  val windowHeight = config("ui.window.height", 700)
+  val windowWidth = config("ui.window.width", 600)
+
+  val deckX = config("ui.deck.x", 0)
+  val deckY = config("ui.deck.y", 0)
+  val deckHeight = config("ui.deck.height", 600)
+  val deckWidth = config("ui.deck.width", 485)
+}
+
+object UserConfig extends Logging {
   private val PreferencesRoot: String = "/net/hearthstats/companion"
-
   private val prefs: Preferences = Preferences.userRoot().node(PreferencesRoot)
 
-  class BooleanPref(val key: String, val default: Boolean) {
-    def get = prefs.getBoolean(key, default)
-    def set(value: Boolean) = {
-      info(s"Setting config $key to $value")
+  implicit object BooleanPref extends UserConfigStore[Boolean] {
+    def get(key: String, default: Boolean) =
+      prefs.getBoolean(key, default)
+
+    def setImpl(key: String, value: Boolean) =
       prefs.putBoolean(key, value)
-    }
   }
 
-  class IntPref(val key: String, val default: Int) {
-    def get = prefs.getInt(key, default)
-    def set(value: Int) = {
-      info(s"Setting config $key to $value")
+  implicit object IntPref extends UserConfigStore[Int] {
+    def get(key: String, default: Int) =
+      prefs.getInt(key, default)
+
+    def setImpl(key: String, value: Int) =
       prefs.putInt(key, value)
-    }
   }
 
-  class EnumPref[T <: Enum[T]](val key: String, val default: T) {
-    def get: T = {
+  def enum[T <: Enum[T]] = new UserConfigStore[T] {
+    def get(key: String, default: T) = {
       val stringValue = prefs.get(key, default.toString)
       try {
-        Enum.valueOf(default.getClass.asInstanceOf[Class[T]], stringValue)
-      }
-      catch {
+        val cl = default.getClass.asInstanceOf[Class[T]]
+        Enum.valueOf(cl, stringValue)
+      } catch {
         case ex: Exception => {
           info(s"Unable to interpret value ${stringValue}, using default ${default} instead")
           default
         }
       }
     }
-    def set(value: T) = {
-      info(s"Setting config $key to $value")
+
+    def setImpl(key: String, value: T) =
       prefs.put(key, value.toString)
+  }
+
+  def enumConfig[T <: Enum[T]](key: String, default: T) = config(key, default)(enum[T])
+
+  def config[T: UserConfigStore](key: String, default: T) = new ConfigValue[T] {
+    val store = implicitly[UserConfigStore[T]]
+    def get = store.get(key, default)
+    def set(value: T): Unit = {
+      store.set(key, value)
     }
   }
 
+  abstract class UserConfigStore[T] {
+    def get(key: String, default: T): T
+    def set(key: String, value: T): Unit = {
+      info(s"Setting config $key to $value")
+      setImpl(key, value)
+    }
 
-  val prefMonitoringMethod = new EnumPref[MonitoringMethod]("hs.monitoringmethod", MonitoringMethod.getDefault)
-  def monitoringMethod: MonitoringMethod = prefMonitoringMethod.get
-  def monitoringMethod_=(value: MonitoringMethod) = prefMonitoringMethod.set(value)
-
-  val prefNotifyOverall = new BooleanPref("notify.overall", true)
-  def notifyOverall: Boolean = prefNotifyOverall.get
-  def notifyOverall_=(value: Boolean) = prefNotifyOverall.set(value)
-
-  val prefNotifyHsFound = new BooleanPref("notify.hsfound", true)
-  def notifyHsFound: Boolean = prefNotifyHsFound.get
-  def notifyHsFound_=(value: Boolean) = prefNotifyHsFound.set(value)
-
-  val prefNotifyHsClosed = new BooleanPref("notify.hsclosed", true)
-  def notifyHsClosed: Boolean = prefNotifyHsClosed.get
-  def notifyHsClosed_=(value: Boolean) = prefNotifyHsClosed.set(value)
-
-  val prefNotifyScreen = new BooleanPref("notify.screen", true)
-  def notifyScreen: Boolean = prefNotifyScreen.get
-  def notifyScreen_=(value: Boolean) = prefNotifyScreen.set(value)
-
-  val prefNotifyMode = new BooleanPref("notify.mode", true)
-  def notifyMode: Boolean = prefNotifyMode.get
-  def notifyMode_=(value: Boolean) = prefNotifyMode.set(value)
-
-  val prefNotifyDeck = new BooleanPref("notify.deck", true)
-  def notifyDeck: Boolean = prefNotifyDeck.get
-  def notifyDeck_=(value: Boolean) = prefNotifyDeck.set(value)
-
-  val prefNotifyTurn = new BooleanPref("notify.turn", true)
-  def notifyTurn: Boolean = prefNotifyTurn.get
-  def notifyTurn_=(value: Boolean) = prefNotifyTurn.set(value)
-
-  val prefNotificationType = new EnumPref[NotificationType]("notify.osx", NotificationType.HEARTHSTATS)
-  def notificationType: NotificationType = prefNotificationType.get
-  def notificationType_=(value: NotificationType) = prefNotificationType.set(value)
-
-  val prefWindowX = new IntPref("ui.window.x", 0)
-  def windowX: Int = prefWindowX.get
-  def windowX_=(value: Int) = prefWindowX.set(value)
-
-  val prefWindowY = new IntPref("ui.window.y", 0)
-  def windowY: Int = prefWindowY.get
-  def windowY_=(value: Int) = prefWindowY.set(value)
-
-  val prefWindowHeight = new IntPref("ui.window.height", 700)
-  def windowHeight: Int = prefWindowHeight.get
-  def windowHeight_=(value: Int) = prefWindowHeight.set(value)
-
-  val prefWindowWidth = new IntPref("ui.window.width", 600)
-  def windowWidth: Int = prefWindowWidth.get
-  def windowWidth_=(value: Int) = prefWindowWidth.set(value)
-
-  val prefDeckX = new IntPref("ui.deck.x", 0)
-  def deckX: Int = prefDeckX.get
-  def deckX_=(value: Int) = prefDeckX.set(value)
-
-  val prefDeckY = new IntPref("ui.deck.y", 0)
-  def deckY: Int = prefDeckY.get
-  def deckY_=(value: Int) = prefDeckY.set(value)
-
-  val prefDeckHeight = new IntPref("ui.deck.height", 600)
-  def deckHeight: Int = prefDeckHeight.get
-  def deckHeight_=(value: Int) = prefDeckHeight.set(value)
-
-  val prefDeckWidth = new IntPref("ui.deck.width", 485)
-  def deckWidth: Int = prefDeckWidth.get
-  def deckWidth_=(value: Int) = prefDeckWidth.set(value)
-
+    def setImpl(key: String, value: T): Unit
+  }
 }

@@ -35,7 +35,7 @@ import scala.concurrent.Future
 class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent], environment: Environment)
   extends JFrame(deck.name) {
 
-  val config = environment.config
+  import environment.config._
 
   val imagesReady = CardUtils.downloadImages(deck.cards)
 
@@ -78,11 +78,11 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent], environmen
     connection.unsubscribe()
     try {
       val p = getLocationOnScreen
-      config.deckX = p.x
-      config.deckY = p.y
+      deckX.set(p.x)
+      deckY.set(p.y)
       val rect = getSize()
-      config.deckWidth = rect.getWidth.toInt
-      config.deckHeight = rect.getHeight.toInt
+      deckWidth.set(rect.getWidth.toInt)
+      deckHeight.set(rect.getHeight.toInt)
     } catch {
       case e: Exception =>
         Log.warn("Error occurred trying to save your settings, your deck overlay position may not be saved", e)
@@ -105,12 +105,13 @@ object ClickableDeckBox {
   val instances = collection.mutable.ArrayBuffer.empty[ClickableDeckBox]
 
   def showBox(deck: Deck, cardEvents: Observable[CardEvent], environment: Environment): ClickableDeckBox = {
-    val config = environment.config
+    import environment.config._
+
     for (d <- instances) d.dispose()
     instances.clear()
     val box = new ClickableDeckBox(deck, cardEvents, environment)
-    box.setLocation(config.deckX, config.deckY)
-    box.setSize(config.deckWidth, config.deckHeight)
+    box.setLocation(deckX, deckY)
+    box.setSize(deckWidth, deckHeight)
     box.setVisible(true)
     instances += box
     box
