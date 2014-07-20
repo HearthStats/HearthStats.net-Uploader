@@ -20,8 +20,6 @@ import java.awt.GraphicsEnvironment
 class LogResultDetectionSpec extends FlatSpec with Matchers with BeforeAndAfterEach with OneInstancePerTest with Logging {
   val writer = new BufferedWriter(new FileWriter(EnvironmentTest.hearthstoneLogFile))
 
-  System.setProperty("java.awt.headless", "true")
-
   if (!GraphicsEnvironment.getLocalGraphicsEnvironment.isHeadlessInstance) {
     debug("mock log file :" + EnvironmentTest.hearthstoneLogFile)
     val monitor = new Monitor(EnvironmentTest) {

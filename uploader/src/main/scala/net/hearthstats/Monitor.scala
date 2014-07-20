@@ -1,26 +1,27 @@
 package net.hearthstats
 
 import java.io.IOException
-import java.util.{EnumSet, Observable, Observer}
+import java.util.{ EnumSet, Observable, Observer }
 import javax.swing.JOptionPane
 
 import grizzled.slf4j.Logging
 import net.hearthstats.Monitor._
 import net.hearthstats.analysis.AnalyserEvent._
-import net.hearthstats.analysis.{AnalyserEvent, HearthstoneAnalyser}
-import net.hearthstats.config.{Environment, MatchPopup, MonitoringMethod, OS}
+import net.hearthstats.analysis.{ AnalyserEvent, HearthstoneAnalyser }
+import net.hearthstats.config.{ Environment, MatchPopup, MonitoringMethod, OS }
 import net.hearthstats.log.Log
 import net.hearthstats.logmonitor.HearthstoneLogMonitor
 import net.hearthstats.state.Screen._
-import net.hearthstats.state.{Screen, ScreenGroup}
-import net.hearthstats.ui.{Button, ClickableDeckBox, CompanionFrame, MatchEndPopup}
+import net.hearthstats.state.{ Screen, ScreenGroup }
+import net.hearthstats.ui.{ Button, ClickableDeckBox, CompanionFrame, MatchEndPopup }
 import net.hearthstats.util.Translations.t
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 
 import scala.swing.Swing
 
 class Monitor(val environment: Environment) extends Observer with Logging {
-  val config = environment.config
+  import environment.config._
+
   val _hsHelper: ProgramHelper = environment.programHelper
   lazy val hearthstoneLogMonitor = new HearthstoneLogMonitor(environment.hearthstoneLogFile)
   val _analytics = AnalyticsTracker.tracker
@@ -58,7 +59,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
    * disabled
    */
   def setupLogMonitoring() {
-    setMonitorHearthstoneLog(config.monitoringMethod == MonitoringMethod.SCREEN_LOG)
+    setMonitorHearthstoneLog(monitoringMethod == MonitoringMethod.SCREEN_LOG)
   }
 
   var title = "HearthStats Companion"
@@ -86,7 +87,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
     if (!_hearthstoneDetected) {
       _hearthstoneDetected = true
       debug("  - hearthstoneDetected")
-      if (config.notifyHsFound) {
+      if (notifyHsFound) {
         mainFrame.notify("Hearthstone found")
       }
       setupLogMonitoring()
@@ -106,7 +107,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
     if (_hearthstoneDetected) {
       _hearthstoneDetected = false
       debug("  - changed hearthstoneDetected to false")
-      if (config.notifyHsClosed) {
+      if (notifyHsClosed) {
         mainFrame.notify("Hearthstone closed")
         HearthstoneAnalyser.reset()
       }
@@ -226,7 +227,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       _playingInMatch = false
       mainFrame.matchPanel.setCurrentMatchEnabled(false)
       val mode = HearthstoneAnalyser.getMode
-      if (config.notifyMode) {
+      if (notifyMode) {
         debug(mode + " level " + HearthstoneAnalyser.getRankLevel)
         if ("Ranked" == mode) {
           mainFrame.notify(mode + " Mode Detected", "Rank Level " + HearthstoneAnalyser.getRankLevel)
@@ -265,7 +266,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       mainFrame.matchPanel.updateCurrentMatchUi()
 
     case YOUR_TURN =>
-      if (config.notifyTurn)
+      if (notifyTurn)
         mainFrame.notify((if (HearthstoneAnalyser.isYourTurn) "Your" else "Opponent") + " turn detected")
       Log.info((if (HearthstoneAnalyser.isYourTurn) "Your" else "Opponent") + " turn detected")
       mainFrame.matchPanel.updateCurrentMatchUi()
@@ -307,7 +308,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       mainFrame.matchPanel.setCurrentMatchEnabled(true)
       _playingInMatch = true
 
-    case s if (s.group == ScreenGroup.MATCH_END && DO_NOT_NOTIFY_SCREENS.contains(s) && config.notifyScreen) =>
+    case s if (s.group == ScreenGroup.MATCH_END && DO_NOT_NOTIFY_SCREENS.contains(s) && notifyScreen) =>
       if (HearthstoneAnalyser.screen == PRACTICE_LOBBY)
         mainFrame.notify(HearthstoneAnalyser.screen.title + " Screen Detected", "Results are not tracked in practice mode")
       else

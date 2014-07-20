@@ -31,21 +31,27 @@ object ProgramHelperTest extends ProgramHelper {
 }
 
 object ConfigTest extends Config {
-  var monitoringMethod: MonitoringMethod = MonitoringMethod.SCREEN
-  var notifyOverall: Boolean = true
-  var notifyHsFound: Boolean = true
-  var notifyHsClosed: Boolean = true
-  var notifyScreen: Boolean = true
-  var notifyMode: Boolean = true
-  var notifyDeck: Boolean = true
-  var notifyTurn: Boolean = true
-  var notificationType: NotificationType = NotificationType.HEARTHSTATS
-  var windowX: Int = 0
-  var windowY: Int = 0
-  var windowHeight: Int = 700
-  var windowWidth: Int = 600
-  var deckX: Int = 0
-  var deckY: Int = 0
-  var deckHeight: Int = 600
-  var deckWidth: Int = 485
+  val monitoringMethod: ConfigValue[MonitoringMethod] = MonitoringMethod.SCREEN
+  var notifyOverall: ConfigValue[Boolean] = true
+  var notifyHsFound: ConfigValue[Boolean] = true
+  var notifyHsClosed: ConfigValue[Boolean] = true
+  var notifyScreen: ConfigValue[Boolean] = true
+  var notifyMode: ConfigValue[Boolean] = true
+  var notifyDeck: ConfigValue[Boolean] = true
+  var notifyTurn: ConfigValue[Boolean] = true
+  var notificationType: ConfigValue[NotificationType] = NotificationType.HEARTHSTATS
+  var windowX: ConfigValue[Int] = 0
+  var windowY: ConfigValue[Int] = 0
+  var windowHeight: ConfigValue[Int] = 700
+  var windowWidth: ConfigValue[Int] = 600
+  var deckX: ConfigValue[Int] = 0
+  var deckY: ConfigValue[Int] = 0
+  var deckHeight: ConfigValue[Int] = 600
+  var deckWidth: ConfigValue[Int] = 485
+
+  implicit def readOnlyConfig[T](value: T): ConfigValue[T] =
+    new ConfigValue[T] {
+      val get = value
+      def set(v: T): Unit = {}
+    }
 }

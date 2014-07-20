@@ -1,25 +1,42 @@
 package net.hearthstats.config
 
+/**
+ * Gives access to all configuration values in read/write mode.
+ * Abstract so it can be easily overriden in tests.
+ * See UserConfig for the actual implementation which stores on the disk.
+ */
 trait Config {
 
-  var monitoringMethod: MonitoringMethod
+  def monitoringMethod: ConfigValue[MonitoringMethod]
 
-  var notifyOverall: Boolean
-  var notifyHsFound: Boolean
-  var notifyHsClosed: Boolean
-  var notifyScreen: Boolean
-  var notifyMode: Boolean
-  var notifyDeck: Boolean
-  var notifyTurn: Boolean
-  var notificationType: NotificationType
+  def notifyOverall: ConfigValue[Boolean]
+  def notifyHsFound: ConfigValue[Boolean]
+  def notifyHsClosed: ConfigValue[Boolean]
+  def notifyScreen: ConfigValue[Boolean]
+  def notifyMode: ConfigValue[Boolean]
+  def notifyDeck: ConfigValue[Boolean]
+  def notifyTurn: ConfigValue[Boolean]
+  def notificationType: ConfigValue[NotificationType]
 
-  var windowX: Int
-  var windowY: Int
-  var windowWidth: Int
-  var windowHeight: Int
-  var deckX: Int
-  var deckY: Int
-  var deckWidth: Int
-  var deckHeight: Int
+  def windowX: ConfigValue[Int]
+  def windowY: ConfigValue[Int]
+  def windowWidth: ConfigValue[Int]
+  def windowHeight: ConfigValue[Int]
 
+  def deckX: ConfigValue[Int]
+  def deckY: ConfigValue[Int]
+  def deckWidth: ConfigValue[Int]
+  def deckHeight: ConfigValue[Int]
+
+  // so we can use config.prop instead of config.prop.get in the code
+  implicit def getConfig[T](cfg: ConfigValue[T]) = cfg.get
+
+}
+
+/**
+ * Atomic read/write piece of configuration.
+ */
+trait ConfigValue[T] {
+  def get: T
+  def set(value: T): Unit
 }
