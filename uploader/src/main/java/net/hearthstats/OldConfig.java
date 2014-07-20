@@ -16,9 +16,10 @@ import org.ini4j.Wini;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Config {
+@Deprecated
+public class OldConfig {
 
-    private final static Logger     debugLog           = LoggerFactory.getLogger( Config.class );
+    private final static Logger     debugLog           = LoggerFactory.getLogger( OldConfig.class );
 
     public static final OS          os                 = parseOperatingSystem();
 
@@ -28,25 +29,9 @@ public class Config {
 
     private static String           _userkey;
 
-    private static MonitoringMethod monitoringMethod;
-
     private static GameLanguage     gameLanguage;
 
     private static boolean          _checkForUpdates;
-
-    private static boolean          _useOsxNotifications;
-
-    private static boolean          _showNotifications;
-
-    private static boolean          _showHsFoundNotification;
-
-    private static boolean          _showHsClosedNotification;
-
-    private static boolean          _showScreenNotification;
-
-    private static boolean          _showModeNotification;
-
-    private static boolean          _showDeckNotification;
 
     private static boolean          _showDeckOverlay;
 
@@ -57,16 +42,6 @@ public class Config {
     private static boolean          _minToTray;
 
     private static boolean          _startMinimized;
-
-    private static int              _x;
-    private static int              _y;
-    private static int              _width;
-    private static int              _height;
-
-    private static int              _deckx;
-    private static int              _decky;
-    private static int              _deckwidth;
-    private static int              _deckheight;
 
     private static String           _defaultApiBaseUrl = "http://hearthstats.net/api/v1/";
 
@@ -86,20 +61,20 @@ public class Config {
         setApiBaseUrl( _defaultApiBaseUrl );
 
         // monitoring method
-        setMonitoringMethod( MonitoringMethod.getDefault() );
+//        setMonitoringMethod( MonitoringMethod.getDefault() );
 
         // updates
         setCheckForUpdates( true );
 
         // notifications
-        setUseOsxNotifications( environment == null ? false : environment.osxNotificationsSupported() );
-        setShowNotifications( true );
-        setShowHsFoundNotification( true );
-        setShowHsClosedNotification( true );
-        setShowScreenNotification( true );
-        setShowModeNotification( true );
-        setShowDeckNotification( true );
-        setShowYourTurnNotification( true );
+//        setUseOsxNotifications( environment == null ? false : environment.osxNotificationsSupported() );
+//        setShowNotifications( true );
+//        setShowHsFoundNotification( true );
+//        setShowHsClosedNotification( true );
+//        setShowScreenNotification( true );
+//        setShowModeNotification( true );
+//        setShowDeckNotification( true );
+//        setShowYourTurnNotification( true );
 
         // analytics
         setAnalyticsEnabled( true );
@@ -107,10 +82,10 @@ public class Config {
         // ui
         setMinToTray( true );
         setStartMinimized( false );
-        setX( 0 );
-        setY( 0 );
-        setWidth( 600 );
-        setHeight( 700 );
+//        setX( 0 );
+//        setY( 0 );
+//        setWidth( 600 );
+//        setHeight( 700 );
 
         restorePreviousValues();
 
@@ -298,10 +273,10 @@ public class Config {
         if ( _version == null ) {
             _version = "";
             String versionFile = "/version";
-            // if(Config.os.toString().equals("OSX")) {
+            // if(OldConfig.os.toString().equals("OSX")) {
             // versionFile += "-osx";
             // }
-            InputStream in = Config.class.getResourceAsStream( versionFile );
+            InputStream in = OldConfig.class.getResourceAsStream( versionFile );
             BufferedReader br = new BufferedReader( new InputStreamReader( in ) );
             String strLine;
             try {
@@ -321,40 +296,8 @@ public class Config {
         return getVersion() + '-' + os;
     }
 
-    public static void setUseOsxNotifications( boolean val ) {
-        setBooleanValue( "notifications", "osx", val );
-    }
-
-    public static void setShowNotifications( boolean val ) {
-        setBooleanValue( "notifications", "enabled", val );
-    }
-
     public static void setAnalyticsEnabled( boolean val ) {
         setBooleanValue( "analytics", "enabled", val );
-    }
-
-    public static void setShowHsFoundNotification( boolean val ) {
-        setBooleanValue( "notifications", "hsfound", val );
-    }
-
-    public static void setShowHsClosedNotification( boolean val ) {
-        setBooleanValue( "notifications", "hsclosed", val );
-    }
-
-    public static void setShowScreenNotification( boolean val ) {
-        setBooleanValue( "notifications", "screen", val );
-    }
-
-    public static void setShowYourTurnNotification( boolean val ) {
-        setBooleanValue( "notifications", "yourturn", val );
-    }
-
-    public static void setShowModeNotification( boolean val ) {
-        setBooleanValue( "notifications", "mode", val );
-    }
-
-    public static void setShowDeckNotification( boolean val ) {
-        setBooleanValue( "notifications", "deck", val );
     }
 
     public static void setShowDeckOverlay( boolean val ) {
@@ -363,10 +306,6 @@ public class Config {
 
     public static void setShowMatchPopup( MatchPopup showMatchPopup ) {
         setStringValue( "ui", "matchpopup", showMatchPopup == null ? "" : showMatchPopup.name() );
-    }
-
-    public static void setMonitoringMethod( MonitoringMethod monitoringMethod ) {
-        setStringValue( "ui", "monitoringmethod", monitoringMethod == null ? "" : monitoringMethod.name() );
     }
 
     public static void setGameLanguage( GameLanguage gameLanguage ) {
@@ -392,7 +331,7 @@ public class Config {
     private static void createConfigIniIfNecessary() {
         File configFile = new File( getConfigPath() );
         if ( !configFile.exists() ) {
-            if ( Config.os == OS.OSX ) {
+            if ( OldConfig.os == OS.OSX ) {
                 // The location has moved on Macs, so move the old config.ini to the new location if there is one
                 File oldConfigFile = new File( "config.ini" );
                 if ( oldConfigFile.exists() ) {
@@ -416,7 +355,7 @@ public class Config {
     }
 
     private static String getConfigPath() {
-        if ( Config.os == OS.OSX ) {
+        if ( OldConfig.os == OS.OSX ) {
             return getSystemProperty( "user.home" ) + "/Library/Preferences/net.hearthstats.HearthStatsUploader.ini";
         } else {
             return "config.ini";
@@ -434,38 +373,6 @@ public class Config {
 
     private static void setBooleanValue( String group, String key, boolean val ) {
         getIni().put( group, key, val );
-    }
-
-    public static void setX( int val ) {
-        setIntVal( "ui", "x", val );
-    }
-
-    public static void setY( int val ) {
-        setIntVal( "ui", "y", val );
-    }
-
-    public static void setWidth( int val ) {
-        setIntVal( "ui", "width", val );
-    }
-
-    public static void setHeight( int val ) {
-        setIntVal( "ui", "height", val );
-    }
-
-    public static void setDeckX( int val ) {
-        setIntVal( "ui", "deckx", val );
-    }
-
-    public static void setDeckY( int val ) {
-        setIntVal( "ui", "decky", val );
-    }
-
-    public static void setDeckWidth( int val ) {
-        setIntVal( "ui", "deckwidth", val );
-    }
-
-    public static void setDeckHeight( int val ) {
-        setIntVal( "ui", "deckheight", val );
     }
 
     private static Wini getIni() {
@@ -498,57 +405,57 @@ public class Config {
     private static void restorePreviousValues() {
         setUserKey( _userkey );
         setApiBaseUrl( _apiBaseUrl );
-        setMonitoringMethod( monitoringMethod );
+//        setMonitoringMethod( monitoringMethod );
         setGameLanguage( gameLanguage );
         setCheckForUpdates( _checkForUpdates );
-        setUseOsxNotifications( _useOsxNotifications );
-        setShowNotifications( _showNotifications );
-        setShowHsFoundNotification( _showHsFoundNotification );
-        setShowHsClosedNotification( _showHsClosedNotification );
-        setShowScreenNotification( _showScreenNotification );
-        setShowModeNotification( _showModeNotification );
-        setShowDeckNotification( _showDeckNotification );
+//        setUseOsxNotifications( _useOsxNotifications );
+//        setShowNotifications( _showNotifications );
+//        setShowHsFoundNotification( _showHsFoundNotification );
+//        setShowHsClosedNotification( _showHsClosedNotification );
+//        setShowScreenNotification( _showScreenNotification );
+//        setShowModeNotification( _showModeNotification );
+//        setShowDeckNotification( _showDeckNotification );
         setShowDeckOverlay( _showDeckOverlay );
         setShowMatchPopup( showMatchPopup );
         setAnalyticsEnabled( _analyticsEnabled );
         setMinToTray( _minToTray );
         setStartMinimized( _startMinimized );
-        setX( _x );
-        setY( _y );
-        setWidth( _width );
-        setHeight( _height );
-        setDeckX( _deckx );
-        setDeckY( _decky );
-        setDeckWidth( _deckwidth );
-        setDeckHeight( _deckheight );
+//        setX( _x );
+//        setY( _y );
+//        setWidth( _width );
+//        setHeight( _height );
+//        setDeckX( _deckx );
+//        setDeckY( _decky );
+//        setDeckWidth( _deckwidth );
+//        setDeckHeight( _deckheight );
     }
 
     private static void storePreviousValues(Environment environment) {
         _userkey = getUserKey();
         _apiBaseUrl = getApiBaseUrl();
-        monitoringMethod = monitoringMethod();
+//        monitoringMethod = monitoringMethod();
         gameLanguage = gameLanguage();
         _checkForUpdates = checkForUpdates();
-        _useOsxNotifications = useOsxNotifications(environment);
-        _showNotifications = showNotifications();
-        _showHsFoundNotification = showHsFoundNotification();
-        _showHsClosedNotification = showHsClosedNotification();
-        _showScreenNotification = showScreenNotification();
-        _showModeNotification = showModeNotification();
-        _showDeckNotification = showDeckNotification();
+//        _useOsxNotifications = useOsxNotifications(environment);
+//        _showNotifications = showNotifications();
+//        _showHsFoundNotification = showHsFoundNotification();
+//        _showHsClosedNotification = showHsClosedNotification();
+//        _showScreenNotification = showScreenNotification();
+//        _showModeNotification = showModeNotification();
+//        _showDeckNotification = showDeckNotification();
         _showDeckOverlay = showDeckOverlay();
         showMatchPopup = showMatchPopup();
         _analyticsEnabled = analyticsEnabled();
         _minToTray = minimizeToTray();
         _startMinimized = startMinimized();
-        _x = getX();
-        _y = getY();
-        _width = getWidth();
-        _height = getHeight();
-        _deckx = getDeckX();
-        _decky = getDeckY();
-        _deckwidth = getDeckWidth();
-        _deckheight = getDeckHeight();
+//        _x = getX();
+//        _y = getY();
+//        _width = getWidth();
+//        _height = getHeight();
+//        _deckx = getDeckX();
+//        _decky = getDeckY();
+//        _deckwidth = getDeckWidth();
+//        _deckheight = getDeckHeight();
     }
 
     private static void setIntVal( String group, String key, int val ) {
@@ -575,7 +482,7 @@ public class Config {
 
     /**
      * Parses the os.name system property to determine what operating system we are using.
-     * This method is private because you should use the cached version {@link Config#os)} which is faster.
+     * This method is private because you should use the cached version {@link OldConfig#os)} which is faster.
      * 
      * @return The current OS
      */

@@ -3,7 +3,7 @@ package net.hearthstats.util;
 import java.io.UnsupportedEncodingException;
 import java.util.ResourceBundle;
 
-import net.hearthstats.Config;
+import net.hearthstats.OldConfig;
 import net.hearthstats.config.GameLanguage;
 
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ public final class TranslationCard {
     private static ResourceBundle _bundle  = null;
 
     public static void changeTranslation() {
-        GameLanguage lang = Config.gameLanguage();
+        GameLanguage lang = OldConfig.gameLanguage();
         switch ( lang ) {
 
         case FR:
@@ -33,7 +33,7 @@ public final class TranslationCard {
 
     public static String t( String key ) {
         String value = _bundle.getString( "card" + key );
-        switch ( Config.gameLanguage() ) {
+        switch ( OldConfig.gameLanguage() ) {
         case FR:
             try {
                 return new String( value.getBytes( "ISO-8859-1" ), "UTF-8" );

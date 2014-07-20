@@ -1,12 +1,12 @@
 package net.hearthstats.osx
 
-import net.hearthstats.config.{Application, NotificationType, OS, Environment}
-import net.hearthstats.notification.{ DialogNotificationQueue, NotificationQueue }
 import java.io.File
-import net.hearthstats.{Config, ProgramHelper}
-import net.hearthstats.updater.api.model.Release
+
 import grizzled.slf4j.Logging
-import org.apache.commons.lang3.builder.ToStringBuilder
+import net.hearthstats.config._
+import net.hearthstats.notification.{DialogNotificationQueue, NotificationQueue}
+import net.hearthstats.updater.api.model.Release
+import net.hearthstats.{OldConfig, ProgramHelper}
 
 /**
  * Mac OS X environment.
@@ -14,6 +14,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder
 class EnvironmentOsx extends Environment with Logging {
 
   val os: OS = OS.OSX
+
+  val config = new UserConfig
 
   val programHelper: ProgramHelper = new ProgramHelperOsx
 
@@ -53,7 +55,7 @@ class EnvironmentOsx extends Environment with Logging {
 
       if (updaterFile.exists) {
         logger.debug(s"Found updater.jar in ${updaterFile.getPath}")
-        val javaLibraryPath: File = new File(Config.getJavaLibraryPath)
+        val javaLibraryPath: File = new File(OldConfig.getJavaLibraryPath)
         val bundlePath: File = javaLibraryPath.getParentFile.getParentFile.getParentFile
         val javaHome: String = System.getProperty("java.home")
 

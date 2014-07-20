@@ -77,7 +77,7 @@ object API extends Observable with Logging {
 
   //can return JSONObject or JSONArray
   private def _get(method: String): Option[AnyRef] = {
-    val baseUrl = Config.getApiBaseUrl + method + "?userkey="
+    val baseUrl = OldConfig.getApiBaseUrl + method + "?userkey="
     debug(s"API get $baseUrl********")
     val url = new URL(baseUrl + key)
     try {
@@ -126,7 +126,7 @@ object API extends Observable with Logging {
   }
 
   private def _post(method: String, jsonData: JSONObject): Option[JSONObject] = {
-    val baseUrl = Config.getApiBaseUrl + method + "?userkey="
+    val baseUrl = OldConfig.getApiBaseUrl + method + "?userkey="
     debug(s"API post $baseUrl********")
     debug("API post data = " + jsonData.toJSONString)
     val url = new URL(baseUrl + key)
@@ -166,7 +166,7 @@ object API extends Observable with Logging {
     case None => List.empty
   }
 
-  var key: String = Config.getUserKey
+  var key: String = OldConfig.getUserKey
 
   private def _dispatchResultMessage(m: String) {
     message = m

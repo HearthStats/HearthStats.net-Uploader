@@ -63,7 +63,7 @@ public final class Main {
       loadingNotification.show();
 
       Updater.cleanUp();
-      Config.rebuild(environment);
+      OldConfig.rebuild(environment);
 
       logSystemInformation(environment);
 

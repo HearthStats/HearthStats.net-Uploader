@@ -1,15 +1,12 @@
 package net.hearthstats.logmonitor
 
-import java.io.File
-import java.io.FileWriter
-import java.io.BufferedWriter
-import net.hearthstats.DeckUtils
-import javax.swing.JOptionPane
+import java.io.{BufferedWriter, File, FileWriter}
+
 import net.hearthstats.ui.ClickableDeckBox
-import javax.swing.JFrame
-import javax.swing.JDialog
+import net.hearthstats.{DeckUtils, EnvironmentTest}
 
 object LogMonitorDeckOverlayFor2DecksMain extends App {
+  val environment = EnvironmentTest
   val tempLogFile = File.createTempFile("hssample", "log")
   println(s"monitorin $tempLogFile ")
   val monitor = new HearthstoneLogMonitor(tempLogFile.getAbsolutePath)
@@ -17,7 +14,7 @@ object LogMonitorDeckOverlayFor2DecksMain extends App {
   val deck1 = DeckUtils.getDeck(20034)
   val deck2 = DeckUtils.getDeck(20462)
 
-  val box1 = ClickableDeckBox.showBox(deck1, monitor.cardEvents)
+  val box1 = ClickableDeckBox.showBox(deck1, monitor.cardEvents, environment)
 
   new Thread {
     override def run() = {
@@ -26,7 +23,7 @@ object LogMonitorDeckOverlayFor2DecksMain extends App {
       writer.write(initialHand)
       writer.flush()
       Thread.sleep(3000)
-      ClickableDeckBox.showBox(deck2, monitor.cardEvents)
+      ClickableDeckBox.showBox(deck2, monitor.cardEvents, environment)
       Thread.sleep(500)
       writer.write(initialHand2)
       writer.flush()

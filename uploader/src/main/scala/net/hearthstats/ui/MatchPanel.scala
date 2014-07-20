@@ -21,7 +21,7 @@ import javax.swing.JTextArea
 import javax.swing.JTextField
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
-import net.hearthstats.Config
+import net.hearthstats.OldConfig
 import net.hearthstats.Constants
 import net.hearthstats.HearthstoneMatch
 import net.hearthstats.Main
@@ -68,7 +68,7 @@ class MatchPanel extends JPanel {
 
   add(_currentOpponentNameField, "wrap")
   add(new JLabel(t("match.label.coin") + " "), "skip,right")
-  _currentGameCoinField.setSelected(Config.showHsClosedNotification)
+  _currentGameCoinField.setSelected(false)
   _currentGameCoinField.addChangeListener(new ChangeListener {
     def stateChanged(e: ChangeEvent) {
       HearthstoneAnalyser.hsMatch.coin = _currentGameCoinField.isSelected

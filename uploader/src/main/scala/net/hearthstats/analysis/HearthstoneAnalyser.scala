@@ -6,7 +6,7 @@ import java.util.{ Observable, ResourceBundle }
 import org.apache.commons.lang3.StringUtils
 
 import grizzled.slf4j.Logging
-import net.hearthstats.{ BackgroundImageSave, Config, HearthstoneMatch, Main, Monitor }
+import net.hearthstats.{ BackgroundImageSave, OldConfig, HearthstoneMatch, Main, Monitor }
 import net.hearthstats.log.Log
 import net.hearthstats.logmonitor.{ HeroDestroyedEvent, HeroEvent }
 import net.hearthstats.ocr.{ OcrException, OpponentNameRankedOcr, OpponentNameUnrankedOcr, RankLevelOcr }
@@ -170,7 +170,7 @@ object HearthstoneAnalyser extends Observable with Logging {
           startTimer()
           if (previousScreen != null && previousScreen.group == ScreenGroup.MATCH_START &&
             (hsMatch.opponentClass == null || hsMatch.userClass == null)) {
-            Log.warn(t("warning.classdetection", Config.getExtractionFolder))
+            Log.warn(t("warning.classdetection", OldConfig.getExtractionFolder))
           }
 
         case MATCH_END =>
