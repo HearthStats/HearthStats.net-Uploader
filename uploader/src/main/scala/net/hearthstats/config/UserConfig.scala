@@ -41,7 +41,39 @@ object UserConfig extends Logging {
   private val PreferencesRoot: String = "/net/hearthstats/companion"
   private val prefs: Preferences = Preferences.userRoot().node(PreferencesRoot)
 
-  implicit object BooleanPref extends UserConfigStore[Boolean] {
+  /**
+   * Generates a new ConfigValue based on the key, the default value and
+   * an implicit UserConfigStore (typeclass).
+   */
+  def config[T: UserConfigStore](key: String, default: T): ConfigValue[T] =
+    new ConfigValue[T] {
+      val store = implicitly[UserConfigStore[T]]
+
+      def get = store.get(key, default)
+      def set(value: T): Unit = {
+        store.set(key, value)
+      }
+    }
+
+  //We need an additional method for enums because implicit values 
+  //cannot be genrated on the fly for any Enum[T]
+  def enumConfig[T <: Enum[T]](key: String, default: T): ConfigValue[T] =
+    config(key, default)(enum[T])
+
+  //This is where the actual storage is done 
+  abstract class UserConfigStore[T] {
+    def get(key: String, default: T): T
+    def set(key: String, value: T): Unit = {
+      info(s"Setting config $key to $value")
+      setImpl(key, value)
+    }
+
+    def setImpl(key: String, value: T): Unit
+  }
+
+  //After this are the different type class implementations of UserConfigStore[T]
+  //for each T we are using 
+  implicit val booleanPref: UserConfigStore[Boolean] = new UserConfigStore[Boolean] {
     def get(key: String, default: Boolean) =
       prefs.getBoolean(key, default)
 
@@ -49,7 +81,7 @@ object UserConfig extends Logging {
       prefs.putBoolean(key, value)
   }
 
-  implicit object IntPref extends UserConfigStore[Int] {
+  implicit val intPref: UserConfigStore[Int] = new UserConfigStore[Int] {
     def get(key: String, default: Int) =
       prefs.getInt(key, default)
 
@@ -75,23 +107,4 @@ object UserConfig extends Logging {
       prefs.put(key, value.toString)
   }
 
-  def enumConfig[T <: Enum[T]](key: String, default: T) = config(key, default)(enum[T])
-
-  def config[T: UserConfigStore](key: String, default: T) = new ConfigValue[T] {
-    val store = implicitly[UserConfigStore[T]]
-    def get = store.get(key, default)
-    def set(value: T): Unit = {
-      store.set(key, value)
-    }
-  }
-
-  abstract class UserConfigStore[T] {
-    def get(key: String, default: T): T
-    def set(key: String, value: T): Unit = {
-      info(s"Setting config $key to $value")
-      setImpl(key, value)
-    }
-
-    def setImpl(key: String, value: T): Unit
-  }
 }
