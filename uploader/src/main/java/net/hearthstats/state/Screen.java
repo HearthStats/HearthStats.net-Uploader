@@ -393,7 +393,7 @@ public enum Screen {
 
         VERSUS_LOBBY.nextScreens = EnumSet.of(
             Screen.MAIN,
-            Screen.PLAY_LOBBY
+            Screen.MATCH_VS
         );
         
         FINDING_OPPONENT.nextScreens = EnumSet.of(
