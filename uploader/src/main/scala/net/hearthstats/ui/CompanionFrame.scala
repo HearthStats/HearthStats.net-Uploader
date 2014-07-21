@@ -1,66 +1,26 @@
 package net.hearthstats.ui
 
-import net.hearthstats.Constants.PROFILES_URL
-import net.hearthstats.analysis.AnalyserEvent._
-import javax.swing._
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JOptionPane._
-import net.hearthstats.state.Screen._
 import java.awt.Frame._
-import javax.swing.ScrollPaneConstants._
-import scala.swing.Swing
-import javax.swing.JTabbedPane
-import java.awt.AWTException
-import java.awt.Desktop
-import java.awt.Dimension
-import java.awt.Font
-import java.awt.MenuItem
-import java.awt.PopupMenu
-import java.awt.SystemTray
-import java.awt.TrayIcon
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
-import java.awt.event.WindowStateListener
-import javax.swing.JFrame
-import javax.swing.JScrollPane
-import net.hearthstats.util.Translations._
-import java.awt.event.WindowAdapter
-import net.hearthstats.log.LogPane
-import javax.swing.JTabbedPane
-import java.awt.event.WindowEvent
-import net.hearthstats.notification.NotificationQueue
-import net.hearthstats.analysis.HearthstoneAnalyser
-import java.awt.SystemTray
-import net.hearthstats.log.Log
-import net.hearthstats.config.OS
-import java.awt.AWTException
-import javax.swing.ImageIcon
-import java.awt.event.WindowStateListener
-import java.awt.TrayIcon
-import java.awt.event.ActionListener
-import scala.swing.Swing
-import java.awt.event.ActionEvent
-import java.awt.MenuItem
-import net.hearthstats.OldConfig
-import java.awt.Dimension
-import java.awt.PopupMenu
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.Font
-import org.slf4j.LoggerFactory
-import net.hearthstats.Monitor
-import org.slf4j.Logger
-import net.hearthstats.config.Environment
-import grizzled.slf4j.Logging
-import net.hearthstats.Updater
-import org.apache.commons.lang3.StringUtils
+import java.awt.{AWTException, Desktop, Dimension, Font, MenuItem, PopupMenu, SystemTray, TrayIcon}
+import java.awt.event.{ActionEvent, ActionListener, MouseAdapter, MouseEvent, WindowAdapter, WindowEvent, WindowStateListener}
 import java.io.IOException
 import java.net.URI
+import javax.swing.JOptionPane._
+import javax.swing.ScrollPaneConstants._
+import javax.swing.{ImageIcon, JFrame, JPanel, JScrollPane, JTabbedPane, _}
+
+import grizzled.slf4j.Logging
+import net.hearthstats.Constants.PROFILES_URL
+import net.hearthstats.{Monitor, Updater}
+import net.hearthstats.analysis.HearthstoneAnalyser
+import net.hearthstats.config.{Application, Environment}
+import net.hearthstats.log.{Log, LogPane}
+import net.hearthstats.notification.NotificationQueue
+import net.hearthstats.state.Screen._
+import net.hearthstats.util.Translations._
+import org.apache.commons.lang3.StringUtils
+
+import scala.swing.Swing
 
 /**
  * Main Frame for HearthStats Companion.
@@ -73,7 +33,7 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
   val tabbedPane = new JTabbedPane
   val optionsPanel = new OptionsPanel(this)
   val matchPanel = new MatchPanel
-  var notificationQueue: NotificationQueue = environment.newNotificationQueue(notificationType)
+  var notificationQueue: NotificationQueue = environment.newNotificationQueue(optionNotificationType)
 
   addWindowListener(new WindowAdapter {
     override def windowClosing(e: WindowEvent) {
@@ -81,7 +41,6 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
     }
   })
   createAndShowGui()
-  showWelcomeLog()
 
   def handleClose() {
     try {
@@ -95,25 +54,6 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
       case t: Exception => Log.warn("Error occurred trying to save your settings, your window position may not be saved", t)
     }
     System.exit(0)
-  }
-
-  def showWelcomeLog() {
-    debug("Showing welcome log messages")
-    Log.welcome("HearthStats " + t("Companion") + " v" + OldConfig.getVersionWithOs)
-    Log.help(t("welcome_1_set_decks"))
-    if (environment.os == OS.OSX) {
-      Log.help(t("welcome_2_run_hearthstone"))
-      Log.help(t("welcome_3_notifications"))
-    } else {
-      Log.help(t("welcome_2_run_hearthstone_windowed"))
-      Log.help(t("welcome_3_notifications_windowed"))
-    }
-    val logFileLocation = Log.getLogFileLocation
-    if (logFileLocation == null) {
-      Log.help(t("welcome_4_feedback"))
-    } else {
-      Log.help(t("welcome_4_feedback_with_log", logFileLocation))
-    }
   }
 
   /**
@@ -173,7 +113,7 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
     enableMinimizeToTray()
     setMinimumSize(new Dimension(500, 600))
     setVisible(true)
-    if (OldConfig.startMinimized) setState(ICONIFIED)
+    if (enableStartMin) setState(ICONIFIED)
     updateTitle()
   }
 
@@ -265,7 +205,7 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
       })
       addWindowStateListener(new WindowStateListener {
         def windowStateChanged(e: WindowEvent) {
-          if (OldConfig.minimizeToTray) {
+          if (enableMinToTray) {
             e.getNewState match {
               case ICONIFIED =>
                 try {
@@ -286,7 +226,7 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
   }
 
   def checkForUserKey(): Boolean = {
-    val userKeySet = OldConfig.getUserKey != "your_userkey_here"
+    val userKeySet = !configUserKey.equalsIgnoreCase("your_userkey_here")
     if (userKeySet) {
       true
     } else {
@@ -305,10 +245,9 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
       if (StringUtils.isEmpty(userkey)) {
         false
       } else {
-        OldConfig.setUserKey(userkey)
+        configUserKey.set(userkey)
         try {
           optionsPanel.setUserKey(userkey)
-          OldConfig.save()
           Log.info(t("UserkeyStored"))
         } catch {
           case e: Exception => Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
@@ -319,13 +258,13 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
   }
 
   def checkForUpdates() {
-    if (OldConfig.checkForUpdates()) {
+    if (enableUpdateCheck) {
       Log.info(t("checking_for_updates..."))
       try {
-        var latestRelease = Updater.getLatestRelease
+        var latestRelease = Updater.getLatestRelease(environment)
         if (latestRelease != null) {
           Log.info(t("latest_v_available") + " " + latestRelease.getVersion)
-          if (!latestRelease.getVersion.equalsIgnoreCase("v" + OldConfig.getVersion)) {
+          if (!latestRelease.getVersion.equalsIgnoreCase("v" + Application.version)) {
             bringWindowToFront()
             val dialogButton = YES_NO_OPTION
             var dialogResult = showConfirmDialog(
@@ -352,7 +291,7 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
                 panel.add(lbl)
                 showOptionDialog(this, panel, t("updates_disabled_msg"), NO_OPTION,
                   QUESTION_MESSAGE, null, options.toArray, options(0))
-                OldConfig.setCheckForUpdates(false)
+                enableUpdateCheck.set(false)
               }
             }
           }

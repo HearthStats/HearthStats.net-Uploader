@@ -170,7 +170,7 @@ object HearthstoneAnalyser extends Observable with Logging {
           startTimer()
           if (previousScreen != null && previousScreen.group == ScreenGroup.MATCH_START &&
             (hsMatch.opponentClass == null || hsMatch.userClass == null)) {
-            Log.warn(t("warning.classdetection", OldConfig.getExtractionFolder))
+            Log.warn(t("warning.classdetection", monitor.environment.extractionFolder))
           }
 
         case MATCH_END =>

@@ -25,13 +25,13 @@ public final class Updater {
   private static Release cachedlatestRelease;
 
 
-  public static Release getLatestRelease() {
+  public static Release getLatestRelease(Environment environment) {
     if (cachedlatestRelease == null) {
       try {
         debugLog.debug("Loading latest release information from GitHub");
-        if (OldConfig.os == OS.OSX) {
+        if (environment.os() == OS.OSX) {
           cachedlatestRelease = GitHubReleases.getLatestReleaseForOSX();
-        } else if (OldConfig.os == OS.WINDOWS) {
+        } else if (environment.os() == OS.WINDOWS) {
           cachedlatestRelease = GitHubReleases.getLatestReleaseForWindows();
         }
         if (cachedlatestRelease == null) {
@@ -77,9 +77,9 @@ public final class Updater {
   }
 
 
-  public static void cleanUp() {
-    removeFile(OldConfig.getExtractionFolder(), "updater.jar");
-    removeFile(OldConfig.getExtractionFolder(), "update-*.zip");
+  public static void cleanUp(Environment environment) {
+    removeFile(environment.extractionFolder(), "updater.jar");
+    removeFile(environment.extractionFolder(), "update-*.zip");
 	}
 
 

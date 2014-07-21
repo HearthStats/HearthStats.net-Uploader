@@ -186,7 +186,7 @@
             <librarypath dir="./src/main/app-resources/mac" includes="*.dylib"/>
             <option value="-Dapple.laf.useScreenMenuBar=true"/>
             <option value="-Djna.library.path=$APP_ROOT/Contents/MacOS"/>
-            <option value="-DLOG_FILE=Library/Application Support/HearthStatsUploader/log.txt"/>
+            <option value="-DLOG_FILE=Library/Application Support/HearthStatsCompanion/log.txt"/>
             <option value="-Xdock:icon=Contents/Resources/${bundle.icon}"/>
             <option value="-Xms96m"/>
             <option value="-Xmx256m"/>

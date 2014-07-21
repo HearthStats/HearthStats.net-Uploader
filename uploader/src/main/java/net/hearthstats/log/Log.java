@@ -34,6 +34,7 @@ public class Log {
      * @param logMessage The message to log.
      */
     public static void welcome(String logMessage) {
+      System.out.println("WELCOME: " + logMessage);
         appLog.info(WELCOME, logMessage);
     }
 
