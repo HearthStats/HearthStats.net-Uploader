@@ -16,6 +16,7 @@ object EnvironmentTest extends Environment {
   val programHelper = ProgramHelperTest
   val osxNotificationsSupported = false
   val extractionFolder = null
+  val imageCacheFolder = null
   val hearthstoneConfigFolder = ""
 
   def newNotificationQueue(notificationType: NotificationType) = null
