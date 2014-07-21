@@ -1,25 +1,22 @@
 package net.hearthstats.ui;
 
-import static net.hearthstats.util.Translations.t;
+import net.hearthstats.HyperLinkHandler;
+import net.hearthstats.config.Application;
+import net.hearthstats.log.Log;
+import net.hearthstats.log.LogPane;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 
-import java.awt.Color;
+import javax.swing.*;
+import javax.swing.text.html.HTMLDocument;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.JEditorPane;
-import javax.swing.JScrollPane;
-import javax.swing.text.html.HTMLDocument;
-
-import net.hearthstats.OldConfig;
-import net.hearthstats.HyperLinkHandler;
-import net.hearthstats.log.Log;
-import net.hearthstats.log.LogPane;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import static net.hearthstats.util.Translations.t;
 
 public class AboutPanel extends JScrollPane {
 
@@ -31,7 +28,7 @@ public class AboutPanel extends JScrollPane {
   private static JEditorPane contributors() {
     Map<String, String> localeStrings = new HashMap<String, String>();
     localeStrings.put("Author", t("Author"));
-    localeStrings.put("version", t("Companion") + " v" + OldConfig.getVersion());
+    localeStrings.put("version", t("Companion") + " v" + Application.version());
     localeStrings.put("utility_l1", t("about.utility_l1"));
     localeStrings.put("utility_l2", t("about.utility_l2"));
     localeStrings.put("utility_l3", t("about.utility_l3"));

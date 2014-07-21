@@ -1,20 +1,17 @@
 package net.hearthstats;
 
-import java.awt.Component;
-import java.io.File;
-
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
 import net.hearthstats.config.Application;
 import net.hearthstats.config.Environment;
 import net.hearthstats.log.LogPane;
 import net.hearthstats.notification.DialogNotification;
+import net.hearthstats.util.TranslationCard;
 import net.sourceforge.tess4j.Tesseract;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
 
 public final class Main {
   private Main() {} // never instantiated
@@ -62,11 +59,18 @@ public final class Main {
       DialogNotification loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...");
       loadingNotification.show();
 
-      Updater.cleanUp();
-      OldConfig.rebuild(environment);
+      OldConfig.migrateOldConfig(environment);
+
+      // Store configuration in singleton objects that are unable to access the environment instance
+      // TODO: refactor so that these objects can access configuration directly with manually setting it here
+      API.setConfig(environment.config());
+      BackgroundImageSave.setSaveFolder(environment.extractionFolder());
+      Card.setImageCacheFolder(environment.imageCacheFolder());
+      TranslationCard.changeTranslation(environment.config().optionGameLanguage().get());
 
       logSystemInformation(environment);
 
+      Updater.cleanUp(environment);
       cleanupDebugFiles(environment);
 
       loadingNotification.close();
@@ -89,8 +93,7 @@ public final class Main {
       debugLog.info("  os.name={}", environment.systemProperty("os.name"));
       debugLog.info("  os.version={}", environment.systemProperty("os.version"));
       debugLog.info("  os.arch={}", environment.systemProperty("os.arch"));
-      debugLog
-          .info("  java.runtime.version={}", environment.systemProperty("java.runtime.version"));
+      debugLog.info("  java.runtime.version={}", environment.systemProperty("java.runtime.version"));
       debugLog.info("  java.class.path={}", environment.systemProperty("java.class.path"));
       debugLog.info("  java.library.path={}", environment.systemProperty("java.library.path"));
       debugLog.info("  user.language={}", environment.systemProperty("user.language"));

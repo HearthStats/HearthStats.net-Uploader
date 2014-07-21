@@ -1,54 +1,37 @@
 package net.hearthstats.util;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ResourceBundle;
-
-import net.hearthstats.OldConfig;
 import net.hearthstats.config.GameLanguage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.ResourceBundle;
+
 
 public final class TranslationCard {
-    private TranslationCard() {
+  private TranslationCard() {}
+
+
+  private static ResourceBundle _bundle = null;
+
+
+  public static void changeTranslation(GameLanguage language) {
+    switch (language) {
+      case FR:
+        _bundle = ResourceBundle.getBundle("net.hearthstats.resources.card.cardFr");
+        break;
+      default:
+        _bundle = null;
+        break;
     }
+  }
 
-    private final static Logger   debugLog = LoggerFactory.getLogger( TranslationCard.class );
 
-    private static ResourceBundle _bundle  = null;
+  public static String t(String key) {
+    return _bundle.getString("card" + key);
+  }
 
-    public static void changeTranslation() {
-        GameLanguage lang = OldConfig.gameLanguage();
-        switch ( lang ) {
 
-        case FR:
-            _bundle = ResourceBundle.getBundle( "net.hearthstats.resources.card.cardFr" );
-            break;
-        default:
-            _bundle = null;
-            break;
-
-        }
-    }
-
-    public static String t( String key ) {
-        String value = _bundle.getString( "card" + key );
-        switch ( OldConfig.gameLanguage() ) {
-        case FR:
-            try {
-                return new String( value.getBytes( "ISO-8859-1" ), "UTF-8" );
-            } catch ( UnsupportedEncodingException e ) {
-                debugLog.debug( "Encoding unsupported  : " + e.getMessage() );
-            }
-        default:
-            return value;
-        }
-
-    }
-
-    public static Boolean hasKey( String key ) {
-        if ( _bundle == null )
-            return false;
-        return _bundle.containsKey( "card" + key );
-    }
+  public static Boolean hasKey(String key) {
+    if (_bundle == null)
+      return false;
+    return _bundle.containsKey("card" + key);
+  }
 }

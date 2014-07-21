@@ -8,7 +8,11 @@ import net.hearthstats.util.TranslationCard._
 
 object Card {
   val LEGENDARY = 5
-  private lazy val imageCacheFolder: String = OldConfig.getImageCacheFolder
+  private var imageCacheFolder: String = _
+
+  def setImageCacheFolder(imageCacheFolder: String) {
+    this.imageCacheFolder = imageCacheFolder
+  }
 }
 
 case class Card(

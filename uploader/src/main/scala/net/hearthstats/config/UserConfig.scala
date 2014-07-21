@@ -3,6 +3,7 @@ package net.hearthstats.config
 import java.util.prefs.Preferences
 
 import grizzled.slf4j.Logging
+import net.hearthstats.API
 
 /**
  * Stores and retrieves configuration for the current user by using the Java 7 Preferences API.
@@ -14,6 +15,20 @@ import grizzled.slf4j.Logging
 class UserConfig extends Config with Logging {
   import UserConfig._
 
+  val configApiBaseUrl = config("api.baseurl", API.DefaultApiBaseUrl)
+  val configUserKey = config("api.userkey", "your_userkey_here")
+
+  val enableAnalytics = config("enable.analytics", true)
+  val enableDeckOverlay = config("enable.deckoverlay", false)
+  val enableStartMin = config("enable.startmin", false)
+  val enableMinToTray = config("enable.mintotray", true)
+  val enableUpdateCheck = config("enable.updatecheck", true)
+
+  val optionGameLanguage = enumConfig("option.gamelanguage", GameLanguage.getDefault)
+  val optionMatchPopup = enumConfig("option.matchpopup", MatchPopup.getDefault)
+  val optionMonitoringMethod = enumConfig("option.monitoringmethod", MonitoringMethod.getDefault)
+  val optionNotificationType = enumConfig("option.notificationtype", NotificationType.HEARTHSTATS)
+
   val notifyOverall = config("notify.overall", true)
   val notifyHsFound = config("notify.hsfound", true)
   val notifyHsClosed = config("notify.hsclosed", true)
@@ -21,10 +36,6 @@ class UserConfig extends Config with Logging {
   val notifyMode = config("notify.mode", true)
   val notifyDeck = config("notify.deck", true)
   val notifyTurn = config("notify.turn", true)
-
-  val notificationType = enumConfig("notify.osx", NotificationType.HEARTHSTATS)
-
-  val monitoringMethod = enumConfig("notify.osx", MonitoringMethod.getDefault)
 
   val windowX = config("ui.window.x", 0)
   val windowY = config("ui.window.y", 0)
@@ -89,6 +100,14 @@ object UserConfig extends Logging {
       prefs.putInt(key, value)
   }
 
+  implicit val stringPref: UserConfigStore[String] = new UserConfigStore[String] {
+    def get(key: String, default: String) =
+      prefs.get(key, default)
+
+    def setImpl(key: String, value: String) =
+      prefs.put(key, value)
+  }
+
   def enum[T <: Enum[T]] = new UserConfigStore[T] {
     def get(key: String, default: T) = {
       val stringValue = prefs.get(key, default.toString)
@@ -97,7 +116,7 @@ object UserConfig extends Logging {
         Enum.valueOf(cl, stringValue)
       } catch {
         case ex: Exception => {
-          info(s"Unable to interpret value ${stringValue}, using default ${default} instead")
+          warn(s"Unable to interpret value ${stringValue}, using default ${default} instead")
           default
         }
       }

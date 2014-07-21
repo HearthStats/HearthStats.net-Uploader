@@ -1,515 +1,335 @@
 package net.hearthstats;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import javax.swing.JOptionPane;
-
 import net.hearthstats.config.*;
 import net.hearthstats.log.Log;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ini4j.Wini;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
+
 @Deprecated
 public class OldConfig {
 
-    private final static Logger     debugLog           = LoggerFactory.getLogger( OldConfig.class );
+  private final static Logger debugLog = LoggerFactory.getLogger(OldConfig.class);
 
-    public static final OS          os                 = parseOperatingSystem();
+  private static Wini _ini = null;
 
-    private static String           _version;
 
-    private static Wini             _ini               = null;
+  /**
+   * Migrates the existing config.ini file, if found, to the new configuration system.
+   * The config.ini file is deleted after migration.
+   * If there is no config.ini this step is skipped.
+   * @param environment
+   */
+  public static void migrateOldConfig(Environment environment) {
+    debugLog.debug("Looking for old config file to migrate...");
 
-    private static String           _userkey;
-
-    private static GameLanguage     gameLanguage;
-
-    private static boolean          _checkForUpdates;
-
-    private static boolean          _showDeckOverlay;
-
-    private static MatchPopup       showMatchPopup;
-
-    private static boolean          _analyticsEnabled;
-
-    private static boolean          _minToTray;
-
-    private static boolean          _startMinimized;
-
-    private static String           _defaultApiBaseUrl = "http://hearthstats.net/api/v1/";
-
-    private static String           _apiBaseUrl;
-
-    private static ProgramHelper    helper;
-
-    public static void rebuild(Environment environment) {
-        debugLog.debug( "Building config" );
-
-        storePreviousValues(environment);
-
-        getIni().clear();
-
-        // api
-        setUserKey( "your_userkey_here" );
-        setApiBaseUrl( _defaultApiBaseUrl );
-
-        // monitoring method
-//        setMonitoringMethod( MonitoringMethod.getDefault() );
-
-        // updates
-        setCheckForUpdates( true );
-
-        // notifications
-//        setUseOsxNotifications( environment == null ? false : environment.osxNotificationsSupported() );
-//        setShowNotifications( true );
-//        setShowHsFoundNotification( true );
-//        setShowHsClosedNotification( true );
-//        setShowScreenNotification( true );
-//        setShowModeNotification( true );
-//        setShowDeckNotification( true );
-//        setShowYourTurnNotification( true );
-
-        // analytics
-        setAnalyticsEnabled( true );
-
-        // ui
-        setMinToTray( true );
-        setStartMinimized( false );
-//        setX( 0 );
-//        setY( 0 );
-//        setWidth( 600 );
-//        setHeight( 700 );
-
-        restorePreviousValues();
-
-        try {
-            save();
-        } catch ( Throwable e ) {
-            Log.warn( "Error occurred trying to write settings file, your settings may not be saved", e );
-        }
-
+    if (getIni() == null) {
+      debugLog.debug("Old config file was not found, settings will not be migrated.");
+      return;
     }
 
-    public static String getApiBaseUrl() {
-        return getStringSetting( "API", "baseurl", _defaultApiBaseUrl );
+    debugLog.info("Old config file was found, settings are being migrated now...");
+
+    try {
+      Config config = environment.config();
+
+      setIfNotNull(config.configApiBaseUrl(), getApiBaseUrl());
+      setIfNotNull(config.configUserKey(), getUserKey());
+
+      setIfNotNull(config.enableAnalytics(), analyticsEnabled());
+      setIfNotNull(config.enableDeckOverlay(), showDeckOverlay());
+      setIfNotNull(config.enableStartMin(), startMinimized());
+      setIfNotNull(config.enableMinToTray(), minimizeToTray());
+      setIfNotNull(config.enableUpdateCheck(), checkForUpdates());
+
+      setIfNotNull(config.optionGameLanguage(), gameLanguage());
+      setIfNotNull(config.optionMatchPopup(), showMatchPopup());
+      setIfNotNull(config.optionMonitoringMethod(), monitoringMethod());
+      setIfNotNull(config.optionNotificationType(), notificationType());
+
+      setIfNotNull(config.notifyOverall(), showNotifications());
+      setIfNotNull(config.notifyHsFound(), showHsFoundNotification());
+      setIfNotNull(config.notifyHsClosed(), showHsClosedNotification());
+      setIfNotNull(config.notifyScreen(), showScreenNotification());
+      setIfNotNull(config.notifyMode(), showModeNotification());
+      setIfNotNull(config.notifyDeck(), showDeckNotification());
+      setIfNotNull(config.notifyTurn(), showYourTurnNotification());
+
+      setIfNotNull(config.windowX(), getX());
+      setIfNotNull(config.windowY(), getY());
+      setIfNotNull(config.windowWidth(), getWidth());
+      setIfNotNull(config.windowHeight(), getHeight());
+
+      setIfNotNull(config.deckX(), getDeckX());
+      setIfNotNull(config.deckY(), getDeckY());
+      setIfNotNull(config.deckWidth(), getDeckWidth());
+      setIfNotNull(config.deckHeight(), getDeckHeight());
+
+      File configFile = new File(getConfigPath());
+      if (configFile.exists()) {
+        debugLog.info("Deleting old config file {}", configFile.getAbsolutePath());
+        configFile.delete();
+      }
+
+    } catch (Throwable e) {
+      throw new RuntimeException("Unable to load your old configuration file. If this problem persists, try deleting your .ini file");
     }
 
-    private static void setApiBaseUrl( String baseUrl ) {
-        setStringValue( "API", "baseurl", baseUrl );
-    }
+  }
 
-    public static String getImageCacheFolder() {
-        File file = new File( "cache/cardimages" );
-        file.mkdirs();
-        return file.getAbsolutePath();
+  private static <T> void setIfNotNull(ConfigValue<T> configValue, T oldValue) {
+    if (oldValue != null) {
+      configValue.set(oldValue);
     }
+  }
 
-    public static String getUserKey() {
-        return getStringSetting( "API", "userkey", "your_userkey_here" );
+
+  private static String getApiBaseUrl() {
+    return getStringSetting("API", "baseurl", API.DefaultApiBaseUrl());
+  }
+
+
+  private static String getUserKey() {
+    return getStringSetting("API", "userkey", "your_userkey_here");
+  }
+
+
+  private static Integer getX() {
+    return getIntegerSetting("ui", "x", 0);
+  }
+
+
+  private static Integer getY() {
+    return getIntegerSetting("ui", "y", 0);
+  }
+
+
+  private static Integer getWidth() {
+    return getIntegerSetting("ui", "width", 600);
+  }
+
+
+  private static Integer getHeight() {
+    return getIntegerSetting("ui", "height", 700);
+  }
+
+
+  private static Integer getDeckX() {
+    return getIntegerSetting("ui", "deckx", 0);
+  }
+
+
+  private static Integer getDeckY() {
+    return getIntegerSetting("ui", "decky", 0);
+  }
+
+
+  private static Integer getDeckWidth() {
+    return getIntegerSetting("ui", "deckwidth", 485);
+  }
+
+
+  private static Integer getDeckHeight() {
+    return getIntegerSetting("ui", "deckheight", 600);
+  }
+
+
+  private static Boolean startMinimized() {
+    return getBooleanSetting("ui", "startminimized", false);
+  }
+
+
+  private static Boolean analyticsEnabled() {
+    return getBooleanSetting("analytics", "enabled", true);
+  }
+
+
+  private static Boolean checkForUpdates() {
+    return getBooleanSetting("updates", "check", true);
+  }
+
+
+  private static Boolean showDeckNotification() {
+    return getBooleanSetting("notifications", "deck", true);
+  }
+
+
+  private static Boolean showDeckOverlay() {
+    return getBooleanSetting("ui", "deckOverlay", false);
+    // since feature is still new, do not activate by default
+  }
+
+
+  private static Boolean showScreenNotification() {
+    return getBooleanSetting("notifications", "screen", true);
+  }
+
+
+  private static Boolean showHsFoundNotification() {
+    return getBooleanSetting("notifications", "hsfound", true);
+  }
+
+
+  private static Boolean showModeNotification() {
+    return getBooleanSetting("notifications", "mode", true);
+  }
+
+
+  private static Boolean showYourTurnNotification() {
+    return getBooleanSetting("notifications", "yourturn", true);
+  }
+
+
+  private static Boolean showHsClosedNotification() {
+    return getBooleanSetting("notifications", "hsclosed", true);
+  }
+
+
+  private static Boolean minimizeToTray() {
+    return getBooleanSetting("ui", "mintotray", true);
+  }
+
+
+  private static Boolean useOsxNotifications() {
+    try {
+      return getBooleanSetting("notifications", "osx", false);
+    } catch (Exception e) {
+      debugLog.warn("Ignoring exception reading OS X notifications settings, assuming they are disabled", e);
+      return false;
     }
+  }
 
-    public static int getX() {
-        return getIntegerSetting( "ui", "x", 0 );
-    }
 
-    public static int getY() {
-        return getIntegerSetting( "ui", "y", 0 );
-    }
-
-    public static int getWidth() {
-        return getIntegerSetting( "ui", "width", 600 );
-    }
-
-    public static int getHeight() {
-        return getIntegerSetting( "ui", "height", 700 );
-    }
-
-    public static int getDeckX() {
-        return getIntegerSetting( "ui", "deckx", 0 );
-    }
-
-    public static int getDeckY() {
-        return getIntegerSetting( "ui", "decky", 0 );
-    }
-
-    public static int getDeckWidth() {
-        return getIntegerSetting( "ui", "deckwidth", 485 );
-    }
-
-    public static int getDeckHeight() {
-        return getIntegerSetting( "ui", "deckheight", 600 );
-    }
-
-    public static boolean startMinimized() {
-        return getBooleanSetting( "ui", "startminimized", false );
-    }
-
-    public static boolean analyticsEnabled() {
-        return getBooleanSetting( "analytics", "enabled", true );
-    }
-
-    public static boolean showEventLog() {
-        return getBooleanSetting( "ui", "eventlog", true );
-    }
-
-    public static boolean mirrorGameImage() {
-        return getBooleanSetting( "ui", "mirrorgame", false );
-    }
-
-    public static boolean checkForUpdates() {
-        return getBooleanSetting( "updates", "check", true );
-    }
-
-    public static boolean showDeckNotification() {
-        return getBooleanSetting( "notifications", "deck", true );
-    }
-
-    public static boolean showDeckOverlay() {
-        return getBooleanSetting( "ui", "deckOverlay", false );
-        // since feature is still new, do not activate by default
-    }
-
-    public static boolean showScreenNotification() {
-        return getBooleanSetting( "notifications", "screen", true );
-    }
-
-    public static boolean showHsFoundNotification() {
-        return getBooleanSetting( "notifications", "hsfound", true );
-    }
-
-    public static boolean showModeNotification() {
-        return getBooleanSetting( "notifications", "mode", true );
-    }
-
-    public static boolean showYourTurnNotification() {
-        return getBooleanSetting( "notifications", "yourturn", true );
-    }
-
-    public static boolean showHsClosedNotification() {
-        return getBooleanSetting( "notifications", "hsclosed", true );
-    }
-
-    public static boolean minimizeToTray() {
-        return getBooleanSetting( "ui", "mintotray", true );
-    }
-
-    public static boolean useOsxNotifications() {
-        try {
-            return getBooleanSetting( "notifications", "osx", false );
-        } catch ( Exception e ) {
-            debugLog.warn( "Ignoring exception reading OS X notifications settings, assuming they are disabled", e );
-            return false;
-        }
-    }
-
-    public static boolean useOsxNotifications(Environment environment) {
-        try {
-            return getBooleanSetting( "notifications", "osx", environment == null ? false : environment.osxNotificationsSupported() );
-        } catch ( Exception e ) {
-            debugLog.warn( "Ignoring exception reading OS X notifications settings, assuming they are disabled", e );
-            return false;
-        }
-    }
-
-  public static NotificationType notificationType() {
+  private static NotificationType notificationType() {
     return useOsxNotifications() ? NotificationType.OSX : NotificationType.HEARTHSTATS;
   }
 
 
-  public static boolean showNotifications() {
-        return getBooleanSetting( "notifications", "enabled", true );
+  private static Boolean showNotifications() {
+    return getBooleanSetting("notifications", "enabled", true);
+  }
+
+
+  private static MatchPopup showMatchPopup() {
+    String stringValue = getStringSetting("ui", "matchpopup", MatchPopup.getDefault().name());
+    if (StringUtils.isBlank(stringValue)) {
+      return MatchPopup.getDefault();
+    } else {
+      try {
+        return MatchPopup.valueOf(stringValue);
+      } catch (IllegalArgumentException e) {
+        debugLog.debug("Could not parse matchpopup value \"{}\", using default instead", stringValue);
+        return MatchPopup.getDefault();
+      }
     }
+  }
 
-    public static MatchPopup showMatchPopup() {
-        String stringValue = getStringSetting( "ui", "matchpopup", MatchPopup.getDefault().name() );
-        if ( StringUtils.isBlank( stringValue ) ) {
-            return MatchPopup.getDefault();
-        } else {
-            try {
-                return MatchPopup.valueOf( stringValue );
-            } catch ( IllegalArgumentException e ) {
-                debugLog.debug( "Could not parse matchpopup value \"{}\", using default instead", stringValue );
-                return MatchPopup.getDefault();
-            }
-        }
+
+  private static MonitoringMethod monitoringMethod() {
+    String stringValue = getStringSetting("ui", "monitoringmethod", MonitoringMethod.getDefault().name());
+    if (StringUtils.isBlank(stringValue)) {
+      return MonitoringMethod.getDefault();
+    } else {
+      try {
+        return MonitoringMethod.valueOf(stringValue);
+      } catch (IllegalArgumentException e) {
+        debugLog.debug("Could not parse MonitoringMethod value \"{}\", using default instead", stringValue);
+        return MonitoringMethod.getDefault();
+      }
     }
+  }
 
-    public static MonitoringMethod monitoringMethod() {
-        String stringValue = getStringSetting( "ui", "monitoringmethod", MatchPopup.getDefault().name() );
-        if ( StringUtils.isBlank( stringValue ) ) {
-            return MonitoringMethod.getDefault();
-        } else {
-            try {
-                return MonitoringMethod.valueOf( stringValue );
-            } catch ( IllegalArgumentException e ) {
-                debugLog.debug( "Could not parse MonitoringMethod value \"{}\", using default instead", stringValue );
-                return MonitoringMethod.getDefault();
-            }
-        }
+
+  private static GameLanguage gameLanguage() {
+    String stringValue = getStringSetting("ui", "gamelanguage", GameLanguage.getDefault().name());
+    if (StringUtils.isBlank(stringValue)) {
+      return GameLanguage.getDefault();
+    } else {
+      // Game language 'EU' is being replaced with the more accurate 'EN'
+      if ("EU".equals(stringValue)) stringValue = "EN";
+      try {
+        return GameLanguage.valueOf(stringValue);
+      } catch (IllegalArgumentException e) {
+        debugLog.debug("Could not parse MonitoringMethod value \"{}\", using default instead", stringValue);
+        return GameLanguage.getDefault();
+      }
     }
+  }
 
-    public static GameLanguage gameLanguage() {
-        String stringValue = getStringSetting( "ui", "gamelanguage", MatchPopup.getDefault().name() );
-        if ( StringUtils.isBlank( stringValue ) ) {
-            return GameLanguage.getDefault();
-        } else {
-            try {
-                return GameLanguage.valueOf( stringValue );
-            } catch ( IllegalArgumentException e ) {
-                debugLog.debug( "Could not parse MonitoringMethod value \"{}\", using default instead", stringValue );
-                return GameLanguage.getDefault();
-            }
-        }
+
+  private static String getConfigPath() {
+    if (parseOperatingSystem() == OS.OSX) {
+      return getSystemProperty("user.home") + "/Library/Preferences/net.hearthstats.HearthStatsUploader.ini";
+    } else {
+      return "config.ini";
     }
+  }
 
-    public static String getVersion() {
-        if ( _version == null ) {
-            _version = "";
-            String versionFile = "/version";
-            // if(OldConfig.os.toString().equals("OSX")) {
-            // versionFile += "-osx";
-            // }
-            InputStream in = OldConfig.class.getResourceAsStream( versionFile );
-            BufferedReader br = new BufferedReader( new InputStreamReader( in ) );
-            String strLine;
-            try {
-                while ( ( strLine = br.readLine() ) != null ) {
-                    _version += strLine;
-                }
-            } catch ( IOException e ) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                JOptionPane.showMessageDialog( null, "Exception in Config: " + e.toString() );
-            }
-        }
-        return _version;
-    }
 
-    public static String getVersionWithOs() {
-        return getVersion() + '-' + os;
-    }
-
-    public static void setAnalyticsEnabled( boolean val ) {
-        setBooleanValue( "analytics", "enabled", val );
-    }
-
-    public static void setShowDeckOverlay( boolean val ) {
-        setBooleanValue( "ui", "deckOverlay", val );
-    }
-
-    public static void setShowMatchPopup( MatchPopup showMatchPopup ) {
-        setStringValue( "ui", "matchpopup", showMatchPopup == null ? "" : showMatchPopup.name() );
-    }
-
-    public static void setGameLanguage( GameLanguage gameLanguage ) {
-        setStringValue( "ui", "gamelanguage", gameLanguage == null ? "" : gameLanguage.name() );
-    }
-
-    public static void setCheckForUpdates( boolean val ) {
-        setBooleanValue( "updates", "check", val );
-    }
-
-    public static void setMinToTray( boolean val ) {
-        setBooleanValue( "ui", "mintotray", val );
-    }
-
-    public static void setStartMinimized( boolean val ) {
-        setBooleanValue( "ui", "startminimized", val );
-    }
-
-    public static void setUserKey( String userkey ) {
-        setStringValue( "API", "userkey", userkey );
-    }
-
-    private static void createConfigIniIfNecessary() {
-        File configFile = new File( getConfigPath() );
-        if ( !configFile.exists() ) {
-            if ( OldConfig.os == OS.OSX ) {
-                // The location has moved on Macs, so move the old config.ini to the new location if there is one
-                File oldConfigFile = new File( "config.ini" );
-                if ( oldConfigFile.exists() ) {
-                    debugLog.info( "Found old config.ini file in {}, moving it to {}", oldConfigFile.getAbsolutePath(), configFile.getAbsolutePath() );
-                    boolean renameSuccessful = oldConfigFile.renameTo( configFile );
-                    if ( renameSuccessful ) {
-                        debugLog.debug( "Moved successfully" );
-                        return;
-                    } else {
-                        debugLog.warn( "Unable to move config.ini file to {}, creating a new file", configFile.getAbsolutePath() );
-                    }
-                }
-            }
-
-            try {
-                configFile.createNewFile();
-            } catch ( IOException e ) {
-                Log.warn( "Error occurred while creating config.ini file", e );
-            }
-        }
-    }
-
-    private static String getConfigPath() {
-        if ( OldConfig.os == OS.OSX ) {
-            return getSystemProperty( "user.home" ) + "/Library/Preferences/net.hearthstats.HearthStatsUploader.ini";
-        } else {
-            return "config.ini";
-        }
-    }
-
-    private static void setStringValue( String group, String key, String val ) {
-        getIni().put( group, key, val );
+  private static Wini getIni() {
+    if (_ini == null) {
+      File configFile = new File(getConfigPath());
+      if (configFile.exists()) {
         try {
-            getIni().store();
-        } catch ( IOException e ) {
-            Log.warn( "Error occurred while setting key " + key + " in config.ini", e );
+          _ini = new Wini(configFile);
+        } catch (Exception e) {
+          Log.warn("Error occurred trying to read settings file, your settings may not be loaded correctly", e);
         }
+      }
     }
+    return _ini;
+  }
 
-    private static void setBooleanValue( String group, String key, boolean val ) {
-        getIni().put( group, key, val );
+
+  private static Boolean getBooleanSetting(String group, String key, boolean deflt) {
+    String setting = getIni().get(group, key);
+    return setting == null ? null : setting.equals("true");
+  }
+
+
+  private static Integer getIntegerSetting(String group, String key, int deflt) {
+    String setting = getIni().get(group, key);
+    return setting == null ? null : Integer.parseInt(setting);
+  }
+
+
+  private static String getStringSetting(String group, String key, String deflt) {
+    String setting = getIni().get(group, key);
+    return setting;
+  }
+
+
+  private static String getSystemProperty(String property) {
+    try {
+      return System.getProperty(property);
+    } catch (SecurityException ex) {
+      // Some system properties may not be available if the user has their security settings locked down
+      debugLog.warn("Caught a SecurityException reading the system property '" + property + "', defaulting to blank string.");
+      return "";
     }
+  }
 
-    private static Wini getIni() {
-        if ( _ini == null ) {
-            createConfigIniIfNecessary();
-            try {
-                _ini = new Wini( new File( getConfigPath() ) );
-            } catch ( Exception e ) {
-                Log.warn( "Error occurred trying to read settings file, your settings may not be loaded correctly", e );
-            }
-        }
-        return _ini;
+
+  /**
+   * Parses the os.name system property to determine what operating system we are using.
+   *
+   * @return The current OS
+   */
+  private static OS parseOperatingSystem() {
+    String osString = getSystemProperty("os.name");
+    if (osString == null) {
+      return OS.UNSUPPORTED;
+    } else if (osString.startsWith("Windows")) {
+      return OS.WINDOWS;
+    } else if (osString.startsWith("Mac OS X")) {
+      return OS.OSX;
+    } else {
+      return OS.UNSUPPORTED;
     }
-
-    private static boolean getBooleanSetting( String group, String key, boolean deflt ) {
-        String setting = getIni().get( group, key );
-        return setting == null ? deflt : setting.equals( "true" );
-    }
-
-    private static int getIntegerSetting( String group, String key, int deflt ) {
-        String setting = getIni().get( group, key );
-        return setting == null ? deflt : Integer.parseInt( setting );
-    }
-
-    private static String getStringSetting( String group, String key, String deflt ) {
-        String setting = getIni().get( group, key );
-        return setting == null ? deflt : setting;
-    }
-
-    private static void restorePreviousValues() {
-        setUserKey( _userkey );
-        setApiBaseUrl( _apiBaseUrl );
-//        setMonitoringMethod( monitoringMethod );
-        setGameLanguage( gameLanguage );
-        setCheckForUpdates( _checkForUpdates );
-//        setUseOsxNotifications( _useOsxNotifications );
-//        setShowNotifications( _showNotifications );
-//        setShowHsFoundNotification( _showHsFoundNotification );
-//        setShowHsClosedNotification( _showHsClosedNotification );
-//        setShowScreenNotification( _showScreenNotification );
-//        setShowModeNotification( _showModeNotification );
-//        setShowDeckNotification( _showDeckNotification );
-        setShowDeckOverlay( _showDeckOverlay );
-        setShowMatchPopup( showMatchPopup );
-        setAnalyticsEnabled( _analyticsEnabled );
-        setMinToTray( _minToTray );
-        setStartMinimized( _startMinimized );
-//        setX( _x );
-//        setY( _y );
-//        setWidth( _width );
-//        setHeight( _height );
-//        setDeckX( _deckx );
-//        setDeckY( _decky );
-//        setDeckWidth( _deckwidth );
-//        setDeckHeight( _deckheight );
-    }
-
-    private static void storePreviousValues(Environment environment) {
-        _userkey = getUserKey();
-        _apiBaseUrl = getApiBaseUrl();
-//        monitoringMethod = monitoringMethod();
-        gameLanguage = gameLanguage();
-        _checkForUpdates = checkForUpdates();
-//        _useOsxNotifications = useOsxNotifications(environment);
-//        _showNotifications = showNotifications();
-//        _showHsFoundNotification = showHsFoundNotification();
-//        _showHsClosedNotification = showHsClosedNotification();
-//        _showScreenNotification = showScreenNotification();
-//        _showModeNotification = showModeNotification();
-//        _showDeckNotification = showDeckNotification();
-        _showDeckOverlay = showDeckOverlay();
-        showMatchPopup = showMatchPopup();
-        _analyticsEnabled = analyticsEnabled();
-        _minToTray = minimizeToTray();
-        _startMinimized = startMinimized();
-//        _x = getX();
-//        _y = getY();
-//        _width = getWidth();
-//        _height = getHeight();
-//        _deckx = getDeckX();
-//        _decky = getDeckY();
-//        _deckwidth = getDeckWidth();
-//        _deckheight = getDeckHeight();
-    }
-
-    private static void setIntVal( String group, String key, int val ) {
-        getIni().put( group, key, val + "" );
-    }
-
-    public static void save() throws IOException {
-        getIni().store();
-    }
-
-    public static String getJavaLibraryPath() {
-        return getSystemProperty( "java.library.path" );
-    }
-
-    public static String getSystemProperty( String property ) {
-        try {
-            return System.getProperty( property );
-        } catch ( SecurityException ex ) {
-            // Some system properties may not be available if the user has their security settings locked down
-            debugLog.warn( "Caught a SecurityException reading the system property '" + property + "', defaulting to blank string." );
-            return "";
-        }
-    }
-
-    /**
-     * Parses the os.name system property to determine what operating system we are using.
-     * This method is private because you should use the cached version {@link OldConfig#os)} which is faster.
-     * 
-     * @return The current OS
-     */
-    private static OS parseOperatingSystem() {
-        String osString = getSystemProperty( "os.name" );
-        if ( osString == null ) {
-            return OS.UNSUPPORTED;
-        } else if ( osString.startsWith( "Windows" ) ) {
-            return OS.WINDOWS;
-        } else if ( osString.startsWith( "Mac OS X" ) ) {
-            return OS.OSX;
-        } else {
-            return OS.UNSUPPORTED;
-        }
-    }
-
-    public static String getExtractionFolder() {
-        if ( os == OS.OSX ) {
-            File libFolder = new File( getSystemProperty( "user.home" ) + "/Library/Application Support/HearthStatsUploader" );
-            libFolder.mkdir();
-            return libFolder.getAbsolutePath();
-
-        } else {
-            String path = "tmp";
-            ( new File( path ) ).mkdirs();
-            return path;
-        }
-    }
+  }
 
 }

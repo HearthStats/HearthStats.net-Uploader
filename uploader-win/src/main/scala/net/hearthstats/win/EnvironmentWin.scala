@@ -24,8 +24,14 @@ class EnvironmentWin extends Environment with Logging {
 
   val extractionFolder = {
     val path = "tmp"
-    (new File(path)).mkdirs
+    (new File(path)).mkdirs()
     path
+  }
+
+  val imageCacheFolder = {
+    val cacheFolder = new File("cache/cardimages")
+    cacheFolder.mkdirs()
+    cacheFolder.getAbsolutePath
   }
 
   val hearthstoneConfigFolder = {

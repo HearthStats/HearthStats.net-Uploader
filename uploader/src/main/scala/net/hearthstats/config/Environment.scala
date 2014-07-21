@@ -26,6 +26,11 @@ abstract class Environment extends Logging {
   val extractionFolder: String
 
   /**
+   * The location where card images are cached.
+   */
+  val imageCacheFolder: String
+
+  /**
    * The location of the Hearthstone log.config file.
    */
   val hearthstoneConfigFolder: String

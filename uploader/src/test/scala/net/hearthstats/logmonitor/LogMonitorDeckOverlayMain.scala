@@ -12,8 +12,7 @@ object LogMonitorDeckOverlayMain extends App {
   val tempLogFile = File.createTempFile("hssample", "log")
   println(s"monitorin $tempLogFile ")
   val monitor = new HearthstoneLogMonitor(tempLogFile.getAbsolutePath)
-  OldConfig.setGameLanguage(GameLanguage.EU)
-  TranslationCard.changeTranslation()
+  TranslationCard.changeTranslation(environment.config.optionGameLanguage.get)
   val deck = DeckUtils.getDeck(20034)
   ClickableDeckBox.showBox(deck, monitor.cardEvents, environment)
   new Thread {
