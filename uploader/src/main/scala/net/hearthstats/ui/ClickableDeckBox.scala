@@ -77,12 +77,15 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent], environmen
   override def dispose(): Unit = {
     connection.unsubscribe()
     try {
-      val p = getLocationOnScreen
-      deckX.set(p.x)
-      deckY.set(p.y)
-      val rect = getSize()
-      deckWidth.set(rect.getWidth.toInt)
-      deckHeight.set(rect.getHeight.toInt)
+      // Save the location of the window, if it is visible (it won't be visible if the selected deck is invalid)
+      if (isVisible) {
+        val p = getLocationOnScreen
+        deckX.set(p.x)
+        deckY.set(p.y)
+        val rect = getSize()
+        deckWidth.set(rect.getWidth.toInt)
+        deckHeight.set(rect.getHeight.toInt)
+      }
     } catch {
       case e: Exception =>
         Log.warn("Error occurred trying to save your settings, your deck overlay position may not be saved", e)
