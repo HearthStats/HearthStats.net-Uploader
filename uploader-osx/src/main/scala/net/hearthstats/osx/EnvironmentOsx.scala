@@ -1,12 +1,13 @@
 package net.hearthstats.osx
 
-import net.hearthstats.config.{Application, NotificationType, OS, Environment}
-import net.hearthstats.notification.{ DialogNotificationQueue, NotificationQueue }
 import java.io.File
-import net.hearthstats.{Config, ProgramHelper}
-import net.hearthstats.updater.api.model.Release
+
 import grizzled.slf4j.Logging
-import org.apache.commons.lang3.builder.ToStringBuilder
+import net.hearthstats.config._
+import net.hearthstats.notification.{DialogNotificationQueue, NotificationQueue}
+import net.hearthstats.updater.api.model.Release
+import net.hearthstats.{OldConfig, ProgramHelper}
+import org.apache.commons.io.FileUtils
 
 /**
  * Mac OS X environment.
@@ -15,12 +16,30 @@ class EnvironmentOsx extends Environment with Logging {
 
   val os: OS = OS.OSX
 
+  val config = new UserConfig
+
   val programHelper: ProgramHelper = new ProgramHelperOsx
 
   val extractionFolder = {
-    val libFolder = new File(Environment.systemProperty("user.home") + "/Library/Application Support/HearthStatsUploader")
-    libFolder.mkdir
+    val oldLibFolder = new File(Environment.systemProperty("user.home") + "/Library/Application Support/HearthStatsUploader")
+    val libFolder = new File(Environment.systemProperty("user.home") + "/Library/Application Support/HearthStatsCompanion")
+
+    // If the old extraction folder still exists, move it to the new location
+    if (oldLibFolder.isDirectory) {
+      if (!libFolder.exists()) {
+        info(s"Moving extraction folder from ${oldLibFolder.getAbsolutePath} to ${libFolder.getAbsolutePath}")
+        FileUtils.moveDirectory(oldLibFolder, libFolder)
+      }
+    }
+
+    libFolder.mkdirs()
     libFolder.getAbsolutePath
+  }
+
+  val imageCacheFolder = {
+    val cacheFolder = new File(Environment.systemProperty("user.home") + "/Library/Caches/HearthStatsCompanion/cardimages")
+    cacheFolder.mkdirs()
+    cacheFolder.getAbsolutePath
   }
 
   val hearthstoneConfigFolder = {
@@ -53,7 +72,7 @@ class EnvironmentOsx extends Environment with Logging {
 
       if (updaterFile.exists) {
         logger.debug(s"Found updater.jar in ${updaterFile.getPath}")
-        val javaLibraryPath: File = new File(Config.getJavaLibraryPath)
+        val javaLibraryPath: File = new File(Environment.systemProperty("java.library.path"))
         val bundlePath: File = javaLibraryPath.getParentFile.getParentFile.getParentFile
         val javaHome: String = System.getProperty("java.home")
 

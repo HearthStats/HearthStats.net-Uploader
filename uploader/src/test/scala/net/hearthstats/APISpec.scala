@@ -7,7 +7,7 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class APISpec extends FlatSpec with Matchers {
-  API.key = "a9efa89e4a7a806d428bdda944d7b48f" // a specific test key
+  API.setConfig(EnvironmentTest.config)
 
   "The API" should "return some cards" in {
     val cards = CardUtils.cards

@@ -5,7 +5,7 @@ import scala.concurrent.{ Future, Promise }
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.joda.time.format.DateTimeFormat
 import javax.swing.JOptionPane.{ YES_NO_OPTION, YES_OPTION, showConfirmDialog }
-import net.hearthstats.{ Config, HearthstoneMatch }
+import net.hearthstats.{ HearthstoneMatch }
 import net.hearthstats.config.TempConfig
 import net.hearthstats.log.Log
 import net.hearthstats.API

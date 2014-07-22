@@ -1,25 +1,20 @@
 package net.hearthstats.logmonitor
 
-import java.io.File
-import java.io.FileWriter
-import java.io.BufferedWriter
-import net.hearthstats.DeckUtils
-import javax.swing.JOptionPane
-import net.hearthstats.ui.ClickableDeckBox
-import javax.swing.JFrame
-import javax.swing.JDialog
-import net.hearthstats.Config
-import net.hearthstats.util.TranslationCard
+import java.io.{BufferedWriter, File, FileWriter}
+
 import net.hearthstats.config.GameLanguage
+import net.hearthstats.ui.ClickableDeckBox
+import net.hearthstats.util.TranslationCard
+import net.hearthstats.{DeckUtils, EnvironmentTest, OldConfig}
 
 object LogMonitorDeckOverlayMain extends App {
+  val environment = EnvironmentTest
   val tempLogFile = File.createTempFile("hssample", "log")
   println(s"monitorin $tempLogFile ")
   val monitor = new HearthstoneLogMonitor(tempLogFile.getAbsolutePath)
-  Config.setGameLanguage(GameLanguage.EU)
-  TranslationCard.changeTranslation()
+  TranslationCard.changeTranslation(environment.config.optionGameLanguage.get)
   val deck = DeckUtils.getDeck(20034)
-  ClickableDeckBox.showBox(deck, monitor.cardEvents)
+  ClickableDeckBox.showBox(deck, monitor.cardEvents, environment)
   new Thread {
     override def run() = {
       val writer = new BufferedWriter(new FileWriter(tempLogFile))

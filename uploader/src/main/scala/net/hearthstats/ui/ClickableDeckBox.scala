@@ -3,6 +3,8 @@ package net.hearthstats.ui
 import java.awt.Dimension
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import net.hearthstats.config.Environment
+
 import scala.swing.Swing.onEDT
 import javax.swing.Box.createVerticalBox
 import javax.swing.BoxLayout
@@ -24,14 +26,16 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.WindowConstants
 import rx.lang.scala.observables.ConnectableObservable
-import net.hearthstats.Config
+import net.hearthstats.OldConfig
 import java.awt.BorderLayout
 import javax.swing.JCheckBox
 import scala.swing.Swing._
 import scala.concurrent.Future
 
-class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
+class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent], environment: Environment)
   extends JFrame(deck.name) {
+
+  import environment.config._
 
   val imagesReady = CardUtils.downloadImages(deck.cards)
 
@@ -72,18 +76,19 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
 
   override def dispose(): Unit = {
     connection.unsubscribe()
-    println("unsub")
-    val p = getLocationOnScreen
-    Config.setDeckX(p.x)
-    Config.setDeckY(p.y)
-    val rect = getSize()
-    Config.setDeckWidth(rect.getWidth.toInt)
-    Config.setDeckHeight(rect.getHeight.toInt)
     try {
-      Config.save()
+      // Save the location of the window, if it is visible (it won't be visible if the selected deck is invalid)
+      if (isVisible) {
+        val p = getLocationOnScreen
+        deckX.set(p.x)
+        deckY.set(p.y)
+        val rect = getSize()
+        deckWidth.set(rect.getWidth.toInt)
+        deckHeight.set(rect.getHeight.toInt)
+      }
     } catch {
       case e: Exception =>
-        Log.warn("Error occurred trying to write settings file, your settings may not be saved", e)
+        Log.warn("Error occurred trying to save your settings, your deck overlay position may not be saved", e)
     }
     super.dispose()
   }
@@ -102,12 +107,14 @@ class ClickableDeckBox(deck: Deck, cardEvents: Observable[CardEvent])
 object ClickableDeckBox {
   val instances = collection.mutable.ArrayBuffer.empty[ClickableDeckBox]
 
-  def showBox(deck: Deck, cardEvents: Observable[CardEvent]): ClickableDeckBox = {
+  def showBox(deck: Deck, cardEvents: Observable[CardEvent], environment: Environment): ClickableDeckBox = {
+    import environment.config._
+
     for (d <- instances) d.dispose()
     instances.clear()
-    val box = new ClickableDeckBox(deck, cardEvents)
-    box.setLocation(Config.getDeckX, Config.getDeckY)
-    box.setSize(Config.getDeckWidth, Config.getDeckHeight)
+    val box = new ClickableDeckBox(deck, cardEvents, environment)
+    box.setLocation(deckX, deckY)
+    box.setSize(deckWidth, deckHeight)
     box.setVisible(true)
     instances += box
     box

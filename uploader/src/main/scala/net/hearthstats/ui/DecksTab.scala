@@ -19,14 +19,14 @@ import net.hearthstats.util.Browse
 import net.hearthstats.util.HsRobot
 import scala.Some
 
-class DecksTab(val monitor: Monitor) extends JPanel {
+class DecksTab(val monitor: CompanionFrame) extends JPanel {
 
   val deckSlotComboBoxes = 1 to 9 map { new DeckSlotPanel(_) }
 
   setLayout(new MigLayout)
   add(new JLabel(" "), "wrap")
-  add(new JLabel(t("set_your_deck_slots")), "skip")
-  add(new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Decks-Tab", "Help on Decks tab"), "skip,right,wrap")
+  add(new JLabel(t("set_your_deck_slots")), "skip, span 2")
+  add(new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Decks-Tab", "Help on Decks tab"), "right,wrap")
 
   add(new JLabel(" "), "wrap")
   add(deckSlotComboBoxes(0), "skip")
@@ -106,11 +106,11 @@ class DecksTab(val monitor: Monitor) extends JPanel {
         if (!d.isValid) {
           JOptionPane.showConfirmDialog(this,
             s"""${d.name} is not valid (${d.cardCount} cards). Do you want to edit it first on Heartstats.net ?""".stripMargin) match {
-            case JOptionPane.YES_OPTION =>
-              Browse(s"http://hearthstats.net/decks/${d.slug}/edit")
-            case JOptionPane.NO_OPTION => doCreate(d)
-            case _ =>
-          }
+              case JOptionPane.YES_OPTION =>
+                Browse(s"http://hearthstats.net/decks/${d.slug}/edit")
+              case JOptionPane.NO_OPTION => doCreate(d)
+              case _ =>
+            }
         } else doCreate(d)
       }
       case None => {
@@ -120,7 +120,7 @@ class DecksTab(val monitor: Monitor) extends JPanel {
       }
     }
 
-    def doCreate(d: Deck) = HsRobot(monitor._hsHelper.getHSWindowBounds).create(d)
+    def doCreate(d: Deck) = HsRobot(monitor.monitor._hsHelper.getHSWindowBounds).create(d)
   }
 
   class DeckSlotPanel(slot: Int) extends JPanel {

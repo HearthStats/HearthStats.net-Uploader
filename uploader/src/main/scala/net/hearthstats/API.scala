@@ -4,21 +4,28 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Observable
-
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConversions.mapAsJavaMap
-
 import org.json.simple.JSONArray
 import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
-
 import grizzled.slf4j.Logging
 import net.hearthstats.log.Log
+import net.hearthstats.config.Config
 
 //TODO : replace this JSON implementation with a more typesafe one
 object API extends Observable with Logging {
+
+  val DefaultApiBaseUrl: String = "http://hearthstats.net/api/v1/"
+
   var lastMatchId = -1
   var message = ""
+
+  var config: Config = _
+
+  def setConfig(c: Config) {
+    config = c
+  }
 
   lazy val awsKeys: Seq[String] = _get("users/premium") match {
     case None =>
@@ -96,9 +103,9 @@ object API extends Observable with Logging {
 
   //can return JSONObject or JSONArray
   private def _get(method: String): Option[AnyRef] = {
-    val baseUrl = Config.getApiBaseUrl + method + "?userkey="
+    val baseUrl = config.configApiBaseUrl.get + method + "?userkey="
     debug(s"API get $baseUrl********")
-    val url = new URL(baseUrl + key)
+    val url = new URL(baseUrl + config.configUserKey.get)
     try {
       val resultString = io.Source.fromURL(url, "UTF-8").getLines.mkString("\n")
       debug(s"API get result = $resultString")
@@ -154,10 +161,10 @@ object API extends Observable with Logging {
   }
 
   private def _post(method: String, jsonData: JSONObject): Option[JSONObject] = {
-    val baseUrl = Config.getApiBaseUrl + method + "?userkey="
+    val baseUrl = DefaultApiBaseUrl + method + "?userkey="
     debug(s"API post $baseUrl********")
     debug("API post data = " + jsonData.toJSONString)
-    val url = new URL(baseUrl + key)
+    val url = new URL(baseUrl + config.configUserKey.get)
     try {
       val httpcon = (url.openConnection()).asInstanceOf[HttpURLConnection]
       httpcon.setDoOutput(true)
@@ -193,8 +200,6 @@ object API extends Observable with Logging {
       res.asInstanceOf[java.util.List[_]].map(_.asInstanceOf[JSONObject]).toList
     case None => List.empty
   }
-
-  var key: String = Config.getUserKey
 
   private def _dispatchResultMessage(m: String) {
     message = m

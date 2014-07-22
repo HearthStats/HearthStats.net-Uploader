@@ -5,14 +5,15 @@ import java.text.MessageFormat
 import java.util.{ Observable, ResourceBundle }
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.apache.commons.lang3.StringUtils
+
 import grizzled.slf4j.Logging
-import net.hearthstats.{ BackgroundImageSave, Config, HearthstoneMatch, Main }
+import net.hearthstats.{ BackgroundImageSave, OldConfig, HearthstoneMatch, Main, Monitor }
 import net.hearthstats.log.Log
 import net.hearthstats.modules.{ ReplayHandler, VideoEncoderFactory }
 import net.hearthstats.logmonitor.{ HeroDestroyedEvent, HeroEvent }
 import net.hearthstats.ocr.{ OcrException, OpponentNameRankedOcr, OpponentNameUnrankedOcr, RankLevelOcr }
 import net.hearthstats.state.{ PixelLocation, Screen }
-import net.hearthstats.state.Screen.{ ARENA_LOBBY, MATCH_STARTINGHAND, MATCH_VS, PLAY_LOBBY, PRACTICE_LOBBY }
+import net.hearthstats.state.Screen._
 import net.hearthstats.state.ScreenGroup
 import net.hearthstats.state.ScreenGroup.{ MATCH_END, MATCH_PLAYING, MATCH_START }
 import net.hearthstats.state.UniquePixel
@@ -106,6 +107,10 @@ object HearthstoneAnalyser extends Observable with Logging {
         case PRACTICE_LOBBY =>
           setMode("Practice")
 
+        case VERSUS_LOBBY =>
+          setMode("Friendly")
+          testForDeckSlot(image)
+
         case ARENA_LOBBY =>
           setMode("Arena")
           testForNewArenaRun(image)
@@ -171,7 +176,7 @@ object HearthstoneAnalyser extends Observable with Logging {
           startTimer()
           if (previousScreen != null && previousScreen.group == ScreenGroup.MATCH_START &&
             (hsMatch.opponentClass == null || hsMatch.userClass == null)) {
-            Log.warn(t("warning.classdetection", Config.getExtractionFolder))
+            Log.warn(t("warning.classdetection", monitor.environment.extractionFolder))
           }
 
         case _ =>

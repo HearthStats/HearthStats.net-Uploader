@@ -1,10 +1,7 @@
 package net.hearthstats.analysis;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,15 +23,18 @@ import org.slf4j.LoggerFactory;
  *
  * @author gtch
  */
-public class IndividualPixelAnalyserTest {
+public class IndividualPixelAnalyserMain {
 
-    private final static Logger log = LoggerFactory.getLogger(IndividualPixelAnalyserTest.class);
+    private final static Logger log = LoggerFactory.getLogger(IndividualPixelAnalyserMain.class);
 
 
     private final static String IMAGE_PATH = "/tmp/hearthstats";
     private final static int PAGE_SIZE = 25;
 
-	// @Test
+  public static void main(String[] args) throws Exception {
+    new IndividualPixelAnalyserMain().testYourClassDetection();
+  }
+
     public void testYourClassDetection() throws Exception {
 
         ScreenAnalyser analyser = new ScreenAnalyser();

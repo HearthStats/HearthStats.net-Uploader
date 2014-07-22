@@ -1,12 +1,12 @@
 package net.hearthstats.win
 
-import net.hearthstats.config.{Application, NotificationType, OS, Environment}
-import net.hearthstats.notification.{ DialogNotificationQueue, NotificationQueue }
 import java.io.File
-import org.apache.commons.lang3.StringUtils
-import net.hearthstats.updater.api.model.Release
+
 import grizzled.slf4j.Logging
-import org.apache.commons.lang3.builder.ToStringBuilder
+import net.hearthstats.config._
+import net.hearthstats.notification.{DialogNotificationQueue, NotificationQueue}
+import net.hearthstats.updater.api.model.Release
+import org.apache.commons.lang3.StringUtils
 
 /**
  * Windows environment.
@@ -15,6 +15,8 @@ class EnvironmentWin extends Environment with Logging {
 
   val os: OS = OS.WINDOWS
 
+  val config = new UserConfig
+
   val programHelper: ProgramHelperWindows = new ProgramHelperWindows
 
   // OS X notifications are not supported
@@ -22,8 +24,14 @@ class EnvironmentWin extends Environment with Logging {
 
   val extractionFolder = {
     val path = "tmp"
-    (new File(path)).mkdirs
+    (new File(path)).mkdirs()
     path
+  }
+
+  val imageCacheFolder = {
+    val cacheFolder = new File("cache/cardimages")
+    cacheFolder.mkdirs()
+    cacheFolder.getAbsolutePath
   }
 
   val hearthstoneConfigFolder = {
