@@ -25,8 +25,8 @@ class DecksTab(val monitor: CompanionFrame) extends JPanel {
 
   setLayout(new MigLayout)
   add(new JLabel(" "), "wrap")
-  add(new JLabel(t("set_your_deck_slots")), "skip")
-  add(new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Decks-Tab", "Help on Decks tab"), "skip,right,wrap")
+  add(new JLabel(t("set_your_deck_slots")), "skip, span 2")
+  add(new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Decks-Tab", "Help on Decks tab"), "right,wrap")
 
   add(new JLabel(" "), "wrap")
   add(deckSlotComboBoxes(0), "skip")
