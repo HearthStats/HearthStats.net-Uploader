@@ -15,7 +15,7 @@ public final class TranslationCard {
   public static void changeTranslation(GameLanguage language) {
     switch (language) {
       case FR:
-        _bundle = ResourceBundle.getBundle("net.hearthstats.resources.card.cardFr");
+        _bundle = ResourceBundle.getBundle("net.hearthstats.resources.card.cardFr", new UTF8Control());
         break;
       default:
         _bundle = null;

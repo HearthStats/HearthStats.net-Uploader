@@ -1,21 +1,14 @@
 package net.hearthstats.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
-import java.util.ResourceBundle.Control;
 
 public final class Translations {
   private Translations() {
   } // singleton
 
-  private static ResourceBundle _bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main");
+  private static ResourceBundle _bundle = ResourceBundle.getBundle(
+      "net.hearthstats.resources.Main", new UTF8Control());
 
   /**
    * Loads text from the main resource bundle, using the local language when
