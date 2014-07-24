@@ -36,19 +36,19 @@ abstract class ProgramHelper extends Observable {
   /**
    * Returns true if config was created.
    */
-  def createConfig(environment: Environment): Boolean = {
-    val logConfigFile = new File(s"${environment.hearthstoneConfigFolder}/log.config")
-    if (logConfigFile.exists) {
-      Log.info(s"Using existing Hearthstone log config $logConfigFile")
-      false
-    } else {
-      val writer = new FileWriter(logConfigFile)
-      writer.write(configContent)
-      writer.close()
-      Log.info(s"Created new Hearthstone log config $logConfigFile")
-      true
-    }
-  }
+  //  def createConfig(environment: Environment): Boolean = {
+  //    val logConfigFile = new File(s"${environment.hearthstoneConfigFolder}/log.config")
+  //    if (logConfigFile.exists) {
+  //      Log.info(s"Using existing Hearthstone log config $logConfigFile")
+  //      false
+  //    } else {
+  //      val writer = new FileWriter(logConfigFile)
+  //      writer.write(configContent)
+  //      writer.close()
+  //      Log.info(s"Created new Hearthstone log config $logConfigFile")
+  //      true
+  //    }
+  //  }
 
   var configContent =
     """[LoadingScreen]

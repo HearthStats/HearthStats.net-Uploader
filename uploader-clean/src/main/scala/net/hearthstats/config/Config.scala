@@ -13,7 +13,7 @@ trait ConfigComponent {
     def configApiBaseUrl: ConfigValue[String]
     def configUserKey: ConfigValue[String]
 
-    def gameLogFile: ConfigValue[String]
+    //    def gameLogFile: ConfigValue[String]
 
     def enableAnalytics: ConfigValue[Boolean]
     def enableDeckOverlay: ConfigValue[Boolean]
@@ -21,7 +21,7 @@ trait ConfigComponent {
     def enableMinToTray: ConfigValue[Boolean]
     def enableUpdateCheck: ConfigValue[Boolean]
 
-    def optionGameLanguage: ConfigValue[GameLanguage]
+    def optionGameLanguage: ConfigValue[String]
     def optionMatchPopup: ConfigValue[MatchPopup]
     def optionMonitoringMethod: ConfigValue[MonitoringMethod]
     def optionNotificationType: ConfigValue[NotificationType]

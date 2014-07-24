@@ -56,11 +56,11 @@
 		</dependency>
 
 		<!-- optional dependency. If present video replays will be generated. -->
-		<dependency>
-			<groupId>net.hearthstats</groupId>
-			<artifactId>video</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>net.hearthstats</groupId> -->
+<!-- 			<artifactId>video</artifactId> -->
+<!-- 			<version>${project.version}</version> -->
+<!-- 		</dependency> -->
 
 		<dependency>
 			<artifactId>scala-library</artifactId>

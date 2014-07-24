@@ -1,19 +1,8 @@
-package net.hearthstats
+package net.hearthstats.core
 
 import java.io.File
-import java.net.MalformedURLException
 import java.net.URL
-import Card._
-import net.hearthstats.util.TranslationCard._
-
-object Card {
-  val LEGENDARY = 5
-  private var imageCacheFolder: String = _
-
-  def setImageCacheFolder(imageCacheFolder: String) {
-    this.imageCacheFolder = imageCacheFolder
-  }
-}
+import net.hearthstats.util.TranslationComponent
 
 case class Card(
   id: Int,
@@ -24,9 +13,13 @@ case class Card(
   collectible: Boolean = true)
   extends Comparable[Card] {
 
-  val name: String =
-    if (hasKey(id.toString)) t(id.toString)
-    else originalName
+  val LEGENDARY = 5
+
+  def name(implicit translation: TranslationComponent#Translation): String =
+    if (translation.has(id.toString))
+      translation.t(id.toString)
+    else
+      originalName
 
   val isLegendary: Boolean = rarity == LEGENDARY
 
@@ -35,8 +28,8 @@ case class Card(
   val fileName: String =
     originalName.toLowerCase.replaceAll(dashes, "-").replaceAll(remove, "") + ".png"
 
-  val localFile: File = new File(imageCacheFolder, fileName)
-  val localURL: URL = localFile.toURI.toURL
+  //  val localFile: File = new File(imageCacheFolder, fileName)
+  //  val localURL: URL = localFile.toURI.toURL
 
   val url: String =
     String.format("https://s3-us-west-2.amazonaws.com/hearthstats/cards/%s", fileName)

@@ -1,7 +1,7 @@
-package net.hearthstats.logmonitor
+package net.hearthstats.game
 
-import net.hearthstats.logmonitor.CardEventType._
-import net.hearthstats.Card
+import CardEventType._
+import net.hearthstats.core.Card
 
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent

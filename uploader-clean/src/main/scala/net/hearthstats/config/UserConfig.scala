@@ -12,6 +12,7 @@ import grizzled.slf4j.Logging
  * (as opposed to unit tests which may use a different Config implementation).
  */
 class UserConfigComponent extends ConfigComponent with Logging {
+  val config = new UserConfig
 
   class UserConfig extends Config {
     val configApiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
@@ -23,7 +24,7 @@ class UserConfigComponent extends ConfigComponent with Logging {
     val enableMinToTray = config("enable.mintotray", true)
     val enableUpdateCheck = config("enable.updatecheck", true)
 
-    val optionGameLanguage = enumConfig("option.gamelanguage", GameLanguage.getDefault)
+    val optionGameLanguage = config("option.gamelanguage", "en")
     val optionMatchPopup = enumConfig("option.matchpopup", MatchPopup.getDefault)
     val optionMonitoringMethod = enumConfig("option.monitoringmethod", MonitoringMethod.getDefault)
     val optionNotificationType = enumConfig("option.notificationtype", NotificationType.HEARTHSTATS)

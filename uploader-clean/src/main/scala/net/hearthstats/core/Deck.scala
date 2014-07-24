@@ -1,4 +1,4 @@
-package net.hearthstats
+package net.hearthstats.core
 
 import org.json.simple.JSONObject
 import Deck._
@@ -33,7 +33,7 @@ object Deck {
       }
 
     val klassId = json.get("klass_id")
-    val heroString = if (klassId == null) "" else Constants.hsClassOptions(klassId.toString.toInt)
+    val heroString = if (klassId == null) "" else HeroClasses.all(klassId.toString.toInt)
 
     Deck(id = id,
       slug = json.get("slug").toString,
@@ -43,16 +43,17 @@ object Deck {
       activeSlot = Option(json.get("slot")).map(_.toString.toInt))
   }
 
-  def parseDeckString(ds: String): List[Card] = {
-    val cardData = CardUtils.cards
-    val cards = for {
-      card <- ds.split(",").toList
-      u = card.indexOf('_')
-      count = card.substring(u + 1)
-      id = Integer.parseInt(card.substring(0, u))
-      cd = cardData(id)
-    } yield cd.copy(count = Integer.parseInt(count))
-    cards.sorted
-  }
+  def parseDeckString(ds: String): List[Card] = Nil
+  //    {
+  //      val cardData = CardUtils.cards
+  //      val cards = for {
+  //        card <- ds.split(",").toList
+  //        u = card.indexOf('_')
+  //        count = card.substring(u + 1)
+  //        id = Integer.parseInt(card.substring(0, u))
+  //        cd = cardData(id)
+  //      } yield cd.copy(count = Integer.parseInt(count))
+  //      cards.sorted
+  //    }
 }
 
