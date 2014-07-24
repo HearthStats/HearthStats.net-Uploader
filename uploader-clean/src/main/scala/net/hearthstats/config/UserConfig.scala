@@ -3,7 +3,6 @@ package net.hearthstats.config
 import java.util.prefs.Preferences
 
 import grizzled.slf4j.Logging
-import net.hearthstats.API
 
 /**
  * Stores and retrieves configuration for the current user by using the Java 7 Preferences API.
@@ -12,43 +11,42 @@ import net.hearthstats.API
  * This is the standard implementation of Config that it used when HearthStats Companion is being run as an app
  * (as opposed to unit tests which may use a different Config implementation).
  */
-class UserConfig extends Config with Logging {
-  import UserConfig._
+class UserConfigComponent extends ConfigComponent with Logging {
 
-  val configApiBaseUrl = config("api.baseurl", API.DefaultApiBaseUrl)
-  val configUserKey = config("api.userkey", "your_userkey_here")
+  class UserConfig extends Config {
+    val configApiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
+    val configUserKey = config("api.userkey", "your_userkey_here")
 
-  val enableAnalytics = config("enable.analytics", true)
-  val enableDeckOverlay = config("enable.deckoverlay", false)
-  val enableStartMin = config("enable.startmin", false)
-  val enableMinToTray = config("enable.mintotray", true)
-  val enableUpdateCheck = config("enable.updatecheck", true)
+    val enableAnalytics = config("enable.analytics", true)
+    val enableDeckOverlay = config("enable.deckoverlay", false)
+    val enableStartMin = config("enable.startmin", false)
+    val enableMinToTray = config("enable.mintotray", true)
+    val enableUpdateCheck = config("enable.updatecheck", true)
 
-  val optionGameLanguage = enumConfig("option.gamelanguage", GameLanguage.getDefault)
-  val optionMatchPopup = enumConfig("option.matchpopup", MatchPopup.getDefault)
-  val optionMonitoringMethod = enumConfig("option.monitoringmethod", MonitoringMethod.getDefault)
-  val optionNotificationType = enumConfig("option.notificationtype", NotificationType.HEARTHSTATS)
+    val optionGameLanguage = enumConfig("option.gamelanguage", GameLanguage.getDefault)
+    val optionMatchPopup = enumConfig("option.matchpopup", MatchPopup.getDefault)
+    val optionMonitoringMethod = enumConfig("option.monitoringmethod", MonitoringMethod.getDefault)
+    val optionNotificationType = enumConfig("option.notificationtype", NotificationType.HEARTHSTATS)
 
-  val notifyOverall = config("notify.overall", true)
-  val notifyHsFound = config("notify.hsfound", true)
-  val notifyHsClosed = config("notify.hsclosed", true)
-  val notifyScreen = config("notify.screen", true)
-  val notifyMode = config("notify.mode", true)
-  val notifyDeck = config("notify.deck", true)
-  val notifyTurn = config("notify.turn", true)
+    val notifyOverall = config("notify.overall", true)
+    val notifyHsFound = config("notify.hsfound", true)
+    val notifyHsClosed = config("notify.hsclosed", true)
+    val notifyScreen = config("notify.screen", true)
+    val notifyMode = config("notify.mode", true)
+    val notifyDeck = config("notify.deck", true)
+    val notifyTurn = config("notify.turn", true)
 
-  val windowX = config("ui.window.x", 0)
-  val windowY = config("ui.window.y", 0)
-  val windowHeight = config("ui.window.height", 700)
-  val windowWidth = config("ui.window.width", 600)
+    val windowX = config("ui.window.x", 0)
+    val windowY = config("ui.window.y", 0)
+    val windowHeight = config("ui.window.height", 700)
+    val windowWidth = config("ui.window.width", 600)
 
-  val deckX = config("ui.deck.x", 0)
-  val deckY = config("ui.deck.y", 0)
-  val deckHeight = config("ui.deck.height", 600)
-  val deckWidth = config("ui.deck.width", 485)
-}
+    val deckX = config("ui.deck.x", 0)
+    val deckY = config("ui.deck.y", 0)
+    val deckHeight = config("ui.deck.height", 600)
+    val deckWidth = config("ui.deck.width", 485)
+  }
 
-object UserConfig extends Logging {
   private val PreferencesRoot: String = "/net/hearthstats/companion"
   private val prefs: Preferences = Preferences.userRoot().node(PreferencesRoot)
 
