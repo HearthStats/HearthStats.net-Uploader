@@ -11,10 +11,7 @@ import grizzled.slf4j.Logging
  * This is the standard implementation of Config that it used when HearthStats Companion is being run as an app
  * (as opposed to unit tests which may use a different Config implementation).
  */
-class UserConfigComponent extends ConfigComponent with Logging {
-  val config = new UserConfig
-
-  class UserConfig extends Config {
+  class UserConfig extends Logging {
     val configApiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
     val configUserKey = config("api.userkey", "your_userkey_here")
 
@@ -46,10 +43,11 @@ class UserConfigComponent extends ConfigComponent with Logging {
     val deckY = config("ui.deck.y", 0)
     val deckHeight = config("ui.deck.height", 600)
     val deckWidth = config("ui.deck.width", 485)
-  }
 
   private val PreferencesRoot = "/net/hearthstats/companion"
   private val prefs = Preferences.userRoot.node(PreferencesRoot)
+  
+  
 
   /**
    * Generates a new ConfigValue based on the key, the default value and
@@ -123,6 +121,10 @@ class UserConfigComponent extends ConfigComponent with Logging {
 
     def setImpl(key: String, value: T) =
       prefs.put(key, value.toString)
-  }
 
-}
+
+   trait ConfigValue[T] {
+    def get: T
+    def set(value: T): Unit
+  }
+  }

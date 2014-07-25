@@ -56,11 +56,11 @@
 		</dependency>
 
 		<!-- optional dependency. If present video replays will be generated. -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>net.hearthstats</groupId> -->
-<!-- 			<artifactId>video</artifactId> -->
-<!-- 			<version>${project.version}</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>net.hearthstats</groupId> -->
+		<!-- <artifactId>video</artifactId> -->
+		<!-- <version>${project.version}</version> -->
+		<!-- </dependency> -->
 
 		<dependency>
 			<artifactId>scala-library</artifactId>
@@ -77,6 +77,12 @@
 					<groupId>org.scala-lang</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.softwaremill.macwire</groupId>
+			<artifactId>macros_2.11</artifactId>
+			<version>0.7</version>
 		</dependency>
 
 		<dependency>
