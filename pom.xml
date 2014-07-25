@@ -32,7 +32,7 @@
 	<modules>
         <module>modules</module>
         <module>updater</module>
-        <module>uploader</module>
+        <module>uploader-clean</module>
 	</modules>
 
 	<profiles>
