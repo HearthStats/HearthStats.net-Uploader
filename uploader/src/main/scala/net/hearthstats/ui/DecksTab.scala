@@ -18,6 +18,7 @@ import net.hearthstats.util.HsRobot
 import net.hearthstats.util.Browse
 import net.hearthstats.util.HsRobot
 import scala.Some
+import net.hearthstats.Deck
 
 class DecksTab(val monitor: CompanionFrame) extends JPanel {
 

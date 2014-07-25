@@ -5,8 +5,8 @@ import java.util.ArrayList
 import java.util.List
 import net.hearthstats.log.Log
 import org.json.simple.JSONObject
-//remove if not needed
 import scala.collection.JavaConversions._
+import net.hearthstats.Deck
 
 object DeckUtils {
 

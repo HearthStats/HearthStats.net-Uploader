@@ -48,8 +48,8 @@ class UserConfigComponent extends ConfigComponent with Logging {
     val deckWidth = config("ui.deck.width", 485)
   }
 
-  private val PreferencesRoot: String = "/net/hearthstats/companion"
-  private val prefs: Preferences = Preferences.userRoot().node(PreferencesRoot)
+  private val PreferencesRoot = "/net/hearthstats/companion"
+  private val prefs = Preferences.userRoot.node(PreferencesRoot)
 
   /**
    * Generates a new ConfigValue based on the key, the default value and

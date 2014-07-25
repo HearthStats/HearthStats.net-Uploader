@@ -10,6 +10,7 @@ import scala.util.Success
 import scala.concurrent.duration._
 import net.hearthstats.log.Log
 import java.io.IOException
+import net.hearthstats.Card
 
 object CardUtils {
 

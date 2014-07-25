@@ -1,9 +1,9 @@
 package net.hearthstats
 
 import java.io.File
-
 import net.hearthstats.config._
 import net.hearthstats.updater.api.model.Release
+import .ConfigValue
 
 /**
  * Implementation which can be injected in test scenario.
