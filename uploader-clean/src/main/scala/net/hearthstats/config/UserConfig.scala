@@ -123,10 +123,10 @@ class UserConfig extends Logging {
       def setImpl(key: String, value: T) =
         prefs.put(key, value.toString)
     }
-
-    trait ConfigValue[T] {
-      def get: T
-      def set(value: T): Unit
-    }
   }
+}
+
+trait ConfigValue[T] {
+  def get: T
+  def set(value: T): Unit
 }

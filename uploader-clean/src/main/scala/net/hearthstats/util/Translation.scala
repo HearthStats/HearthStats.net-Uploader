@@ -1,15 +1,20 @@
 package net.hearthstats.util
 
 import java.util.ResourceBundle
+import scala.util.Try
 
 case class TranslationConfig(bundle: String, language: String)
 
 class Translation(config: TranslationConfig) {
-  val resourceBundle = ResourceBundle.getBundle(config.bundle, new UTF8Control);
+  val resourceBundle: Option[ResourceBundle] =
+    Try(ResourceBundle.getBundle(config.bundle, new UTF8Control)).toOption
 
-  def t(key: String) = resourceBundle.getString(key)
+  def t(key: String) = resourceBundle.get.getString(key)
 
-  def has(key: String) = resourceBundle.containsKey(key)
+  def has(key: String) = resourceBundle match {
+    case Some(b) => b.containsKey(key)
+    case None => false
+  }
 
   def opt(key: String) =
     if (has(key)) Some(t(key))

@@ -7,8 +7,6 @@ import org.json.simple.{ JSONArray, JSONObject }
 import org.json.simple.parser.JSONParser
 import grizzled.slf4j.Logging
 import net.hearthstats.core.{ ArenaRun, HearthstoneMatch }
-import com.softwaremill.macwire.MacwireMacros._
-import net.hearthstats.config.UserConfig
 import net.hearthstats.config.UserConfig
 
 //TODO : replace this JSON implementation with a more typesafe one

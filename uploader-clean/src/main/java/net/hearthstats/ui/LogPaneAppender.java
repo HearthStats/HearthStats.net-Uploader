@@ -14,7 +14,7 @@ public class LogPaneAppender extends AppenderBase<ILoggingEvent> {
 
   private LogPane logPane;
 
-  public LogPaneAppender(LogPane logPane) {
+  public void setLogPane(LogPane logPane) {
     this.logPane = logPane;
   }
 
