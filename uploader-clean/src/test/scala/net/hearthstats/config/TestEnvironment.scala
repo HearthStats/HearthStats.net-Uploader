@@ -9,12 +9,12 @@ import net.hearthstats.hstatsapi.API
 /**
  * Implementation which can be injected in test scenario.
  */
-class TestEnvironment extends Environment {
+object TestEnvironment extends Environment {
   val hearthstoneLogFile = File.createTempFile("log", ".txt").getAbsolutePath
 
   val os: OS = OS.WINDOWS
-  val config: UserConfig = new TestConfig
-  val programHelper = new TestProgramHelper
+  val config: UserConfig = TestConfig
+  val programHelper = TestProgramHelper
   val osxNotificationsSupported = false
   val extractionFolder = null
   val imageCacheFolder = null
@@ -24,7 +24,7 @@ class TestEnvironment extends Environment {
   def performApplicationUpdate(release: Release) = ""
 }
 
-class TestProgramHelper extends ProgramHelper {
+object TestProgramHelper extends ProgramHelper {
   def foundProgram = true
   def getHSWindowBounds = null
   def getScreenCapture = null
@@ -32,7 +32,7 @@ class TestProgramHelper extends ProgramHelper {
 
 }
 
-class TestConfig extends UserConfig {
+object TestConfig extends UserConfig {
   override val configUserKey: ConfigValue[String] = "a9efa89e4a7a806d428bdda944d7b48f" // a specific test key
   override val enableAnalytics: ConfigValue[Boolean] = true
   override val enableDeckOverlay: ConfigValue[Boolean] = true

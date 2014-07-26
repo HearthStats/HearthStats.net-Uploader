@@ -11,10 +11,10 @@ import net.hearthstats.config.UserConfig
 
 @RunWith(classOf[JUnitRunner])
 class APISpec extends FlatSpec with Matchers {
-  lazy val config: UserConfig = new TestConfig
+  lazy val config: UserConfig = TestConfig
   lazy val api = wire[API]
   lazy val uiLog = wire[Log]
-  lazy val environment = new TestEnvironment
+  lazy val environment = TestEnvironment
   lazy val cardUtils = wire[CardUtils]
 
   "The API" should "return some cards" in {
