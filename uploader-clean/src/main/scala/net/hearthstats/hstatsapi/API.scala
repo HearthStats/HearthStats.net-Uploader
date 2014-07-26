@@ -9,10 +9,10 @@ import grizzled.slf4j.Logging
 import net.hearthstats.core.{ ArenaRun, HearthstoneMatch }
 import com.softwaremill.macwire.MacwireMacros._
 import net.hearthstats.config.UserConfig
+import net.hearthstats.config.UserConfig
 
 //TODO : replace this JSON implementation with a more typesafe one
-trait API extends Logging {
-  lazy val config = wire[UserConfig]
+class API(config: UserConfig) extends Logging {
 
   var lastMatchId = -1
   var message = ""
@@ -183,6 +183,7 @@ trait API extends Logging {
 
   private def transformResult(result: Option[_], message: String) = result match {
     case Some(res) =>
+      info(message)
       res.asInstanceOf[java.util.List[_]].map(_.asInstanceOf[JSONObject]).toList
     case None => List.empty
   }
