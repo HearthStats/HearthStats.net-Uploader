@@ -43,9 +43,11 @@ class UserConfig extends Logging {
   val deckHeight = config("ui.deck.height", 600)
   val deckWidth = config("ui.deck.width", 485)
 
-  val optionGameLanguage = config("option.gamelanguage", "en")
+  val gameLanguage = config("option.gamelanguage", "en")
   /** Translation for the cards of the game, based on the language option for the game.*/
-  val gameCardsTranslation = new Translation(TranslationConfig("net.hearthstats.resources.card.Card", optionGameLanguage.get))
+  val gameCardsTranslation = new Translation(TranslationConfig("net.hearthstats.resources.card.Card", gameLanguage.get))
+
+  implicit def configToValue[T](configValue: ConfigValue[T]): T = configValue.get
 
   object ConfigUtil {
     private val PreferencesRoot = "/net/hearthstats/companion"

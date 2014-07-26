@@ -30,10 +30,14 @@ class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) {
       originalName = json.get("name").toString,
       collectible = collectible != null && collectible.toString.toBoolean)).toMap
 
+  def withLocalFile(c: Card) =
+    c.copy(localFile = Some(
+      environment.imageCacheFile(c.originalName)))
+
   def downloadImages(cards: List[Card]): Future[Unit] = {
     import ExecutionContext.Implicits.global
     val futures = for (card <- cards) yield future {
-      val file = environment.imageCacheFile(card.originalName)
+      val file = card.localFile getOrElse environment.imageCacheFile(card.originalName)
       if (file.length < 30000) {
         val fos = new FileOutputStream(file)
         try {
