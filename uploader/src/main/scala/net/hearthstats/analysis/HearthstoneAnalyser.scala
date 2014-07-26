@@ -172,8 +172,12 @@ object HearthstoneAnalyser extends Observable with Logging {
           if (hsMatch.initialized == false) {
             hsMatch.initialized = true
             hsMatch.mode = mode
-            hsMatch.deckSlot = deckSlot
-            hsMatch.rankLevel = rankLevel
+            if (mode != "Arena") {
+              hsMatch.deckSlot = deckSlot
+            }
+            if (mode == "Ranked") {
+              hsMatch.rankLevel = rankLevel
+            }
           }
           arenaRunEndDetected = false
           isYourTurn = false
