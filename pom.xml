@@ -69,7 +69,7 @@
 			<id>travis</id>
 			<modules>
 				<module>video</module>
-				<module>uploader-osx</module>
+<!-- 				<module>uploader-osx</module> -->
 			</modules>
 		</profile>
 		<profile>

@@ -9,7 +9,7 @@
 		<version>0.19.1-SNAPSHOT</version>
 		<artifactId>uploader-parent</artifactId>
 	</parent>
-	<artifactId>uploader-clean</artifactId>
+	<artifactId>uploader</artifactId>
 
 	<packaging>jar</packaging>
 	<name>HearthStats Companion Core</name>
