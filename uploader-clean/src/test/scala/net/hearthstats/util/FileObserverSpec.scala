@@ -1,6 +1,5 @@
 package net.hearthstats.util
 
-import org.junit.Test
 import java.io.File
 import java.io.FileWriter
 import java.io.BufferedWriter
