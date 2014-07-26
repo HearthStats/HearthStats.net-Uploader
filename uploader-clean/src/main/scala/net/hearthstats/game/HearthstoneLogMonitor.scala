@@ -16,12 +16,24 @@ import grizzled.slf4j.Logging
 import net.hearthstats.hstatsapi.CardUtils
 import CardEvents._
 
-class HearthstoneuiLogMonitor(
+trait LogMonitorModule {
+  val config: UserConfig
+  val api: API
+  val cardUtils: CardUtils
+  val environment: Environment
+  val uiLog: Log
+  lazy val fileObserver = FileObserver(new File(environment.hearthstoneLogFile))
+
+  lazy val hsLogMonitor = wire[HearthstoneLogMonitor]
+}
+
+class HearthstoneLogMonitor(
   config: UserConfig,
   api: API,
   cardUtils: CardUtils,
   environment: Environment,
-  uiLog: Log) extends GameEventProducer with Logging {
+  uiLog: Log,
+  fileObserver: FileObserver) extends GameEventProducer with Logging {
 
   import config._
 
@@ -36,21 +48,20 @@ class HearthstoneuiLogMonitor(
   val cards = cardUtils.cards.values
   val cardPublisher = PublishSubject.create[CardEvent]
 
-  val gameuiLogFile = environment.hearthstoneLogFile
-
-  val fileObserver = FileObserver(new File(gameuiLogFile))
-  val lines = fileObserver.observable.doOnError(ex => uiLog.error("Error reading Hearthstone log: " + ex.getMessage, ex))
+  val lines = fileObserver.observable.
+    doOnNext(line => debug(s"found : [$line]")).
+    doOnError(ex => uiLog.error("Error reading Hearthstone log: " + ex.getMessage, ex))
   val relevant = lines.filter(l => l != null && l.length > 0 && l.charAt(0) == '[')
   val screens = relevant.filter(l => l startsWith LOADING_SCREEN_PREFIX)
   val zones = relevant.filter(l => l startsWith ZONE_PREFIX)
   screens.doOnEach(handleLoadingScreen _)
 
-  val gameEvents: Observable[GameEvent] = relevant.map(zoneEvent).filter(_.isDefined).map(_.get) // remove None values
+  val gameEvents: Observable[GameEvent] = relevant.map(zoneEvent).filter(_.isDefined).map(_.get). // remove None values
+    doOnNext(evt => debug(s"game event: $evt"))
   val cardEvents: Observable[CardEvent] = gameEvents.ofType(classOf[CardEvent])
   val heroEvents: Observable[HeroEvent] = gameEvents.ofType(classOf[HeroEvent])
 
   def stop(): Unit = {
-    debug(s"Stopping Hearthstone log monitor on file $gameuiLogFile")
     fileObserver.stop()
   }
 
