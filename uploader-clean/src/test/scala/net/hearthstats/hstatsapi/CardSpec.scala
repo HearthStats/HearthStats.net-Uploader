@@ -11,13 +11,15 @@ import net.hearthstats.config.UserConfig
 import net.hearthstats.config.TestConfig
 import net.hearthstats.ui.Log
 import java.net.URL
+import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
-class CardSpec extends FlatSpec with Matchers {
+class CardSpec extends FlatSpec with Matchers with MockitoSugar {
   lazy val config: UserConfig = TestConfig
-  lazy val api = wire[API]
-  lazy val uiLog = wire[Log]
+  lazy val uiLog = mock[Log]
   lazy val environment = TestEnvironment
+
+  lazy val api = wire[API]
   lazy val cardUtils = wire[CardUtils]
 
   "A Card" should "have a valid URL" in {

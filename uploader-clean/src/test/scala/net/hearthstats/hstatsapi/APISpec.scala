@@ -8,13 +8,15 @@ import net.hearthstats.core.{ ArenaRun, HearthstoneMatch, MatchOutcome, Rank }
 import net.hearthstats.ui.Log
 import org.scalatest.junit.JUnitRunner
 import net.hearthstats.config.UserConfig
+import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
-class APISpec extends FlatSpec with Matchers {
+class APISpec extends FlatSpec with Matchers with MockitoSugar {
   lazy val config: UserConfig = TestConfig
-  lazy val api = wire[API]
-  lazy val uiLog = wire[Log]
+  lazy val uiLog = mock[Log]
   lazy val environment = TestEnvironment
+
+  lazy val api = wire[API]
   lazy val cardUtils = wire[CardUtils]
 
   "The API" should "return some cards" in {
