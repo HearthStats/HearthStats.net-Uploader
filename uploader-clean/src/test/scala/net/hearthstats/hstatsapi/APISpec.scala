@@ -12,12 +12,12 @@ import org.scalatest.mock.MockitoSugar
 
 @RunWith(classOf[JUnitRunner])
 class APISpec extends FlatSpec with Matchers with MockitoSugar {
-  lazy val config: UserConfig = TestConfig
-  lazy val uiLog = mock[Log]
-  lazy val environment = TestEnvironment
+  val config: UserConfig = TestConfig
+  val uiLog = mock[Log]
+  val environment = TestEnvironment
 
-  lazy val api = wire[API]
-  lazy val cardUtils = wire[CardUtils]
+  val api = wire[API]
+  val cardUtils = wire[CardUtils]
 
   "The API" should "return some cards" in {
     val cards = cardUtils.cards
