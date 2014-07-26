@@ -1,4 +1,4 @@
-package net.hearthstats.analysis;
+package net.hearthstats.game.imageanalysis;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -8,8 +8,8 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import net.hearthstats.state.Screen;
-import net.hearthstats.state.UniquePixel;
+import net.hearthstats.game.Screen;
+import net.hearthstats.game.imageanalysis.*;
 import net.hearthstats.util.Coordinate;
 
 import org.junit.Assert;

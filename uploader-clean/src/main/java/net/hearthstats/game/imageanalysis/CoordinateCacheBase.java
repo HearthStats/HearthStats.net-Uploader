@@ -1,7 +1,7 @@
-package net.hearthstats.analysis;
+package net.hearthstats.game.imageanalysis;
 
-import net.hearthstats.state.PixelLocation;
 import net.hearthstats.util.Coordinate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

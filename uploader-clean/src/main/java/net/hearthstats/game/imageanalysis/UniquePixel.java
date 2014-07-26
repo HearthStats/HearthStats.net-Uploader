@@ -1,4 +1,4 @@
-package net.hearthstats.state;
+package net.hearthstats.game.imageanalysis;
 
 /**
  * Defines pixel tests that aren't in the standard locations.

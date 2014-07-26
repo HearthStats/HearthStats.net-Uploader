@@ -1,6 +1,8 @@
-package net.hearthstats.state;
+package net.hearthstats.game;
 
 import java.util.EnumSet;
+
+import net.hearthstats.game.imageanalysis.Pixel;
 
 /**
  * Represents the screens in Hearthstone.

@@ -1,8 +1,7 @@
-package net.hearthstats.analysis;
+package net.hearthstats.game.imageanalysis;
 
 import java.awt.image.BufferedImage;
 
-import net.hearthstats.state.UniquePixel;
 import net.hearthstats.util.Coordinate;
 
 import org.slf4j.Logger;

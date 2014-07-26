@@ -1,10 +1,10 @@
-package net.hearthstats.analysis
+package net.hearthstats.game.imageanalysis
 
 import org.junit.runner.RunWith
 import org.scalatest.{ FlatSpec, Matchers }
 import javax.imageio.ImageIO
 import org.scalatest.junit.JUnitRunner
-import net.hearthstats.state.Screen
+import net.hearthstats.game.Screen
 
 @RunWith(classOf[JUnitRunner])
 class AnalyserSpec extends FlatSpec with Matchers {

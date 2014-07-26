@@ -1,4 +1,4 @@
-package net.hearthstats.state;
+package net.hearthstats.game.imageanalysis;
 
 /**
  * The standard pixel locations that are checked to identify screens.

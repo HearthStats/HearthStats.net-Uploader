@@ -1,4 +1,4 @@
-package net.hearthstats.state;
+package net.hearthstats.game;
 
 /**
  * Grouping for similar screens so that tests can be applied consistently to similar screens

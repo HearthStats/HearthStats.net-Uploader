@@ -1,4 +1,4 @@
-package net.hearthstats.analysis;
+package net.hearthstats.game;
 
 public enum AnalyserEvent {
 

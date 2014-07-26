@@ -1,6 +1,6 @@
-package net.hearthstats.state;
+package net.hearthstats.game.imageanalysis;
 
-import static net.hearthstats.state.PixelLocation.*;
+import static net.hearthstats.game.imageanalysis.PixelLocation.*;
 
 /**
  * Represents the key pixels that identify particular screens in Hearthstone.

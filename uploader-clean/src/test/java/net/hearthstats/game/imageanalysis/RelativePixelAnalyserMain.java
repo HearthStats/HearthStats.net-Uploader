@@ -1,18 +1,17 @@
-package net.hearthstats.analysis;
+package net.hearthstats.game.imageanalysis;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import net.hearthstats.state.Screen;
-import net.hearthstats.state.UniquePixel;
+import net.hearthstats.game.Screen;
+import net.hearthstats.game.imageanalysis.RelativePixelAnalyser;
+import net.hearthstats.game.imageanalysis.ScreenAnalyser;
+import net.hearthstats.game.imageanalysis.UniquePixel;
 import net.hearthstats.util.Coordinate;
 
 import org.junit.Assert;
