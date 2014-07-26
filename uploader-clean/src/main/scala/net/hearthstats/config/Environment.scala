@@ -3,8 +3,8 @@ package net.hearthstats.config
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 import net.hearthstats.updater.api.model.Release
-import net.hearthstats.ui.NotificationQueue
 import java.io.File
+import net.hearthstats.ui.notification._
 
 /**
  * Represents the environment-specific information that varies between OS X and Windows.

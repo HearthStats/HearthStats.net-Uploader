@@ -1,17 +1,18 @@
 package net.hearthstats;
 
+import java.awt.Component;
+import java.io.File;
+
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import net.hearthstats.config.Application;
 import net.hearthstats.config.Environment;
-import net.hearthstats.log.LogPane;
-import net.hearthstats.notification.DialogNotification;
-import net.hearthstats.util.TranslationCard;
 import net.sourceforge.tess4j.Tesseract;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
 
 public final class Main {
   private Main() {} // never instantiated
@@ -21,16 +22,16 @@ public final class Main {
 
   private static String ocrLanguage = "eng";
 
-  private static Monitor monitor;
+  // private static Monitor monitor;
 
 
-  public static LogPane getLogPane() {
-    if (monitor == null) {
-      return null;
-    } else {
-      return monitor.mainFrame().getLogPane();
-    }
-  }
+  // public static LogPane getLogPane() {
+  // if (monitor == null) {
+  // return null;
+  // } else {
+  // return monitor.mainFrame().getLogPane();
+  // }
+  // }
 
 
   public static void showErrorDialog(String message, Throwable e) {
@@ -54,34 +55,37 @@ public final class Main {
 
   public static void start(Environment environment) {
 
-    try {
-
-      DialogNotification loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...");
-      loadingNotification.show();
-
-      OldConfig.migrateOldConfig(environment);
-
-      // Store configuration in singleton objects that are unable to access the environment instance
-      // TODO: refactor so that these objects can access configuration directly with manually setting it here
-      API.setConfig(environment.config());
-      BackgroundImageSave.setSaveFolder(environment.extractionFolder());
-      Card.setImageCacheFolder(environment.imageCacheFolder());
-      TranslationCard.changeTranslation(environment.config().optionGameLanguage().get());
-
-      logSystemInformation(environment);
-
-      Updater.cleanUp(environment);
-      cleanupDebugFiles(environment);
-
-      loadingNotification.close();
-
-      monitor = new Monitor(environment);
-      monitor.start();
-
-    } catch (Throwable e) {
-      Main.showErrorDialog("Error in Main", e);
-      System.exit(1);
-    }
+    // try {
+    //
+    // DialogNotification loadingNotification = new
+    // DialogNotification("HearthStats Companion", "Loading ...");
+    // loadingNotification.show();
+    //
+    // OldConfig.migrateOldConfig(environment);
+    //
+    // // Store configuration in singleton objects that are unable to access the
+    // environment instance
+    // // TODO: refactor so that these objects can access configuration directly
+    // with manually setting it here
+    // API.setConfig(environment.config());
+    // BackgroundImageSave.setSaveFolder(environment.extractionFolder());
+    // Card.setImageCacheFolder(environment.imageCacheFolder());
+    // TranslationCard.changeTranslation(environment.config().optionGameLanguage().get());
+    //
+    // logSystemInformation(environment);
+    //
+    // Updater.cleanUp(environment);
+    // cleanupDebugFiles(environment);
+    //
+    // loadingNotification.close();
+    //
+    // monitor = new Monitor(environment);
+    // monitor.start();
+    //
+    // } catch (Throwable e) {
+    // Main.showErrorDialog("Error in Main", e);
+    // System.exit(1);
+    // }
 
   }
 

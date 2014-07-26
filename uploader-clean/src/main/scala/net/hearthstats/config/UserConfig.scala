@@ -1,7 +1,9 @@
 package net.hearthstats.config
 
 import java.util.prefs.Preferences
+
 import grizzled.slf4j.Logging
+import net.hearthstats.ui.notification.NotificationType;
 import net.hearthstats.util.Translation
 import net.hearthstats.util.TranslationConfig
 
@@ -10,7 +12,7 @@ import net.hearthstats.util.TranslationConfig
  * Config changes made are immediately stored by the operating system for the current user.
  */
 class UserConfig extends Logging {
-  import ConfigUtil._
+import ConfigUtil._
 
   val configApiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
   val configUserKey = config("api.userkey", "your_userkey_here")

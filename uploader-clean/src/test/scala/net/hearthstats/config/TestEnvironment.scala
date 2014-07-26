@@ -1,7 +1,9 @@
 package net.hearthstats.config
 
 import java.io.File
+
 import net.hearthstats.config._
+import net.hearthstats.ui.notification.NotificationType;
 import net.hearthstats.updater.api.model.Release
 import net.hearthstats.ProgramHelper
 import net.hearthstats.hstatsapi.API

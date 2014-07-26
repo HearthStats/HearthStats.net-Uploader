@@ -1,12 +1,11 @@
 package net.hearthstats.win
 
-
-import net.hearthstats.{HyperLinkHandler, Main}
 import java.io._
-import net.hearthstats.log.Log
 import net.hearthstats.config.Environment
-import javax.swing.{JOptionPane, JLabel}
+import javax.swing.{ JOptionPane, JLabel }
 import grizzled.slf4j.Logging
+import net.hearthstats.ui.HyperLinkHandler
+import net.hearthstats.Main
 
 /**
  * Main object for the Windows application, starts up the HearthStats Companion.
@@ -14,11 +13,10 @@ import grizzled.slf4j.Logging
 object HearthStatsWin extends Logging with App {
 
   val environment = new EnvironmentWin
-    setupTesseract()
-    Main.start(environment)
+  setupTesseract()
+  Main.start(environment)
 
-
-  def setupTesseract():Unit= {
+  def setupTesseract(): Unit = {
     debug("Extracting Tesseract data")
 
     // Determine where the Tesseract training data is stored, and copy it into the tmp folder
@@ -33,19 +31,16 @@ object HearthStatsWin extends Logging with App {
     try {
       loadJarDll("liblept168")
       loadJarDll("libtesseract302")
-    }
-    catch {
-      case e: Throwable => {
-        Log.error("Error loading libraries", e)
+    } catch {
+      case e: Throwable =>
+        error("Error loading libraries", e)
         showLibraryErrorMessage(e)
         System.exit(0)
-      }
     }
 
     // Perform the standard Tesseract setup
     Main.setupTesseract(outPath)
   }
-
 
   private def showLibraryErrorMessage(e: Throwable) {
     var title: String = null
@@ -76,11 +71,10 @@ object HearthStatsWin extends Logging with App {
     JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE)
   }
 
-
   private def copyFileFromJarTo(jarPath: String, outPath: String) {
     val stream: InputStream = getClass.getResourceAsStream(jarPath)
     if (stream == null) {
-      Log.error(s"Exception: Unable to load file from JAR: $jarPath")
+      error(s"Exception: Unable to load file from JAR: $jarPath")
       Main.showMessageDialog(null, s"Exception: Unable to find $jarPath in .jar file\n\nSee log.txt for details")
       System.exit(1)
     } else {
@@ -94,18 +88,15 @@ object HearthStatsWin extends Logging with App {
         })) > 0) {
           resStreamOut.write(buffer, 0, readBytes)
         }
-      }
-      catch {
+      } catch {
         case e: IOException => {
           Main.showErrorDialog(s"Error writing file $outPath", e)
         }
-      }
-      finally {
+      } finally {
         try {
           stream.close
           resStreamOut.close
-        }
-        catch {
+        } catch {
           case e: IOException => {
             Main.showErrorDialog(s"Error closing stream for $jarPath", e)
           }
@@ -113,7 +104,6 @@ object HearthStatsWin extends Logging with App {
       }
     }
   }
-
 
   private def loadJarDll(name: String) {
     debug(s"Loading DLL $name")
@@ -136,16 +126,14 @@ object HearthStatsWin extends Logging with App {
         }
         fos.close
         in.close
-      }
-      catch {
+      } catch {
         case e: IOException => {
           error(s"Error copying DLL $name", e)
         }
       }
       try {
         System.loadLibrary(outPath + name)
-      }
-      catch {
+      } catch {
         case e: UnsatisfiedLinkError => {
           error(s"UnsatisfiedLinkError loading DLL $name", e)
           throw e
@@ -154,8 +142,7 @@ object HearthStatsWin extends Logging with App {
           error(s"Error loading DLL $name", e)
         }
       }
-    }
-    else {
+    } else {
       Main.showErrorDialog("Error loading " + name, new Exception(s"Unable to load library from $resourcePath"))
     }
   }

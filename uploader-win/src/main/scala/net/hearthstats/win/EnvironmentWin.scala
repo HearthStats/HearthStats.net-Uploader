@@ -1,12 +1,11 @@
 package net.hearthstats.win
 
 import java.io.File
-
 import grizzled.slf4j.Logging
 import net.hearthstats.config._
-import net.hearthstats.notification.{DialogNotificationQueue, NotificationQueue}
 import net.hearthstats.updater.api.model.Release
 import org.apache.commons.lang3.StringUtils
+import net.hearthstats.ui.notification._
 
 /**
  * Windows environment.

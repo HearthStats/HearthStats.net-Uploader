@@ -1,4 +1,4 @@
-package net.hearthstats.config;
+package net.hearthstats.ui.notification;
 
 
 /**

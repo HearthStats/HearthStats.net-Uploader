@@ -1,4 +1,4 @@
-package net.hearthstats.ui;
+package net.hearthstats.ui.notification;
 
 public interface NotificationQueue {
 

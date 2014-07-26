@@ -1,4 +1,4 @@
-package net.hearthstats.notification;
+package net.hearthstats.ui.notification;
 
 import java.util.ArrayList;
 
