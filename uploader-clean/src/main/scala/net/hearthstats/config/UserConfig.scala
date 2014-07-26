@@ -1,8 +1,9 @@
 package net.hearthstats.config
 
 import java.util.prefs.Preferences
-
 import grizzled.slf4j.Logging
+import net.hearthstats.util.Translation
+import net.hearthstats.util.TranslationConfig
 
 /**
  * Stores and retrieves configuration for the current user by using the Java 7 Preferences API.
@@ -20,7 +21,6 @@ class UserConfig extends Logging {
   val enableMinToTray = config("enable.mintotray", true)
   val enableUpdateCheck = config("enable.updatecheck", true)
 
-  val optionGameLanguage = config("option.gamelanguage", "en")
   val optionMatchPopup = enumConfig("option.matchpopup", MatchPopup.getDefault)
   val optionMonitoringMethod = enumConfig("option.monitoringmethod", MonitoringMethod.getDefault)
   val optionNotificationType = enumConfig("option.notificationtype", NotificationType.HEARTHSTATS)
@@ -42,6 +42,10 @@ class UserConfig extends Logging {
   val deckY = config("ui.deck.y", 0)
   val deckHeight = config("ui.deck.height", 600)
   val deckWidth = config("ui.deck.width", 485)
+
+  val optionGameLanguage = config("option.gamelanguage", "en")
+  /** Translation for the cards of the game, based on the language option for the game.*/
+  val gameCardsTranslation = new Translation(TranslationConfig("net.hearthstats.resources.card.Card", optionGameLanguage.get))
 
   object ConfigUtil {
     private val PreferencesRoot = "/net/hearthstats/companion"

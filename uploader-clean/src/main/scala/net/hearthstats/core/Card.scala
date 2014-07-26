@@ -2,7 +2,7 @@ package net.hearthstats.core
 
 import java.io.File
 import java.net.URL
-import net.hearthstats.util.TranslationComponent
+import net.hearthstats.util.Translation
 
 case class Card(
   id: Int,
@@ -15,7 +15,7 @@ case class Card(
 
   val LEGENDARY = 5
 
-  def name(implicit translation: TranslationComponent#Translation): String =
+  def name(implicit translation: Translation): String =
     if (translation.has(id.toString))
       translation.t(id.toString)
     else

@@ -1,4 +1,4 @@
-package net.hearthstats;
+package net.hearthstats.ui;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

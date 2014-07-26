@@ -13,14 +13,19 @@ import net.hearthstats.config.Environment
 import net.hearthstats.util.FileObserver
 import net.hearthstats.ui.Log
 import grizzled.slf4j.Logging
+import net.hearthstats.hstatsapi.CardUtils
+import CardEvents._
 
 class HearthstoneuiLogMonitor(
   config: UserConfig,
   api: API,
+  cardUtils: CardUtils,
   environment: Environment,
   uiLog: Log) extends GameEventProducer with Logging {
 
   import config._
+
+  implicit val cardsTranslation = config.gameCardsTranslation
 
   val LOADING_SCREEN_PREFIX = "[LoadingScreen]"
   val ZONE_PREFIX = "[Zone]"
@@ -28,7 +33,7 @@ class HearthstoneuiLogMonitor(
   val ZONE_PROCESSCHANGES_REGEX = """^\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
   var screen = "GAMEPLAY"; // Assume we're in a game until proved otherwise... just in case a game is already in progress
 
-  val cards = CardUtils.cards.values
+  val cards = cardUtils.cards.values
   val cardPublisher = PublishSubject.create[CardEvent]
 
   val gameuiLogFile = environment.hearthstoneLogFile

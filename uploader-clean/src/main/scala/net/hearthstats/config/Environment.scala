@@ -4,6 +4,7 @@ import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 import net.hearthstats.updater.api.model.Release
 import net.hearthstats.ui.NotificationQueue
+import java.io.File
 
 /**
  * Represents the environment-specific information that varies between OS X and Windows.
@@ -25,6 +26,9 @@ abstract class Environment {
    * The location where card images are cached.
    */
   val imageCacheFolder: String
+
+  def imageCacheFile(fileName: String) =
+    new File(imageCacheFolder, fileName)
 
   /**
    * The location of the Hearthstone log.config file.
