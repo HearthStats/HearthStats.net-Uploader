@@ -6,14 +6,13 @@ import scala.collection.JavaConversions.{ asScalaBuffer, mapAsJavaMap }
 import org.json.simple.{ JSONArray, JSONObject }
 import org.json.simple.parser.JSONParser
 import grizzled.slf4j.Logging
-import net.hearthstats.config.ConfigComponent
 import net.hearthstats.core.{ ArenaRun, HearthstoneMatch }
 import com.softwaremill.macwire.MacwireMacros._
-import net.hearthstats.config.ConfigComponent.Config
+import net.hearthstats.config.UserConfig
 
 //TODO : replace this JSON implementation with a more typesafe one
 trait API extends Logging {
-  lazy val config = wire[Config]
+  lazy val config = wire[UserConfig]
 
   var lastMatchId = -1
   var message = ""

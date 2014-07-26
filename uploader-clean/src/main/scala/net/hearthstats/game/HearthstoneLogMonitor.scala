@@ -7,7 +7,6 @@ import rx.subjects.PublishSubject
 import rx.lang.scala.JavaConversions._
 import org.apache.commons.logging.Log
 import net.hearthstats.util.FileObserver
-import net.hearthstats.config.ConfigComponent
 import java.io.File
 
 //class HearthstoneLogMonitor extends GameEventProducer { self: ConfigComponent =>
