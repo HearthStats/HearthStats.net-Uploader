@@ -1,4 +1,4 @@
-package net.hearthstats.ui;
+package net.hearthstats.ui.log;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,6 +10,8 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.html.HTMLDocument;
+
+import net.hearthstats.ui.HyperLinkHandler;
 
 /**
  * Extension of JEditorPane that includes a thread-safe way to add log messages.

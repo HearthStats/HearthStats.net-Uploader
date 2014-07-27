@@ -7,10 +7,9 @@ import org.scalatest.junit.JUnitRunner
 import net.hearthstats.config.TestConfig
 import net.hearthstats.config.UserConfig
 import net.hearthstats.config.TestEnvironment
-import net.hearthstats.ui.Log
+import net.hearthstats.ui.log.Log
 import org.scalatest.mock.MockitoSugar
 import com.softwaremill.macwire.MacwireMacros.wire
-import net.hearthstats.DeckUtils
 
 @RunWith(classOf[JUnitRunner])
 class DeckSpec extends FlatSpec with Matchers with MockitoSugar {

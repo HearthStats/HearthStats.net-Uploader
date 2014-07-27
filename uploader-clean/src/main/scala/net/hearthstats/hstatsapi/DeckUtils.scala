@@ -1,14 +1,12 @@
-package net.hearthstats
+package net.hearthstats.hstatsapi
 
 import java.io.IOException
 import scala.collection.JavaConversions.{ asScalaBuffer, bufferAsJavaList, seqAsJavaList }
 import org.json.simple.JSONObject
 import net.hearthstats.core.Deck
-import net.hearthstats.hstatsapi.API
-import net.hearthstats.ui.Log
+import net.hearthstats.ui.log.Log
 import org.apache.commons.lang3.StringUtils
 import net.hearthstats.core.HeroClasses
-import net.hearthstats.hstatsapi.CardUtils
 import net.hearthstats.core.Card
 
 class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {

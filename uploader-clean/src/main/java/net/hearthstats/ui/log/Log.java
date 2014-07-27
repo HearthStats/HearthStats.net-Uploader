@@ -1,4 +1,4 @@
-package net.hearthstats.ui;
+package net.hearthstats.ui.log;
 
 import java.io.File;
 import java.util.Iterator;

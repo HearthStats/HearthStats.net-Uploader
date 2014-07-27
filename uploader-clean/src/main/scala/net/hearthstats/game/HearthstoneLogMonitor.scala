@@ -11,7 +11,7 @@ import net.hearthstats.hstatsapi.API
 import net.hearthstats.config.UserConfig
 import net.hearthstats.config.Environment
 import net.hearthstats.util.FileObserver
-import net.hearthstats.ui.Log
+import net.hearthstats.ui.log.Log
 import grizzled.slf4j.Logging
 import net.hearthstats.hstatsapi.CardUtils
 import CardEvents._

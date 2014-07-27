@@ -1,16 +1,16 @@
 package net.hearthstats.ui.deckoverlay
 
-import java.awt.{BorderLayout, Dimension}
-import java.awt.event.{MouseAdapter, MouseEvent}
+import java.awt.{ BorderLayout, Dimension }
+import java.awt.event.{ MouseAdapter, MouseEvent }
 
-import scala.swing.Swing.{ChangeListener, onEDT}
+import scala.swing.Swing.{ ChangeListener, onEDT }
 
-import javax.swing.{ImageIcon, JCheckBox, JFrame, JLabel, WindowConstants}
+import javax.swing.{ ImageIcon, JCheckBox, JFrame, JLabel, WindowConstants }
 import javax.swing.Box.createVerticalBox
-import net.hearthstats.config.{Environment, UserConfig}
-import net.hearthstats.core.{Card, Deck}
+import net.hearthstats.config.{ Environment, UserConfig }
+import net.hearthstats.core.{ Card, Deck }
 import net.hearthstats.hstatsapi.CardUtils
-import net.hearthstats.ui.Log
+import net.hearthstats.ui.log.Log
 
 class DeckOverlaySwing(
   config: UserConfig,

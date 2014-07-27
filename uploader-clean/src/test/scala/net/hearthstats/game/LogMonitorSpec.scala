@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.scalatest.{ FlatSpec, Matchers }
 import net.hearthstats.config.{ TestConfig, TestEnvironment }
 import net.hearthstats.core.{ ArenaRun, HearthstoneMatch, MatchOutcome, Rank }
-import net.hearthstats.ui.Log
+import net.hearthstats.ui.log.Log
 import net.hearthstats.config.UserConfig
 import org.scalatest.mock.MockitoSugar
 import net.hearthstats.hstatsapi.API

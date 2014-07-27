@@ -9,9 +9,9 @@ import scala.util.Failure
 import scala.util.Success
 import scala.concurrent.duration._
 import java.io.IOException
-import net.hearthstats.ui.Log
 import net.hearthstats.core.Card
 import net.hearthstats.config.Environment
+import net.hearthstats.ui.log.Log
 
 class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) {
 
