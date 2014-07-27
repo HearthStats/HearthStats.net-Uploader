@@ -1,8 +1,8 @@
-package net.hearthstats.ocr;
-
-import net.hearthstats.analysis.HearthstoneAnalyser;
+package net.hearthstats.game.ocr;
 
 import java.awt.image.BufferedImage;
+
+import net.hearthstats.game.ScreenConfig;
 
 /**
  * Performs OCR on images that contain the opponent name, while playing in an unranked mode (ie casual or arena).
@@ -12,7 +12,7 @@ public class OpponentNameUnrankedOcr extends OpponentNameOcr {
 
     @Override
     protected BufferedImage crop(BufferedImage image, int iteration) {
-        float ratio = HearthstoneAnalyser.getRatio(image);
+    float ratio = ScreenConfig.getRatio(image);
 
         int x = (int) (8 * ratio);
         int y = (int) (53 * ratio);

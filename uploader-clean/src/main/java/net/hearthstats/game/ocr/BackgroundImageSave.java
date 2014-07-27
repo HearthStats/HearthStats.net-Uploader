@@ -1,16 +1,17 @@
-package net.hearthstats;
+package net.hearthstats.game.ocr;
 
-import net.hearthstats.analysis.HearthstoneAnalyser;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.imageio.ImageIO;
+
+import net.hearthstats.game.ScreenConfig;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Saves images on a background thread so that detection isn't held up by a slow filesystem.
@@ -79,8 +80,8 @@ public class BackgroundImageSave {
    * @param h        the height of the specified rectangular region, relative to a 1200-pixel high screen
    */
   public static void saveCroppedPngImage(final BufferedImage image, final String filename, int x, int y, int w, int h) {
-    float ratio = HearthstoneAnalyser.getRatio(image);
-    int xOffset = HearthstoneAnalyser.getXOffset(image, ratio);
+    float ratio = ScreenConfig.getRatio(image);
+    int xOffset = ScreenConfig.getXOffset(image, ratio);
 
     int relativeX = (int) (x * ratio + xOffset);
     int relativeY = (int) (y * ratio);

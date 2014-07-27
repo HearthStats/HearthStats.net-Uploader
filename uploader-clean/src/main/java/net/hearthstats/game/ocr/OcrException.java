@@ -1,4 +1,4 @@
-package net.hearthstats.ocr;
+package net.hearthstats.game.ocr;
 
 /**
  * Exception thrown when OCR can't be performed on an image.

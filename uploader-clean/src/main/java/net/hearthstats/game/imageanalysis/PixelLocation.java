@@ -47,4 +47,5 @@ public enum PixelLocation {
 	public int y() {
         return y;
     }
+
 }

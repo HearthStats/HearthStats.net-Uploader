@@ -1,4 +1,4 @@
-package net.hearthstats.ocr;
+package net.hearthstats.game.ocr;
 
 import net.sourceforge.tess4j.TessAPI;
 

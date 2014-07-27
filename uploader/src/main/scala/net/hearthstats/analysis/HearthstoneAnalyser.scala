@@ -33,11 +33,6 @@ import net.hearthstats.Monitor
  */
 object HearthstoneAnalyser extends Observable with Logging {
 
-  def getRatio(image: BufferedImage): Float =
-    image.getHeight / PixelLocation.REFERENCE_SIZE.y.toFloat
-
-  def getXOffset(image: BufferedImage, ratio: Float): Int =
-    ((image.getWidth.toFloat - (ratio * PixelLocation.REFERENCE_SIZE.x)) / 2).toInt
 
   private val bundle = ResourceBundle.getBundle("net.hearthstats.resources.Main")
 
