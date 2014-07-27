@@ -37,8 +37,6 @@ class HearthstoneLogMonitor(
 
   import config._
 
-  implicit val cardsTranslation = config.gameCardsTranslation
-
   val LOADING_SCREEN_PREFIX = "[LoadingScreen]"
   val ZONE_PREFIX = "[Zone]"
   val LS_ONSCENELOADED_REGEX = """^\[LoadingScreen\] LoadingScreen\.OnSceneLoaded\(\) \- prevMode=(\S*) nextMode=(\S*)""".r

@@ -12,10 +12,10 @@ import net.hearthstats.util.TranslationConfig
  * Config changes made are immediately stored by the operating system for the current user.
  */
 class UserConfig extends Logging {
-import ConfigUtil._
+  import ConfigUtil._
 
-  val configApiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
-  val configUserKey = config("api.userkey", "your_userkey_here")
+  val apiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
+  val userKey = config("api.userkey", "your_userkey_here")
 
   val enableAnalytics = config("enable.analytics", true)
   val enableDeckOverlay = config("enable.deckoverlay", false)
@@ -23,9 +23,9 @@ import ConfigUtil._
   val enableMinToTray = config("enable.mintotray", true)
   val enableUpdateCheck = config("enable.updatecheck", true)
 
-  val optionMatchPopup = enumConfig("option.matchpopup", MatchPopup.getDefault)
-  val optionMonitoringMethod = enumConfig("option.monitoringmethod", MonitoringMethod.getDefault)
-  val optionNotificationType = enumConfig("option.notificationtype", NotificationType.HEARTHSTATS)
+  val matchPopup = enumConfig("option.matchpopup", MatchPopup.getDefault)
+  val monitoringMethod = enumConfig("option.monitoringmethod", MonitoringMethod.getDefault)
+  val notificationType = enumConfig("option.notificationtype", NotificationType.HEARTHSTATS)
 
   val notifyOverall = config("notify.overall", true)
   val notifyHsFound = config("notify.hsfound", true)
@@ -45,9 +45,10 @@ import ConfigUtil._
   val deckHeight = config("ui.deck.height", 600)
   val deckWidth = config("ui.deck.width", 485)
 
-  val gameLanguage = config("option.gamelanguage", "en")
+  val gameLanguage = enumConfig("option.gamelanguage", SupportedGameLanguage.EN)
   /** Translation for the cards of the game, based on the language option for the game.*/
-  val gameCardsTranslation = new Translation(TranslationConfig("net.hearthstats.resources.card.Card", gameLanguage.get))
+  //TODO : how to cache this when the gameLanguage has not changed
+  def gameCardsTranslation = new Translation(TranslationConfig("net.hearthstats.resources.card.Card", gameLanguage.get.toString))
 
   implicit def configToValue[T](configValue: ConfigValue[T]): T = configValue.get
 

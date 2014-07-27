@@ -1,17 +1,20 @@
 package net.hearthstats.ui
 
-import java.awt.{Font, Dimension}
-import java.awt.event.{ActionEvent, ActionListener}
+import java.awt.{ Font, Dimension }
+import java.awt.event.{ ActionEvent, ActionListener }
 import javax.swing._
-
 import net.hearthstats.config._
-import net.hearthstats.util.TranslationCard
-import net.hearthstats.util.Translations.t
 import net.miginfocom.swing.MigLayout
+import net.hearthstats.util.Translation
+import net.hearthstats.ui.notification.NotificationType
 
-class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
+class OptionsPanel(
+  translation: Translation,
+  config: UserConfig,
+  environment: Environment) extends JPanel {
 
-  import mainFrame.environment.config._
+  import translation.t
+  import config._
 
   private var notificationsFormat: JComboBox[String] = _
 
@@ -24,7 +27,7 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
   addLabel(t("options.label.userkey") + " ")
   val userKeyFieldSize = new Dimension(280, 28)
   var userKeyField: JTextField = new JTextField()
-  userKeyField.setText(configUserKey)
+  userKeyField.setText(userKey)
   userKeyField.setMinimumSize(userKeyFieldSize)
   userKeyField.setPreferredSize(userKeyFieldSize)
   add(userKeyField, "wrap")
@@ -33,10 +36,7 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
   addLabel(t("options.label.monitoring") + " ")
   addComboBox[MonitoringMethod](
     Array(t("options.label.monitoring.screen"), t("options.label.monitoring.log")),
-    optionMonitoringMethod, optionMonitoringMethod.set, "",
-    (value: MonitoringMethod) => {
-      mainFrame.monitor.setupLogMonitoring()
-    })
+    monitoringMethod, "")
 
   val monitoringHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Monitoring",
     "Help on monitoring options")
@@ -44,8 +44,8 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
 
   // Game Language
   addLabel(t("options.label.game.language"))
-  addComboBox[GameLanguage](Array(t("options.label.game.language.eu"), t("options.label.game.language.fr")),
-    optionGameLanguage, optionGameLanguage.set, "", TranslationCard.changeTranslation)
+  addComboBox[SupportedGameLanguage](Array(t("options.label.game.language.eu"), t("options.label.game.language.fr")),
+    gameLanguage, "")
 
   val gameLanguageHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Game-Language",
     "Help on game language options")
@@ -61,16 +61,13 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
     addCheckBox("Show notifications", notifyOverall, notifyOverall.set, "wrap", updateNotificationCheckboxes)
 
   // Notifications Format (only for OS X)
-  if (mainFrame.monitor.environment.osxNotificationsSupported) {
+  if (environment.osxNotificationsSupported) {
     add(new JLabel(""), "skip,right")
     val notificationsFormatLabel = new JLabel(t("options.label.notifyformat.label"))
     add(notificationsFormatLabel, "split 2, gapleft 27")
     notificationsFormat = addComboBox[NotificationType](
       Array(t("options.label.notifyformat.hearthstats"), t("options.label.notifyformat.osx")),
-      optionNotificationType, optionNotificationType.set, "",
-      (value: NotificationType) => {
-        mainFrame.setNotificationQueue(mainFrame.environment.newNotificationQueue(value))
-      })
+      notificationType, "")
     val osxNotificationsHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-OS-X-Notifications",
       "Help on notification style options")
     add(osxNotificationsHelpIcon, "wrap")
@@ -119,8 +116,9 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
 
   // Match Popup
   addLabel(t("options.label.matchpopup"))
-  addComboBox[MatchPopup](Array(t("options.label.matchpopup.always"), t("options.label.matchpopup.incomplete"), t("options.label.matchpopup.never")),
-    optionMatchPopup, optionMatchPopup.set, "")
+  addComboBox[MatchPopup](
+    Array(t("options.label.matchpopup.always"), t("options.label.matchpopup.incomplete"), t("options.label.matchpopup.never")),
+    matchPopup, "")
 
   val matchPopupHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Match-Popup",
     "Help on the match popup options")
@@ -144,7 +142,6 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
   saveNoteLabel.setFont(saveNoteLabel.getFont.deriveFont(Font.ITALIC))
   add(saveNoteLabel, "wrap")
 
-
   private def updateNotificationCheckboxes(isEnabled: Boolean) {
     if (notificationsFormat != null) {
       notificationsFormat.setEnabled(isEnabled)
@@ -167,10 +164,6 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
         analyticsField.setSelected(true)
       }
     }
-  }
-
-  private def _updateGameLanguage() {
-    TranslationCard.changeTranslation(optionGameLanguage)
   }
 
   def setUserKey(userkey: String) {
@@ -202,20 +195,20 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
     checkBox
   }
 
-  def addComboBox[T <: Enum[T]](choices: Array[String], getter: => T, setter: T => Unit, constraints: String = "wrap",
-    onChange: T => Unit = (value: T) => {}): JComboBox[String] = {
+  def addComboBox[T <: Enum[T]](
+    choices: Array[String],
+    configValue: ConfigValue[T],
+    constraints: String = "wrap"): JComboBox[String] = {
     val comboBox = new JComboBox[String](choices)
 
     // Set the combobox to the current value from the config
-    comboBox.setSelectedIndex(getter.ordinal())
+    comboBox.setSelectedIndex(configValue.ordinal)
 
     comboBox.addActionListener(new ActionListener {
       def actionPerformed(e: ActionEvent): Unit = {
         // This is a lazy way to get an instance of the class, the old value isn't actually used
-        val oldValue = getter;
-        val newValue = oldValue.getClass.getEnumConstants.apply(comboBox.getSelectedIndex)
-        setter(newValue)
-        onChange(newValue)
+        val oldValue = configValue.get;
+        configValue.set(oldValue.getClass.getEnumConstants()(comboBox.getSelectedIndex))
       }
     })
 

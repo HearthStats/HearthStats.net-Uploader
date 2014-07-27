@@ -35,15 +35,15 @@ object TestProgramHelper extends ProgramHelper {
 }
 
 object TestConfig extends UserConfig {
-  override val configUserKey: ConfigValue[String] = "a9efa89e4a7a806d428bdda944d7b48f" // a specific test key
+  override val userKey: ConfigValue[String] = "a9efa89e4a7a806d428bdda944d7b48f" // a specific test key
   override val enableAnalytics: ConfigValue[Boolean] = true
   override val enableDeckOverlay: ConfigValue[Boolean] = true
   override val enableStartMin: ConfigValue[Boolean] = false
   override val enableMinToTray: ConfigValue[Boolean] = true
   override val enableUpdateCheck: ConfigValue[Boolean] = false
-  override val optionMatchPopup: ConfigValue[MatchPopup] = MatchPopup.INCOMPLETE
-  override val optionMonitoringMethod: ConfigValue[MonitoringMethod] = MonitoringMethod.SCREEN
-  override val optionNotificationType: ConfigValue[NotificationType] = NotificationType.HEARTHSTATS
+  override val matchPopup: ConfigValue[MatchPopup] = MatchPopup.INCOMPLETE
+  override val monitoringMethod: ConfigValue[MonitoringMethod] = MonitoringMethod.SCREEN
+  override val notificationType: ConfigValue[NotificationType] = NotificationType.HEARTHSTATS
   override val notifyOverall: ConfigValue[Boolean] = true
   override val notifyHsFound: ConfigValue[Boolean] = true
   override val notifyHsClosed: ConfigValue[Boolean] = true

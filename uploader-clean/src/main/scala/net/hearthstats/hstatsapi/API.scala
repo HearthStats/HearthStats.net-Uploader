@@ -90,9 +90,9 @@ class API(config: UserConfig) extends Logging {
 
   //can return JSONObject or JSONArray
   private def _get(method: String): Option[AnyRef] = {
-    val baseUrl = config.configApiBaseUrl.get + method + "?userkey="
+    val baseUrl = config.apiBaseUrl.get + method + "?userkey="
     debug(s"API get $baseUrl********")
-    val url = new URL(baseUrl + config.configUserKey.get)
+    val url = new URL(baseUrl + config.userKey.get)
     try {
       val resultString = io.Source.fromURL(url, "UTF-8").getLines.mkString("\n")
       debug(s"API get result = $resultString")
@@ -148,10 +148,10 @@ class API(config: UserConfig) extends Logging {
   }
 
   private def _post(method: String, jsonData: JSONObject): Option[JSONObject] = {
-    val baseUrl = config.configApiBaseUrl.get + method + "?userkey="
+    val baseUrl = config.apiBaseUrl.get + method + "?userkey="
     debug(s"API post $baseUrl********")
     debug("API post data = " + jsonData.toJSONString)
-    val url = new URL(baseUrl + config.configUserKey.get)
+    val url = new URL(baseUrl + config.userKey.get)
     try {
       val httpcon = (url.openConnection()).asInstanceOf[HttpURLConnection]
       httpcon.setDoOutput(true)
