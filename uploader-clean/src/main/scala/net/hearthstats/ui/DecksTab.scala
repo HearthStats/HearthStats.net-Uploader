@@ -1,6 +1,5 @@
 package net.hearthstats.ui
 
-import net.hearthstats.util.Translations.t
 import java.io.IOException
 import javax.swing.JButton
 import javax.swing.JComboBox
@@ -10,17 +9,24 @@ import net.hearthstats._
 import net.miginfocom.swing.MigLayout
 import org.json.simple.JSONObject
 import scala.collection.JavaConversions._
-import Constants._
 import scala.swing.Swing._
 import java.awt.BorderLayout
 import javax.swing.JOptionPane
-import net.hearthstats.util.HsRobot
+import net.hearthstats.util.Translation
+import net.hearthstats.core.Deck
+import net.hearthstats.hstatsapi.API
+import net.hearthstats.hstatsapi.DeckUtils
 import net.hearthstats.util.Browse
-import net.hearthstats.util.HsRobot
-import scala.Some
-import net.hearthstats.Deck
+import net.hearthstats.hstatsapi.HearthStatsUrls._
+import net.hearthstats.core.HeroClasses
 
-class DecksTab(val monitor: CompanionFrame) extends JPanel {
+class DecksTab(
+  translation: Translation,
+  api: API,
+  deckUtils: DeckUtils,
+  programHelper: ProgramHelper) extends JPanel {
+
+  import translation.t
 
   val deckSlotComboBoxes = 1 to 9 map { new DeckSlotPanel(_) }
 
@@ -70,12 +76,12 @@ class DecksTab(val monitor: CompanionFrame) extends JPanel {
   onEDT(updateDecks())
 
   def updateDecks() {
-    DeckUtils.updateDecks()
+    deckUtils.updateDecks()
     for (d <- deckSlotComboBoxes) d.applyDecks()
   }
 
   private def name(o: JSONObject): String = {
-    Constants.hsClassOptions(Integer.parseInt(o.get("klass_id").toString)) +
+    HeroClasses.all(Integer.parseInt(o.get("klass_id").toString)) +
       " - " +
       o.get("name").toString.toLowerCase
   }
@@ -83,8 +89,9 @@ class DecksTab(val monitor: CompanionFrame) extends JPanel {
   private def saveDeckSlots() {
     try {
       val slots = deckSlotComboBoxes map (_.selectedDeckId)
-      API.setDeckSlots(slots)
-      Main.showMessageDialog(this, API.message)
+      api.setDeckSlots(slots)
+      //TODO : replace this by a return value
+      Main.showMessageDialog(this, api.message)
       updateDecks()
     } catch {
       case e: Exception => Main.showErrorDialog("Error saving deck slots", e)
@@ -121,7 +128,7 @@ class DecksTab(val monitor: CompanionFrame) extends JPanel {
       }
     }
 
-    def doCreate(d: Deck) = HsRobot(monitor.monitor._hsHelper.getHSWindowBounds).create(d)
+    def doCreate(d: Deck) = HsRobot(programHelper.getHSWindowBounds).create(d)
   }
 
   class DeckSlotPanel(slot: Int) extends JPanel {
@@ -156,7 +163,7 @@ class DecksTab(val monitor: CompanionFrame) extends JPanel {
     def applyDecks(): Unit = {
       comboBox.removeAllItems()
       comboBox.addItem(t("deck_slot.empty"))
-      val decks = DeckUtils.getDeckLists.sortBy(d => (d.hero, d.name))
+      val decks = deckUtils.getDeckLists.sortBy(d => (d.hero, d.name))
       for (deck <- decks) {
         comboBox.addItem(deck)
         if (deck.activeSlot == Some(slot)) comboBox.setSelectedItem(deck)
