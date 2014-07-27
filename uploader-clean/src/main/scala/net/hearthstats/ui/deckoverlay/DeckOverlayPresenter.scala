@@ -1,7 +1,6 @@
-package net.hearthstats.ui
+package net.hearthstats.ui.deckoverlay
 
-import net.hearthstats.core.Deck
-import net.hearthstats.core.Card
+import net.hearthstats.core.{Card, Deck}
 
 /**
  * Defines how the deck overlay will be used.

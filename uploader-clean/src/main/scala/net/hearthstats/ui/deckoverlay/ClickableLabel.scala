@@ -1,28 +1,23 @@
-package net.hearthstats.ui
+package net.hearthstats.ui.deckoverlay
 
-import java.awt.AlphaComposite
-import java.awt.Color
-import java.awt.Color.BLACK
-import java.awt.Color.WHITE
-import java.awt.Dimension
-import java.awt.Font
-import java.awt.Font.BOLD
-import java.awt.Font.SANS_SERIF
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
+import java.awt.{ AlphaComposite, Color }
+import java.awt.{ Dimension, Font }
+import java.awt.{ Graphics, Graphics2D }
+import java.awt.Color.{ BLACK, WHITE }
+import java.awt.Font.{ BOLD, SANS_SERIF }
+import java.awt.event.{ MouseAdapter, MouseEvent }
 import java.awt.geom.AffineTransform
-import scala.swing.Swing.onEDT
-import javax.swing.BorderFactory
-import javax.swing.ImageIcon
-import javax.swing.JLabel
-import ClickableLabel._
-import scala.concurrent.Future
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.swing.Swing.onEDT
+
+import javax.swing.{ BorderFactory, ImageIcon, JLabel }
 import net.hearthstats.core.Card
 
 class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
+  import ClickableLabel._
+
   val backgroundSize = new Dimension(218, 35)
   val pictureSize = new Dimension(275, 384)
 

@@ -1,33 +1,16 @@
-package net.hearthstats.ui
+package net.hearthstats.ui.deckoverlay
 
-import java.awt.Dimension
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import scala.swing.Swing.onEDT
+import java.awt.{BorderLayout, Dimension}
+import java.awt.event.{MouseAdapter, MouseEvent}
+
+import scala.swing.Swing.{ChangeListener, onEDT}
+
+import javax.swing.{ImageIcon, JCheckBox, JFrame, JLabel, WindowConstants}
 import javax.swing.Box.createVerticalBox
-import javax.swing.BoxLayout
-import javax.swing.ImageIcon
-import javax.swing.JLabel
-import javax.swing.JPanel
-import rx.lang.scala.Observable
-import javax.swing.JFrame
-import scala.swing.Frame
-import scala.swing.MainFrame
-import scala.swing.BorderPanel
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
-import javax.swing.WindowConstants
-import rx.lang.scala.observables.ConnectableObservable
-import java.awt.BorderLayout
-import javax.swing.JCheckBox
-import scala.swing.Swing._
-import scala.concurrent.Future
-import net.hearthstats.core.Deck
-import net.hearthstats.core.Card
+import net.hearthstats.config.{Environment, UserConfig}
+import net.hearthstats.core.{Card, Deck}
 import net.hearthstats.hstatsapi.CardUtils
-import net.hearthstats.config.UserConfig
-import net.hearthstats.hstatsapi.CardUtils
-import net.hearthstats.config.Environment
+import net.hearthstats.ui.Log
 
 class DeckOverlaySwing(
   config: UserConfig,
