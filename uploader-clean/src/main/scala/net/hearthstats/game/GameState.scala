@@ -10,7 +10,7 @@ class GameState {
   def setNotes(n: String) = currentMatch.get.notes = n
   def setCoin(c: Boolean) = currentMatch.get.coin = c
 
-  def lastMatchUrl =
+  def lastMatchUrl: Option[String] =
     for (m <- lastMatch) yield {
       if ("Arena" == m.mode) "http://hearthstats.net/arenas/new"
       else m.editUrl
