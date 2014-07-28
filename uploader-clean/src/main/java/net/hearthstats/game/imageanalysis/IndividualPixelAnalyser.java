@@ -17,7 +17,7 @@ public class IndividualPixelAnalyser extends CoordinateCacheBase {
 
   private final static Logger debugLog = LoggerFactory.getLogger(IndividualPixelAnalyser.class);
 
-  boolean testAllPixelsMatch(BufferedImage image, UniquePixel[] uniquePixels) {
+  public boolean testAllPixelsMatch(BufferedImage image, UniquePixel[] uniquePixels) {
     for (UniquePixel uniquePixel : uniquePixels) {
 
       UniquePixelIdentifier upi = new UniquePixelIdentifier(uniquePixel.x(), uniquePixel.y(),

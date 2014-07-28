@@ -1,10 +1,13 @@
 package net.hearthstats.game
 
 import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.core.Rank
 
-class GameState {
+class MatchState {
   var currentMatch: Option[HearthstoneMatch] = None
   var lastMatch: Option[HearthstoneMatch] = None
+  var rankLevel: Rank = _
+  var startTime: Long = _
 
   def setOpponentName(n: String) = currentMatch.get.opponentName = n
   def setNotes(n: String) = currentMatch.get.notes = n

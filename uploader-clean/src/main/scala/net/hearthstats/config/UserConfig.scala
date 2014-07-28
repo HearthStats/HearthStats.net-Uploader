@@ -17,6 +17,8 @@ class UserConfig extends Logging {
   val apiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
   val userKey = config("api.userkey", "your_userkey_here")
 
+  val pollingDelayMs = config("polling.delay.ms", 100)
+
   val enableAnalytics = config("enable.analytics", true)
   val enableDeckOverlay = config("enable.deckoverlay", false)
   val enableStartMin = config("enable.startmin", false)

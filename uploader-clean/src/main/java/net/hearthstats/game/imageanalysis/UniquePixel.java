@@ -1,5 +1,7 @@
 package net.hearthstats.game.imageanalysis;
 
+import java.util.Arrays;
+
 /**
  * Defines pixel tests that aren't in the standard locations.
  * They are usually used to identify elements on specific screens,
@@ -319,5 +321,19 @@ public enum UniquePixel {
     this.maxRed = maxRed;
     this.maxGreen = maxGreen;
     this.maxBlue = maxBlue;
+  }
+  
+  public static UniquePixel[] allBackgroundPlay() {
+    return new UniquePixel[]{
+        BACKGROUND_PLAY_1,
+        BACKGROUND_PLAY_2,
+        BACKGROUND_PLAY_3,
+        BACKGROUND_PLAY_4,
+        BACKGROUND_PLAY_5,
+        BACKGROUND_PLAY_6,
+        BACKGROUND_PLAY_7,
+        BACKGROUND_PLAY_8,
+        BACKGROUND_PLAY_9,
+    };
   }
 }

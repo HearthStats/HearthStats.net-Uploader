@@ -20,10 +20,11 @@ import net.hearthstats.ui.notification.NotificationQueue
 import net.hearthstats.ui.log.Log
 import net.hearthstats.hstatsapi.API
 import net.hearthstats.hstatsapi.DeckUtils
-import net.hearthstats.game.GameState
 import net.hearthstats.ProgramHelper
 import net.hearthstats.hstatsapi.HearthStatsUrls._
 import net.hearthstats.util.Browse
+import net.hearthstats.companion.CompanionState
+import net.hearthstats.game.MatchState
 
 /**
  * Main Frame for HearthStats Companion.
@@ -32,7 +33,8 @@ class CompanionFrame(environment: Environment,
   config: UserConfig,
   uiLog: Log,
   programHelper: ProgramHelper,
-  gameState: GameState,
+  companionState: CompanionState,
+  matchState: MatchState,
   api: API,
   deckUtils: DeckUtils,
   translation: Translation) extends JFrame with Logging {

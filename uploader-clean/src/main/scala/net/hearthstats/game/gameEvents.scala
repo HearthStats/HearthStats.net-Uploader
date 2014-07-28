@@ -15,3 +15,6 @@ object CardEvents {
 
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent
 
+object ArenaRunEnd extends GameEvent
+object StartingHand extends GameEvent
+object FirstTurn extends GameEvent

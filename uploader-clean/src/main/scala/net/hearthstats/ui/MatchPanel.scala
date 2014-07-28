@@ -27,11 +27,12 @@ import net.hearthstats.ui.log.Log
 import net.hearthstats.util.Translation
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.core.HeroClasses
-import net.hearthstats.game.GameState
 import net.hearthstats.util.Browse
+import net.hearthstats.companion.CompanionState
+import net.hearthstats.game.MatchState
 
 class MatchPanel(
-  gameState: GameState,
+  matchState: MatchState,
   translation: Translation,
   uiLog: Log) extends JPanel {
   import translation.t
@@ -63,7 +64,7 @@ class MatchPanel(
   _currentOpponentNameField.setMinimumSize(new Dimension(100, 1))
   _currentOpponentNameField.addKeyListener(new KeyAdapter {
     override def keyReleased(e: KeyEvent) {
-      gameState.setOpponentName(_currentOpponentNameField.getText.replaceAll("(\r\n|\n)", "<br/>"))
+      matchState.setOpponentName(_currentOpponentNameField.getText.replaceAll("(\r\n|\n)", "<br/>"))
     }
   })
 
@@ -72,7 +73,7 @@ class MatchPanel(
   _currentGameCoinField.setSelected(false)
   _currentGameCoinField.addChangeListener(new ChangeListener {
     def stateChanged(e: ChangeEvent) {
-      gameState.setCoin(_currentGameCoinField.isSelected)
+      matchState.setCoin(_currentGameCoinField.isSelected)
     }
   })
 
@@ -84,7 +85,7 @@ class MatchPanel(
   _currentNotesField.setBackground(Color.WHITE)
   _currentNotesField.addKeyListener(new KeyAdapter {
     override def keyReleased(e: KeyEvent) {
-      gameState.setNotes(_currentNotesField.getText)
+      matchState.setNotes(_currentNotesField.getText)
     }
   })
 
@@ -93,7 +94,7 @@ class MatchPanel(
   add(new JLabel(t("match.label.previous_match") + " "), "skip,wrap")
   _lastMatchButton.addActionListener(new ActionListener {
     override def actionPerformed(arg0: ActionEvent) {
-      gameState.lastMatchUrl map Browse.apply
+      matchState.lastMatchUrl map Browse.apply
     }
   })
 
@@ -101,7 +102,7 @@ class MatchPanel(
   add(_lastMatchButton, "skip,wrap,span")
 
   def updateCurrentMatchUi() {
-    gameState.currentMatch match {
+    matchState.currentMatch match {
       case Some(m) =>
         updateMatchClassSelectorsIfSet(m)
         _currentMatchLabel.setText(m.mode + " Match - " + " Turn " + m.numTurns)
@@ -113,7 +114,7 @@ class MatchPanel(
       case None =>
         _currentMatchLabel.setText("Waiting for next match to start ...")
     }
-    gameState.lastMatch map { m =>
+    matchState.lastMatch map { m =>
       if (m.mode != null && m.result != null) { //TODO use options
         val tooltip = if (m.mode == "Arena") "View current arena run on" else "Edit the previous match"
         _lastMatchButton.setToolTipText(tooltip + " on HearthStats.net")
