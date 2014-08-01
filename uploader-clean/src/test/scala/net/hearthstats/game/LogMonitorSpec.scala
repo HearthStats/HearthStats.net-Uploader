@@ -26,7 +26,7 @@ class LogMonitorSpec extends FlatSpec with Matchers with MockitoSugar with Loggi
     lazy val uiLog = mock[Log]
 
     lazy val api = wire[API]
-    lazy val cardUtils = wire[CardUtils]
+    lazy val cardUtils = mock[CardUtils]
     override lazy val fileObserver = mock[FileObserver]
 
     val fileLines = PublishSubject.create[String]
