@@ -13,7 +13,7 @@ import net.hearthstats.game.MatchState
  * and publishes GameEvents accordingly.
  */
 class HearthstoneAnalyser(
-  companionState: CompanionState,
+  imageToEvent: ImageToEvent,
   matchState: MatchState) extends Logging {
 
   //  private def handleScreenActions(image: BufferedImage, newScreen: Screen) {
