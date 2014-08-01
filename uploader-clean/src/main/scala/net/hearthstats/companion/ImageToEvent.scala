@@ -57,8 +57,8 @@ class ImageToEvent(
   }
 
   private def eventFromScreen(newScreen: Screen, image: BufferedImage): Option[GameEvent] =
-    if (lastScreen.isEmpty || lastScreen.get != newScreen) {
-      debug(s"Screen changed from $lastScreen to $newScreen")
+    if (lastScreen.isEmpty || lastScreen.get != newScreen || newScreen == Screen.PLAY_LOBBY) {
+      debug(s"Screen : $lastScreen => $newScreen")
       if (newScreen == PLAY_LOBBY && imageShowsPlayBackground(image))
         None
       else if (lastScreen == FINDING_OPPONENT && iterationsSinceFindingOpponent < 5) {

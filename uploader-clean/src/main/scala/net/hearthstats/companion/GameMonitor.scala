@@ -18,6 +18,8 @@ import akka.actor.Actor
 import akka.actor.Scheduler
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.duration.Duration.Zero
+import net.hearthstats.game.imageanalysis.Casual
+import net.hearthstats.game.imageanalysis.Ranked
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -36,18 +38,21 @@ class GameMonitor(
     }
   }
 
-  private def handleGameEvent(evt: GameEvent): Unit = evt match {
-    case s: ScreenEvent => handleScreenEvent(s)
+  private def handleGameEvent(evt: GameEvent): Unit = {
+    debug(evt)
+    evt match {
+      case s: ScreenEvent => handleScreenEvent(s)
+    }
   }
 
   private def handleScreenEvent(evt: ScreenEvent) = evt.screen match {
     case PLAY_LOBBY =>
-      companionState.mode match {
-        case (Some(RANKED) | None) if imageShowsCasualPlaySelected(evt.image) =>
-          debug("Casual Mode detected")
+      mode(evt.image) match {
+        case Some(Casual) if companionState.mode != Some(CASUAL) =>
+          info("Casual Mode detected")
           companionState.mode = Some(CASUAL)
-        case (Some(CASUAL) | None) if imageShowsRankedPlaySelected(evt.image) =>
-          debug("Ranked Mode detected")
+        case Some(Ranked) if companionState.mode != Some(RANKED) =>
+          info("Ranked Mode detected")
           companionState.mode = Some(RANKED)
         case _ => // assuming no change in the mode
       }
