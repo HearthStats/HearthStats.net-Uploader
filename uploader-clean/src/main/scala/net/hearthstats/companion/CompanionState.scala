@@ -16,6 +16,7 @@ import net.hearthstats.game.StartingHand
 import net.hearthstats.game.FirstTurn
 import net.hearthstats.game.imageanalysis.UniquePixel._
 import net.hearthstats.game.imageanalysis.UniquePixel
+import net.hearthstats.core.GameMode
 
 /**
  * Current perception of HearthStone game by the companion.
@@ -27,8 +28,9 @@ class CompanionState extends Logging {
   val individualPixelAnalyser = new IndividualPixelAnalyser
   val relativePixelAnalyser = new RelativePixelAnalyser
 
-  var mode: String = _
-  var deckSlot: Int = _
+  var mode: Option[GameMode] = None
+  var deckSlot: Option[Int] = None
+  var lastScreen: Option[Screen] = None
 
   var iterationsSinceFindingOpponent = 0
   var iterationsSinceClassCheckingStarted = 0
@@ -36,7 +38,6 @@ class CompanionState extends Logging {
   var iterationsSinceYourTurn = 0
   var iterationsSinceOpponentTurn = 0
 
-  var lastScreen: Option[Screen] = None
   //  var isNewArena: Boolean = false
   //  var arenaRunEndDetected = false
   //  var victoryOrDefeatDetected = false
@@ -69,16 +70,15 @@ class CompanionState extends Logging {
         None
       } else {
         iterationsSinceFindingOpponent = 0
-        if (newScreen == Screen.ARENA_END) Some(ArenaRunEnd)
-        else newScreen.group match {
-          case MATCH_START =>
-            Some(StartingHand)
-
-          case MATCH_PLAYING =>
-            Some(FirstTurn)
-
-          case _ => None
+        val screenToEvent: PartialFunction[Screen, GameEvent] = _ match {
+          case Screen.ARENA_END => ArenaRunEnd
+          case s if s.group == MATCH_START => StartingHand
+          case s if s.group == MATCH_PLAYING => FirstTurn
         }
+        if (screenToEvent.isDefinedAt(newScreen)) {
+          lastScreen = Some(newScreen)
+        }
+        screenToEvent.lift(newScreen)
       }
     } else None
 

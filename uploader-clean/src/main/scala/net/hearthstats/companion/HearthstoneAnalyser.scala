@@ -16,30 +16,6 @@ class HearthstoneAnalyser(
   companionState: CompanionState,
   matchState: MatchState) extends Logging {
 
-  //  val screenAnalyser = new ScreenAnalyser
-  //  val individualPixelAnalyser = new IndividualPixelAnalyser
-  //  val relativePixelAnalyser = new RelativePixelAnalyser
-  //  val opponentNameRankedOcr = new OpponentNameRankedOcr
-  //  val opponentNameUnrankedOcr = new OpponentNameUnrankedOcr
-  //  val rankLevelOcr = new RankLevelOcr
-  //
-  //  def analyze(image: BufferedImage) {
-  //    //    videoEncoder.encodeImage(image)
-  //    val matchedScreen =
-  //      if (iterationsSinceScreenMatched < 10) screenAnalyser.identifyScreen(image, screen)
-  //      else screenAnalyser.identifyScreen(image, null)
-  //    if (matchedScreen == null)
-  //      iterationsSinceScreenMatched += 1
-  //    else {
-  //      iterationsSinceScreenMatched = 0
-  //      val screenChangedOK = handleScreenChange(image, screen, matchedScreen)
-  //      if (screenChangedOK)
-  //        handleScreenActions(image, matchedScreen)
-  //      else
-  //        debug(s"Ignored screen $matchedScreen because it was determined to be invalid")
-  //    }
-  //  }
-  //
   //  private def handleScreenActions(image: BufferedImage, newScreen: Screen) {
   //    if (newScreen != null) {
   //      debug(s"Screen being processed $newScreen")
