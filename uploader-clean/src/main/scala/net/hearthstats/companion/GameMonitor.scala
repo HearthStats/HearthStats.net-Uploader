@@ -8,14 +8,19 @@ import net.hearthstats.game.GameEvent
 import net.hearthstats.game.Screen._
 import net.hearthstats.game.ScreenEvent
 import rx.lang.scala.Observable
-import net.hearthstats.game.imageanalysis.LobbyAnalyser._
+import net.hearthstats.game.imageanalysis.LobbyAnalyser
 import net.hearthstats.core.GameMode._
+import net.hearthstats.game.imageanalysis.LobbyAnalyser
+import grizzled.slf4j.Logging
 
 class GameMonitor(
   programHelper: ProgramHelper,
   config: UserConfig,
   companionState: CompanionState,
-  imageToEvent: ImageToEvent) {
+  lobbyAnalyser: LobbyAnalyser,
+  imageToEvent: ImageToEvent) extends Logging {
+
+  import lobbyAnalyser._
 
   val gameImages: Observable[BufferedImage] =
     Observable.interval(config.pollingDelayMs.get.millis).map { _ =>
@@ -40,9 +45,12 @@ class GameMonitor(
     case PLAY_LOBBY =>
       companionState.mode match {
         case (Some(RANKED) | None) if imageShowsCasualPlaySelected(evt.image) =>
-          companionState.mode=Some(CASUAL)
+          debug("Casual Mode detected")
+          companionState.mode = Some(CASUAL)
         case (Some(CASUAL) | None) if imageShowsRankedPlaySelected(evt.image) =>
-          companionState.mode=Some(RANKED)
+          debug("Ranked Mode detected")
+          companionState.mode = Some(RANKED)
+        case _ => // assuming no change in the mode
       }
 
   }

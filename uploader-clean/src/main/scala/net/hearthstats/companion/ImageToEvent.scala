@@ -22,11 +22,9 @@ import net.hearthstats.game.ScreenEvent
 /**
  * Converts screenshots to game events and updates the last screen.
  */
-class ImageToEvent extends Logging {
-
-  val screenAnalyser = new ScreenAnalyser
-  val individualPixelAnalyser = new IndividualPixelAnalyser
-  val relativePixelAnalyser = new RelativePixelAnalyser
+class ImageToEvent(
+  screenAnalyser: ScreenAnalyser,
+  individualPixelAnalyser: IndividualPixelAnalyser) extends Logging {
 
   var lastScreen: Option[Screen] = None
 
