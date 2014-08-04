@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>HearthStats Companion by HearthStats</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/HearthStats/HearthStats.net-Uploader">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/HearthStats/HearthStats.net-Uploader/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/HearthStats/HearthStats.net-Uploader/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>HearthStats Companion</h1>
+          <p>Automatically track  your Hearthstone games with HearthStats Companion</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/HearthStats">HearthStats</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <p><a href="https://travis-ci.org/HearthStats/HearthStats.net-Uploader"><img src="https://travis-ci.org/HearthStats/HearthStats.net-Uploader.svg?branch=master" alt="Build Status"></a>
+<a href="https://coveralls.io/r/HearthStats/HearthStats.net-Uploader?branch=master"><img src="https://img.shields.io/coveralls/HearthStats/HearthStats.net-Uploader.svg" alt="Coverage Status"></a>
+<a href="https://waffle.io/HearthStats/HearthStats.net-Uploader"><img src="https://badge.waffle.io/HearthStats/HearthStats.net-Uploader.png?label=Ready" alt="Stories in Ready"></a>
+<a href="https://gitter.im/HearthStats"><img src="https://badges.gitter.im/HearthStats.png" alt="Gitter chat"></a></p>
+
+<h1>
+<a name="hearthstats-companion" class="anchor" href="#hearthstats-companion"><span class="octicon octicon-link"></span></a>HearthStats Companion</h1>
+
+<p>(Previously known as the 'HearthStats Uploader')</p>
+
+<p>This is a Java based utility designed to run in the background and automatically
+upload your win ratios and other statistics to <a href="http://HearthStats.net">HearthStats.net</a>
+while you play Hearthstone. This program uses screen grab analysis of your Hearthstone window
+and does not do any packet sniffing, monitoring, or network modification of any kind.</p>
+
+<p>This project is and always will be open source so that you can do your own builds 
+and see exactly what's happening within the program. </p>
+
+<h2>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>Support for both Windows and OS X</li>
+<li>Automatically tracks constructed and arena matches</li>
+<li>Tracks your class and your opponent's class</li>
+<li>Tracks your rank level for ranked matches</li>
+<li>Tracks your opponent's name</li>
+<li>Tracks number of rounds played and match duration</li>
+<li>Add notes to your matches directly from HearthStats Companion</li>
+</ul><p>See the <a href="https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Development-Status">Development Status</a> wiki page for more detail about what is currently supported.</p>
+
+<h2>
+<a name="running-beta-builds" class="anchor" href="#running-beta-builds"><span class="octicon octicon-link"></span></a>Running Beta Builds</h2>
+
+<p>This project is under HEAVY construction, but you can still run beta builds
+to help test things out or just see how things are going. Check out the project's
+<a href="https://github.com/HearthStats/HearthStats.net-Uploader/issues/milestones">milestones</a> 
+to see how things are progressing.</p>
+
+<ul>
+<li>Make sure you have <a href="http://java.com/en/download/manual.jsp">Java 7</a> installed</li>
+<li>Download the <strong><a href="https://hearthstats.net/uploader">latest release</a></strong> of the HearthStats Companion</li>
+<li>Extract the downloaded zip file to any folder
+
+<ul>
+<li>On <strong>Windows</strong>, run HearthStats.exe in the folder where you extracted the zip file</li>
+<li>On <strong>Mac OS X</strong>, run HearthStats in that folder, or from the Applications folder if you prefer</li>
+</ul>
+</li>
+<li>A window should open called "HearthStats Companion"</li>
+<li>Start your Hearthstone client 
+
+<ul>
+<li>On <strong>Windows</strong>, put Hearthstone in <strong>windowed mode</strong> (see <a href="https://github.com/HearthStats/HearthStats.net-Uploader/issues/17">issue #17</a>)</li>
+<li>On <strong>Mac OS X</strong>, you can run Hearthstone in <strong>windowed mode</strong> or <strong>full-screen</strong>
+</li>
+</ul>
+</li>
+<li>Look for notifications in the corner of your screen that indicate event detection
+
+<ul>
+<li>Notifications will only appear in windowed mode, not in full-screen mode</li>
+</ul>
+</li>
+<li><a href="http://help.hearthstats.net/forums/257732-hearthstats-companion">Give us feedback and ideas!</a></li>
+</ul><h2>
+<a name="known-issues" class="anchor" href="#known-issues"><span class="octicon octicon-link"></span></a>Known Issues</h2>
+
+<ul>
+<li>On Windows, Hearthstone must be running in <strong>windowed mode</strong> for now (see <a href="https://github.com/HearthStats/HearthStats.net-Uploader/issues/17">issue #17</a>)</li>
+<li>On 64-bit Windows you need to install <a href="http://www.microsoft.com/en-us/download/details.aspx?id=30679">Visual C++ Redistributable for Visual Studio 2012</a> if you don't have it already</li>
+</ul><p>Please see the full <a href="https://github.com/HearthStats/HearthStats.net-Uploader/issues">list of known issues</a>
+as well.</p>
+
+<h2>
+<a name="contributing-to-this-project" class="anchor" href="#contributing-to-this-project"><span class="octicon octicon-link"></span></a>Contributing to this Project</h2>
+
+<p>There are several things you can do to help this project out:</p>
+
+<ul>
+<li>Check out and participate in <a href="http://www.reddit.com/r/hearthstone/comments/1wa4rc/auto_uploader_for_hearthstatsnet_need_help_testing/">the reddit thread</a>
+</li>
+<li>Download and test early builds, making sure to <a href="http://help.hearthstats.net/forums/257732-hearthstats-companion">report any issues you find</a>
+</li>
+<li>Fork this repository if you can hack, and create a pull request if you come up with things to contribute.</li>
+</ul>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
