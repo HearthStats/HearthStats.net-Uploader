@@ -42,7 +42,8 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
 
   val monitor = wire[GameMonitor]
 
-  val rank8Lobby = readImage("play_lobby")
+  val rank8Lobby = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)
+  val newArenaRun = new BufferedImage(100, 10, BufferedImage.TYPE_INT_RGB)
 
   val sleep = config.pollingDelayMs.get * 2
 
@@ -61,6 +62,18 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   "The monitor" should "detect deck slot" in {
     setupForPlayMode(Casual)
     state.deckSlot shouldBe Some(3)
+  }
+
+  "The monitor" should "detect new Arena run" in {
+    setupForArena(true)
+    state.deckSlot shouldBe None
+    state.mode shouldBe Some(ARENA)
+    state.isNewArenaRun shouldBe true
+  }
+
+  "The monitor" should "detect existing Arena run" in {
+    setupForArena(false)
+    state.isNewArenaRun shouldBe false
   }
 
   "The monitor" should "detect changes in game mode" in {
@@ -82,6 +95,11 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
     Thread.sleep(sleep)
   }
 
-  def readImage(name: String) =
-    ImageIO.read(classOf[AnalyserSpec].getResourceAsStream(name + ".png"))
+  def setupForArena(isNew: Boolean) {
+    when(helper.foundProgram).thenReturn(true)
+    when(helper.getScreenCapture).thenReturn(newArenaRun)
+    when(lobbyAnalyser.isNewArenaRun(newArenaRun)).thenReturn(isNew)
+    when(screenAnalyser.identifyScreen(any[BufferedImage], any[Screen])).thenReturn(Screen.ARENA_LOBBY)
+    Thread.sleep(sleep)
+  }
 }

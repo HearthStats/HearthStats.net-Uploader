@@ -62,6 +62,7 @@ class GameMonitor(
       case ARENA_LOBBY if companionState.mode != Some(ARENA) =>
         info("Arena Mode detected")
         companionState.mode = Some(ARENA)
+        companionState.isNewArenaRun = isNewArenaRun(evt.image)
 
       case _ =>
         debug("no change in game mode")

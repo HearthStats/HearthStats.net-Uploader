@@ -58,7 +58,9 @@ class ImageToEvent(
 
   private def eventFromScreen(newScreen: Screen, image: BufferedImage): Option[GameEvent] =
     if (lastScreen.isEmpty || lastScreen.get != newScreen || newScreen == Screen.PLAY_LOBBY) {
-      debug(s"Screen : $lastScreen => $newScreen")
+      if (lastScreen != Some(newScreen)) {
+        debug(s"Screen : $lastScreen => $newScreen")
+      }
       if (newScreen == PLAY_LOBBY && imageShowsPlayBackground(image))
         None
       else if (lastScreen == FINDING_OPPONENT && iterationsSinceFindingOpponent < 5) {
@@ -67,7 +69,7 @@ class ImageToEvent(
       } else {
         iterationsSinceFindingOpponent = 0
         val screenToEvent: PartialFunction[Screen, GameEvent] = _ match {
-          case PLAY_LOBBY => ScreenEvent(PLAY_LOBBY, image)
+          case s if Seq(PLAY_LOBBY, ARENA_LOBBY) contains s => ScreenEvent(s, image)
           case ARENA_END => ArenaRunEnd
           case s if s.group == MATCH_START => StartingHand
           case s if s.group == MATCH_PLAYING => FirstTurn

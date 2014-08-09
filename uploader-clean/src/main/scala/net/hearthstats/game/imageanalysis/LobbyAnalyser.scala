@@ -26,6 +26,9 @@ class LobbyAnalyser {
     Option(rankInteger) map Rank.fromInt
   }
 
+  def isNewArenaRun(image: BufferedImage): Boolean =
+    individualPixelAnalyser.testAllPixelsMatch(image, Array(NEW_ARENA_RUN_A, NEW_ARENA_RUN_B, NEW_ARENA_RUN_C, NEW_ARENA_RUN_D, NEW_ARENA_RUN_E))
+
   def imageIdentifyDeckSlot(image: BufferedImage): Option[Int] =
     identify(image, Seq(
       Array(DECK_SLOT_1A, DECK_SLOT_1B) -> 1,

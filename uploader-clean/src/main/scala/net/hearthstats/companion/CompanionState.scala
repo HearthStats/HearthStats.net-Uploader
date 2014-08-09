@@ -8,9 +8,10 @@ import net.hearthstats.core.Rank
  * Current perception of HearthStone game by the companion.
  */
 class CompanionState extends Logging {
-
+  debug("new CompanionState")
   var mode: Option[GameMode] = None
   var deckSlot: Option[Int] = None
   var rank: Option[Rank] = None
+  var isNewArenaRun = false
 
 }

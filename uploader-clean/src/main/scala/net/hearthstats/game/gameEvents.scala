@@ -6,7 +6,6 @@ import CardEventType.DRAWN
 import CardEventType.REPLACED
 import net.hearthstats.core.Card
 
-
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
 
@@ -23,4 +22,6 @@ object ArenaRunEnd extends GameEvent
 object StartingHand extends GameEvent
 object FirstTurn extends GameEvent
 
-case class ScreenEvent(screen:Screen, image:BufferedImage) extends GameEvent
+case class ScreenEvent(screen: Screen, image: BufferedImage) extends GameEvent {
+  override def toString = s"ScreenEvent($screen)"
+}
