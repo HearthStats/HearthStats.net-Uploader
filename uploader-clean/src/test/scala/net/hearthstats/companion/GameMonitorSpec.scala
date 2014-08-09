@@ -58,6 +58,11 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
     state.rank shouldBe None
   }
 
+  "The monitor" should "detect deck slot" in {
+    setupForPlayMode(Casual)
+    state.deckSlot shouldBe Some(3)
+  }
+
   "The monitor" should "detect changes in game mode" in {
     setupForPlayMode(Ranked)
     state.mode shouldBe Some(RANKED)
@@ -71,6 +76,7 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
     when(helper.foundProgram).thenReturn(true)
     when(helper.getScreenCapture).thenReturn(rank8Lobby)
     when(lobbyAnalyser.mode(rank8Lobby)).thenReturn(Some(mode))
+    when(lobbyAnalyser.imageIdentifyDeckSlot(rank8Lobby)).thenReturn(Some(3))
     when(lobbyAnalyser.analyzeRankLevel(rank8Lobby)).thenReturn(Some(Rank.RANK_8))
     when(screenAnalyser.identifyScreen(any[BufferedImage], any[Screen])).thenReturn(Screen.PLAY_LOBBY)
     Thread.sleep(sleep)

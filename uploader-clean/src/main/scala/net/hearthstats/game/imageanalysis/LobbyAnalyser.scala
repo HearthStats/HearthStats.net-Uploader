@@ -26,6 +26,24 @@ class LobbyAnalyser {
     Option(rankInteger) map Rank.fromInt
   }
 
+  def imageIdentifyDeckSlot(image: BufferedImage): Option[Int] =
+    identify(image, Seq(
+      Array(DECK_SLOT_1A, DECK_SLOT_1B) -> 1,
+      Array(DECK_SLOT_2A, DECK_SLOT_2B) -> 2,
+      Array(DECK_SLOT_3A, DECK_SLOT_3B) -> 3,
+      Array(DECK_SLOT_4A, DECK_SLOT_4B) -> 4,
+      Array(DECK_SLOT_5A, DECK_SLOT_5B) -> 5,
+      Array(DECK_SLOT_6A, DECK_SLOT_6B) -> 6,
+      Array(DECK_SLOT_7A, DECK_SLOT_7B) -> 7,
+      Array(DECK_SLOT_8A, DECK_SLOT_8B) -> 8,
+      Array(DECK_SLOT_9A, DECK_SLOT_9B) -> 9))
+
+  private def identify[T](image: BufferedImage, pixelRules: Iterable[(Array[UniquePixel], T)]): Option[T] =
+    (for {
+      (pixels, result) <- pixelRules
+      if individualPixelAnalyser.testAllPixelsMatch(image, pixels)
+    } yield result).headOption
+
   private def imageShowsCasualPlaySelected(image: BufferedImage): Boolean =
     individualPixelAnalyser.testAllPixelsMatch(image, Array(MODE_CASUAL_1A, MODE_CASUAL_1B)) ||
       individualPixelAnalyser.testAllPixelsMatch(image, Array(MODE_CASUAL_2A, MODE_CASUAL_2B)) ||
