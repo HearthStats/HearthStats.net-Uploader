@@ -56,6 +56,9 @@ class GameMonitor(
           companionState.mode = Some(RANKED)
         case _ => // assuming no change in the mode
       }
-
+      if (companionState.mode == Some(RANKED) && companionState.rank.isEmpty) {
+        companionState.rank = lobbyAnalyser.analyzeRankLevel(evt.image)
+      }
   }
+
 }

@@ -27,6 +27,7 @@ import net.hearthstats.game.Screen
 import java.awt.image.BufferedImage
 import net.hearthstats.game.imageanalysis.Ranked
 import net.hearthstats.game.imageanalysis.Casual
+import net.hearthstats.game.imageanalysis.LobbyMode
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest {
@@ -45,31 +46,32 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
 
   val sleep = config.pollingDelayMs.get * 2
 
-  //  "The monitor" should "detect ranked mode and rank" in {
-  //    setupForPlayMode(true)
-  //    state.mode shouldBe Some(RANKED)
-  //    //    state.rank shouldBe Some(Rank.RANK_8)
-  //  }
-  //
-  //  "The monitor" should "detect casual mode" in {
-  //    setupForPlayMode(false)
-  //    state.mode shouldBe Some(CASUAL)
-  //    state.rank shouldBe None
-  //  }
-  //
-  "The monitor" should "detect changes in game mode" in {
-    setupForPlayMode(true)
+  "The monitor" should "detect ranked mode and rank" in {
+    setupForPlayMode(Ranked)
     state.mode shouldBe Some(RANKED)
-    setupForPlayMode(false)
+    state.rank shouldBe Some(Rank.RANK_8)
+  }
+
+  "The monitor" should "detect casual mode" in {
+    setupForPlayMode(Casual)
     state.mode shouldBe Some(CASUAL)
-    setupForPlayMode(true)
+    state.rank shouldBe None
+  }
+
+  "The monitor" should "detect changes in game mode" in {
+    setupForPlayMode(Ranked)
+    state.mode shouldBe Some(RANKED)
+    setupForPlayMode(Casual)
+    state.mode shouldBe Some(CASUAL)
+    setupForPlayMode(Ranked)
     state.mode shouldBe Some(RANKED)
   }
 
-  def setupForPlayMode(ranked: Boolean) {
+  def setupForPlayMode(mode: LobbyMode) {
     when(helper.foundProgram).thenReturn(true)
     when(helper.getScreenCapture).thenReturn(rank8Lobby)
-    when(lobbyAnalyser.mode(rank8Lobby)).thenReturn(Some(if (ranked) Ranked else Casual))
+    when(lobbyAnalyser.mode(rank8Lobby)).thenReturn(Some(mode))
+    when(lobbyAnalyser.analyzeRankLevel(rank8Lobby)).thenReturn(Some(Rank.RANK_8))
     when(screenAnalyser.identifyScreen(any[BufferedImage], any[Screen])).thenReturn(Screen.PLAY_LOBBY)
     Thread.sleep(sleep)
   }
