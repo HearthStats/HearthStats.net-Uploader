@@ -35,6 +35,8 @@ abstract class ProgramHelper extends Observable {
 
   def getHSWindowBounds: Rectangle
 
+  def bringWindowToForeground: Boolean
+
   /**
    * Returns true if config was created.
    */
