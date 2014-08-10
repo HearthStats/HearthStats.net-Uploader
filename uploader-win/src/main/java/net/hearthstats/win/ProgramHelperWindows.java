@@ -179,7 +179,20 @@ public class ProgramHelperWindows extends ProgramHelper {
     }
 
 
-    private BufferedImage _getScreenCaptureWindows(HWND hWnd) {
+  public boolean bringWindowToForeground() {
+    HWND currentWindowHandle = getWindowHandle();
+    if (currentWindowHandle == null) {
+      debugLog.debug("Cannot run bringWindowToForeground() because window handle is null");
+      return false;
+    } else {
+      User32.INSTANCE.ShowWindow(currentWindowHandle, User32.SW_SHOW);
+      User32.INSTANCE.SetForegroundWindow(currentWindowHandle);
+      return true;
+    }
+  }
+
+
+  private BufferedImage _getScreenCaptureWindows(HWND hWnd) {
 
     HDC hdcWindow = User32.INSTANCE.GetDC(hWnd);
     HDC hdcMemDC = GDI32.INSTANCE.CreateCompatibleDC(hdcWindow);
