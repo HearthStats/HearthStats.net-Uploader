@@ -55,7 +55,18 @@ class HearthStatsUpdater implements ActionListener {
         window.log("Downloading version " + version + " of the HearthStats Companion.");
         window.enableCancelButton();
 
-        String assetUrlString = UpdaterConfiguration.getAssetApiUrl(assetId);
+        String assetUrlString = UpdaterConfiguration.getNewAssetApiUrl(assetId);
+        boolean downloadedFromNewUrl = downloadAsset(assetUrlString);
+        if (!downloadedFromNewUrl) {
+          assetUrlString = UpdaterConfiguration.getOldAssetApiUrl(assetId);
+          downloadAsset(assetUrlString);
+        }
+
+        return null;
+      }
+
+
+      private boolean downloadAsset(String assetUrlString) {
         String currentUrlString = assetUrlString;
 
         try {
@@ -79,6 +90,10 @@ class HearthStatsUpdater implements ActionListener {
           logResponseHeaders(connection);
 
           int responseCode = connection.getResponseCode();
+          if (responseCode == 404) {
+            // Asset was not found
+            return false;
+          }
           if (responseCode == 302 || responseCode == 307) {
             // We have been redirected to the download, which is the normal behaviour
             String redirectUrlString = connection.getHeaderField("location");
@@ -114,14 +129,14 @@ class HearthStatsUpdater implements ActionListener {
             }
           }
 
+          return true;
+
         } catch (IOException e) {
           String error = "Unable to open connection to URL " + currentUrlString + " due to exception " + e.getMessage();
           window.log(error);
           errorOccurred = true;
           throw new UpdaterException(error, e);
         }
-
-        return null;
       }
 
 

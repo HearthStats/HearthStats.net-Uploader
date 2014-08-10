@@ -140,6 +140,7 @@ class MatchPanel extends JPanel {
   def resetMatchClassSelectors() {
     _currentYourClassSelector.setSelectedIndex(0)
     _currentOpponentClassSelect.setSelectedIndex(0)
+    _currentGameCoinField.setSelected(false)
   }
 
   def updateMatchClassSelectorsIfSet(hsMatch: HearthstoneMatch) {

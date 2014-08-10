@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
@@ -51,6 +52,18 @@ class GitHubRequest {
     }
   }
 
+
+  Integer getResponseCode() {
+    if (connection instanceof HttpURLConnection) {
+      try {
+        return ((HttpURLConnection) connection).getResponseCode();
+      } catch (IOException e) {
+        throw new UpdaterException("Unable to get status code from HTTP request due to exception " + e.getMessage(), e);
+      }
+    } else {
+      return null;
+    }
+  }
 
 
   Object read() {

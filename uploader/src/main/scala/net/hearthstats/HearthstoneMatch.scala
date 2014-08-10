@@ -1,5 +1,6 @@
 package net.hearthstats
 
+import grizzled.slf4j.{Logging, Logger}
 import net.hearthstats.util.Rank
 import net.hearthstats.util.Translations.t
 import org.apache.commons.lang3.StringUtils
@@ -9,7 +10,8 @@ import net.hearthstats.util.MatchOutcome
 
 //TODO use options
 //TODO avoid mutable 
-class HearthstoneMatch(var mode: String = null,
+class HearthstoneMatch(
+  private var _mode: String = null,
   private var _userClass: String = null,
   var opponentClass: String = null,
   var coin: Boolean = false,
@@ -25,7 +27,19 @@ class HearthstoneMatch(var mode: String = null,
   var submitted: Boolean = false) {
   private var _userClassUnconfirmed: Boolean = true
   //needed for java calls
-  def this() = this(mode = null)
+  def this() = this(_mode = null)
+
+
+  def mode: String = _mode
+
+  def mode_=(value: String) {
+    _mode = value
+    if (value == "Arena") {
+      // When switching to Arena mode from Ranked or Casual, the class from the selected deck needs to be cleared
+      _userClass = null
+      _userClassUnconfirmed = true
+    }
+  }
 
   def deckSlot: Int = _deckSlot
 

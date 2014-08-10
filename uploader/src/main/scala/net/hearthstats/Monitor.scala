@@ -373,6 +373,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       mainFrame.matchPanel.lastMatch = lastMatch
       if (API.message.matches(".*(Edit match|Arena match successfully created).*")) {
         HearthstoneAnalyser.hsMatch = new HearthstoneMatch
+        mainFrame.matchPanel.updateCurrentMatchUi()
         mainFrame.matchPanel.resetMatchClassSelectors()
         Log.divider()
       }
