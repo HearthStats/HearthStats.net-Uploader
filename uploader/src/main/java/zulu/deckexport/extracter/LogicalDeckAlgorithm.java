@@ -1,10 +1,11 @@
 package zulu.deckexport.extracter;
 
-import java.util.ArrayList;
-
+import net.hearthstats.log.Log;
 import zulu.deckexport.card.Card;
 import zulu.deckexport.card.DeckItem;
 import zulu.deckexport.prob.ProbList;
+
+import java.util.ArrayList;
 
 public class LogicalDeckAlgorithm {
 
@@ -104,30 +105,24 @@ public class LogicalDeckAlgorithm {
 		int[] bankos = new int[deck.size()];
 		int[] manas = new int[deck.size()];
 		// Reset bankos
-		for(int i = 0; i<bankos.length; i++)
-		{
+		for(int i = 0; i<bankos.length; i++) {
 			bankos[i] = 0;
 			manas[i] = 0;
 		}
 		// Find bankos level 1
-		for(int i = 0; i<probList.size(); i++)
-		{
-			if(probList.get(i).getProbMin() < 6)
-			{
+		for(int i = 0; i<probList.size(); i++) {
+			if(probList.get(i).getProbMin() < 6) {
 				bankos[i] = 1;
 				manas[i] = probList.get(i).getItems().getLast().getCard().getMana();
 			}
 		}
 		// Find level 2
-		for(int i=0;i<deck.size();i++)
-		{
-			if(bankos[i] == 0)
-			{
+		for(int i=0;i<deck.size();i++) {
+			if(bankos[i] == 0) {
 				int lowM = findPrevMana(manas, i);
 				int highM = findNextMana(manas, i);
 				Card card = probList.get(i).getBestCardWithMana(lowM,highM);
-				if(!card.getName().equals("UNKNOWN"))
-				{
+				if(!card.getName().equals("UNKNOWN")) {
 					bankos[i] = 1;
 					manas[i] = card.getMana();
 				}
@@ -138,21 +133,28 @@ public class LogicalDeckAlgorithm {
 		//Invalid deck page
 		int count = 0;
 		int unkCount = 0;
-		for(int i=0; i<deck.size();i++)
-		{
+		for (int i = 0; i<deck.size(); i++) {
 			count += deck.get(i).getCount();
-			if(deck.get(i).getCard().getName().equalsIgnoreCase("UNKNOWN"))
-				unkCount++;
+			if(deck.get(i).getCard().getName().equalsIgnoreCase("UNKNOWN")) {
+        unkCount++;
+      }
 		}
 		
-		if(unkCount > 5)	// If there are 5 or more cards which we cannot detect then deck is invalid.
-			return null;
-		if(count < 30)		// If there are less than 30 cards
-			return null;
-		if(deck.size() < 15) // If deck has less than 15 different cards
-			return null;
-		
-		return deck;
+		if (unkCount > 5)	{
+  		// If there are 5 or more cards which we cannot detect then deck is invalid.
+      Log.warn("Warning: " + unkCount + " unknown cards found in the deck export");
+    }
+		if (deck.size() < 15) {
+      // If deck has less than 15 different cards
+      Log.warn("Warning: exported deck has fewer than 15 different cards (" + deck.size() + " different cards detected)");
+    }
+
+    if (count < 30) {
+      // Warn If there are less than 30 cards
+      Log.warn("Warning: exported deck has fewer than 30 cards (" + count + " detected)");
+    }
+
+    return deck;
 	}
 	/**
 	 * Helper for Logical Deck Algorithm

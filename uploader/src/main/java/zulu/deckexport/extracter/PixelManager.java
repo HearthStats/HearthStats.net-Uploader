@@ -3,13 +3,15 @@
  */
 package zulu.deckexport.extracter;
 
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-
+import zulu.deckexport.card.Deck;
 import zulu.deckexport.util.Myrect;
 
-public class PixelManager {	
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+
+
+public class PixelManager {
 	private static int x_FirstCard;			// X of first card
 	private static int y_FirstCard;			// Y of first card
 	
@@ -38,7 +40,26 @@ public class PixelManager {
 	private static int y_Scroll;			// Y of Deck Scroller
 	public static double ratio;
 	public static int sideCrop;
-	
+
+  /**
+   * This method is available only for illustration.(Can be deleted)
+   * @param deck
+   */
+  public static void showMessageDialog(Deck deck) {
+    JOptionPane op = new JOptionPane("Deck built and uploaded successfully.", JOptionPane.INFORMATION_MESSAGE);
+    JScrollPane scrollPane = new JScrollPane();
+    JList list = new JList();
+    scrollPane.setViewportView(list);
+    list.setListData(deck.toArray());
+    op.add(scrollPane);
+    JDialog dialog = op.createDialog(null, "Deck Exporter Info");
+    dialog.setAlwaysOnTop(true);
+    dialog.setModal(true);
+    dialog.setFocusableWindowState(true);
+    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+    dialog.setVisible(true);
+  }
+
 	public static void setPixelManager(double ratio2, int sideCrop2) {
 		ratio = ratio2;
 		sideCrop = sideCrop2;

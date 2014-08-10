@@ -29,15 +29,15 @@ public class Deck {
 	public void setCards(List<DeckItem> cards) {
 		this.cards = cards;
 	}
-	public Object[] toArray(){
-		Object[] myObject = new Object[cards.size()];
+	public String[] toArray(){
+		String[] cardString = new String[cards.size()];
 		int i=0;
 		for(DeckItem d : cards)
 		{
-			myObject[i] = d.toString();
+			cardString[i] = d.toString();
 			i++;
 		}
-		return myObject; 
+		return cardString;
 	}
 	public String getDeckClass() {
 		return deckClass;

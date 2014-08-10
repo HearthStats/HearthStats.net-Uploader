@@ -3,8 +3,19 @@
  */
 package zulu.deckexport.extracter;
 
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import net.hearthstats.log.Log;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import zulu.deckexport.card.Card;
+import zulu.deckexport.card.CardCount;
+import zulu.deckexport.card.Deck;
+import zulu.deckexport.card.DeckItem;
+import zulu.deckexport.prob.ProbList;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -14,20 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
-
-import org.apache.commons.io.IOUtils;
-
-import zulu.deckexport.card.Card;
-import zulu.deckexport.card.CardCount;
-import zulu.deckexport.card.Deck;
-import zulu.deckexport.card.DeckItem;
-import zulu.deckexport.prob.ProbList;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 public class ExtracterMain {
+
+  private final static Logger debugLog = LoggerFactory.getLogger(ExtracterMain.class);
+
 	private static ArrayList<Card> cards;
 	private static Map<String, Card> cardMap;
 	private static Map<Integer, Card> cardIdMap;
@@ -52,31 +53,35 @@ public class ExtracterMain {
 	 * Take two screenshots of hearthstone deck page. 'img' for normal and 'imgScroll' for scrolled part of the deck
 	 * and then call this method.<br/>
 	 * 
-	 * @param deckName - name of the deck
 	 * @param img - first part of the deck image
 	 * @param imgScroll - second part of the deck image (Scrolled Deck Image)
 	 * @return Deck - null if it is not a logical deck.
 	 */
-	public static Deck exportDeck(BufferedImage img, BufferedImage imgScroll)
-	{
-		BufferedImage img1 = PixelManager.rescaleImage(img);
-		buildEnvironment();
-		ArrayList<DeckItem> deckItems = new ArrayList<DeckItem>();
-		probList = new ArrayList<ProbList>();
-		deckItems = fetchCards(img1);
-		boolean isScrollable = true;
-		if(isScrollable)
-		{
-			ArrayList<DeckItem> scrolledDeckItems = new ArrayList<DeckItem>();
-			BufferedImage img2 = PixelManager.rescaleImage(imgScroll);
-			PixelManager.setPixelManager();
-			scrolledDeckItems = fetchCards(img2);
-			deckItems = LogicalDeckAlgorithm.mergeDeckParts(deckItems, scrolledDeckItems, probList);
-		}
-		if(deckItems != null)
-			return new Deck(deckItems);
-		else return null;	
-	}
+	public static Deck exportDeck(BufferedImage img, BufferedImage imgScroll)	{
+    try {
+      BufferedImage img1 = PixelManager.rescaleImage(img);
+      buildEnvironment();
+      ArrayList<DeckItem> deckItems = new ArrayList<DeckItem>();
+      probList = new ArrayList<ProbList>();
+      deckItems = fetchCards(img1);
+      boolean isScrollable = true;
+      if (isScrollable) {
+        ArrayList<DeckItem> scrolledDeckItems = new ArrayList<DeckItem>();
+        BufferedImage img2 = PixelManager.rescaleImage(imgScroll);
+        PixelManager.setPixelManager();
+        scrolledDeckItems = fetchCards(img2);
+        deckItems = LogicalDeckAlgorithm.mergeDeckParts(deckItems, scrolledDeckItems, probList);
+      }
+      if (deckItems != null) {
+        return new Deck(deckItems);
+      } else {
+        return null;
+      }
+    } catch (Exception e) {
+      Log.warn("Unable to export deck due to error: " + e.getMessage(), e);
+      return null;
+    }
+  }
 	
 	/**
 	 * <ul>
@@ -98,24 +103,26 @@ public class ExtracterMain {
 	
 	// Deck Export
 	private static ArrayList<DeckItem> fetchCards(BufferedImage image) {
-		
 		ArrayList<DeckItem> deckItems = new ArrayList<DeckItem>();
 		int manaFlag = 0;
-		for(int i=0;i<numberOfCardInDeck;i++)
+		for (int i=0; i < numberOfCardInDeck; i++)
 		{
-			CropManager.cropImage(i, image);
-			DeckItem deckItem = matchCards(CropManager.subImage, CropManager.countImage, manaFlag);
-			if(!deckItem.getCard().getName().equals("UNKNOWN"))
-			{
-				//System.out.println((i+1) + "/"+ numberOfCardInDeck + " - " + deckItem.toString());
-				deckItem.setImage(CropManager.deckItemImage);
+      CropManager cm = new CropManager(i, image);
+
+      // Uncomment the following to save the card images for debugging purposes
+//      BackgroundImageSave.savePngImage(cm.subImage, "extract-sub-" + i);
+//      BackgroundImageSave.savePngImage(cm.countImage, "extract-count-" + i);
+//      BackgroundImageSave.savePngImage(cm.deckItemImage, "extract-deckitem-" + i);
+
+			DeckItem deckItem = matchCards(cm.subImage, cm.countImage, manaFlag);
+			if (!deckItem.getCard().getName().equals("UNKNOWN")) {
+				deckItem.setImage(cm.deckItemImage);
 				deckItems.add(deckItem);
-			}
-			else
-			{
+			} else {
 				System.out.println("This card does not have any trained data.");
 				deckItems.add(deckItem);
 			}
+
 			manaFlag = deckItem.getCard().getMana();
 		}	
 		return deckItems;
@@ -266,11 +273,11 @@ public class ExtracterMain {
 	}
 
 
-	// Used by TrainingAPP GUI to fetch card images
-	public static void getCardImage(int k)
-	{
-		CropManager.cropImage(k, image);
-	}
+//	// Used by TrainingAPP GUI to fetch card images
+//	public static void getCardImage(int k)
+//	{
+//		CropManager.cropImage(k, image);
+//	}
 	
 	
 	//##################################################
@@ -280,11 +287,10 @@ public class ExtracterMain {
 		String guicardsText = readFromResourceFile(Constants.txtCardCounts);
 		Type mapType = new TypeToken<List<CardCount>>(){}.getType(); 
 		cardCounts =  new Gson().fromJson(guicardsText, mapType);
-	}
+  }
 
 	//Read card list from txt, build maps
-	private static void readCards()
-	{
+	private static void readCards()	{
 		String cardsText = readFromResourceFile(Constants.txtCards);
 		Type mapType = new TypeToken<List<Card>>(){}.getType(); 
 		cards = new Gson().fromJson(cardsText, mapType);
@@ -308,10 +314,8 @@ public class ExtracterMain {
 				      "UTF-8"
 				    );
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+      Log.warn("Error reading file " + filename + ": " + e.getMessage(), e);
 		}
- 
 
 		return cardsText;
 	}
