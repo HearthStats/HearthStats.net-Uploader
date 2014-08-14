@@ -106,7 +106,7 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
     add(tabbedPane)
     tabbedPane.add(logScroll, t("tab.log"))
     tabbedPane.add(matchPanel, t("tab.current_match"))
-    tabbedPane.add(new DecksTab(this), t("tab.decks"))
+    tabbedPane.add(new DecksTab(monitor), t("tab.decks"))
     tabbedPane.add(optionsPanel, t("tab.options"))
     tabbedPane.add(new AboutPanel(), t("tab.about"))
     matchPanel.updateCurrentMatchUi()

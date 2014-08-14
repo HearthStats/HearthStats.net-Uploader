@@ -124,7 +124,7 @@ class DecksTab(val monitor: Monitor) extends JPanel with Logging {
       }
     }
 
-    def doCreate(d: Deck) = HsRobot(monitor.monitor._hsHelper.getHSWindowBounds).create(d)
+    def doCreate(d: Deck) = HsRobot(monitor._hsHelper.getHSWindowBounds).create(d)
   }
 
 
