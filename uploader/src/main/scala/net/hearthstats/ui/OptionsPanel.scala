@@ -44,7 +44,7 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
 
   // Game Language
   addLabel(t("options.label.game.language"))
-  addComboBox[GameLanguage](Array(t("options.label.game.language.eu"), t("options.label.game.language.fr")),
+  addComboBox[GameLanguage](Array(t("options.label.game.language.eu"), t("options.label.game.language.fr"), t("options.label.game.language.ru")),
     optionGameLanguage, optionGameLanguage.set, "", TranslationCard.changeTranslation)
 
   val gameLanguageHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Game-Language",

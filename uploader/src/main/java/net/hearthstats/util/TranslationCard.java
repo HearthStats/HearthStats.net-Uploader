@@ -17,6 +17,9 @@ public final class TranslationCard {
       case FR:
         _bundle = ResourceBundle.getBundle("net.hearthstats.resources.card.cardFr", new UTF8Control());
         break;
+      case RU:
+        _bundle = ResourceBundle.getBundle("net.hearthstats.resources.card.cardRu", new UTF8Control());
+        break;
       default:
         _bundle = null;
         break;

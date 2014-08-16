@@ -1,7 +1,7 @@
 package net.hearthstats.config;
 
 public enum GameLanguage {
-  EN, FR;
+  EN, FR, RU;
 
   public static GameLanguage getDefault() {
     return EN;
