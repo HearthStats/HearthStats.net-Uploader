@@ -142,6 +142,7 @@ class Monitor(val environment: Environment) extends JFrame with Observer {
     } catch {
       case t: Exception => Log.warn("Error occurred trying to write settings file, your settings may not be saved", t)
     }
+    _notificationQueue.clearAllNotifications()
     System.exit(0)
   }
 

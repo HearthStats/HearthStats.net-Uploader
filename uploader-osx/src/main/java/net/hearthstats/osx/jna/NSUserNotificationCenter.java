@@ -21,4 +21,8 @@ public interface NSUserNotificationCenter extends NSObject {
 
   void deliverNotification(NSUserNotification notification);
 
+  void setDelegate(NSUserNotificationCenter delegate);
+
+  void removeAllDeliveredNotifications();
+
 }
