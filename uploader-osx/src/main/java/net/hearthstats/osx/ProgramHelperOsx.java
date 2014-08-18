@@ -489,4 +489,36 @@ public class ProgramHelperOsx extends ProgramHelper {
     return null;
 	}
 
+
+  @Override
+  public boolean bringWindowToForeground() {
+    final NSAutoreleasePool pool;
+    try {
+      pool = NSAutoreleasePool.new_();
+    } catch (Throwable ex) {
+      ex.printStackTrace(System.err);
+      throw new RuntimeException("Unable to find program " + _bundleIdentifier + " due to exception", ex);
+    }
+    try {
+      final NSArray nsArray = NSRunningApplication.CLASS.runningApplicationsWithBundleIdentifier(_bundleIdentifier);
+      final int size = nsArray.count();
+      for (int i = 0; i < size; i++) {
+        final NSRunningApplication nsRunningApplication = Rococoa.cast(nsArray.objectAtIndex(i), NSRunningApplication.class);
+
+        // This double-check of the bundle identifier is probably unnecessary...
+        if (_bundleIdentifier.equals(nsRunningApplication.bundleIdentifier())) {
+          boolean result = nsRunningApplication.activateWithOptions(0);
+          debugLog.debug("nsRunningApplication.activateWithOptions returned {}", result);
+          return result;
+        }
+      }
+    } catch (Exception ex) {
+      ex.printStackTrace(System.err);
+      throw new RuntimeException("Unable to find program " + _bundleIdentifier + " due to exception", ex);
+    } finally {
+      pool.drain();
+    }
+    return false;
+  }
+
 }
