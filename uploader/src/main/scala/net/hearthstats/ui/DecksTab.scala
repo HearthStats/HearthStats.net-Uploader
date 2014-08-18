@@ -1,24 +1,21 @@
 package net.hearthstats.ui
 
-import java.awt.image.BufferedImage
-
-import grizzled.slf4j.{Logging, Logger}
-import net.hearthstats.log.Log
-import net.hearthstats.util.Translations.t
+import java.awt.BorderLayout
 import java.io.IOException
 import javax.swing._
+
+import grizzled.slf4j.Logging
+import net.hearthstats.Constants._
 import net.hearthstats._
+import net.hearthstats.log.Log
+import net.hearthstats.util.{Browse, HsRobot}
+import net.hearthstats.util.Translations.t
 import net.miginfocom.swing.MigLayout
 import org.json.simple.JSONObject
 import zulu.deckexport.extracter.ExtracterMain
+
 import scala.collection.JavaConversions._
-import Constants._
 import scala.swing.Swing._
-import java.awt.BorderLayout
-import net.hearthstats.util.HsRobot
-import net.hearthstats.util.Browse
-import net.hearthstats.util.HsRobot
-import scala.Some
 
 class DecksTab(val monitor: Monitor) extends JPanel with Logging {
 
@@ -124,7 +121,10 @@ class DecksTab(val monitor: Monitor) extends JPanel with Logging {
       }
     }
 
-    def doCreate(d: Deck) = HsRobot(monitor._hsHelper.getHSWindowBounds).create(d)
+    def doCreate(d: Deck) = {
+      monitor._hsHelper.bringWindowToForeground
+      HsRobot(monitor._hsHelper.getHSWindowBounds).create(d)
+    }
   }
 
 
