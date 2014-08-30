@@ -12,6 +12,7 @@ import net.hearthstats.ui.notification.DialogNotification
 import net.hearthstats.util.{ Translation, TranslationConfig }
 import net.sourceforge.tess4j.Tesseract
 import net.hearthstats.config.UserConfig
+import net.hearthstats.util.Updater
 
 class Main(environment: Environment) extends Logging {
 
@@ -22,12 +23,13 @@ class Main(environment: Environment) extends Logging {
   val translation = wire[Translation]
   val config = wire[UserConfig]
   val startup: Startup = wire[Startup]
+  val updater: Updater = wire[Updater]
 
   def start(): Unit = {
     val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")
     loadingNotification.show()
     logSystemInformation()
-    Updater.cleanUp(environment)
+    updater.cleanUp()
     cleanupDebugFiles()
     loadingNotification.close()
     startup.start()
