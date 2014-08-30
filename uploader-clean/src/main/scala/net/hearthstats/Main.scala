@@ -22,8 +22,8 @@ class Main(environment: Environment) extends Logging {
   val uiLog = wire[Log]
   val translation = wire[Translation]
   val config = wire[UserConfig]
-  val startup: Startup = wire[Startup]
   val updater: Updater = wire[Updater]
+  val startup: Startup = wire[Startup]
 
   def start(): Unit = {
     val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")

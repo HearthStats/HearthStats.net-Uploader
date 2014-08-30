@@ -37,7 +37,7 @@ class CompanionFrame(environment: Environment,
   matchState: MatchState,
   api: API,
   deckUtils: DeckUtils,
-  translation: Translation) extends JFrame with Logging {
+  translation: Translation) extends JFrame with GeneralUI with Logging {
 
   import config._
   import translation.t
@@ -48,69 +48,8 @@ class CompanionFrame(environment: Environment,
   val aboutPanel: AboutPanel = wire[AboutPanel]
   val matchPanel: MatchPanel = wire[MatchPanel]
   val decksTab: DecksTab = wire[DecksTab]
-  var notificationQueue: NotificationQueue = environment.newNotificationQueue(notificationType)
 
-  addWindowListener(new WindowAdapter {
-    override def windowClosing(e: WindowEvent) {
-      handleClose()
-    }
-  })
   createAndShowGui()
-
-  def handleClose() {
-    try {
-      val p = getLocationOnScreen
-      windowX.set(p.x)
-      windowY.set(p.y)
-      val rect = getSize
-      windowWidth.set(rect.getWidth.toInt)
-      windowHeight.set(rect.getHeight.toInt)
-    } catch {
-      case t: Exception => uiLog.warn("Error occurred trying to save your settings, your window position may not be saved", t)
-    }
-    System.exit(0)
-  }
-
-  /**
-   * Brings the monitor window to the front of other windows. Should only be
-   * used for important events like a modal dialog or error that we want the
-   * user to see immediately.
-   */
-  def bringWindowToFront() {
-    Swing.onEDT(setVisible(true))
-  }
-
-  /**
-   * Overridden version of setVisible based on
-   * http://stackoverflow.com/questions
-   * /309023/how-to-bring-a-window-to-the-front that should ensure the window is
-   * brought to the front for important things like modal dialogs.
-   */
-  override def setVisible(visible: Boolean) {
-    if (!visible || !isVisible) {
-      super.setVisible(visible)
-    }
-    if (visible) {
-      var state = super.getExtendedState
-      state &= ~ICONIFIED
-      super.setExtendedState(state)
-      super.setAlwaysOnTop(true)
-      super.toFront()
-      super.requestFocus()
-      super.setAlwaysOnTop(false)
-    }
-  }
-
-  override def toFront() {
-    super.setVisible(true)
-    var state = super.getExtendedState
-    state &= ~ICONIFIED
-    super.setExtendedState(state)
-    super.setAlwaysOnTop(true)
-    super.toFront()
-    super.requestFocus()
-    super.setAlwaysOnTop(false)
-  }
 
   def createAndShowGui() {
     debug("Creating GUI")
@@ -130,18 +69,6 @@ class CompanionFrame(environment: Environment,
     setVisible(true)
     if (enableStartMin) setState(ICONIFIED)
     updateTitle()
-  }
-
-  def setNotificationQueue(_notificationQueue: NotificationQueue) {
-    this.notificationQueue = notificationQueue
-  }
-
-  def notify(header: String) {
-    notify(header, "")
-  }
-
-  def notify(header: String, message: String) {
-    if (notifyOverall) notificationQueue.add(header, message, false)
   }
 
   def updateTitle() {
@@ -173,69 +100,6 @@ class CompanionFrame(environment: Environment,
     //      title += " - Waiting for Hearthstone "
     //    }
     setTitle(title)
-  }
-
-  lazy val restoreButton = {
-    val button = new MenuItem("Restore")
-    button.setFont(new Font("Arial", Font.BOLD, 14))
-    button.addActionListener(new ActionListener {
-      def actionPerformed(e: ActionEvent) {
-        setVisible(true)
-        setExtendedState(NORMAL)
-      }
-    })
-    button
-  }
-
-  lazy val exitButton = {
-    val exitListener = new ActionListener() {
-      def actionPerformed(e: ActionEvent) {
-        System.exit(0)
-      }
-    }
-    val button = new MenuItem("Exit")
-    button.addActionListener(exitListener)
-    button.setFont(new Font("Arial", Font.PLAIN, 14))
-    button
-  }
-
-  def enableMinimizeToTray() {
-    if (SystemTray.isSupported) {
-      val tray = SystemTray.getSystemTray
-      val popup = new PopupMenu()
-      popup.add(restoreButton)
-      popup.add(exitButton)
-      val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
-      val trayIcon = new TrayIcon(icon, "HearthStats Companion", popup)
-      trayIcon.setImageAutoSize(true)
-      trayIcon.addMouseListener(new MouseAdapter {
-        override def mousePressed(e: MouseEvent) {
-          if (e.getClickCount >= 2) {
-            setVisible(true)
-            setExtendedState(NORMAL)
-          }
-        }
-      })
-      addWindowStateListener(new WindowStateListener {
-        def windowStateChanged(e: WindowEvent) {
-          if (enableMinToTray) {
-            e.getNewState match {
-              case ICONIFIED =>
-                try {
-                  tray.add(trayIcon)
-                  setVisible(false)
-                } catch {
-                  case ex: AWTException => debug(ex.getMessage, ex)
-                }
-              case MAXIMIZED_BOTH | NORMAL =>
-                tray.remove(trayIcon)
-                setVisible(true)
-                debug("Tray icon removed")
-            }
-          }
-        }
-      })
-    } else debug("system tray not supported")
   }
 
   def checkForUserKey(): Boolean = {
