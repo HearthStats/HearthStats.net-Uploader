@@ -13,8 +13,14 @@ import net.hearthstats.util.{ Translation, TranslationConfig }
 import net.sourceforge.tess4j.Tesseract
 import net.hearthstats.config.UserConfig
 import net.hearthstats.util.Updater
+import net.hearthstats.ui.CompanionFrame
+import net.hearthstats.companion.CompanionState
+import net.hearthstats.game.MatchState
+import net.hearthstats.hstatsapi.API
+import net.hearthstats.hstatsapi.DeckUtils
+import net.hearthstats.hstatsapi.CardUtils
 
-class Main(environment: Environment) extends Logging {
+class Main(environment: Environment, programHelper: ProgramHelper) extends Logging {
 
   private var ocrLanguage: String = "eng"
 
@@ -23,6 +29,15 @@ class Main(environment: Environment) extends Logging {
   val translation = wire[Translation]
   val config = wire[UserConfig]
   val updater: Updater = wire[Updater]
+
+  val initialCompanionState = new CompanionState
+  val initialMatchState = new MatchState
+  val api = wire[API]
+  val cardUtils = wire[CardUtils]
+  val deckUtils = wire[DeckUtils]
+
+  val mainFrame: CompanionFrame = wire[CompanionFrame]
+
   val startup: Startup = wire[Startup]
 
   def start(): Unit = {
@@ -31,6 +46,7 @@ class Main(environment: Environment) extends Logging {
     logSystemInformation()
     updater.cleanUp()
     cleanupDebugFiles()
+    mainFrame.createAndShowGui()
     loadingNotification.close()
     startup.start()
   }

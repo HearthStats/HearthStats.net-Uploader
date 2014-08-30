@@ -29,15 +29,15 @@ import net.hearthstats.game.MatchState
 /**
  * Main Frame for HearthStats Companion.
  */
-class CompanionFrame(environment: Environment,
-  config: UserConfig,
-  uiLog: Log,
+class CompanionFrame(val environment: Environment,
+  val config: UserConfig,
+  val uiLog: Log,
   programHelper: ProgramHelper,
   companionState: CompanionState,
   matchState: MatchState,
   api: API,
   deckUtils: DeckUtils,
-  translation: Translation) extends JFrame with GeneralUI with Logging {
+  translation: Translation) extends GeneralUI with Logging {
 
   import config._
   import translation.t
@@ -48,8 +48,6 @@ class CompanionFrame(environment: Environment,
   val aboutPanel: AboutPanel = wire[AboutPanel]
   val matchPanel: MatchPanel = wire[MatchPanel]
   val decksTab: DecksTab = wire[DecksTab]
-
-  createAndShowGui()
 
   def createAndShowGui() {
     debug("Creating GUI")

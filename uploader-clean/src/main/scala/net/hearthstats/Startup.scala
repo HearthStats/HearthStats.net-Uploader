@@ -8,15 +8,24 @@ import net.hearthstats.config.Application
 import net.hearthstats.config.OS
 import net.hearthstats.config.UserConfig
 import net.hearthstats.util.AnalyticsTracker
+import net.hearthstats.util.Updater
+import net.hearthstats.ui.CompanionFrame
+import javax.swing.JOptionPane._
+import javax.swing.JLabel
+import javax.swing.JPanel
+import net.hearthstats.util.Updater
 
 class Startup(
   translation: Translation,
   uiLog: Log,
   environment: Environment,
-  config: UserConfig) extends Logging {
+  updater: Updater,
+  config: UserConfig,
+  companionFrame: CompanionFrame) extends Logging {
 
   import translation.t
   import config._
+  import companionFrame._
 
   val analytics = AnalyticsTracker.tracker
 
@@ -26,6 +35,7 @@ class Startup(
       debug("Enabling analytics")
       analytics.trackEvent("app", "AppStart")
     }
+    checkForUpdates()
   }
 
   private def showWelcomeLog() {
@@ -51,48 +61,44 @@ class Startup(
   def checkForUpdates() {
     if (enableUpdateCheck) {
       uiLog.info(t("checking_for_updates..."))
-      //      try {
-      //        var latestRelease = Updater.getLatestRelease(environment)
-      //        if (latestRelease != null) {
-      //          uiLog.info(t("latest_v_available") + " " + latestRelease.getVersion)
-      //          if (!latestRelease.getVersion.equalsIgnoreCase("v" + Application.version)) {
-      //            bringWindowToFront()
-      //            val dialogButton = YES_NO_OPTION
-      //            var dialogResult = showConfirmDialog(
-      //              this,
-      //              s"""A new version of HearthStats Companion is available: ${latestRelease.getVersion}
-      //                  |${latestRelease.getBody}
-      //                  |            
-      //                  |
-      //                  | ${t("would_u_like_to_install_update")}""".stripMargin,
-      //              "HearthStats " + t("uploader_updates_avail"),
-      //              dialogButton)
-      //            if (dialogResult == YES_OPTION) {
-      //              Updater.run(environment, latestRelease)
-      //            } else {
-      //              dialogResult = showConfirmDialog(
-      //                null,
-      //                t("would_you_like_to_disable_updates"),
-      //                t("disable_update_checking"),
-      //                dialogButton)
-      //              if (dialogResult == YES_OPTION) {
-      //                val options = Array(t("button.ok"))
-      //                val panel = new JPanel()
-      //                val lbl = new JLabel(t("reenable_updates_any_time"))
-      //                panel.add(lbl)
-      //                showOptionDialog(this, panel, t("updates_disabled_msg"), NO_OPTION,
-      //                  QUESTION_MESSAGE, null, options.toArray, options(0))
-      //                enableUpdateCheck.set(false)
-      //              }
-      //            }
-      //          }
-      //        } else uiLog.warn("Unable to determine latest available version")
-      //      } catch {
-      //        case e: Exception => {
-      //          e.printStackTrace(System.err)
-      //          notify("Update Checking Error", "Unable to determine the latest available version")
-      //        }
-      //      }
+      try {
+        var latestRelease = updater.getLatestRelease()
+        if (latestRelease != null) {
+          uiLog.info(t("latest_v_available") + " " + latestRelease.getVersion)
+          if (!latestRelease.getVersion.equalsIgnoreCase("v" + Application.version)) {
+            bringWindowToFront()
+            var dialogResult = showConfirmDialog(
+              s"""A new version of HearthStats Companion is available: ${latestRelease.getVersion}
+                        |${latestRelease.getBody}
+                        |            
+                        |
+                        | ${t("would_u_like_to_install_update")}""".stripMargin,
+              "HearthStats " + t("uploader_updates_avail"),
+              YES_NO_OPTION)
+            if (dialogResult == YES_OPTION) {
+              updater.run(latestRelease)
+            } else {
+              dialogResult = showConfirmDialog(
+                t("would_you_like_to_disable_updates"),
+                t("disable_update_checking"),
+                YES_NO_OPTION)
+              if (dialogResult == YES_OPTION) {
+                val options = Array(t("button.ok"))
+                val panel = new JPanel
+                val lbl = new JLabel(t("reenable_updates_any_time"))
+                panel.add(lbl)
+                showOptionDialog(panel, t("updates_disabled_msg"), NO_OPTION, options.toArray)
+                enableUpdateCheck.set(false)
+              }
+            }
+          }
+        } else uiLog.warn("Unable to determine latest available version")
+      } catch {
+        case e: Exception => {
+          e.printStackTrace(System.err)
+          companionFrame.notify("Update Checking Error", "Unable to determine the latest available version")
+        }
+      }
     }
   }
 }

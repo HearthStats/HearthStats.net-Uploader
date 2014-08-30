@@ -14,6 +14,7 @@ import com.softwaremill.macwire.MacwireMacros._
 object HearthStatsWin extends Logging with App {
 
   val environment = new EnvironmentWin
+  val helper = new ProgramHelperWindows
   val main: Main = wire[Main]
 
   setupTesseract()

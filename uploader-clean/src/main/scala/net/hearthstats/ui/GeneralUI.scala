@@ -20,12 +20,13 @@ import java.awt.MenuItem
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.Font
+import javax.swing.JOptionPane
 
 /**
  * Defines generic UI features, non specific to HS.
  * Such as notifications, confirmation dialog ...
  */
-trait GeneralUI extends Logging { self: JFrame =>
+trait GeneralUI extends JFrame with Logging {
 
   val environment: Environment
   val uiLog: Log
@@ -41,7 +42,19 @@ trait GeneralUI extends Logging { self: JFrame =>
     }
   })
 
-  def showConfirmDialog(title: String, message: Any)
+  def showConfirmDialog(message: Any, title: String, optionType: Int): Int =
+    JOptionPane.showConfirmDialog(this, message, title, optionType)
+
+  def showOptionDialog(message: Any, title: String, optionType: Int, values: Array[AnyRef]) =
+    JOptionPane.showOptionDialog(
+      this,
+      message,
+      title,
+      optionType,
+      JOptionPane.QUESTION_MESSAGE,
+      null,
+      values,
+      values(0))
 
   private def handleClose() {
     try {
@@ -72,28 +85,28 @@ trait GeneralUI extends Logging { self: JFrame =>
    * /309023/how-to-bring-a-window-to-the-front that should ensure the window is
    * brought to the front for important things like modal dialogs.
    */
-  def setVisible(visible: Boolean) {
+  override def setVisible(visible: Boolean) {
     if (!visible || !isVisible) {
-      setVisible(visible)
+      super.setVisible(visible)
     }
     if (visible) {
       var state = getExtendedState
       state &= ~ICONIFIED
       setExtendedState(state)
       setAlwaysOnTop(true)
-      toFront()
+      super.toFront()
       requestFocus()
       setAlwaysOnTop(false)
     }
   }
 
-  def toFront() {
-    setVisible(true)
+  override def toFront() {
+    super.setVisible(true)
     var state = getExtendedState
     state &= ~ICONIFIED
     setExtendedState(state)
     setAlwaysOnTop(true)
-    toFront()
+    super.toFront()
     requestFocus()
     setAlwaysOnTop(false)
   }
