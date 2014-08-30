@@ -1,24 +1,25 @@
 package net.hearthstats.ui
 
 import java.awt.Color
-import java.io.IOException
-import java.io.InputStreamReader
-import java.io.Reader
+import java.io.{IOException, InputStreamReader}
 import java.util.HashMap
-import java.util.Map
-import javax.swing.JEditorPane
-import javax.swing.JScrollPane
-import javax.swing.text.html.HTMLDocument
-import net.hearthstats.config.Application
-import net.hearthstats.ui.log.Log
-import net.hearthstats.ui.log.LogPane
+
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang3.text.StrSubstitutor
-import scala.collection.JavaConversions._
+
+import javax.swing.{JEditorPane, JScrollPane}
+import javax.swing.ScrollPaneConstants.{HORIZONTAL_SCROLLBAR_NEVER, VERTICAL_SCROLLBAR_AS_NEEDED}
+import javax.swing.text.html.HTMLDocument
+import net.hearthstats.config.Application
+import net.hearthstats.ui.log.{Log, LogPane}
 import net.hearthstats.util.Translation
 
 class AboutPanel(translation: Translation, uiLog: Log) extends JScrollPane {
   import translation.t
+
+  setViewportView(contributors())
+  setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_AS_NEEDED)
+  setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER)
 
   private def contributors(): JEditorPane = {
     val localeStrings = new HashMap[String, String]()
