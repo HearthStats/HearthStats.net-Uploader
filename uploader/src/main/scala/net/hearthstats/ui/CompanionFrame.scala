@@ -53,6 +53,7 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
     } catch {
       case t: Exception => Log.warn("Error occurred trying to save your settings, your window position may not be saved", t)
     }
+    notificationQueue.clearAllNotifications()
     System.exit(0)
   }
 
