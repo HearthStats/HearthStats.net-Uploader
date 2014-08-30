@@ -20,7 +20,14 @@ public class DialogNotificationQueue implements NotificationQueue {
 		_process();
 	}
 
-	protected void _process() {
+
+  @Override
+  public void clearAllNotifications() {
+    _notifications.clear();
+  }
+
+
+  protected void _process() {
 		for (int i = 0; i < _notifications.size(); i++) {
 			final DialogNotification notification = _notifications.get(i);
 			if (!notification.wasShown()) {

@@ -20,6 +20,8 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) extends Logging {
     "Windfury" -> "Windfury GIVE")
 
   def create(deck: Deck): Unit = {
+    // A click on the search field is necessary before constructing the deck to ensure that the window has focus.
+    click(resolution.search)
     for (card <- deck.cards) {
       add(card.name, card.count)
       robot.delay(mediumDelay)
