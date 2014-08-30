@@ -9,11 +9,13 @@ import javax.swing.JOptionPane;
 
 import net.hearthstats.config.Application;
 import net.hearthstats.config.Environment;
+import net.hearthstats.ui.notification.DialogNotification;
 import net.sourceforge.tess4j.Tesseract;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//
 public final class Main {
   private Main() {} // never instantiated
 
@@ -57,12 +59,11 @@ public final class Main {
 
     // try {
     //
-    // DialogNotification loadingNotification = new
-    // DialogNotification("HearthStats Companion", "Loading ...");
-    // loadingNotification.show();
-    //
-    // OldConfig.migrateOldConfig(environment);
-    //
+    DialogNotification loadingNotification = new DialogNotification("HearthStats Companion",
+        "Loading ...");
+    loadingNotification.show();
+
+
     // // Store configuration in singleton objects that are unable to access the
     // environment instance
     // // TODO: refactor so that these objects can access configuration directly
@@ -72,12 +73,15 @@ public final class Main {
     // Card.setImageCacheFolder(environment.imageCacheFolder());
     // TranslationCard.changeTranslation(environment.config().optionGameLanguage().get());
     //
-    // logSystemInformation(environment);
-    //
-    // Updater.cleanUp(environment);
-    // cleanupDebugFiles(environment);
-    //
-    // loadingNotification.close();
+    logSystemInformation(environment);
+
+    Updater.cleanUp(environment);
+    cleanupDebugFiles(environment);
+
+    loadingNotification.close();
+
+    // val startup=wire[Startup]
+
     //
     // monitor = new Monitor(environment);
     // monitor.start();
