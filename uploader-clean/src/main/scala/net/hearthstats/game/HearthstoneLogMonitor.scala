@@ -43,7 +43,7 @@ class HearthstoneLogMonitor(
   val ZONE_PROCESSCHANGES_REGEX = """^\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
   var screen = "GAMEPLAY"; // Assume we're in a game until proved otherwise... just in case a game is already in progress
 
-  val cards = cardUtils.cards.values
+  lazy val cards = cardUtils.cards.values
   val cardPublisher = PublishSubject.create[CardEvent]
 
   val lines = fileObserver.observable.
@@ -79,7 +79,7 @@ class HearthstoneLogMonitor(
         debug("HS Zone uiLog: zoneId={} local={} cardName={} id={} cardZone={} zonePos={} cardId={} player={} fromZone={} toZone={}",
           zoneId, local, cardName, id, cardZone, zonePos, cardId, player, fromZone, toZone)
 
-        val card = cards.find(_.name == cardName).headOption
+        def card = cards.find(_.name == cardName).headOption
         // Only log zone changes if we're actually in a game.
         // Some zone changes occur outside games which would result in misleading information if logged.
         if ("GAMEPLAY".equals(screen)) {

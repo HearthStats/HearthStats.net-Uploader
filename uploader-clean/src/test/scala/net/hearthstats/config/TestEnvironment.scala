@@ -36,6 +36,7 @@ object TestProgramHelper extends ProgramHelper {
 
 object TestConfig extends UserConfig {
   override val userKey: ConfigValue[String] = "a9efa89e4a7a806d428bdda944d7b48f" // a specific test key
+  override val pollingDelayMs: ConfigValue[Int] = 100
   override val enableAnalytics: ConfigValue[Boolean] = true
   override val enableDeckOverlay: ConfigValue[Boolean] = true
   override val enableStartMin: ConfigValue[Boolean] = false

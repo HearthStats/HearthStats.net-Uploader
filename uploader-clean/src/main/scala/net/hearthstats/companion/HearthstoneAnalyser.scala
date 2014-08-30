@@ -13,33 +13,9 @@ import net.hearthstats.game.MatchState
  * and publishes GameEvents accordingly.
  */
 class HearthstoneAnalyser(
-  companionState: CompanionState,
+  imageToEvent: ImageToEvent,
   matchState: MatchState) extends Logging {
 
-  //  val screenAnalyser = new ScreenAnalyser
-  //  val individualPixelAnalyser = new IndividualPixelAnalyser
-  //  val relativePixelAnalyser = new RelativePixelAnalyser
-  //  val opponentNameRankedOcr = new OpponentNameRankedOcr
-  //  val opponentNameUnrankedOcr = new OpponentNameUnrankedOcr
-  //  val rankLevelOcr = new RankLevelOcr
-  //
-  //  def analyze(image: BufferedImage) {
-  //    //    videoEncoder.encodeImage(image)
-  //    val matchedScreen =
-  //      if (iterationsSinceScreenMatched < 10) screenAnalyser.identifyScreen(image, screen)
-  //      else screenAnalyser.identifyScreen(image, null)
-  //    if (matchedScreen == null)
-  //      iterationsSinceScreenMatched += 1
-  //    else {
-  //      iterationsSinceScreenMatched = 0
-  //      val screenChangedOK = handleScreenChange(image, screen, matchedScreen)
-  //      if (screenChangedOK)
-  //        handleScreenActions(image, matchedScreen)
-  //      else
-  //        debug(s"Ignored screen $matchedScreen because it was determined to be invalid")
-  //    }
-  //  }
-  //
   //  private def handleScreenActions(image: BufferedImage, newScreen: Screen) {
   //    if (newScreen != null) {
   //      debug(s"Screen being processed $newScreen")
@@ -338,18 +314,7 @@ class HearthstoneAnalyser(
   //      (pixels, result) <- pixelRules
   //      if individualPixelAnalyser.testAllPixelsMatch(image, pixels)
   //    } yield result).headOption
-  //
-  //  def imageIdentifyDeckSlot(image: BufferedImage): Option[Int] =
-  //    identify(image, Seq(
-  //      Array(DECK_SLOT_1A, DECK_SLOT_1B) -> 1,
-  //      Array(DECK_SLOT_2A, DECK_SLOT_2B) -> 2,
-  //      Array(DECK_SLOT_3A, DECK_SLOT_3B) -> 3,
-  //      Array(DECK_SLOT_4A, DECK_SLOT_4B) -> 4,
-  //      Array(DECK_SLOT_5A, DECK_SLOT_5B) -> 5,
-  //      Array(DECK_SLOT_6A, DECK_SLOT_6B) -> 6,
-  //      Array(DECK_SLOT_7A, DECK_SLOT_7B) -> 7,
-  //      Array(DECK_SLOT_8A, DECK_SLOT_8B) -> 8,
-  //      Array(DECK_SLOT_9A, DECK_SLOT_9B) -> 9))
+
   //
   //  def imageIdentifyYourClass(image: BufferedImage): Option[String] =
   //    identify(image, Seq(
