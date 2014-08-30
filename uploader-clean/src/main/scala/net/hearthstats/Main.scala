@@ -2,20 +2,26 @@ package net.hearthstats
 
 import java.awt.Component
 import java.io.File
-import javax.swing.JDialog
-import javax.swing.JFrame
-import javax.swing.JOptionPane
-import net.hearthstats.config.Application
-import net.hearthstats.config.Environment
-import net.hearthstats.ui.notification.DialogNotification
-import net.sourceforge.tess4j.Tesseract
 import scala.collection.JavaConversions._
+import com.softwaremill.macwire.MacwireMacros._
 import grizzled.slf4j.Logging
-import javax.swing.WindowConstants
+import javax.swing.{ JDialog, JFrame, JOptionPane, WindowConstants }
+import net.hearthstats.config.{ Application, Environment }
+import net.hearthstats.ui.log.Log
+import net.hearthstats.ui.notification.DialogNotification
+import net.hearthstats.util.{ Translation, TranslationConfig }
+import net.sourceforge.tess4j.Tesseract
+import net.hearthstats.config.UserConfig
 
 class Main(environment: Environment) extends Logging {
 
   private var ocrLanguage: String = "eng"
+
+  val translationConfig = TranslationConfig("net.hearthstats.resources.Main", "en")
+  val uiLog = wire[Log]
+  val translation = wire[Translation]
+  val config = wire[UserConfig]
+  val startup: Startup = wire[Startup]
 
   def start(): Unit = {
     val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")
@@ -24,6 +30,7 @@ class Main(environment: Environment) extends Logging {
     Updater.cleanUp(environment)
     cleanupDebugFiles()
     loadingNotification.close()
+    startup.start()
   }
 
   private def logSystemInformation(): Unit = {

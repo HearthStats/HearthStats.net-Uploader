@@ -7,7 +7,6 @@ import java.awt.Rectangle
 import net.hearthstats.core.Deck
 import net.hearthstats.util.Coordinate
 import scala.math.abs
-import scala.math.log
 
 case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) {
 

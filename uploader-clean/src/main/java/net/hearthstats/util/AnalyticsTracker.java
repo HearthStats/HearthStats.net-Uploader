@@ -1,4 +1,4 @@
-package net.hearthstats;
+package net.hearthstats.util;
 
 import com.dmurph.tracking.AnalyticsConfigData;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
