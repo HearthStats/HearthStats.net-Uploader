@@ -51,11 +51,9 @@ class Startup(
       uiLog.help(t("welcome_2_run_hearthstone_windowed"))
       uiLog.help(t("welcome_3_notifications_windowed"))
     }
-    val logFileLocation = uiLog.getLogFileLocation
-    if (logFileLocation == null) {
-      uiLog.help(t("welcome_4_feedback"))
-    } else {
-      uiLog.help(t("welcome_4_feedback_with_log", logFileLocation))
+    uiLog.getLogFileLocation match {
+      case Some(location) => uiLog.help(t("welcome_4_feedback_with_log", location))
+      case None => uiLog.help(t("welcome_4_feedback"))
     }
   }
 

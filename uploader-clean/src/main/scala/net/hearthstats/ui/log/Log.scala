@@ -130,37 +130,31 @@ class Log extends Logging {
    * configuration file.
    *
    * @return The location of the log file, including full path if available.
-   *         Returns null if the standard file logger could not be found.
+   *         Returns None if the standard file logger could not be found.
    */
-  def getLogFileLocation(): String = {
-    try {
-      val contextObject = LoggerFactory.getILoggerFactory
-      if (contextObject != null && contextObject.isInstanceOf[LoggerContext]) {
-        val context = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
-        for (logger <- context.getLoggerList) {
-          var index = logger.iteratorForAppenders()
-          while (index.hasNext) {
-            val appender = index.next()
-            if (appender != null && "FILE" == appender.getName) {
-              if (appender.isInstanceOf[FileAppender[_]]) {
-                val fileAppender = appender.asInstanceOf[FileAppender[ILoggingEvent]]
-                if (fileAppender.getOutputStream != null &&
-                  fileAppender.getOutputStream.isInstanceOf[ResilientFileOutputStream]) {
-                  val file = fileAppender.getOutputStream.asInstanceOf[ResilientFileOutputStream]
-                    .getFile
-                  return file.getAbsolutePath
-                } else {
-                  return fileAppender.getFile
-                }
-              }
-            }
-          }
+  def getLogFileLocation: Option[String] = {
+    def appenderFile(a: Appender[_]) = a match {
+      case f: FileAppender[_] if "FILE" == f.getName =>
+        f.getOutputStream match {
+          case out: ResilientFileOutputStream =>
+            Some(out.getFile.getAbsolutePath)
+          case _ =>
+            Some(f.getFile)
         }
-      }
-    } catch {
-      case e: Exception => println("Ignoring exception looking up log file: " + e.getMessage)
+      case _ => None
     }
-    null
+
+    LoggerFactory.getILoggerFactory match {
+      case context: LoggerContext =>
+        for {
+          logger <- context.getLoggerList
+          appender <- logger.iteratorForAppenders
+          file = appenderFile(appender)
+          if (file.nonEmpty)
+        } return file
+        return None
+      case _ => None
+    }
   }
 
   private val timestampFormat: FastDateFormat = FastDateFormat.getInstance("HH:mm:ss")
