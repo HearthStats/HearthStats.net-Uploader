@@ -14,6 +14,7 @@ import javax.swing.JOptionPane._
 import javax.swing.JLabel
 import javax.swing.JPanel
 import net.hearthstats.util.Updater
+import scala.swing.Swing
 
 class Startup(
   translation: Translation,
@@ -35,7 +36,7 @@ class Startup(
       debug("Enabling analytics")
       analytics.trackEvent("app", "AppStart")
     }
-    checkForUpdates()
+    Swing.onEDT(checkForUpdates())
   }
 
   private def showWelcomeLog() {

@@ -42,6 +42,7 @@ class CompanionFrame(val environment: Environment,
   import config._
   import translation.t
   val logText = new LogPane
+  uiLog.logPane = logText
   val logScroll = new JScrollPane(logText, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED)
   val tabbedPane = new JTabbedPane
   val optionsPanel: OptionsPanel = wire[OptionsPanel]
