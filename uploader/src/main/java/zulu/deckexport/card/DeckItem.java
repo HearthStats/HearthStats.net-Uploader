@@ -27,7 +27,7 @@ public class DeckItem {
 	}
 	public String toString()
 	{
-		return card.getName() + " x" + count; 
+		return count + " " + card.getName();
 	}
 	public Card getCard() {
 		return card;

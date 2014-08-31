@@ -32,11 +32,20 @@ public enum Pixel {
     MAIN_TODAYSQUESTS_Q     (Q,   5,   0,   0,  28,  20,  18),
 
     COLLECTION_A            (A,  86,  14,  12, 217, 195, 124),
+    COLLECTION_B            (B,  38,  23,   9,  78,  63,  49),
     COLLECTION_C            (C,  10,   0,   0,  30,  20,  17),
     COLLECTION_E            (E, 217, 203, 154, 259, 234, 183),
     COLLECTION_I            (I,  22,  14,  29,  42,  34,  49),
     COLLECTION_M            (M,  58,  22,  19,  78,  42,  39),
     COLLECTION_Q            (Q,  60,  50,  76,  80,  70,  96),
+
+    COLLECTION_DECK_A       (A,  86,  14,  12, 217, 195, 124),
+    COLLECTION_DECK_B       (B, 235, 187,  88, 255, 227, 128),
+    COLLECTION_DECK_C       (C,  10,   0,   0,  30,  20,  17),
+    COLLECTION_DECK_E       (E, 217, 203, 154, 259, 234, 183),
+    COLLECTION_DECK_I       (I,  22,  14,  29,  42,  34,  49),
+    COLLECTION_DECK_M       (M,  58,  22,  19,  78,  42,  39),
+    COLLECTION_DECK_Q       (Q,  60,  50,  76,  80,  70,  96),
 
     COLLECTION_ZOOM_A       (A,  39,   3,   1,  59,  23,  21),
     COLLECTION_ZOOM_C       (C,   0,   0,   0,  19,  15,  13),

@@ -55,6 +55,7 @@ public enum Screen {
             ScreenGroup.GENERAL,
             EnumSet.of(
                     Pixel.COLLECTION_A,
+                    Pixel.COLLECTION_B,
                     Pixel.COLLECTION_E,
                     Pixel.COLLECTION_M,
                     Pixel.COLLECTION_Q
@@ -76,6 +77,21 @@ public enum Screen {
             EnumSet.of(
                     Pixel.COLLECTION_ZOOM_C,
                     Pixel.COLLECTION_ZOOM_I
+            )),
+
+    COLLECTION_DECK (
+            "Collection Deck",
+            ScreenGroup.GENERAL,
+            EnumSet.of(
+                    Pixel.COLLECTION_DECK_A,
+                    Pixel.COLLECTION_DECK_B,
+                    Pixel.COLLECTION_DECK_E,
+                    Pixel.COLLECTION_DECK_M,
+                    Pixel.COLLECTION_DECK_Q
+            ),
+            EnumSet.of(
+                    Pixel.COLLECTION_DECK_C,
+                    Pixel.COLLECTION_DECK_I
             )),
 
     ARENA_CHOOSE (
@@ -359,12 +375,20 @@ public enum Screen {
 
         COLLECTION.nextScreens = EnumSet.of(
                 Screen.MAIN,
+                Screen.COLLECTION_DECK,
+                Screen.COLLECTION_ZOOM
+        );
+
+        COLLECTION_DECK.nextScreens = EnumSet.of(
+                Screen.MAIN,
+                Screen.COLLECTION,
                 Screen.COLLECTION_ZOOM
         );
 
         COLLECTION_ZOOM.nextScreens = EnumSet.of(
                 Screen.MAIN,
-                Screen.COLLECTION
+                Screen.COLLECTION,
+                Screen.COLLECTION_DECK
         );
 
         ARENA_CHOOSE.nextScreens = EnumSet.of(

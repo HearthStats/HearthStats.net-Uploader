@@ -58,7 +58,8 @@ class DecksTab(val monitor: Monitor) extends JPanel with Logging {
   add(refreshButton, "")
 
   val exportButton = new JButton(t("button.export_deck"))
-  exportButton.addActionListener(ActionListener(_ => onEDT(exportDeck())))
+//  exportButton.addActionListener(ActionListener(_ => onEDT(exportDeck())))
+  exportButton.addActionListener(ActionListener(_ => onEDT(ExportDeckBox.open(monitor))))
   add(exportButton, "wrap")
 
   add(new JLabel(" "), "wrap")
