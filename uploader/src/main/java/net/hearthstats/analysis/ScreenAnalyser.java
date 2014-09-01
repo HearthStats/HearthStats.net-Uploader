@@ -46,7 +46,7 @@ public class ScreenAnalyser {
    */
   Screen identifyScreen(BufferedImage image, Screen previousScreen) {
 
-    log.debug("Identifying screen");
+    log.trace("Identifying screen");
 
     if (expectedWidth != image.getWidth() || expectedHeight != image.getHeight()) {
       pixelMap = calculatePixelPositions(image.getWidth(), image.getHeight());
@@ -71,7 +71,7 @@ public class ScreenAnalyser {
     if (previousScreen != null) {
       if (checkForExactMatch(image, previousScreen)) {
         // This screen matches
-        log.debug("Exact match on previous screen {}", previousScreen);
+        log.trace("Exact match on previous screen {}", previousScreen);
         match = previousScreen;
       }
     }
@@ -83,7 +83,7 @@ public class ScreenAnalyser {
           // This screen matches
           if (log.isDebugEnabled()) {
             if (match == null) {
-              log.debug("Exact match on new screen {}", screen);
+              log.trace("Exact match on new screen {}", screen);
             } else {
               log.warn("More that one screen matched! Matched screen {}, but have already matched {}", screen, match);
             }
@@ -99,7 +99,7 @@ public class ScreenAnalyser {
 
     if (match == null) {
       // A check of the primary pixels did not find an exact match, so try for a partial match
-      log.debug("Did not find exact screen match, attempting partial match");
+      log.trace("Did not find exact screen match, attempting partial match");
 
       Map<Screen, PartialResult> screenMatchesMap = new HashMap<>();
       int maxMatchedCount = 0;
@@ -122,7 +122,7 @@ public class ScreenAnalyser {
           maxUnmatchedCount = partialResult.unmatchedCount;
         }
 
-        log.debug("Test of screen {} matched={} unmatched={}", screen, partialResult.matchedCount, partialResult.unmatchedCount);
+        log.trace("Test of screen {} matched={} unmatched={}", screen, partialResult.matchedCount, partialResult.unmatchedCount);
         screenMatchesMap.put(screen, partialResult);
       }
 
@@ -136,7 +136,7 @@ public class ScreenAnalyser {
       boolean acceptBestMatch = true;
 
       if (bestMatchResult.unmatchedCount > 2) {
-        log.debug("Partial match failed because best match {} has {} unmatched pixels", bestMatch, bestMatchResult.unmatchedCount);
+        log.trace("Partial match failed because best match {} has {} unmatched pixels", bestMatch, bestMatchResult.unmatchedCount);
         acceptBestMatch = false;
       } else {
         // Check whether other screens are too close to the best-matched screen, but ignore any screens considered to be equivalent (ie the playing screen for each board is considered equivalent)
@@ -164,7 +164,7 @@ public class ScreenAnalyser {
       }
 
       if (acceptBestMatch) {
-        log.debug("Partial match on screen {}", bestMatch);
+        log.trace("Partial match on screen {}", bestMatch);
         match = bestMatch;
       }
     }
@@ -183,7 +183,7 @@ public class ScreenAnalyser {
    */
   Map<PixelLocation, Coordinate> calculatePixelPositions(int width, int height) {
 
-    log.debug("Recalculating pixel position for width {} height {}", width, height);
+    log.trace("Recalculating pixel position for width {} height {}", width, height);
 
     Map<PixelLocation, Coordinate> result;
 

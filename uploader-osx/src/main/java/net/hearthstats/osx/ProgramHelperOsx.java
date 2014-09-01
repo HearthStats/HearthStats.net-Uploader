@@ -125,8 +125,8 @@ public class ProgramHelperOsx extends ProgramHelper {
 
             int windowTitleHeight = determineWindowTitleHeight(height, width);
 
-            if (debugLog.isDebugEnabled()) {
-                debugLog.debug("    Window height={} width={} titleHeight={}", new Object[] { height, width, windowTitleHeight});
+            if (debugLog.isTraceEnabled()) {
+                debugLog.trace("    Window height={} width={} titleHeight={}", new Object[] { height, width, windowTitleHeight});
             }
 
             int heightWithoutTitle = height - windowTitleHeight;
