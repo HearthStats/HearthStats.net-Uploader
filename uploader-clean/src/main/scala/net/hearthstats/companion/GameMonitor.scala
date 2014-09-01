@@ -15,22 +15,33 @@ import grizzled.slf4j.Logging
 import net.hearthstats.game.imageanalysis.Casual
 import net.hearthstats.game.imageanalysis.Ranked
 import net.hearthstats.game.ScreenGroup
+import net.hearthstats.ui.log.Log
 
 class GameMonitor(
   programHelper: ProgramHelper,
   config: UserConfig,
   companionState: CompanionState,
   lobbyAnalyser: LobbyAnalyser,
+  uiLog: Log,
   imageToEvent: ImageToEvent) extends Logging {
 
   import lobbyAnalyser._
 
   val gameImages: Observable[BufferedImage] =
     Observable.interval(config.pollingDelayMs.get.millis).map { _ =>
-      if (programHelper.foundProgram)
+      if (programHelper.foundProgram) {
+        if (companionState.gameDetected != GameDetected) {
+          companionState.gameDetected = GameDetected
+          uiLog.info("Hearthstone detected")
+        }
         Some(programHelper.getScreenCapture)
-      else
+      } else {
+        if (companionState.gameDetected != GameNotDetected) {
+          companionState.gameDetected = GameNotDetected
+          uiLog.warn("Hearthstone not detected")
+        }
         None
+      }
     }.filter(_.isDefined).map(_.get)
 
   val gameEvents: Observable[GameEvent] = gameImages.
@@ -53,15 +64,15 @@ class GameMonitor(
         handlePlayLobby(evt)
 
       case PRACTICE_LOBBY if companionState.mode != Some(PRACTICE) =>
-        info("Practice Mode detected")
+        uiLog.info("Practice Mode detected")
         companionState.mode = Some(PRACTICE)
 
       case VERSUS_LOBBY if companionState.mode != Some(FRIENDLY) =>
-        info("Versus Mode detected")
+        uiLog.info("Versus Mode detected")
         companionState.mode = Some(FRIENDLY)
 
       case ARENA_LOBBY if companionState.mode != Some(ARENA) =>
-        info("Arena Mode detected")
+        uiLog.info("Arena Mode detected")
         companionState.mode = Some(ARENA)
         companionState.isNewArenaRun = isNewArenaRun(evt.image)
 
@@ -71,7 +82,7 @@ class GameMonitor(
     if (evt.screen.group == ScreenGroup.PLAY) {
       val deckSlot = imageIdentifyDeckSlot(evt.image)
       if (deckSlot.isDefined && deckSlot != companionState.deckSlot) {
-        info(s"deck ${deckSlot.get} detected")
+        uiLog.info(s"deck ${deckSlot.get} detected")
         companionState.deckSlot = deckSlot
       }
     }
@@ -80,15 +91,16 @@ class GameMonitor(
   private def handlePlayLobby(evt: ScreenEvent): Unit = {
     mode(evt.image) match {
       case Some(Casual) if companionState.mode != Some(CASUAL) =>
-        info("Casual Mode detected")
+        uiLog.info("Casual Mode detected")
         companionState.mode = Some(CASUAL)
       case Some(Ranked) if companionState.mode != Some(RANKED) =>
-        info("Ranked Mode detected")
+        uiLog.info("Ranked Mode detected")
         companionState.mode = Some(RANKED)
       case _ => // assuming no change in the mode
     }
     if (companionState.mode == Some(RANKED) && companionState.rank.isEmpty) {
       companionState.rank = lobbyAnalyser.analyzeRankLevel(evt.image)
+      uiLog.info(s"rank ${companionState.rank} detected")
     }
   }
 

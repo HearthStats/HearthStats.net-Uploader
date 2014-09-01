@@ -19,6 +19,11 @@ import net.hearthstats.game.MatchState
 import net.hearthstats.hstatsapi.API
 import net.hearthstats.hstatsapi.DeckUtils
 import net.hearthstats.hstatsapi.CardUtils
+import net.hearthstats.game.imageanalysis.IndividualPixelAnalyser
+import net.hearthstats.companion.GameMonitor
+import net.hearthstats.game.imageanalysis.LobbyAnalyser
+import net.hearthstats.game.imageanalysis.ScreenAnalyser
+import net.hearthstats.companion.ImageToEvent
 
 class Main(environment: Environment, programHelper: ProgramHelper) extends Logging {
 
@@ -39,6 +44,12 @@ class Main(environment: Environment, programHelper: ProgramHelper) extends Loggi
   val mainFrame: CompanionFrame = wire[CompanionFrame]
 
   val startup: Startup = wire[Startup]
+
+  val screenAnalyser = wire[ScreenAnalyser]
+  val individualPixelAnalyser = wire[IndividualPixelAnalyser]
+  val imageToEvent = wire[ImageToEvent]
+  val lobbyAnalyser = wire[LobbyAnalyser]
+  val monitor = wire[GameMonitor]
 
   def start(): Unit = {
     val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")

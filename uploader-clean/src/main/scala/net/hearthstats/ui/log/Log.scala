@@ -118,10 +118,10 @@ class Log extends Logging {
     }
     val e = exc.getOrElse(null)
     level match {
-      case DEBUG => debug(message, e)
-      case INFO => info(message, e)
-      case WARN => warn(message, e)
-      case ERROR => error(message, e)
+      case DEBUG => super.debug(message, e)
+      case INFO => super.info(message, e)
+      case WARN => super.warn(message, e)
+      case ERROR => super.error(message, e)
     }
   }
 

@@ -9,9 +9,16 @@ import net.hearthstats.core.Rank
  */
 class CompanionState extends Logging {
   debug("new CompanionState")
+
+  var gameDetected: GameDetectionStatus = Unknown
   var mode: Option[GameMode] = None
   var deckSlot: Option[Int] = None
   var rank: Option[Rank] = None
   var isNewArenaRun = false
-
 }
+
+sealed trait GameDetectionStatus
+
+case object GameDetected extends GameDetectionStatus
+case object GameNotDetected extends GameDetectionStatus
+case object Unknown extends GameDetectionStatus

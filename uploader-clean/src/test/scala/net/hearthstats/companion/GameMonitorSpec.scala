@@ -40,6 +40,8 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val imageToEvent = wire[ImageToEvent]
   val lobbyAnalyser = mock[LobbyAnalyser]
 
+  val log = mock[Log]
+
   val monitor = wire[GameMonitor]
 
   val rank8Lobby = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)
