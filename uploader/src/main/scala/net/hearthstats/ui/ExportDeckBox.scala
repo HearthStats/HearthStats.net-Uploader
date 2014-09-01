@@ -8,6 +8,7 @@ import javax.swing._
 import grizzled.slf4j.Logging
 import net.hearthstats.analysis.{AnalyserEvent, HearthstoneAnalyser}
 import net.hearthstats.log.Log
+import net.hearthstats.ocr.DeckNameOcr
 import net.hearthstats.state.Screen
 import net.hearthstats.ui.util.MigPanel
 import net.hearthstats.util.HsRobot
@@ -226,6 +227,14 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
       } else {
         // Successfully captured a deck
         setStatus(t("export.status.ready"), t("export.instructions.ready"))
+
+        val ocr = new DeckNameOcr()
+        var deckName = ocr.process(img2)
+        if (deckName == null || deckName.isEmpty) {
+          deckName = ocr.process(img1)
+        }
+        panel.nameField.text = deckName
+
         panel.enableDeck()
         exportedDeck.toArray.mkString("\n")
       }
