@@ -6,15 +6,17 @@ import javax.imageio.ImageIO
 import javax.swing._
 
 import grizzled.slf4j.Logging
-import net.hearthstats.Monitor
 import net.hearthstats.analysis.{AnalyserEvent, HearthstoneAnalyser}
 import net.hearthstats.log.Log
 import net.hearthstats.state.Screen
 import net.hearthstats.ui.util.MigPanel
 import net.hearthstats.util.HsRobot
 import net.hearthstats.util.Translations.t
+import net.hearthstats.{Main, API, Constants, Monitor}
+import org.json.simple.JSONObject
 import zulu.deckexport.extracter.ExtracterMain
 
+import scala.collection.JavaConversions._
 import scala.swing._
 import scala.swing.event.ButtonClicked
 
@@ -28,8 +30,14 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
 
   title = t("export.heading") + " - HearthStats Companion"
 
+  // Array of hero classes
+  val localizedClassOptions = Array.ofDim[String](Constants.hsClassOptions.length)
+  localizedClassOptions(0) = ""
+  for (i <- 1 until localizedClassOptions.length) localizedClassOptions(i) = t(Constants.hsClassOptions(i))
+
+
   val panel = new MigPanel(
-    layoutConstraints = "hidemode 2",
+    layoutConstraints = "hidemode 3",
     colConstraints = "12[]12[]8[grow,fill]12",
     rowConstraints = "12[]8[]8[]12[]8[grow]12[]12"
   ) {
@@ -68,7 +76,18 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
     val nameField = new TextField {
       visible = false
     }
-    contents += (nameField, "wrap")
+    contents += (nameField, "top, wrap")
+
+    // Class
+    val classLabel = new Label {
+      text = t("export.label.class")
+      visible = false
+    }
+    contents += (classLabel, "span 2, top, right, hmin 26, pad 2 0 0 0")
+    val classComboBox = new ComboBox(localizedClassOptions) {
+      visible = false
+    }
+    contents += (classComboBox, "top, wrap")
 
     // Cards
     val cardLabel = new Label {
@@ -107,11 +126,14 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
         ExportDeckBox.close()
       case ButtonClicked(`exportButton`) =>
         debug("Exporting deck")
+        exportDeck()
     }
 
     def disableDeck() = {
       nameLabel.visible = false
       nameField.visible = false
+      classLabel.visible = false
+      classComboBox.visible = false
       cardLabel.visible = false
       cardScrollPane.visible = false
       exportButton.enabled = false
@@ -121,6 +143,8 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
     def enableDeck() = {
       nameLabel.visible = true
       nameField.visible = true
+      classLabel.visible = true
+      classComboBox.visible = true
       cardLabel.visible = true
       cardScrollPane.visible = true
       exportButton.enabled = true
@@ -131,8 +155,6 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
 
   HearthstoneAnalyser.addObserver(this)
 
-  // Set the initial status based on the current screen
-  setScreen(HearthstoneAnalyser.screen)
 
 
   override def closeOperation {
@@ -150,7 +172,10 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
     }
   }
 
-
+  /**
+   * Update status and instructions based on the screen currently being viewed in Hearthstone.
+   * @param screen The current screen in Hearthstone
+   */
   def setScreen(screen: Screen) = if (!hasDeck) screen match {
     case Screen.COLLECTION_DECK =>
       captureDeck()
@@ -172,7 +197,7 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
     pack()
   }
 
-  private def captureDeck() = {
+  private def captureDeck(): Unit = {
     // Assume we have a deck until proved otherwise, this prevents events from resetting the status during the capture
     hasDeck = true
 
@@ -187,12 +212,12 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
     robot.collectionScrollTowards()
     val img2 = hsHelper.getScreenCapture
 
-    val deck = ExtracterMain.exportDeck(img1, img2)
+    val exportedDeck = ExtracterMain.exportDeck(img1, img2)
 
     peer.toFront()
 
     val deckString =
-      if (deck == null) {
+      if (exportedDeck == null) {
         // Failed to capture a deck
         setStatus(t("export.status.error"), t("export.instructions.error"))
         Log.info("Could not export deck")
@@ -202,11 +227,37 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
         // Successfully captured a deck
         setStatus(t("export.status.ready"), t("export.instructions.ready"))
         panel.enableDeck()
-        deck.toArray.mkString("\n")
+        exportedDeck.toArray.mkString("\n")
       }
 
     panel.cardTextArea.text = deckString
   }
+
+  private def exportDeck(): Unit = {
+    val deckName = panel.nameField.text.trim
+    val jsonMap = collection.mutable.Map(
+      "deck" -> new JSONObject(collection.mutable.Map(
+        "klass_id" -> panel.classComboBox.selection.index,
+        "name" -> deckName,
+        "notes" -> ""
+      )),
+      "deck_text" -> panel.cardTextArea.text.trim
+    )
+
+    API.createDeck(new JSONObject(jsonMap)) match {
+      case true =>
+        // Deck was loaded onto HearthStats.net successfully
+        Main.showMessageDialog(peer, s"Deck $deckName was exported to HearthStats.net successfully")
+        ExportDeckBox.close()
+      case false =>
+        // An error occurred loading the deck onto HearthStats.net
+        setStatus(t("export.status.error"), t("export.instructions.error"))
+        peer.toFront()
+    }
+
+  }
+
+
 
 }
 
@@ -233,6 +284,8 @@ object ExportDeckBox {
     box.open()
     box.pack()
     box.peer.toFront()
+    // Set the initial status based on the current screen
+    box.setScreen(HearthstoneAnalyser.screen)
     box
   }
 

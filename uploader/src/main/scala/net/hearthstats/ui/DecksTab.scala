@@ -22,6 +22,7 @@ class DecksTab(val monitor: Monitor) extends JPanel with Logging {
   val deckSlotComboBoxes = 1 to 9 map { new DeckSlotPanel(_) }
 
   setLayout(new MigLayout)
+
   add(new JLabel(" "), "wrap")
   add(new JLabel(t("set_your_deck_slots")), "skip, span 2")
   add(new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Decks-Tab", "Help on Decks tab"), "right,wrap")
@@ -55,17 +56,17 @@ class DecksTab(val monitor: Monitor) extends JPanel with Logging {
     } catch {
       case e1: IOException => Main.showErrorDialog("Error updating decks", e1)
     }))
-  add(refreshButton, "")
+  add(refreshButton, "wrap")
 
+  add(new JLabel(" "), "wrap")
+  add(new JLabel(" "), "wrap")
   val exportButton = new JButton(t("button.export_deck"))
-//  exportButton.addActionListener(ActionListener(_ => onEDT(exportDeck())))
   exportButton.addActionListener(ActionListener(_ => onEDT(ExportDeckBox.open(monitor))))
-  add(exportButton, "wrap")
+  add(exportButton, "skip")
 
   add(new JLabel(" "), "wrap")
   val myDecksButton = new JButton(t("manage_decks_on_hsnet"))
   myDecksButton.addActionListener(ActionListener(_ => Browse(DECKS_URL)))
-
   add(myDecksButton, "skip,span")
 
   onEDT(updateDecks())
