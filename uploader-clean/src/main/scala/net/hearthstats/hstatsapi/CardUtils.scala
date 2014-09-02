@@ -1,6 +1,7 @@
 package net.hearthstats.hstatsapi
 
 import java.io.FileOutputStream
+import java.io.File
 import java.net.URL
 import java.nio.channels.Channels
 import scala.collection.JavaConversions.asScalaBuffer
@@ -36,6 +37,7 @@ class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) {
 
   def downloadImages(cards: List[Card]): Future[Unit] = {
     import ExecutionContext.Implicits.global
+    (new File(environment.imageCacheFolder)).mkdirs()
     val futures = for (card <- cards) yield future {
       val file = card.localFile getOrElse environment.imageCacheFile(card.originalName)
       if (file.length < 30000) {

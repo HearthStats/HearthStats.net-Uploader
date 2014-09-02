@@ -1,20 +1,45 @@
-package net.hearthstats.logmonitor
+package net.hearthstats.ui.deckoverlay
 
-import java.io.{BufferedWriter, File, FileWriter}
-
-import net.hearthstats.config.GameLanguage
-import net.hearthstats.ui.ClickableDeckBox
-import net.hearthstats.util.TranslationCard
-import net.hearthstats.{DeckUtils, EnvironmentTest, OldConfig}
+import java.io.{ BufferedWriter, File, FileWriter }
+import com.softwaremill.macwire.MacwireMacros._
+import net.hearthstats.config.UserConfig
+import net.hearthstats.companion.CompanionState
+import net.hearthstats.game.MatchState
+import net.hearthstats.hstatsapi.DeckUtils
+import net.hearthstats.util.Translation
+import net.hearthstats.util.TranslationConfig
+import net.hearthstats.hstatsapi.CardUtils
+import net.hearthstats.util.Updater
+import net.hearthstats.hstatsapi.API
+import net.hearthstats.ui.log.Log
+import net.hearthstats.config.TestEnvironment
+import net.hearthstats.companion.DeckOverlayModule
+import net.hearthstats.game.HearthstoneLogMonitor
+import net.hearthstats.util.FileObserver
 
 object LogMonitorDeckOverlayMain extends App {
-  val environment = EnvironmentTest
+  val translationConfig = TranslationConfig("net.hearthstats.resources.Main", "en")
+  val uiLog = wire[Log]
+  val translation = wire[Translation]
+  val config = wire[UserConfig]
+
+  val api = wire[API]
+
+  val environment = TestEnvironment
+  val cardUtils = wire[CardUtils]
+  val deckUtils: DeckUtils = wire[DeckUtils]
+
+  val presenter = wire[DeckOverlaySwing]
   val tempLogFile = File.createTempFile("hssample", "log")
-  println(s"monitorin $tempLogFile ")
-  val monitor = new HearthstoneLogMonitor(tempLogFile.getAbsolutePath)
-  TranslationCard.changeTranslation(environment.config.optionGameLanguage.get)
-  val deck = DeckUtils.getDeck(20034)
-  ClickableDeckBox.showBox(deck, monitor.cardEvents, environment)
+  val fileObserver = wire[FileObserver]
+  val monitor = wire[HearthstoneLogMonitor]
+  val deckOverlay = wire[DeckOverlayModule]
+
+  println(s"monitoring $tempLogFile ")
+  val deck = deckUtils.getDeck(20034)
+
+  deckOverlay.show(deck)
+
   new Thread {
     override def run() = {
       val writer = new BufferedWriter(new FileWriter(tempLogFile))
@@ -22,7 +47,6 @@ object LogMonitorDeckOverlayMain extends App {
       writer.write(initialHand)
       writer.flush()
       Thread.sleep(5000)
-      //      ClickableDeckBox.showBox(deck, monitor.cardEvents)
       writer.write(mulligan)
       writer.close()
     }

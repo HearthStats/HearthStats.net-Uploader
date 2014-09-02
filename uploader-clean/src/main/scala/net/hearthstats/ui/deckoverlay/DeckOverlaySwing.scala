@@ -16,7 +16,7 @@ class DeckOverlaySwing(
   config: UserConfig,
   cardUtils: CardUtils,
   environment: Environment,
-  uiLog: Log) extends JFrame with DeckOverlayPresenter {
+  uiLog: Log) extends JFrame {
 
   import config._
 
