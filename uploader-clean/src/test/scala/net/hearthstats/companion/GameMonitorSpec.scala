@@ -28,6 +28,7 @@ import java.awt.image.BufferedImage
 import net.hearthstats.game.imageanalysis.Ranked
 import net.hearthstats.game.imageanalysis.Casual
 import net.hearthstats.game.imageanalysis.LobbyMode
+import org.mockito.ArgumentCaptor
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest {
@@ -48,6 +49,27 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val newArenaRun = new BufferedImage(100, 10, BufferedImage.TYPE_INT_RGB)
 
   val sleep = config.pollingDelayMs.get * 2
+
+  "The monitor" should "warn when HS is not detecte" in {
+    verify(log, never).info(anyString)
+    verify(log, never).warn(anyString, any[Exception])
+    when(helper.foundProgram).thenReturn(false)
+
+    Thread.sleep(sleep)
+    verify(log, never).info(anyString)
+    verify(log).warn("Hearthstone not detected", null)
+  }
+
+  "The monitor" should "info when HS is detected" in {
+    verify(log, never).info(anyString)
+    verify(log, never).warn(anyString, any[Exception])
+    when(helper.foundProgram).thenReturn(false)
+
+    when(helper.foundProgram).thenReturn(true)
+    Thread.sleep(sleep)
+    verify(log).info("Hearthstone detected")
+    verify(log, never).warn(anyString, any[Exception])
+  }
 
   "The monitor" should "detect ranked mode and rank" in {
     setupForPlayMode(Ranked)

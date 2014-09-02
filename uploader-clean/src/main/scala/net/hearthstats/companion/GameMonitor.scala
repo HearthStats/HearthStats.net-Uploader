@@ -27,21 +27,22 @@ class GameMonitor(
 
   import lobbyAnalyser._
 
+  val hsFound: Observable[Boolean] =
+    Observable.interval(config.pollingDelayMs.get.millis).map { _ => programHelper.foundProgram }
+
+  hsFound.distinctUntilChanged.subscribe(found =>
+    if (found) {
+      uiLog.info("Hearthstone detected")
+    } else {
+      uiLog.warn("Hearthstone not detected")
+    })
+
   val gameImages: Observable[BufferedImage] =
-    Observable.interval(config.pollingDelayMs.get.millis).map { _ =>
-      if (programHelper.foundProgram) {
-        if (companionState.gameDetected != GameDetected) {
-          companionState.gameDetected = GameDetected
-          uiLog.info("Hearthstone detected")
-        }
+    hsFound.map { found =>
+      if (found)
         Some(programHelper.getScreenCapture)
-      } else {
-        if (companionState.gameDetected != GameNotDetected) {
-          companionState.gameDetected = GameNotDetected
-          uiLog.warn("Hearthstone not detected")
-        }
+      else
         None
-      }
     }.filter(_.isDefined).map(_.get)
 
   val gameEvents: Observable[GameEvent] = gameImages.
