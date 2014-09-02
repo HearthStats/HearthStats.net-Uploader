@@ -12,8 +12,10 @@ class AnalyserSpec extends FlatSpec with Matchers {
   "The play lobby screen" should "be detected" in
     checkScreen("play_lobby", Screen.PLAY_LOBBY)
 
-  "The practice lobby screen" should "be detected" in
+  "The practice lobby screen" should "be detected" in {
     checkScreen("practice_lobby", Screen.PRACTICE_LOBBY)
+    checkScreen("practice_lobby2", Screen.PRACTICE_LOBBY)
+  }
 
   "The arena choose hero screen" should "be detected" in
     checkScreen("arena_choose", Screen.ARENA_CHOOSE)
