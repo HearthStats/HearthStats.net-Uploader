@@ -165,11 +165,12 @@ class Log extends Logging {
       sb.append("<div class=\"break\">&nbsp;</div><hr noshade size=\"2\" color=\"#b9b9b9\">")
       lastMarker = marker
     } else {
-      val cssClass =
-        if (level == ERROR) "error"
-        else if (level == WARN) "warn"
-        else if (marker == null) "log"
-        else marker.toString
+      val cssClass = level match {
+        case ERROR => "error"
+        case WARN => "warn"
+        case null | INFO => "log"
+        case _ => marker.toString
+      }
       if (marker != lastMarker) {
         sb.append("<div class=\"break\">&nbsp;</div>")
         lastMarker = marker

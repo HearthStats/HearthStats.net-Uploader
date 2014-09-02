@@ -50,14 +50,14 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
 
   val sleep = config.pollingDelayMs.get * 2
 
-  "The monitor" should "warn when HS is not detecte" in {
+  "The monitor" should "warn when HS is not detected" in {
     verify(log, never).info(anyString)
     verify(log, never).warn(anyString, any[Exception])
     when(helper.foundProgram).thenReturn(false)
 
     Thread.sleep(sleep)
     verify(log, never).info(anyString)
-    verify(log).warn("Hearthstone not detected", null)
+    verify(log).warn("Hearthstone not detected")
   }
 
   "The monitor" should "info when HS is detected" in {
