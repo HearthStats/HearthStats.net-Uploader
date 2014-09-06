@@ -10,8 +10,8 @@ import com.github.nscala_time.time.Imports.DateTime
 //TODO use options
 //TODO avoid mutable 
 class HearthstoneMatch(var mode: String = null,
-  private var _userClass: String = null,
-  var opponentClass: String = null,
+  var userClass: HeroClass = null,
+  var opponentClass: HeroClass = null,
   var coin: Boolean = false,
   var result: Option[MatchOutcome] = None,
   private var _deckSlot: Int = -1,
@@ -44,21 +44,6 @@ class HearthstoneMatch(var mode: String = null,
   //      }
   //    }
   //  }
-
-  def userClass: String = _userClass
-
-  def userClass_=(value: String) {
-    _userClassUnconfirmed = value == null
-    _userClass = value
-  }
-
-  /**
-   * Whether the user class is unconfirmed; it may be set based on the selected deck, but if unconfirmed
-   * then it hasn't been detected yet. This value is set automatically when you set a userClass on the match.
-   *
-   * @return true if the user class is unconfirmed and thus may be wrong, false if the class has been detected
-   */
-  def userClassUnconfirmed: Boolean = _userClassUnconfirmed
 
   val startedAt = DateTime.now
   private def propertyOrUnknown(propertyVal: String): String = {

@@ -9,9 +9,7 @@ sealed trait LobbyMode
 case object Casual extends LobbyMode
 case object Ranked extends LobbyMode
 
-class LobbyAnalyser {
-  val individualPixelAnalyser = new IndividualPixelAnalyser
-  val rankLevelOcr = new RankLevelOcr
+class LobbyAnalyser extends ImageAnalyser {
 
   def mode(image: BufferedImage): Option[LobbyMode] = {
     val casual = imageShowsCasualPlaySelected(image)
@@ -40,12 +38,6 @@ class LobbyAnalyser {
       Array(DECK_SLOT_7A, DECK_SLOT_7B) -> 7,
       Array(DECK_SLOT_8A, DECK_SLOT_8B) -> 8,
       Array(DECK_SLOT_9A, DECK_SLOT_9B) -> 9))
-
-  private def identify[T](image: BufferedImage, pixelRules: Iterable[(Array[UniquePixel], T)]): Option[T] =
-    (for {
-      (pixels, result) <- pixelRules
-      if individualPixelAnalyser.testAllPixelsMatch(image, pixels)
-    } yield result).headOption
 
   private def imageShowsCasualPlaySelected(image: BufferedImage): Boolean =
     individualPixelAnalyser.testAllPixelsMatch(image, Array(MODE_CASUAL_1A, MODE_CASUAL_1B)) ||

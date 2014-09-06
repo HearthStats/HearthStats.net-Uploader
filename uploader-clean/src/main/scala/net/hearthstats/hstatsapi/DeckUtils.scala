@@ -6,8 +6,8 @@ import org.json.simple.JSONObject
 import net.hearthstats.core.Deck
 import net.hearthstats.ui.log.Log
 import org.apache.commons.lang3.StringUtils
-import net.hearthstats.core.HeroClasses
 import net.hearthstats.core.Card
+import net.hearthstats.core.HeroClass
 
 class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
 
@@ -55,7 +55,7 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
       }
 
     val klassId = json.get("klass_id")
-    val heroString = if (klassId == null) "" else HeroClasses.all(klassId.toString.toInt)
+    val heroString = if (klassId == null) "" else HeroClass.stringWithId(klassId.toString.toInt)
 
     Deck(id = id,
       slug = json.get("slug").toString,

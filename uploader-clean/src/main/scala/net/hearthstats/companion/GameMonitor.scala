@@ -77,6 +77,17 @@ class GameMonitor(
         companionState.mode = Some(ARENA)
         companionState.isNewArenaRun = isNewArenaRun(evt.image)
 
+      case MATCH_VS =>
+        testForYourClass(evt.image)
+        testForOpponentClass(evt.image)
+      //        testForCoin(image)
+      //        testForOpponentName(image)
+      //        iterationsSinceClassCheckingStarted += 1
+      //
+      //      case MATCH_STARTINGHAND =>
+      //        testForCoin(image)
+      //        testForOpponentName(image)
+
       case _ =>
         debug("no change in game mode")
     }
@@ -103,6 +114,34 @@ class GameMonitor(
       companionState.rank = lobbyAnalyser.analyzeRankLevel(evt.image)
       uiLog.info(s"rank ${companionState.rank} detected")
     }
+  }
+
+  private def testForYourClass(image: BufferedImage) {
+    //      if (getYourClass == null) {
+    //        debug("Testing for your class")
+    //        imageIdentifyYourClass(image) match {
+    //          case Some(newClass) => setYourClass(newClass)
+    //          case None =>
+    //        }
+    //        if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
+    //          val filename = "class-yours-" + (iterationsSinceClassCheckingStarted >> 2)
+    //          BackgroundImageSave.saveCroppedPngImage(image, filename, 204, 600, 478, 530)
+    //        }
+    //      }
+  }
+
+  private def testForOpponentClass(image: BufferedImage) {
+    //      if (getOpponentClass == null) {
+    //        debug("Testing for opponent class")
+    //        imageIdentifyOpponentClass(image) match {
+    //          case Some(newClass) => setOpponentClass(newClass)
+    //          case None =>
+    //        }
+    //        if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
+    //          val filename = "class-opponent-" + (iterationsSinceClassCheckingStarted >> 2)
+    //          BackgroundImageSave.saveCroppedPngImage(image, filename, 1028, 28, 478, 530)
+    //        }
+    //      }
   }
 
 }

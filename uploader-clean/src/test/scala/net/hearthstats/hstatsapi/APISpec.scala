@@ -9,6 +9,7 @@ import net.hearthstats.ui.log.Log
 import org.scalatest.junit.JUnitRunner
 import net.hearthstats.config.UserConfig
 import org.scalatest.mock.MockitoSugar
+import net.hearthstats.core.HeroClass._
 
 @RunWith(classOf[JUnitRunner])
 class APISpec extends FlatSpec with Matchers with MockitoSugar {
@@ -30,8 +31,8 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
     api.createArenaRun(arena).isDefined shouldBe true
     api.getLastArenaRun should not be null
     api.createMatch(new HearthstoneMatch("Arena",
-      "warlock",
-      "druid",
+      WARLOCK,
+      DRUID,
       false,
       Some(MatchOutcome.VICTORY),
       1,

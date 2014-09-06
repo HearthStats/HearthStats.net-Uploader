@@ -1,24 +1,18 @@
 package net.hearthstats.ui
 
+import java.awt.BorderLayout
 import java.io.IOException
-import javax.swing.JButton
-import javax.swing.JComboBox
-import javax.swing.JLabel
-import javax.swing.JPanel
-import net.hearthstats._
-import net.miginfocom.swing.MigLayout
-import org.json.simple.JSONObject
 import scala.collection.JavaConversions._
 import scala.swing.Swing._
-import java.awt.BorderLayout
-import javax.swing.JOptionPane
-import net.hearthstats.util.Translation
+import org.json.simple.JSONObject
+import javax.swing.{ JButton, JComboBox, JLabel, JOptionPane, JPanel }
+import net.hearthstats._
 import net.hearthstats.core.Deck
-import net.hearthstats.hstatsapi.API
-import net.hearthstats.hstatsapi.DeckUtils
-import net.hearthstats.util.Browse
+import net.hearthstats.hstatsapi.{ API, DeckUtils }
 import net.hearthstats.hstatsapi.HearthStatsUrls._
-import net.hearthstats.core.HeroClasses
+import net.hearthstats.util.{ Browse, Translation }
+import net.miginfocom.swing.MigLayout
+import net.hearthstats.core.HeroClass
 
 class DecksTab(
   translation: Translation,
@@ -81,7 +75,7 @@ class DecksTab(
   }
 
   private def name(o: JSONObject): String = {
-    HeroClasses.all(Integer.parseInt(o.get("klass_id").toString)) +
+    HeroClass.stringWithId(Integer.parseInt(o.get("klass_id").toString)) +
       " - " +
       o.get("name").toString.toLowerCase
   }

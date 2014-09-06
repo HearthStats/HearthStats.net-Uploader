@@ -1,35 +1,18 @@
 package net.hearthstats.ui
 
 import java.awt.Color
-import java.awt.Desktop
 import java.awt.Dimension
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
-import java.net.URI
-import javax.swing.BorderFactory.createCompoundBorder
-import javax.swing.BorderFactory.createEmptyBorder
-import javax.swing.BorderFactory.createMatteBorder
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JComboBox
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JTextArea
-import javax.swing.JTextField
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
-import net.hearthstats.Main
-import net.miginfocom.swing.MigLayout
-import net.hearthstats.ui.log.Log
-import net.hearthstats.ui.log.Log
-import net.hearthstats.util.Translation
-import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.core.HeroClasses
-import net.hearthstats.util.Browse
+import java.awt.event.{ ActionEvent, ActionListener, KeyAdapter, KeyEvent }
+
+import javax.swing.{ JButton, JCheckBox, JComboBox, JLabel, JPanel, JTextArea, JTextField }
+import javax.swing.BorderFactory.{ createCompoundBorder, createEmptyBorder, createMatteBorder }
+import javax.swing.event.{ ChangeEvent, ChangeListener }
 import net.hearthstats.companion.CompanionState
+import net.hearthstats.core.{ HearthstoneMatch, HeroClass }
 import net.hearthstats.game.MatchState
+import net.hearthstats.ui.log.Log
+import net.hearthstats.util.{ Browse, Translation }
+import net.miginfocom.swing.MigLayout
 
 class MatchPanel(
   matchState: MatchState,
@@ -48,9 +31,9 @@ class MatchPanel(
   add(_currentMatchLabel, "skip,span,wrap")
   add(new JLabel(" "), "wrap")
 
-  val localizedClassOptions = Array.ofDim[String](HeroClasses.all.length)
+  val localizedClassOptions = Array.ofDim[String](HeroClass.values.length)
   localizedClassOptions(0) = "- " + t("undetected") + " -"
-  for (i <- 1 until localizedClassOptions.length) localizedClassOptions(i) = t(HeroClasses.all(i))
+  for (i <- 1 until localizedClassOptions.length) localizedClassOptions(i) = t(HeroClass.stringWithId(i))
 
   private val _currentOpponentClassSelect = new JComboBox(localizedClassOptions)
   private val _currentYourClassSelector = new JComboBox(localizedClassOptions)
@@ -132,9 +115,8 @@ class MatchPanel(
     _currentNotesField.setEnabled(enabled)
   }
 
-  private def _getClassOptionIndex(cName: String): Int =
-    (0 until HeroClasses.all.length).find(HeroClasses.all(_) == cName)
-      .getOrElse(0)
+  private def _getClassOptionIndex(hClass: HeroClass): Int =
+    hClass.ordinal
 
   def resetMatchClassSelectors() {
     _currentYourClassSelector.setSelectedIndex(0)
@@ -143,10 +125,10 @@ class MatchPanel(
 
   def updateMatchClassSelectorsIfSet(hsMatch: HearthstoneMatch) {
     if (_currentYourClassSelector.getSelectedIndex > 0) {
-      hsMatch.userClass = HeroClasses.all(_currentYourClassSelector.getSelectedIndex)
+      hsMatch.userClass = HeroClass.values.apply(_currentYourClassSelector.getSelectedIndex)
     }
     if (_currentOpponentClassSelect.getSelectedIndex > 0) {
-      hsMatch.opponentClass = HeroClasses.all(_currentOpponentClassSelect.getSelectedIndex)
+      hsMatch.opponentClass = HeroClass.values.apply(_currentOpponentClassSelect.getSelectedIndex)
     }
   }
 }
