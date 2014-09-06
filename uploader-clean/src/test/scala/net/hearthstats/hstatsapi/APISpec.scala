@@ -25,6 +25,8 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
     cards.size should be > 400
   }
 
+  //TODO :move exception handling out of API class so it can be tested here.
+
   "The API" should "create an Arena run" in {
     val arena = new ArenaRun
     arena.setUserClass("warlock")
