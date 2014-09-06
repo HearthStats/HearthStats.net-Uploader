@@ -1,18 +1,17 @@
 package net.hearthstats.core
 
 import scala.collection.JavaConversions.mutableMapAsJavaMap
-
 import org.apache.commons.lang3.StringUtils
 import org.json.simple.JSONObject
-
 import com.github.nscala_time.time.Imports.DateTime
+import grizzled.slf4j.Logging
 
 //TODO use options
 //TODO avoid mutable 
 class HearthstoneMatch(var mode: String = null,
-  var userClass: HeroClass = null,
-  var opponentClass: HeroClass = null,
-  var coin: Boolean = false,
+  var userClass: HeroClass = HeroClass.UNDETECTED,
+  var opponentClass: HeroClass = HeroClass.UNDETECTED,
+  var coin: Option[Boolean] = None,
   var result: Option[MatchOutcome] = None,
   private var _deckSlot: Int = -1,
   var opponentName: String = null,
@@ -22,7 +21,10 @@ class HearthstoneMatch(var mode: String = null,
   var notes: String = null,
   var id: Int = -1,
   var initialized: Boolean = false,
-  var submitted: Boolean = false) {
+  var submitted: Boolean = false) extends Logging {
+
+  debug("new HearthstoneMatch")
+
   private var _userClassUnconfirmed: Boolean = true
   //needed for java calls
   def this() = this(mode = null)

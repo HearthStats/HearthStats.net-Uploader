@@ -11,7 +11,7 @@ class MatchState {
 
   def setOpponentName(n: String) = currentMatch.get.opponentName = n
   def setNotes(n: String) = currentMatch.get.notes = n
-  def setCoin(c: Boolean) = currentMatch.get.coin = c
+  def setCoin(c: Boolean) = currentMatch.get.coin = Some(c)
 
   def lastMatchUrl: Option[String] =
     for (m <- lastMatch) yield {

@@ -35,7 +35,7 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
     api.createMatch(new HearthstoneMatch("Arena",
       WARLOCK,
       DRUID,
-      false,
+      Some(false),
       Some(MatchOutcome.VICTORY),
       1,
       "unkownopp",

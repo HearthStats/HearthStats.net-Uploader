@@ -9,7 +9,8 @@ public enum HeroClass {
   PRIEST("Priest"), 
   ROGUE("Rogue"), 
   SHAMAN("Shaman"), 
-  WARLOCK("Warlock");
+  WARLOCK("Warlock"),
+  WARRIOR("Warrior");
 
   private final String name;
 

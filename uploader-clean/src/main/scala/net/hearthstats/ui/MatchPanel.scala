@@ -92,7 +92,7 @@ class MatchPanel(
         _currentOpponentNameField.setText(m.opponentName)
         _currentOpponentClassSelect.setSelectedIndex(_getClassOptionIndex(m.opponentClass))
         _currentYourClassSelector.setSelectedIndex(_getClassOptionIndex(m.userClass))
-        _currentGameCoinField.setSelected(m.coin)
+        _currentGameCoinField.setSelected(m.coin.getOrElse(false))
         _currentNotesField.setText(m.notes)
       case None =>
         _currentMatchLabel.setText("Waiting for next match to start ...")

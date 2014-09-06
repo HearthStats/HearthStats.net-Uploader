@@ -16,16 +16,24 @@ import net.hearthstats.game.imageanalysis.Casual
 import net.hearthstats.game.imageanalysis.Ranked
 import net.hearthstats.game.ScreenGroup
 import net.hearthstats.ui.log.Log
+import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.core.HeroClass
+import net.hearthstats.core.HeroClass._
+import net.hearthstats.game.imageanalysis.HsClassAnalyser
+import net.hearthstats.game.ocr.BackgroundImageSave
 
 class GameMonitor(
   programHelper: ProgramHelper,
   config: UserConfig,
   companionState: CompanionState,
+  hsMatch: HearthstoneMatch,
   lobbyAnalyser: LobbyAnalyser,
+  classAnalyser: HsClassAnalyser,
   uiLog: Log,
   imageToEvent: ImageToEvent) extends Logging {
 
   import lobbyAnalyser._
+  import companionState.iterationsSinceClassCheckingStarted
 
   val hsFound: Observable[Boolean] =
     Observable.interval(config.pollingDelayMs.get.millis).map { _ => programHelper.foundProgram }
@@ -80,9 +88,9 @@ class GameMonitor(
       case MATCH_VS =>
         testForYourClass(evt.image)
         testForOpponentClass(evt.image)
+        iterationsSinceClassCheckingStarted += 1
       //        testForCoin(image)
       //        testForOpponentName(image)
-      //        iterationsSinceClassCheckingStarted += 1
       //
       //      case MATCH_STARTINGHAND =>
       //        testForCoin(image)
@@ -116,32 +124,32 @@ class GameMonitor(
     }
   }
 
-  private def testForYourClass(image: BufferedImage) {
-    //      if (getYourClass == null) {
-    //        debug("Testing for your class")
-    //        imageIdentifyYourClass(image) match {
-    //          case Some(newClass) => setYourClass(newClass)
-    //          case None =>
-    //        }
-    //        if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
-    //          val filename = "class-yours-" + (iterationsSinceClassCheckingStarted >> 2)
-    //          BackgroundImageSave.saveCroppedPngImage(image, filename, 204, 600, 478, 530)
-    //        }
-    //      }
+  private def testForYourClass(image: BufferedImage): Unit = {
+    if (UNDETECTED == hsMatch.userClass) {
+      debug("Testing for your class")
+      classAnalyser.imageIdentifyYourClass(image) match {
+        case Some(newClass) => hsMatch.userClass = newClass
+        case None =>
+      }
+      if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
+        val filename = "class-yours-" + (iterationsSinceClassCheckingStarted >> 2)
+        BackgroundImageSave.saveCroppedPngImage(image, filename, 204, 600, 478, 530)
+      }
+    }
   }
 
-  private def testForOpponentClass(image: BufferedImage) {
-    //      if (getOpponentClass == null) {
-    //        debug("Testing for opponent class")
-    //        imageIdentifyOpponentClass(image) match {
-    //          case Some(newClass) => setOpponentClass(newClass)
-    //          case None =>
-    //        }
-    //        if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
-    //          val filename = "class-opponent-" + (iterationsSinceClassCheckingStarted >> 2)
-    //          BackgroundImageSave.saveCroppedPngImage(image, filename, 1028, 28, 478, 530)
-    //        }
-    //      }
+  private def testForOpponentClass(image: BufferedImage): Unit = {
+    if (UNDETECTED == hsMatch.opponentClass) {
+      debug("Testing for opponent class")
+      classAnalyser.imageIdentifyOpponentClass(image) match {
+        case Some(newClass) => hsMatch.opponentClass = newClass
+        case None =>
+      }
+      if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
+        val filename = "class-opponent-" + (iterationsSinceClassCheckingStarted >> 2)
+        BackgroundImageSave.saveCroppedPngImage(image, filename, 1028, 28, 478, 530)
+      }
+    }
   }
 
 }

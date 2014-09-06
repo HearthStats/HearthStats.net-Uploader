@@ -24,6 +24,8 @@ import net.hearthstats.companion.GameMonitor
 import net.hearthstats.game.imageanalysis.LobbyAnalyser
 import net.hearthstats.game.imageanalysis.ScreenAnalyser
 import net.hearthstats.companion.ImageToEvent
+import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.game.imageanalysis.HsClassAnalyser
 
 class Main(environment: Environment, programHelper: ProgramHelper) extends Logging {
 
@@ -49,6 +51,8 @@ class Main(environment: Environment, programHelper: ProgramHelper) extends Loggi
   val individualPixelAnalyser = wire[IndividualPixelAnalyser]
   val imageToEvent = wire[ImageToEvent]
   val lobbyAnalyser = wire[LobbyAnalyser]
+  val classAnalyser = wire[HsClassAnalyser]
+  val hsMatch = wire[HearthstoneMatch]
   val monitor = wire[GameMonitor]
 
   def start(): Unit = {

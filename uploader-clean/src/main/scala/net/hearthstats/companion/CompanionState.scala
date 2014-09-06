@@ -14,4 +14,5 @@ class CompanionState extends Logging {
   var deckSlot: Option[Int] = None
   var rank: Option[Rank] = None
   var isNewArenaRun = false
+  var iterationsSinceClassCheckingStarted = 0
 }
