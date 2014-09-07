@@ -232,6 +232,7 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
         setStatus(t("export.status.ready"), t("export.instructions.ready"))
 
         panel.nameField.text = d.name
+        panel.classComboBox.selection.item = d.hero
 
         panel.enableDeck()
         d.deckString
@@ -256,9 +257,9 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
       // At least one card couldn't be recognised
       val details = invalidCards.map(_.name).mkString("\n")
       Main.showMessageDialog(this.peer, if (invalidCards.length == 1)
-        s"Could not recognise this card:\n\n$details"
+        s"Could not recognise this card:\n$details"
       else
-        s"Could not recognise these cards:\n\n$details")
+        s"Could not recognise these cards:\n$details")
     } else {
       // All cards were recognised
       val deck = new Deck(

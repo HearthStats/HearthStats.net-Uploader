@@ -10,14 +10,6 @@ import java.awt.image.BufferedImage;
  */
 public class DeckCardOcr extends OcrBase {
 
-  private int cardNo = 0;
-
-
-  public void setCardNo(int cardNo) {
-    this.cardNo = cardNo;
-  }
-
-
   @Override
   protected BufferedImage crop(BufferedImage image, int iteration) {
     return image;
@@ -110,7 +102,7 @@ public class DeckCardOcr extends OcrBase {
 
   @Override
   protected String getFilename() {
-    return "cardImg-" + cardNo + "-ocr3";
+    return null;
   }
 
   @Override

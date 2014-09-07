@@ -280,6 +280,33 @@ public enum UniquePixel {
   // 2A must match for a defeat. Coordinates are relative to the reference pixel above
   DEFEAT_REL_2A ( 120, 315, 60, 70, 140, 140, 160, 250 ),  // blue
 
+  // Hero classes on the deck screen
+  DECK_DRUID_1    (1269, 29,  86, 159, 146,  173, 234, 221),
+  DECK_DRUID_2    (1424, 57,   0, 140,  34,   67, 230, 237),
+
+  DECK_HUNTER_1   (1269, 29,  81,  66,  52,  144, 132, 120),
+  DECK_HUNTER_2   (1424, 57,  27,  26,  27,   90,  85,  82),
+
+  DECK_MAGE_1     (1269, 29,  21,   0,  30,   67,  36,  77),
+  DECK_MAGE_2     (1424, 57,   4,  43, 102,   50,  95, 158),
+
+  DECK_PALADIN_1  (1269, 29, 100,  85, 138,  161, 146, 209),
+  DECK_PALADIN_2  (1424, 57,  16,   0,   0,   63,  41,  33),
+
+  DECK_PRIEST_1   (1269, 29, 105,  97,  89,  173, 174, 159),
+  DECK_PRIEST_2   (1424, 57, 149, 143, 143,  205, 201, 192),
+
+  DECK_ROGUE_1    (1269, 29,  39,  40,  89,   90,  92, 152),
+  DECK_ROGUE_2    (1424, 57,  15,   0,   0,   88,  54,  42),
+
+  DECK_SHAMAN_1   (1269, 29,   0,  26,  58,   28,  75, 115),
+  DECK_SHAMAN_2   (1424, 57,   9,   0,   0,   64,  46,  39),
+
+  DECK_WARLOCK_1  (1269, 29,  16,   0,   0,   64,  32,  42),
+  DECK_WARLOCK_2  (1424, 57,  19,   0,  28,   73,  41,  92),
+
+  DECK_WARRIOR_1  (1269, 29, 160, 148, 121,  226, 209, 184),
+  DECK_WARRIOR_2  (1424, 57,  45,   0,   0,  110,  38,  22),
   ;
 
   public final int x;

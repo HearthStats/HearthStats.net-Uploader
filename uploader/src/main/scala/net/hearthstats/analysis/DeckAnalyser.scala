@@ -5,8 +5,10 @@ import java.awt.image.BufferedImage
 import grizzled.slf4j.Logging
 import net.hearthstats.analysis.DeckAnalyser.CardsVisibleOnScreen
 import net.hearthstats.ocr.{DeckCardOcr, DeckNameOcr}
+import net.hearthstats.state.UniquePixel
+import net.hearthstats.state.UniquePixel._
 import net.hearthstats.util.Coordinate
-import net.hearthstats.{BackgroundImageSave, Card, CardUtils, Deck}
+import net.hearthstats.{Card, CardUtils, Deck}
 import org.apache.commons.lang3.StringUtils
 
 import scala.collection.mutable.ListBuffer
@@ -19,6 +21,7 @@ import scala.collection.mutable.ListBuffer
 class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCacheBase with Logging {
 
   val ocr = new DeckCardOcr
+  val individualPixelAnalyser = new IndividualPixelAnalyser
 
   // Create a map with card name as the key, ID as the value
   val cardList = CardUtils.cards.values
@@ -27,9 +30,6 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
   def identifyDeck(img1: BufferedImage, img2: BufferedImage): Option[Deck] = {
     if (img1.getWidth != imgWidth || img1.getHeight() != imgHeight) throw new RuntimeException("Image 1 is not the expected size")
     if (img2.getWidth != imgWidth || img2.getHeight() != imgHeight) throw new RuntimeException("Image 2 is not the expected size")
-
-    BackgroundImageSave.savePngImage(img1, "de-img1")
-    BackgroundImageSave.savePngImage(img2, "de-img2")
 
     // Make a list of cards found on each screen; there may be some overlap
     val cards1 = identifyCards(img1)
@@ -53,7 +53,12 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
     val deckName2 = ocr.process(img2)
     var deckName = List(deckName1, deckName2).maxBy(_.length)
 
-    Some(new Deck(cards = cards, name = deckName))
+    val heroClass = identifyClass(img1) match {
+      case Some(str) => str
+      case None => ""
+    }
+
+    Some(new Deck(cards = cards, name = deckName, hero = heroClass))
   }
 
 
@@ -66,13 +71,7 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
 
       val cardImg = extractCardImage(img, i)
 
-//      BackgroundImageSave.savePngImage(cardImg, "card-" + i)
-
-      ocr.setCardNo(i)
       val roughName = ocr.process(cardImg);
-
-//      val countImg = extractCountImage(img, i)
-//      BackgroundImageSave.savePngImage(countImg, "-count-" + i)
 
       val card = identifyCard(roughName)
       card match {
@@ -102,19 +101,6 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
   }
 
 
-//  private def extractCountImage(img: BufferedImage, cardNo: Int): BufferedImage = {
-//    val yoffset = (135f + (45.5f * cardNo.toFloat)).toInt
-//
-//    val topLeft = getCoordinate(1484, yoffset)
-//    val bottomRight = getCoordinate(1503, yoffset + 22)
-//
-//    debug(s"Extracting ${topLeft.x}x${topLeft.y} to ${bottomRight.x}x${bottomRight.y}")
-//
-//    img.getSubimage(topLeft.x, topLeft.y,
-//      bottomRight.x - topLeft.x, bottomRight.y - topLeft.y)
-//  }
-//
-//
   private def identifyCard(roughName: String): Option[Card] = {
     val bestCard = cardList.maxBy(c => StringUtils.getJaroWinklerDistance(roughName, c.name))
 
@@ -125,6 +111,7 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
       None
     }
   }
+
 
   private def identifyCount(img: BufferedImage, cardNo: Int): Int = {
     val yoffset = (45.5f * cardNo.toFloat).toInt
@@ -141,6 +128,7 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
     }
   }
 
+
   private def checkPixelIsYellow(img: BufferedImage, x: Int, y: Int): Boolean = {
     val pixel = getCoordinate(x, y)
     val rgb = img.getRGB(pixel.x, pixel.y)
@@ -151,6 +139,27 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
     // debug(s"Pixel $x,$y: $red,$green,$blue yellow=$yellow")
     red > 166 && red < 230 && green > 148 && green < 210 && blue < 20
   }
+
+
+  private def identifyClassPixel(image: BufferedImage, pixelRules: Iterable[(Array[UniquePixel], String)]): Option[String] =
+    (for {
+      (pixels, result) <- pixelRules
+      if individualPixelAnalyser.testAllPixelsMatch(image, pixels)
+    } yield result).headOption
+
+
+  private def identifyClass(img: BufferedImage): Option[String] =
+    identifyClassPixel(img, Seq(
+      Array(DECK_DRUID_1, DECK_DRUID_2) -> "Druid",
+      Array(DECK_HUNTER_1, DECK_HUNTER_2) -> "Hunter",
+      Array(DECK_MAGE_1, DECK_MAGE_2) -> "Mage",
+      Array(DECK_PALADIN_1, DECK_PALADIN_2) -> "Paladin",
+      Array(DECK_PRIEST_1, DECK_PRIEST_2) -> "Priest",
+      Array(DECK_ROGUE_1, DECK_ROGUE_2) -> "Rogue",
+      Array(DECK_SHAMAN_1, DECK_SHAMAN_2) -> "Shaman",
+      Array(DECK_WARLOCK_1, DECK_WARLOCK_2) -> "Warlock",
+      Array(DECK_WARRIOR_1, DECK_WARRIOR_2) -> "Warrior")
+    )
 
 
   /**
