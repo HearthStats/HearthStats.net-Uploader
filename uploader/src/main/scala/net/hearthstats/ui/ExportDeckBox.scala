@@ -6,16 +6,14 @@ import javax.imageio.ImageIO
 import javax.swing._
 
 import grizzled.slf4j.Logging
-import net.hearthstats.analysis.{AnalyserEvent, HearthstoneAnalyser}
+import net.hearthstats._
+import net.hearthstats.analysis.{AnalyserEvent, DeckAnalyser, HearthstoneAnalyser}
 import net.hearthstats.log.Log
-import net.hearthstats.ocr.DeckNameOcr
 import net.hearthstats.state.Screen
 import net.hearthstats.ui.util.MigPanel
 import net.hearthstats.util.HsRobot
 import net.hearthstats.util.Translations.t
-import net.hearthstats.{Main, API, Constants, Monitor}
 import org.json.simple.JSONObject
-import zulu.deckexport.extracter.ExtracterMain
 
 import scala.collection.JavaConversions._
 import scala.swing._
@@ -205,63 +203,80 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
     setStatus(t("export.status.detecting"), t("export.instructions.detecting"))
 
     val hsHelper = monitor._hsHelper
-    hsHelper.bringWindowToForeground
 
-    val robot = HsRobot(monitor._hsHelper.getHSWindowBounds)
-    robot.collectionScrollAway()
-    val img1 = hsHelper.getScreenCapture
-    robot.collectionScrollTowards()
-    val img2 = hsHelper.getScreenCapture
+//    val exportedDeck = ExtracterMain.exportOcr(img1, img2)
+    var deck: Option[Deck] = None
 
-    val exportedDeck = ExtracterMain.exportDeck(img1, img2)
+    var attempts = 0;
+    while (deck == None && attempts < 4) {
+      attempts += 1
+      debug(s"Attempt $attempts at identifying deck")
+
+      hsHelper.bringWindowToForeground
+
+      val robot = HsRobot(monitor._hsHelper.getHSWindowBounds)
+      robot.collectionScrollAway()
+      val img1 = hsHelper.getScreenCapture
+      robot.collectionScrollTowards()
+      val img2 = hsHelper.getScreenCapture
+
+      val deckAnalyser = new DeckAnalyser(img1.getWidth, img1.getHeight)
+      deck = deckAnalyser.identifyDeck(img1, img2)
+    }
 
     peer.toFront()
 
-    val deckString =
-      if (exportedDeck == null) {
+    val deckString = deck match {
+      case Some(d) =>
+        // Successfully captured a deck
+        setStatus(t("export.status.ready"), t("export.instructions.ready"))
+
+        panel.nameField.text = d.name
+
+        panel.enableDeck()
+        d.deckString
+
+      case None =>
         // Failed to capture a deck
         setStatus(t("export.status.error"), t("export.instructions.error"))
         Log.info("Could not export deck")
         hasDeck = false
         ""
-      } else {
-        // Successfully captured a deck
-        setStatus(t("export.status.ready"), t("export.instructions.ready"))
-
-        val ocr = new DeckNameOcr()
-        var deckName = ocr.process(img2)
-        if (deckName == null || deckName.isEmpty) {
-          deckName = ocr.process(img1)
-        }
-        panel.nameField.text = deckName
-
-        panel.enableDeck()
-        exportedDeck.toArray.mkString("\n")
-      }
+    }
 
     panel.cardTextArea.text = deckString
   }
 
   private def exportDeck(): Unit = {
-    val deckName = panel.nameField.text.trim
-    val jsonMap = collection.mutable.Map(
-      "deck" -> new JSONObject(collection.mutable.Map(
-        "klass_id" -> panel.classComboBox.selection.index,
-        "name" -> deckName,
-        "notes" -> ""
-      )),
-      "deck_text" -> panel.cardTextArea.text.trim
-    )
+    // Attempt to convert the deck string back into card objects, which may fail if the string was edited badly
+    val cards = Deck.parseDeckString(panel.cardTextArea.text.trim)
+    val invalidCards = cards.filter(_.id == 0)
 
-    API.createDeck(new JSONObject(jsonMap)) match {
-      case true =>
-        // Deck was loaded onto HearthStats.net successfully
-        Main.showMessageDialog(peer, s"Deck $deckName was exported to HearthStats.net successfully")
-        ExportDeckBox.close()
-      case false =>
-        // An error occurred loading the deck onto HearthStats.net
-        setStatus(t("export.status.error"), t("export.instructions.error"))
-        peer.toFront()
+    if (invalidCards.length > 0) {
+      // At least one card couldn't be recognised
+      val details = invalidCards.map(_.name).mkString("\n")
+      Main.showMessageDialog(this.peer, if (invalidCards.length == 1)
+        s"Could not recognise this card:\n\n$details"
+      else
+        s"Could not recognise these cards:\n\n$details")
+    } else {
+      // All cards were recognised
+      val deck = new Deck(
+        name = panel.nameField.text.trim,
+        cards = cards,
+        hero = panel.classComboBox.selection.item)
+
+      val jsonDeck = new JSONObject(collection.mutable.Map("deck" -> deck.toJsonObject))
+      API.createDeck(jsonDeck) match {
+        case true =>
+          // Deck was loaded onto HearthStats.net successfully
+          Main.showMessageDialog(peer, s"Deck ${deck.name} was exported to HearthStats.net successfully")
+          ExportDeckBox.close()
+        case false =>
+          // An error occurred loading the deck onto HearthStats.net
+          setStatus(t("export.status.error"), t("export.instructions.error"))
+          peer.toFront()
+      }
     }
 
   }

@@ -15,8 +15,9 @@ public class DeckNameOcr extends OcrBase {
   @Override
   protected BufferedImage crop(BufferedImage image, int iteration) {
     float ratio = HearthstoneAnalyser.getRatio(image);
+    int xOffset = HearthstoneAnalyser.getXOffset(image, ratio);
 
-    int x = (int) (1256 * ratio);
+    int x = (int) (1256 * ratio + xOffset);
     int y = (int) (65 * ratio);
     int width = (int) (262 * ratio);
     int height = (int) (34 * ratio);
