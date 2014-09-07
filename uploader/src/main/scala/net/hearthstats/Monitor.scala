@@ -276,8 +276,6 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       Log.info("Opponent: " + HearthstoneAnalyser.getOpponentName)
       mainFrame.matchPanel.updateCurrentMatchUi()
 
-      mainFrame.matchPanel.setCurrentMatchEnabled(false)
-      mainFrame.matchPanel.updateCurrentMatchUi()
     case SCREEN =>
       handleScreenChange()
 
