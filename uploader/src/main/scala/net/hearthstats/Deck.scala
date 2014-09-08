@@ -1,7 +1,5 @@
 package net.hearthstats
 
-import java.text.ParseException
-
 import org.apache.commons.lang3.StringUtils
 import org.json.simple.JSONObject
 
@@ -30,7 +28,7 @@ case class Deck(
   }
 
   def deckString: String = {
-    (for (c <- cards.sortBy(card => (card.cost, card.name)))
+    (for (c <- cards.sortBy(card => (card.cost, -card.typeId, card.name)))
       yield s"${c.count} ${c.originalName}").mkString("\n")
   }
 
