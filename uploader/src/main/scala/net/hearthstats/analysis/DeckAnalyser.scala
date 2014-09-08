@@ -121,7 +121,7 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
         checkPixelIsYellow(img, 1497, 142 + yoffset) &&
         !checkPixelIsYellow(img, 1486, 138 + yoffset) &&
         !checkPixelIsYellow(img, 1501, 149 + yoffset)) {
-      // This pixels match a yellow number two
+      // The pixels match a yellow number two
       2
     } else {
       1
