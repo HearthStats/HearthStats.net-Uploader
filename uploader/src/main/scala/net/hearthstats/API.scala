@@ -66,6 +66,17 @@ object API extends Observable with Logging {
     _post("decks/slots", jsonData)
   }
 
+  def createDeck(jsonDeck: JSONObject): Boolean = {
+    _post("decks/create", jsonDeck) match {
+      case Some(result) =>
+        _dispatchResultMessage("Deck was exported to HearthStats.net successfully")
+        true
+      case None =>
+        _dispatchResultMessage("Error occurred while exporting deck to HearthStats.net")
+        false
+    }
+  }
+
   def createMatch(hsMatch: HearthstoneMatch): Unit = {
     _post("matches/new", hsMatch.toJsonObject) match {
       case Some(result) =>
@@ -164,7 +175,7 @@ object API extends Observable with Logging {
       case e: Exception => {
         Log.warn(s"Error communicating with HearthStats.net (POST $method)", e)
         _throwError("Error communicating with HearthStats.net")
-        null
+        None
       }
     }
   }

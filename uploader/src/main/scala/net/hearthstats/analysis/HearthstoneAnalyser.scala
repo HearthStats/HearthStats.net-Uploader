@@ -91,7 +91,7 @@ object HearthstoneAnalyser extends Observable with Logging {
 
   private def handleScreenActions(image: BufferedImage, newScreen: Screen) {
     if (newScreen != null) {
-      debug(s"Screen being processed $newScreen")
+      trace(s"Screen being processed $newScreen")
       newScreen match {
         case PLAY_LOBBY =>
           testForCasualOrRanked(image)

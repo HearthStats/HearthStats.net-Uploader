@@ -29,7 +29,7 @@
 
 
     <!-- Send all other logs to the log file and the console. -->
-    <!-- Change the level to DEBUG to enable full log output. -->
+    <!-- Change the level to DEBUG or TRACE to enable full log output. -->
     <logger name="net.hearthstats" level="INFO"></logger>
     <logger name="zulu.deckexport" level="INFO"></logger>
 

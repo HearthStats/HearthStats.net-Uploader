@@ -18,6 +18,7 @@ object CardUtils {
       json <- API.getCards
       id = Integer.parseInt(json.get("id").toString)
       cost = Integer.parseInt(json.get("mana").toString)
+      typeId = Integer.parseInt(json.get("type_id").toString)
       rarityString = json.get("rarity_id")
       rarity = if (rarityString == null) 0 else Integer.parseInt(rarityString.toString)
       collectible = json.get("collectible")
@@ -25,6 +26,7 @@ object CardUtils {
       rarity = rarity,
       id = id,
       cost = cost,
+      typeId = typeId,
       originalName = json.get("name").toString,
       collectible = collectible != null && collectible.toString.toBoolean)).toMap
 

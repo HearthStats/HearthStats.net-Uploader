@@ -21,6 +21,7 @@ case class Card(
   count: Int = 0,
   cost: Int = 0,
   rarity: Int = 0,
+  typeId: Int = 0,
   collectible: Boolean = true)
   extends Comparable[Card] {
 

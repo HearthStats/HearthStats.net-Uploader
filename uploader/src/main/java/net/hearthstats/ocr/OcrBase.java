@@ -156,7 +156,10 @@ public abstract class OcrBase {
      * @param image An image to be processed by OCR. Should already be cropped and filtered.
      */
     protected void saveCopy(BufferedImage image, int iteration) {
+      String filename = getFilename();
+      if (filename != null) {
         BackgroundImageSave.savePngImage(image, getFilename());
+      }
     }
 
 

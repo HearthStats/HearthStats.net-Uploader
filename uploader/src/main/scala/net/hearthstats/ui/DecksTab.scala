@@ -1,30 +1,26 @@
 package net.hearthstats.ui
 
-import java.awt.image.BufferedImage
-
-import grizzled.slf4j.{Logging, Logger}
-import net.hearthstats.log.Log
-import net.hearthstats.util.Translations.t
+import java.awt.BorderLayout
 import java.io.IOException
 import javax.swing._
+
+import grizzled.slf4j.Logging
+import net.hearthstats.Constants._
 import net.hearthstats._
+import net.hearthstats.util.Translations.t
+import net.hearthstats.util.{Browse, HsRobot}
 import net.miginfocom.swing.MigLayout
 import org.json.simple.JSONObject
-import zulu.deckexport.extracter.ExtracterMain
+
 import scala.collection.JavaConversions._
-import Constants._
 import scala.swing.Swing._
-import java.awt.BorderLayout
-import net.hearthstats.util.HsRobot
-import net.hearthstats.util.Browse
-import net.hearthstats.util.HsRobot
-import scala.Some
 
 class DecksTab(val monitor: Monitor) extends JPanel with Logging {
 
   val deckSlotComboBoxes = 1 to 9 map { new DeckSlotPanel(_) }
 
   setLayout(new MigLayout)
+
   add(new JLabel(" "), "wrap")
   add(new JLabel(t("set_your_deck_slots")), "skip, span 2")
   add(new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Decks-Tab", "Help on Decks tab"), "right,wrap")
@@ -58,16 +54,17 @@ class DecksTab(val monitor: Monitor) extends JPanel with Logging {
     } catch {
       case e1: IOException => Main.showErrorDialog("Error updating decks", e1)
     }))
-  add(refreshButton, "")
+  add(refreshButton, "wrap")
 
+  add(new JLabel(" "), "wrap")
+  add(new JLabel(" "), "wrap")
   val exportButton = new JButton(t("button.export_deck"))
-  exportButton.addActionListener(ActionListener(_ => onEDT(exportDeck())))
-  add(exportButton, "wrap")
+  exportButton.addActionListener(ActionListener(_ => onEDT(ExportDeckBox.open(monitor))))
+  add(exportButton, "skip")
 
   add(new JLabel(" "), "wrap")
   val myDecksButton = new JButton(t("manage_decks_on_hsnet"))
   myDecksButton.addActionListener(ActionListener(_ => Browse(DECKS_URL)))
-
   add(myDecksButton, "skip,span")
 
   onEDT(updateDecks())
@@ -124,61 +121,11 @@ class DecksTab(val monitor: Monitor) extends JPanel with Logging {
       }
     }
 
-    def doCreate(d: Deck) = HsRobot(monitor._hsHelper.getHSWindowBounds).create(d)
-  }
-
-
-  private def exportDeck(): Unit = {
-    val hsHelper = monitor._hsHelper
-    hsHelper.bringWindowToForeground
-
-    val robot = HsRobot(monitor._hsHelper.getHSWindowBounds)
-    robot.collectionScrollAway()
-
-    val img1 = hsHelper.getScreenCapture
-
-    robot.collectionScrollTowards()
-
-    val img2 = hsHelper.getScreenCapture
-
-    val deck = ExtracterMain.exportDeck(img1, img2)
-
-    if (deck == null) {
-      Log.info("Could not export deck")
-    } else {
-      logger.debug("Deck export detected:")
-      for (cardString <- deck.toArray) {
-        logger.debug(s" - $cardString")
-      }
-      // This method is just for illustration
-      showDebugDeckPopup(deck);
-      // deck options should be set here before uploading to server such as deckname, deck class, deck slot, deck owner etc.
-      // upload deck to server
+    def doCreate(d: Deck) = {
+      monitor._hsHelper.bringWindowToForeground
+      HsRobot(monitor._hsHelper.getHSWindowBounds).create(d)
     }
   }
-
-  /**
-   * This method is available only for illustration.(Can be deleted)
-   * @param deck
-   */
-  def showDebugDeckPopup(deck: zulu.deckexport.card.Deck) {
-    val op: JOptionPane = new JOptionPane("Deck export is currently experimental\nand does not yet upload the deck.\nThe deck detected is:", JOptionPane.INFORMATION_MESSAGE)
-    val scrollPane: JScrollPane = new JScrollPane
-    val list: JList[String] = new JList[String]
-    scrollPane.setViewportView(list)
-    list.setListData(deck.toArray)
-    op.add(scrollPane)
-    val dialog: JDialog = op.createDialog(null, "Deck Exporter Info")
-    dialog.setAlwaysOnTop(true)
-    dialog.setModal(true)
-    dialog.setFocusableWindowState(true)
-    dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
-    dialog.setVisible(true)
-  }
-
-
-
-
 
 
   class DeckSlotPanel(slot: Int) extends JPanel {
@@ -191,23 +138,6 @@ class DecksTab(val monitor: Monitor) extends JPanel with Logging {
     removeBtn.setToolTipText("Remove this deck and shift next ones")
     removeBtn.addActionListener(ActionListener(_ => removeSlot(slot)))
     add(removeBtn, BorderLayout.EAST)
-
-
-
-//
-//
-//
-//    val btnPanel = new JPanel();
-//    btnPanel.setLayout(new BorderLayout)
-//
-//    val buildBtn = new JButton("Build/Upload")
-//    buildBtn.setToolTipText("""<html><b>Automatically exports Hearthstone deck into HearthStats website</b><br/>
-//    		        <i>You need to be in the collection mode and select the deck yourself</i>""")
-//    buildBtn.addActionListener(ActionListener(_ => exportDeck()))
-//    btnPanel.add(buildBtn, BorderLayout.CENTER)
-//
-//
-
 
     val createBtn = new JButton("Construct")
     createBtn.setToolTipText("""<html><b>Automatically creates this deck in Hearthstone</b><br/>
