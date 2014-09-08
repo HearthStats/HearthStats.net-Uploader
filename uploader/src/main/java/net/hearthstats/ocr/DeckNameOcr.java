@@ -43,6 +43,7 @@ public class DeckNameOcr extends OcrBase {
     return "deckname";
   }
 
+
   @Override
   protected BufferedImage filter(BufferedImage image, int iteration) throws OcrException {
     int width = image.getWidth();
@@ -50,11 +51,14 @@ public class DeckNameOcr extends OcrBase {
     int bigWidth = width * 2;
     int bigHeight = height * 2;
 
+    BufferedImage newImage = new BufferedImage(bigWidth, bigHeight, BufferedImage.TYPE_INT_RGB);
+    newImage.createGraphics();
+
     // Extract only the black & white parts of the image, removing any coloured parts. This results in just the
-    // rank number being left... all the background magically disappears.
-    // Note that this change is being done directly on the source image for efficiency, which is OK because the
-    // source image is thrown out. However if the caller needs to reuse the source image then the following code
-    // should be changed to work on a copy of the image instead of the original.
+    // deck name being left... all of the background *should* magically disappear.
+
+    // First pass: identifies which pixels are coloured, which are black & white
+    short[][] levelArray = new short[width][height];
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
         // Get the individual components of this pixel
@@ -63,76 +67,48 @@ public class DeckNameOcr extends OcrBase {
         int green = (inputRgba >> 8) & 0xFF;
         int blue = (inputRgba >> 0) & 0xFF;
 
-        int invertedGatedLevel;
-        if (Math.abs(red - green) > 3 || Math.abs(red - blue) > 3 || Math.abs(green - blue) > 3) {
-          // If the pixel is coloured, set it to white instead
-          invertedGatedLevel = 255;
-        } else if (red < 64) {
-          // If the pixel is dark, it is background so set it to white instead
-          invertedGatedLevel = 255;
-        } else if (skipPixel(x, y, red)) {
-          // This is a problematic pixel on a priest or mage background, so erase it
-          invertedGatedLevel = 255;
+        // If the pixel is coloured, exclude it
+        if (Math.abs(red - green) > 1 || Math.abs(red - blue) > 1 || Math.abs(green - blue) > 1) {
+          levelArray[x][y] = -1;
         } else {
-          invertedGatedLevel = 255 - blue;
+          levelArray[x][y] = (short) red; // (255 - red);
         }
-
-        // Replace the pixel with the new value
-        int outputRgba = ((255 & 0xFF) << 24) |
-          ((invertedGatedLevel & 0xFF) << 16) |
-          ((invertedGatedLevel & 0xFF) << 8)  |
-          ((invertedGatedLevel & 0xFF) << 0);
-        image.setRGB(x, y, outputRgba);
       }
     }
 
-    // blow it up for ocr
-    BufferedImage newImage = new BufferedImage(bigWidth, bigHeight, BufferedImage.TYPE_INT_RGB);
-    Graphics g = newImage.createGraphics();
-    g.drawImage(image, 0, 0, bigWidth, bigHeight, null);
-    g.dispose();
+    // Second pass: draws a new image in black & white that excludes all the background
+    for (int x = 0; x < width; x++) {
+      for (int y = 0; y < height; y++) {
+
+        short level;
+        // If any of the neighbouring pixels is excluded, then exclude this pixel too - this avoids orphaned pixels
+        if (levelArray[x][y] == -1                        // this pixel is excluded
+          || (x > 0 && levelArray[x-1][y] == -1)          // left pixel is excluded
+          || (x + 1 < width && levelArray[x+1][y] == -1)  // right pixel is excluded
+          || (y > 0 && levelArray[x][y-1] == -1)          // top pixel is excluded
+          || (y + 1 < height && levelArray[x][y+1] == -1) // bottom pixel is excluded
+          ) {
+          level = 255;
+        } else {
+          level = (short) (255 - levelArray[x][y]);
+        }
+
+        int outputRgba = ((255 & 0xFF) << 24) |
+          ((level & 0xFF) << 16) |
+          ((level & 0xFF) << 8)  |
+          ((level & 0xFF) << 0);
+
+        int x2 = x << 1;
+        int y2 = y << 1;
+        newImage.setRGB(x2, y2, outputRgba);
+        newImage.setRGB(x2 + 1, y2, outputRgba);
+        newImage.setRGB(x2, y2 + 1, outputRgba);
+        newImage.setRGB(x2 + 1, y2 + 1, outputRgba);
+      }
+    }
+
 
     return newImage;
-  }
-
-  private boolean skipPixel(int x, int y, int red) {
-    if (x < 170 || x > 193) {
-      return false;
-    }
-    // The following is a list of known bad pixels that incorrectly get interpreted as text
-    return
-      // Priest
-         (x == 170 && y == 0 && red > 135 && red < 143)
-      || (x == 172 && y == 2  && red > 135 && red < 143)
-      || (x == 176 && y == 1  && red > 140 && red < 150)
-      || (x == 176 && y == 2  && red > 144 && red < 154)
-      || (x == 177 && y == 3  && red > 142 && red < 152)
-      || (x == 177 && y == 5  && red > 140 && red < 150)
-      || (x == 177 && y == 7  && red > 142 && red < 152)
-      || (x == 178 && y == 7  && red > 138 && red < 148)
-      || (x == 178 && y == 10 && red > 132 && red < 142)
-      || (x == 179 && y == 7  && red > 136 && red < 146)
-      || (x == 179 && y == 10 && red > 140 && red < 150)
-      || (x == 180 && y == 5  && red > 146 && red < 156)
-      || (x == 180 && y == 7  && red > 140 && red < 150)
-      || (x == 180 && y == 9  && red > 141 && red < 151)
-      || (x == 181 && y == 5  && red > 145 && red < 155)
-      || (x == 181 && y == 6  && red > 146 && red < 156)
-      || (x == 181 && y == 8  && red > 149 && red < 159)
-      || (x == 185 && y == 7  && red > 143 && red < 153)
-      || (x == 192 && y == 2  && red > 157 && red < 167)
-      || (x == 193 && y == 20 && red > 144 && red < 154)
-      // Mage
-      || (x == 175 && y == 30 && red > 119 && red < 129)
-      || (x == 176 && y == 29 && red > 150 && red < 160)
-      || (x == 176 && y == 30 && red >  93 && red < 103)
-      || (x == 177 && y == 28 && red > 138 && red < 148)
-      || (x == 178 && y == 28 && red > 145 && red < 155)
-      || (x == 179 && y == 28 && red > 145 && red < 155)
-      || (x == 179 && y == 29 && red > 126 && red < 136)
-      || (x == 180 && y == 28 && red > 145 && red < 155)
-      || (x == 181 && y == 28 && red > 147 && red < 157)
-      ;
   }
 
 
