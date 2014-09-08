@@ -267,16 +267,21 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
         cards = cards,
         hero = panel.classComboBox.selection.item)
 
-      val jsonDeck = new JSONObject(collection.mutable.Map("deck" -> deck.toJsonObject))
-      API.createDeck(jsonDeck) match {
-        case true =>
-          // Deck was loaded onto HearthStats.net successfully
-          Main.showMessageDialog(peer, s"Deck ${deck.name} was exported to HearthStats.net successfully")
-          ExportDeckBox.close()
-        case false =>
-          // An error occurred loading the deck onto HearthStats.net
-          setStatus(t("export.status.error"), t("export.instructions.error"))
-          peer.toFront()
+      if (deck.isValid) {
+        val jsonDeck = new JSONObject(collection.mutable.Map("deck" -> deck.toJsonObject))
+        API.createDeck(jsonDeck) match {
+          case true =>
+            // Deck was loaded onto HearthStats.net successfully
+            Main.showMessageDialog(peer, s"Deck ${deck.name} was exported to HearthStats.net successfully")
+            ExportDeckBox.close()
+          case false =>
+            // An error occurred loading the deck onto HearthStats.net
+            setStatus(t("export.status.error"), t("export.instructions.error"))
+            peer.toFront()
+        }
+      } else {
+        Main.showMessageDialog(this.peer, "Could not export because deck is invalid.\n" +
+            s"Deck has ${deck.cardCount} cards, 30 are required.")
       }
     }
 
