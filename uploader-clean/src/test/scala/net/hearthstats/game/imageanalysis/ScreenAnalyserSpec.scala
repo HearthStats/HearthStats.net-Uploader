@@ -7,7 +7,7 @@ import org.scalatest.junit.JUnitRunner
 import net.hearthstats.game.Screen
 
 @RunWith(classOf[JUnitRunner])
-class AnalyserSpec extends FlatSpec with Matchers {
+class ScreenAnalyserSpec extends FlatSpec with Matchers {
 
   "The play lobby screen" should "be detected" in
     checkScreen("play_lobby", Screen.PLAY_LOBBY)
