@@ -23,6 +23,27 @@ class AnalyserSpec extends FlatSpec with Matchers {
   "The versus lobby" should "be detected" in
     checkScreen("versus_lobby", Screen.VERSUS_LOBBY)
 
+  "Finding opponent" should "be detected" in
+    checkScreen("finding", Screen.FINDING_OPPONENT)
+
+  "Pandaria end" should "be detected" in
+    checkScreen("victory_pandaria", Screen.MATCH_PANDARIA_END)
+
+  "Pandaria end (win streak)" should "be detected" in
+    checkScreen("win_streak_pandaria", Screen.MATCH_PANDARIA_END)
+
+  "Defeat Stranglehorn" should "be detected" in
+    checkScreen("defeat_stranglehorn", Screen.MATCH_STRANGLETHORN_END)
+
+  "Orgrimmar" should "be detected" in
+    checkScreen("orgrimmar_with_coin", Screen.MATCH_ORGRIMMAR)
+
+  "Starting hand" should "be detected" in
+    checkScreen("starting_hand_4_cards", Screen.MATCH_STARTINGHAND)
+
+  "Match VS" should "be detected" in
+    checkScreen("Druid_VS_Hunter", Screen.MATCH_VS)
+
   def checkScreen(fileName: String, screen: Screen) = {
     val img = ImageIO.read(getClass.getResourceAsStream(fileName + ".png"))
     (new ScreenAnalyser).identifyScreen(img, null) shouldBe screen
