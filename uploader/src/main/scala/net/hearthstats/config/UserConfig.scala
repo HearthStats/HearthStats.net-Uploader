@@ -126,4 +126,11 @@ object UserConfig extends Logging {
       prefs.put(key, value.toString)
   }
 
+  /**
+   * Clears all the recorded preferences, returning to the defaults
+   */
+  def clearPreferences(): Unit = {
+    prefs.clear()
+  }
+
 }

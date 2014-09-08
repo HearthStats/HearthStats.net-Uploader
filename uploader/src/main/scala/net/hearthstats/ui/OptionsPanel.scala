@@ -1,13 +1,16 @@
 package net.hearthstats.ui
 
-import java.awt.{Font, Dimension}
 import java.awt.event.{ActionEvent, ActionListener}
+import java.awt.{Dimension, Font}
 import javax.swing._
+import javax.swing.event.{DocumentEvent, DocumentListener}
 
 import net.hearthstats.config._
 import net.hearthstats.util.TranslationCard
 import net.hearthstats.util.Translations.t
 import net.miginfocom.swing.MigLayout
+
+import scala.swing.Swing._
 
 class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
 
@@ -27,6 +30,16 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
   userKeyField.setText(configUserKey)
   userKeyField.setMinimumSize(userKeyFieldSize)
   userKeyField.setPreferredSize(userKeyFieldSize)
+  userKeyField.getDocument.addDocumentListener(new DocumentListener {
+    def insertUpdate(e: DocumentEvent): Unit = handleChange
+    def changedUpdate(e: DocumentEvent): Unit = handleChange
+    def removeUpdate(e: DocumentEvent): Unit = handleChange
+    def handleChange = onEDT({
+      if (configUserKey.get != userKeyField.getText) {
+        configUserKey.set(userKeyField.getText)
+      }
+    })
+  })
   add(userKeyField, "wrap")
 
   // Monitoring Method
@@ -140,9 +153,23 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
 
   // Note about saving
   addLabel()
-  val saveNoteLabel = new JLabel(t("options.save_automatically"));
+  val saveNoteLabel = new JLabel(t("options.save_automatically"))
   saveNoteLabel.setFont(saveNoteLabel.getFont.deriveFont(Font.ITALIC))
   add(saveNoteLabel, "wrap")
+
+  addLabel()
+  val resetButton = new JButton(t("button.reset_default"))
+  resetButton.addActionListener(new ActionListener {
+    def actionPerformed(e: ActionEvent) = onEDT({
+      UserConfig.clearPreferences()
+      // Recreate the options panel to cause it to reload all the defaults
+      mainFrame.tabbedPane.remove(3)
+      mainFrame.optionsPanel = new OptionsPanel(mainFrame)
+      mainFrame.tabbedPane.insertTab(t("tab.options"), null, mainFrame.optionsPanel, null, 3)
+      mainFrame.tabbedPane.setSelectedIndex(3)
+    })
+  })
+  add(resetButton, "wrap")
 
 
   private def updateNotificationCheckboxes(isEnabled: Boolean) {
@@ -192,10 +219,10 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
 
     // When the checkbox is clicked, update the config value
     checkBox.addActionListener(new ActionListener {
-      def actionPerformed(e: ActionEvent) {
+      def actionPerformed(e: ActionEvent) = onEDT({
         setter(checkBox.isSelected)
         onChange(checkBox.isSelected)
-      }
+      })
     })
 
     add(checkBox, constraints)
@@ -210,13 +237,13 @@ class OptionsPanel(val mainFrame: CompanionFrame) extends JPanel {
     comboBox.setSelectedIndex(getter.ordinal())
 
     comboBox.addActionListener(new ActionListener {
-      def actionPerformed(e: ActionEvent): Unit = {
+      def actionPerformed(e: ActionEvent) = onEDT({
         // This is a lazy way to get an instance of the class, the old value isn't actually used
         val oldValue = getter;
         val newValue = oldValue.getClass.getEnumConstants.apply(comboBox.getSelectedIndex)
         setter(newValue)
         onChange(newValue)
-      }
+      })
     })
 
     add(comboBox, constraints)

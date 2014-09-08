@@ -31,7 +31,7 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
   val logText = new LogPane
   val logScroll = new JScrollPane(logText, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED)
   val tabbedPane = new JTabbedPane
-  val optionsPanel = new OptionsPanel(this)
+  var optionsPanel = new OptionsPanel(this)
   val matchPanel = new MatchPanel
   var notificationQueue: NotificationQueue = environment.newNotificationQueue(optionNotificationType)
 
