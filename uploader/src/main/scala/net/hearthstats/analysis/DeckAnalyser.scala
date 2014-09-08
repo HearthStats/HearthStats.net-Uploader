@@ -23,8 +23,8 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
   val ocr = new DeckCardOcr
   val individualPixelAnalyser = new IndividualPixelAnalyser
 
-  // Create a map with card name as the key, ID as the value
-  val cardList = CardUtils.cards.values
+  // Create a list of collectible cards only - non-collectible cards cannot be in constructed decks
+  val cardList = CardUtils.cards.values.filter(c => c.collectible).toList
 
 
   def identifyDeck(img1: BufferedImage, img2: BufferedImage): Option[Deck] = {
