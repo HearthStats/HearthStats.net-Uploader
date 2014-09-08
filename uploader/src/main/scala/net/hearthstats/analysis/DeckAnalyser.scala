@@ -104,8 +104,8 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
   private def identifyCard(roughName: String): Option[Card] = {
     val bestCard = cardList.maxBy(c => StringUtils.getJaroWinklerDistance(roughName, c.name))
 
-    // Only return the card if the distance score is higher than 0.7; lower scores mean the card wasn't found
-    if (StringUtils.getJaroWinklerDistance(roughName, bestCard.name) > 0.7) {
+    // Only return the card if the distance score is higher than 0.6; lower scores mean the card wasn't found
+    if (StringUtils.getJaroWinklerDistance(roughName, bestCard.name) > 0.6) {
       Some(bestCard)
     } else {
       None
@@ -116,16 +116,21 @@ class DeckAnalyser(val imgWidth: Int, val imgHeight: Int) extends CoordinateCach
   private def identifyCount(img: BufferedImage, cardNo: Int): Int = {
     val yoffset = (45.5f * cardNo.toFloat).toInt
 
-    if (checkPixelIsYellow(img, 1492, 151 + yoffset) &&
-        checkPixelIsYellow(img, 1489, 144 + yoffset) &&
-        checkPixelIsYellow(img, 1497, 142 + yoffset) &&
-        !checkPixelIsYellow(img, 1486, 138 + yoffset) &&
-        !checkPixelIsYellow(img, 1501, 149 + yoffset)) {
-      // The pixels match a yellow number two
+    // Look for a yellow number two in various offset positions
+    if (isCountTwo(img, yoffset) || isCountTwo(img, yoffset + 2) || isCountTwo(img, yoffset + 4)) {
       2
     } else {
       1
     }
+  }
+
+
+  private def isCountTwo(img: BufferedImage, offset: Int): Boolean = {
+    checkPixelIsYellow(img, 1492, 150 + offset) &&
+      checkPixelIsYellow(img, 1490, 142 + offset) &&
+      checkPixelIsYellow(img, 1497, 141 + offset) &&
+      !checkPixelIsYellow(img, 1486, 137 + offset) &&
+      !checkPixelIsYellow(img, 1501, 148 + offset)
   }
 
 
