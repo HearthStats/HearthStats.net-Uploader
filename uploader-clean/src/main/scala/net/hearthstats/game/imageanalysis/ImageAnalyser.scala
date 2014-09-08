@@ -2,8 +2,9 @@ package net.hearthstats.game.imageanalysis
 
 import net.hearthstats.game.ocr.RankLevelOcr
 import java.awt.image.BufferedImage
+import grizzled.slf4j.Logging
 
-trait ImageAnalyser {
+trait ImageAnalyser extends Logging {
   val individualPixelAnalyser = new IndividualPixelAnalyser
   val rankLevelOcr = new RankLevelOcr
 

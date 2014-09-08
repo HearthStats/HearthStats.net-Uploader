@@ -8,6 +8,7 @@ import net.hearthstats.game.Screen
 
 @RunWith(classOf[JUnitRunner])
 class ScreenAnalyserSpec extends FlatSpec with Matchers {
+  val analyser = new ScreenAnalyser
 
   "The play lobby screen" should "be detected" in
     checkScreen("play_lobby", Screen.PLAY_LOBBY)
@@ -46,7 +47,7 @@ class ScreenAnalyserSpec extends FlatSpec with Matchers {
 
   def checkScreen(fileName: String, screen: Screen) = {
     val img = ImageIO.read(getClass.getResourceAsStream(fileName + ".png"))
-    (new ScreenAnalyser).identifyScreen(img, null) shouldBe screen
+    analyser.identifyScreen(img, null) shouldBe screen
   }
 
 }

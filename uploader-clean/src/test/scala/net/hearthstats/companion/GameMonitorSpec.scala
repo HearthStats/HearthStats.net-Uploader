@@ -16,7 +16,6 @@ import net.hearthstats.ProgramHelper
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import javax.imageio.ImageIO
-import net.hearthstats.game.imageanalysis.AnalyserSpec
 import net.hearthstats.core.GameMode._
 import net.hearthstats.core.Rank
 import net.hearthstats.game.imageanalysis.LobbyAnalyser

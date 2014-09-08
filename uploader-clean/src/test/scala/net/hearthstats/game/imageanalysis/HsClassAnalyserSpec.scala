@@ -10,10 +10,11 @@ import net.hearthstats.core.HeroClass._
 
 @RunWith(classOf[JUnitRunner])
 class HsClassAnalyserSpec extends FlatSpec with Matchers {
+  val analyser = new HsClassAnalyser
 
   "Both classes" should "be detected" in {
     val img = ImageIO.read(getClass.getResourceAsStream("Druid_VS_Hunter.png"))
-    (new HsClassAnalyser).imageIdentifyYourClass(img) shouldBe Some(DRUID)
-    (new HsClassAnalyser).imageIdentifyOpponentClass(img) shouldBe Some(HUNTER)
+    analyser.imageIdentifyYourClass(img) shouldBe Some(DRUID)
+    analyser.imageIdentifyOpponentClass(img) shouldBe Some(HUNTER)
   }
 }
