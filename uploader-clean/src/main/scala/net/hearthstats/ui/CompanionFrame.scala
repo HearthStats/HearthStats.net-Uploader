@@ -25,6 +25,7 @@ import net.hearthstats.hstatsapi.HearthStatsUrls._
 import net.hearthstats.util.Browse
 import net.hearthstats.companion.CompanionState
 import net.hearthstats.game.MatchState
+import net.hearthstats.core.HeroClass
 
 /**
  * Main Frame for HearthStats Companion.
@@ -37,7 +38,7 @@ class CompanionFrame(val environment: Environment,
   matchState: MatchState,
   api: API,
   deckUtils: DeckUtils,
-  translation: Translation) extends GeneralUI with Logging {
+  translation: Translation) extends GeneralUI with HearthstatsPresenter with Logging {
 
   import config._
   import translation.t
@@ -69,6 +70,11 @@ class CompanionFrame(val environment: Environment,
     if (enableStartMin) setState(ICONIFIED)
     updateTitle()
   }
+
+  def setOpponentClass(heroClass: HeroClass) = matchPanel.setOpponentClass(heroClass)
+  def setYourClass(heroClass: HeroClass) = matchPanel.setYourClass(heroClass)
+  def setOpponentName(n: String) = matchPanel.setOpponentName(n)
+  def setCoin(coin: Boolean) = matchPanel.setCoin(coin)
 
   def updateTitle() {
     var title = "HearthStats.net Companion"

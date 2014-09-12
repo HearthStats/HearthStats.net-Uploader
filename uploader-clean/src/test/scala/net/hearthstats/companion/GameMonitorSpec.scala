@@ -30,6 +30,8 @@ import net.hearthstats.game.imageanalysis.LobbyMode
 import org.mockito.ArgumentCaptor
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.game.imageanalysis.HsClassAnalyser
+import net.hearthstats.ui.HearthstatsPresenter
+import net.hearthstats.game.imageanalysis.InGameAnalyser
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest {
@@ -42,10 +44,12 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val imageToEvent = wire[ImageToEvent]
   val lobbyAnalyser = mock[LobbyAnalyser]
   val classAnalyser = mock[HsClassAnalyser]
+  val igAnalyser = mock[InGameAnalyser]
 
   val log = mock[Log]
 
   val hsMatch = wire[HearthstoneMatch]
+  val hsPresenter = mock[HearthstatsPresenter]
   val monitor = wire[GameMonitor]
 
   val rank8Lobby = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)

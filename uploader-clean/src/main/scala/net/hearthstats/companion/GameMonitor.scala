@@ -21,6 +21,8 @@ import net.hearthstats.core.HeroClass
 import net.hearthstats.core.HeroClass._
 import net.hearthstats.game.imageanalysis.HsClassAnalyser
 import net.hearthstats.game.ocr.BackgroundImageSave
+import net.hearthstats.ui.HearthstatsPresenter
+import net.hearthstats.game.imageanalysis.InGameAnalyser
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -29,7 +31,9 @@ class GameMonitor(
   hsMatch: HearthstoneMatch,
   lobbyAnalyser: LobbyAnalyser,
   classAnalyser: HsClassAnalyser,
+  inGameAnalyser: InGameAnalyser,
   uiLog: Log,
+  hsPresenter: HearthstatsPresenter,
   imageToEvent: ImageToEvent) extends Logging {
 
   import lobbyAnalyser._
@@ -89,7 +93,7 @@ class GameMonitor(
         testForYourClass(evt.image)
         testForOpponentClass(evt.image)
         iterationsSinceClassCheckingStarted += 1
-      //        testForCoin(image)
+        testForCoin(evt.image)
       //        testForOpponentName(image)
       //
       //      case MATCH_STARTINGHAND =>
@@ -124,11 +128,21 @@ class GameMonitor(
     }
   }
 
+  private def testForCoin(image: BufferedImage): Unit = {
+    if (inGameAnalyser.imageShowsCoin(image)) {
+      uiLog.info("Coin detected")
+      hsMatch.coin = Some(true)
+      hsPresenter.setCoin(true)
+    }
+  }
+
   private def testForYourClass(image: BufferedImage): Unit = {
     if (UNDETECTED == hsMatch.userClass) {
       debug("Testing for your class")
       classAnalyser.imageIdentifyYourClass(image) match {
-        case Some(newClass) => hsMatch.userClass = newClass
+        case Some(newClass) =>
+          hsMatch.userClass = newClass
+          hsPresenter.setYourClass(newClass)
         case None =>
       }
       if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
@@ -142,7 +156,9 @@ class GameMonitor(
     if (UNDETECTED == hsMatch.opponentClass) {
       debug("Testing for opponent class")
       classAnalyser.imageIdentifyOpponentClass(image) match {
-        case Some(newClass) => hsMatch.opponentClass = newClass
+        case Some(newClass) =>
+          hsMatch.opponentClass = newClass
+          hsPresenter.setOpponentClass(newClass)
         case None =>
       }
       if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {

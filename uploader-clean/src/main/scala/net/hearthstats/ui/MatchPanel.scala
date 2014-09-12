@@ -35,8 +35,8 @@ class MatchPanel(
   localizedClassOptions(0) = "- " + t("undetected") + " -"
   for (i <- 1 until localizedClassOptions.length) localizedClassOptions(i) = t(HeroClass.stringWithId(i))
 
-  private val _currentOpponentClassSelect = new JComboBox(localizedClassOptions)
-  private val _currentYourClassSelector = new JComboBox(localizedClassOptions)
+  private val _currentOpponentClassSelect = new ClassComboBox
+  private val _currentYourClassSelector = new ClassComboBox
 
   add(new JLabel(t("match.label.your_class") + " "), "skip,right")
   add(_currentYourClassSelector, "wrap")
@@ -87,11 +87,10 @@ class MatchPanel(
   def updateCurrentMatchUi() {
     matchState.currentMatch match {
       case Some(m) =>
-        updateMatchClassSelectorsIfSet(m)
         _currentMatchLabel.setText(m.mode + " Match - " + " Turn " + m.numTurns)
         _currentOpponentNameField.setText(m.opponentName)
-        _currentOpponentClassSelect.setSelectedIndex(_getClassOptionIndex(m.opponentClass))
-        _currentYourClassSelector.setSelectedIndex(_getClassOptionIndex(m.userClass))
+        _currentOpponentClassSelect.selection = m.opponentClass
+        _currentYourClassSelector.selection = m.userClass
         _currentGameCoinField.setSelected(m.coin.getOrElse(false))
         _currentNotesField.setText(m.notes)
       case None =>
@@ -115,20 +114,24 @@ class MatchPanel(
     _currentNotesField.setEnabled(enabled)
   }
 
-  private def _getClassOptionIndex(hClass: HeroClass): Int =
-    hClass.ordinal
-
   def resetMatchClassSelectors() {
-    _currentYourClassSelector.setSelectedIndex(0)
-    _currentOpponentClassSelect.setSelectedIndex(0)
+    _currentYourClassSelector.selection = HeroClass.UNDETECTED
+    _currentOpponentClassSelect.selection = HeroClass.UNDETECTED
   }
 
-  def updateMatchClassSelectorsIfSet(hsMatch: HearthstoneMatch) {
-    if (_currentYourClassSelector.getSelectedIndex > 0) {
-      hsMatch.userClass = HeroClass.values.apply(_currentYourClassSelector.getSelectedIndex)
+  def setOpponentClass(hc: HeroClass) = _currentOpponentClassSelect.selection = hc
+  def setYourClass(hc: HeroClass) = _currentYourClassSelector.selection = hc
+  def setOpponentName(n: String) = _currentOpponentNameField.setText(n)
+  def setCoin(coin: Boolean) = _currentGameCoinField.setSelected(coin)
+
+  class ClassComboBox extends JComboBox(localizedClassOptions) {
+    def selection: HeroClass = getSelectedIndex match {
+      case 0 => HeroClass.UNDETECTED
+      case i => HeroClass.values.apply(i)
     }
-    if (_currentOpponentClassSelect.getSelectedIndex > 0) {
-      hsMatch.opponentClass = HeroClass.values.apply(_currentOpponentClassSelect.getSelectedIndex)
+
+    def selection_=(hc: HeroClass): Unit = {
+      setSelectedIndex(hc.ordinal)
     }
   }
 }

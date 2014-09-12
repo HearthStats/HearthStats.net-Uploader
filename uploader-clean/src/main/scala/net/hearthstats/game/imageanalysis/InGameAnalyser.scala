@@ -9,6 +9,9 @@ import net.hearthstats.core.MatchOutcome
 class InGameAnalyser extends ImageAnalyser {
   val relativePixelAnalyser = new RelativePixelAnalyser
 
+  def imageShowsCoin(image: BufferedImage): Boolean =
+    individualPixelAnalyser.testAnyPixelsMatch(image, Array(COIN_1, COIN_2, COIN_3, COIN_4, COIN_5))
+
   def imageShowsOpponentTurn(image: BufferedImage): Boolean =
     individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_OPPONENT_1A, TURN_OPPONENT_1B)) ||
       individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_OPPONENT_2A, TURN_OPPONENT_2B)) ||
