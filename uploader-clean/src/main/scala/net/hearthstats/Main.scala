@@ -27,6 +27,7 @@ import net.hearthstats.companion.ImageToEvent
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.game.imageanalysis.HsClassAnalyser
 import net.hearthstats.game.imageanalysis.InGameAnalyser
+import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 
 class Main(environment: Environment, programHelper: ProgramHelper) extends Logging {
 
@@ -55,6 +56,7 @@ class Main(environment: Environment, programHelper: ProgramHelper) extends Loggi
   val igAnalyser = wire[InGameAnalyser]
   val classAnalyser = wire[HsClassAnalyser]
   val hsMatch = wire[HearthstoneMatch]
+  val deckOverlay = wire[DeckOverlaySwing]
   val monitor = wire[GameMonitor]
 
   def start(): Unit = {

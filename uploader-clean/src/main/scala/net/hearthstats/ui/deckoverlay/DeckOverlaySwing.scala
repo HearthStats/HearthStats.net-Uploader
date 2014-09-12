@@ -16,7 +16,7 @@ class DeckOverlaySwing(
   config: UserConfig,
   cardUtils: CardUtils,
   environment: Environment,
-  uiLog: Log) extends JFrame {
+  uiLog: Log) extends JFrame with DeckOverlayPresenter {
 
   import config._
 
@@ -33,6 +33,7 @@ class DeckOverlaySwing(
     } yield richCard
 
     val content = getContentPane
+    content.removeAll()
     content.setLayout(new BorderLayout)
     val box = createVerticalBox
     val imageLabel = new JLabel
@@ -60,6 +61,7 @@ class DeckOverlaySwing(
 
     setLocation(deckX, deckY)
     setSize(deckWidth, deckHeight)
+    repaint()
     setVisible(true)
 
   }

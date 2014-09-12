@@ -23,10 +23,14 @@ import net.hearthstats.game.imageanalysis.HsClassAnalyser
 import net.hearthstats.game.ocr.BackgroundImageSave
 import net.hearthstats.ui.HearthstatsPresenter
 import net.hearthstats.game.imageanalysis.InGameAnalyser
+import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
+import net.hearthstats.hstatsapi.DeckUtils
+import net.hearthstats.ui.deckoverlay.DeckOverlayPresenter
 
 class GameMonitor(
   programHelper: ProgramHelper,
   config: UserConfig,
+  deckUtils: DeckUtils,
   companionState: CompanionState,
   hsMatch: HearthstoneMatch,
   lobbyAnalyser: LobbyAnalyser,
@@ -34,6 +38,7 @@ class GameMonitor(
   inGameAnalyser: InGameAnalyser,
   uiLog: Log,
   hsPresenter: HearthstatsPresenter,
+  deckPresenter: DeckOverlayPresenter,
   imageToEvent: ImageToEvent) extends Logging {
 
   import lobbyAnalyser._
@@ -103,11 +108,19 @@ class GameMonitor(
       case _ =>
         debug("no change in game mode")
     }
-    if (evt.screen.group == ScreenGroup.PLAY) {
-      val deckSlot = imageIdentifyDeckSlot(evt.image)
-      if (deckSlot.isDefined && deckSlot != companionState.deckSlot) {
-        uiLog.info(s"deck ${deckSlot.get} detected")
-        companionState.deckSlot = deckSlot
+    detectDeck(evt)
+  }
+
+  private def detectDeck(evt: ScreenEvent): Unit = {
+    if (Seq(ScreenGroup.PLAY, ScreenGroup.PRACTICE) contains evt.screen.group) {
+      for {
+        deckSlot <- imageIdentifyDeckSlot(evt.image)
+        if Some(deckSlot) != companionState.deckSlot
+        deck <- deckUtils.getDeckFromSlot(deckSlot)
+      } {
+        uiLog.info(s"deck $deck detected")
+        companionState.deckSlot = Some(deckSlot)
+        deckPresenter.showDeck(deck)
       }
     }
   }
