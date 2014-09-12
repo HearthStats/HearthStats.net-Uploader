@@ -35,6 +35,7 @@ import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.hstatsapi.DeckUtils
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 import net.hearthstats.ui.deckoverlay.DeckOverlayPresenter
+import net.hearthstats.core.Deck
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest {
@@ -127,6 +128,7 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
     when(helper.getScreenCapture).thenReturn(rank8Lobby)
     when(lobbyAnalyser.mode(rank8Lobby)).thenReturn(Some(mode))
     when(lobbyAnalyser.imageIdentifyDeckSlot(rank8Lobby)).thenReturn(Some(3))
+    when(deckUtils.getDeckFromSlot(3)).thenReturn(Some(new Deck))
     when(lobbyAnalyser.analyzeRankLevel(rank8Lobby)).thenReturn(Some(Rank.RANK_8))
     when(screenAnalyser.identifyScreen(any[BufferedImage], any[Screen])).thenReturn(Screen.PLAY_LOBBY)
     Thread.sleep(sleep)

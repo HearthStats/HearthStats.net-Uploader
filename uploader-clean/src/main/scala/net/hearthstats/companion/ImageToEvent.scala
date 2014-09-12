@@ -44,13 +44,15 @@ class ImageToEvent(
    * Also updates the current state.
    */
   def eventFromImage(bi: BufferedImage): Option[GameEvent] = {
-    if (iterationsSinceScreenMatched > 10)
+    if (iterationsSinceScreenMatched > 10) {
       lastScreen = None
+    }
     Option(screenAnalyser.identifyScreen(bi, lastScreen.getOrElse(null))) match {
       case Some(screen) =>
         iterationsSinceScreenMatched = 0
         eventFromScreen(screen, bi)
       case None =>
+        debug(s"no screen match on image, last match was $lastScreen $iterationsSinceScreenMatched iterations ago")
         iterationsSinceScreenMatched += 1
         None
     }
