@@ -1,30 +1,13 @@
 package net.hearthstats.ui
 
-import java.awt.Color
-import java.awt.Desktop
-import java.awt.Dimension
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
+import java.awt.{Color, Desktop, Dimension}
+import java.awt.event.{ActionEvent, ActionListener, KeyAdapter, KeyEvent}
 import java.net.URI
+import javax.swing.BorderFactory.{createCompoundBorder, createEmptyBorder, createMatteBorder}
+import javax.swing.{JButton, JCheckBox, JComboBox, JLabel, JPanel, JTextArea, JTextField}
+import javax.swing.event.{ChangeEvent, ChangeListener}
 
-import javax.swing.BorderFactory.createCompoundBorder
-import javax.swing.BorderFactory.createEmptyBorder
-import javax.swing.BorderFactory.createMatteBorder
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JComboBox
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JTextArea
-import javax.swing.JTextField
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
-import net.hearthstats.OldConfig
-import net.hearthstats.Constants
-import net.hearthstats.HearthstoneMatch
-import net.hearthstats.Main
+import net.hearthstats.{Constants, HearthstoneMatch, Main}
 import net.hearthstats.analysis.HearthstoneAnalyser
 import net.hearthstats.util.Translations.t
 import net.miginfocom.swing.MigLayout

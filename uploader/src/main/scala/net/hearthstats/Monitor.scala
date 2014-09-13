@@ -102,6 +102,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
     }
     API.createMatch(hsMatch)
     hsMatch.submitted = true
+    HearthstoneAnalyser.hsMatch = new HearthstoneMatch
   }
 
   protected def _handleHearthstoneFound() {
