@@ -111,14 +111,47 @@ class GameMonitor(
       case _ =>
         debug("no change in game mode")
     }
+    if (PRACTICE != companionState.mode) evt.screen.group match {
+      case ScreenGroup.MATCH_PLAYING => testForOpponentOrYourTurn(evt.image)
+      //      case ScreenGroup.MATCH_END => testForVictoryOrDefeat(evt.image)
+      case _ =>
+    }
+    //    if (evt.screen.group != ScreenGroup.MATCH_END) victoryOrDefeatDetected = false
     detectDeck(evt)
+  }
+
+  private def testForOpponentOrYourTurn(image: BufferedImage) {
+    import companionState._
+    import inGameAnalyser._
+    if (isYourTurn) {
+      debug("Testing for opponent turn")
+      if (imageShowsOpponentTurn(image)) {
+        iterationsSinceYourTurn += 1
+        if (iterationsSinceYourTurn > 2) {
+          isYourTurn = false
+          uiLog.info("Opponent turn")
+          iterationsSinceYourTurn = 0
+        }
+      } else iterationsSinceYourTurn = 0
+    } else {
+      debug("Testing for your turn")
+      if (imageShowsYourTurn(image)) {
+        iterationsSinceOpponentTurn += 1
+        if (iterationsSinceOpponentTurn > 2) {
+          isYourTurn = true
+          hsMatch.numTurns += 1
+          uiLog.info("Your turn")
+          iterationsSinceOpponentTurn = 0
+        }
+      } else iterationsSinceOpponentTurn = 0
+    }
   }
 
   private val opponentNameRankedOcr = new OpponentNameRankedOcr
   private val opponentNameUnrankedOcr = new OpponentNameUnrankedOcr
 
   private def opponentNameOcr: OpponentNameOcr =
-    if (hsMatch.mode == "Ranked") opponentNameRankedOcr
+    if (companionState.mode == RANKED) opponentNameRankedOcr
     else opponentNameUnrankedOcr
 
   private def testForOpponentName(image: BufferedImage) {

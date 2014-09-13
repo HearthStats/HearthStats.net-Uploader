@@ -15,4 +15,7 @@ class CompanionState extends Logging {
   var rank: Option[Rank] = None
   var isNewArenaRun = false
   var iterationsSinceClassCheckingStarted = 0
+  var iterationsSinceYourTurn = 0
+  var iterationsSinceOpponentTurn = 0
+  var isYourTurn = false
 }
