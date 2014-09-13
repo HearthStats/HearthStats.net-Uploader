@@ -323,7 +323,7 @@ object HearthstoneAnalyser extends Observable with Logging {
 
   private def testForVictoryOrDefeat(image: BufferedImage) {
     if (!victoryOrDefeatDetected) {
-      info("Testing for victory or defeat")
+      debug("Testing for victory or defeat")
       imageShowsVictoryOrDefeat(image) match {
         case Some(outcome) =>
           info("Result detected by screen capture")
