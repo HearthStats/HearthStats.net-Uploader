@@ -26,6 +26,9 @@ import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 import net.hearthstats.hstatsapi.DeckUtils
 import net.hearthstats.ui.deckoverlay.DeckOverlayPresenter
+import net.hearthstats.game.ocr.OpponentNameRankedOcr
+import net.hearthstats.game.ocr.OpponentNameUnrankedOcr
+import net.hearthstats.game.ocr.OpponentNameOcr
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -99,16 +102,34 @@ class GameMonitor(
         testForOpponentClass(evt.image)
         iterationsSinceClassCheckingStarted += 1
         testForCoin(evt.image)
-      //        testForOpponentName(image)
-      //
-      //      case MATCH_STARTINGHAND =>
-      //        testForCoin(image)
-      //        testForOpponentName(image)
+        testForOpponentName(evt.image)
+
+      case MATCH_STARTINGHAND =>
+        testForCoin(evt.image)
+        testForOpponentName(evt.image)
 
       case _ =>
         debug("no change in game mode")
     }
     detectDeck(evt)
+  }
+
+  private val opponentNameRankedOcr = new OpponentNameRankedOcr
+  private val opponentNameUnrankedOcr = new OpponentNameUnrankedOcr
+
+  private def opponentNameOcr: OpponentNameOcr =
+    if (hsMatch.mode == "Ranked") opponentNameRankedOcr
+    else opponentNameUnrankedOcr
+
+  private def testForOpponentName(image: BufferedImage) {
+    if (hsMatch.opponentName == null) {
+      debug("Testing for opponent name")
+      if (inGameAnalyser.imageShowsOpponentName(image)) {
+        val opponentName = opponentNameOcr.process(image)
+        hsMatch.opponentName = opponentName
+        uiLog.info(s"Opponent name : $opponentName")
+      }
+    }
   }
 
   private def detectDeck(evt: ScreenEvent): Unit = {
