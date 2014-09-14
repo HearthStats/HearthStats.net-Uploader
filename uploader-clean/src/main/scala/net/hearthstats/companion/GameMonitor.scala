@@ -92,11 +92,15 @@ class GameMonitor(
 
   gameEvents.subscribe(handleGameEvent _)
 
-  private def handleGameEvent(evt: GameEvent): Unit = {
+  private def handleGameEvent(evt: GameEvent): Unit = try {
     debug(evt)
     evt match {
       case s: ScreenEvent => handleScreenEvent(s)
     }
+  } catch {
+    case t: Throwable =>
+      uiLog.error(t.getMessage, t)
+      error(t.getMessage, t)
   }
 
   private def handleScreenEvent(evt: ScreenEvent) = {

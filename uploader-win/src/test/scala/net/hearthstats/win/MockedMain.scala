@@ -1,4 +1,4 @@
-package net.hearthstats.companion
+package net.hearthstats.win
 
 import net.hearthstats.config.TestEnvironment
 import org.mockito.Mockito._
@@ -7,12 +7,14 @@ import net.hearthstats.Main
 import com.softwaremill.macwire.MacwireMacros._
 import javax.imageio.ImageIO
 import net.hearthstats.game.imageanalysis.InGameAnalyser
-import java.lang.Boolean
+import net.hearthstats.game.imageanalysis.InGameAnalyser
 
-object MockedMain extends App {
-  val env = TestEnvironment
-  val programHelper = new MockProgramHelper
+object MockedMain extends TesseractSetup with App {
+  val environment = TestEnvironment
+  val helper = new MockProgramHelper
   val main = wire[Main]
+
+  setupTesseract()
 
   main.start()
 
