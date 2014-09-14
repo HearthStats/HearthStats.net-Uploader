@@ -29,14 +29,16 @@ import net.hearthstats.game.imageanalysis.HsClassAnalyser
 import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 
-class Main(environment: Environment, programHelper: ProgramHelper) extends Logging {
+class Main(
+  environment: Environment,
+  config: UserConfig,
+  programHelper: ProgramHelper) extends Logging {
 
   private var ocrLanguage: String = "eng"
 
   val translationConfig = TranslationConfig("net.hearthstats.resources.Main", "en")
   val uiLog = wire[Log]
   val translation = wire[Translation]
-  val config = wire[UserConfig]
   val updater: Updater = wire[Updater]
 
   val initialCompanionState = new CompanionState

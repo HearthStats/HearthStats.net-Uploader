@@ -8,20 +8,37 @@ import com.softwaremill.macwire.MacwireMacros._
 import javax.imageio.ImageIO
 import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.game.imageanalysis.InGameAnalyser
+import net.hearthstats.config.TestConfig
 
 object MockedMain extends TesseractSetup with App {
   val environment = TestEnvironment
-  val helper = new MockProgramHelper
+  val config = TestConfig
+  val helper = new MockProgramHelper(List(
+    "play_lobby" -> 2,
+    "finding" -> 5,
+    "Druid_VS_Hunter" -> 2,
+    "starting_hand_4_cards" -> 2,
+    "orgrimmar_with_coin" -> 2))
   val main = wire[Main]
 
   setupTesseract()
 
   main.start()
 
-  class MockProgramHelper extends ProgramHelper {
+  class MockProgramHelper(var files: List[(String, Int)]) extends ProgramHelper {
     def foundProgram = true
 
-    def getScreenCapture = img("play_lobby")
+    def getScreenCapture = {
+      files match {
+        case (f, c) :: t =>
+          if (c > 0 || t == Nil) {
+            files = (f, c - 1) :: t
+          } else {
+            files = t
+          }
+          img(f)
+      }
+    }
 
     def getHSWindowBounds = null
 

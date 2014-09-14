@@ -19,6 +19,6 @@ class FileObserverSpec extends FlatSpec with Matchers with OneInstancePerTest {
     writer.write("content\n")
     writer.close()
     Thread.sleep(obs.DEFAULT_DELAY_MS * 2)
-    read should ===("content")
+    read shouldBe "content"
   }
 }

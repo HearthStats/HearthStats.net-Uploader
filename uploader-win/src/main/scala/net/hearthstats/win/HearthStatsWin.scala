@@ -7,6 +7,7 @@ import grizzled.slf4j.Logging
 import net.hearthstats.ui.HyperLinkHandler
 import net.hearthstats.Main
 import com.softwaremill.macwire.MacwireMacros._
+import net.hearthstats.config.UserConfig
 
 /**
  * Main object for the Windows application, starts up the HearthStats Companion.
@@ -15,6 +16,7 @@ object HearthStatsWin extends TesseractSetup with App {
 
   val environment = new EnvironmentWin
   val helper = new ProgramHelperWindows
+  val config = wire[UserConfig]
   val main: Main = wire[Main]
 
   setupTesseract()
