@@ -158,7 +158,7 @@ class ExportDeckBox(val monitor: Monitor) extends Frame with Observer with Loggi
 
   override def closeOperation {
     debug("Closing deck export window")
-    HearthstoneAnalyser.deleteObserver(this)
+    ExportDeckBox.close()
   }
 
 
@@ -323,6 +323,7 @@ object ExportDeckBox {
     case Some(box) =>
       box.close()
       box.dispose()
+      HearthstoneAnalyser.deleteObserver(box)
       currentWindow = None
     case None =>
   }
