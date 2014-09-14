@@ -4,12 +4,12 @@
 	<!-- Outputs logs to the standard console -->
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} %-5level %20.20logger{20} - %msg%n
+			<pattern>[%thread] %d{HH:mm:ss.SSS} %-5level %20.20logger{20} - %msg%n
 			</pattern>
 		</encoder>
 	</appender>
 
-	<root level="DEBUG">
+	<root level="TRACE">
 		<appender-ref ref="STDOUT" />
 	</root>
 

@@ -38,7 +38,7 @@ import net.hearthstats.ui.deckoverlay.DeckOverlayPresenter
 import net.hearthstats.core.Deck
 
 @RunWith(classOf[JUnitRunner])
-class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest {
+class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest with BeforeAndAfter {
   val config: UserConfig = TestConfig
   val state = new CompanionState
   val helper = mock[ProgramHelper]
@@ -63,6 +63,8 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val newArenaRun = new BufferedImage(100, 10, BufferedImage.TYPE_INT_RGB)
 
   val sleep = config.pollingDelayMs.get * 2
+
+  after { monitor.stop() }
 
   "The monitor" should "warn when HS is not detected" in {
     verify(log, never).info(anyString)

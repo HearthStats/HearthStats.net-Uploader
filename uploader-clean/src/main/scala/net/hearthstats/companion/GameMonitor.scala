@@ -29,6 +29,11 @@ import net.hearthstats.ui.deckoverlay.DeckOverlayPresenter
 import net.hearthstats.game.ocr.OpponentNameRankedOcr
 import net.hearthstats.game.ocr.OpponentNameUnrankedOcr
 import net.hearthstats.game.ocr.OpponentNameOcr
+import org.apache.commons.io.input.Tailer
+import rx.subjects.PublishSubject
+import rx.lang.scala.JavaConversions.toScalaObservable
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -47,8 +52,23 @@ class GameMonitor(
   import lobbyAnalyser._
   import companionState.iterationsSinceClassCheckingStarted
 
-  val hsFound: Observable[Boolean] =
-    Observable.interval(config.pollingDelayMs.get.millis).map { _ => programHelper.foundProgram }
+  private val subject = PublishSubject.create[Boolean]
+  val hsFound: Observable[Boolean] = subject.asObservable.cache
+
+  val checkIfRunning = Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new Runnable {
+    def run(): Unit = {
+      val found = programHelper.foundProgram
+      trace(s"HS found ? :$found ")
+      subject.onNext(found)
+    }
+  }, config.pollingDelayMs.get, config.pollingDelayMs.get, TimeUnit.MILLISECONDS)
+
+  info("started")
+
+  def stop(): Unit = {
+    info("stopping")
+    checkIfRunning.cancel(true)
+  }
 
   hsFound.distinctUntilChanged.subscribe(found =>
     if (found) {
