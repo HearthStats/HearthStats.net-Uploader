@@ -9,16 +9,17 @@ import javax.imageio.ImageIO
 import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.config.TestConfig
+import grizzled.slf4j.Logging
 
-object MockedMain extends TesseractSetup with App {
+object MockedMain extends TesseractSetup with App with Logging {
   val environment = TestEnvironment
   val config = TestConfig
   val helper = new MockProgramHelper(List(
-    "play_lobby" -> 2,
-    "finding" -> 5,
-    "Druid_VS_Hunter" -> 2,
-    "starting_hand_4_cards" -> 2,
-    "orgrimmar_with_coin" -> 2))
+    "play_lobby" -> 1,
+    "finding" -> 10,
+    "Druid_VS_Hunter" -> 1,
+    "starting_hand_4_cards" -> 1,
+    "orgrimmar_with_coin" -> 1))
   val main = wire[Main]
 
   setupTesseract()
@@ -31,11 +32,12 @@ object MockedMain extends TesseractSetup with App {
     def getScreenCapture = {
       files match {
         case (f, c) :: t =>
-          if (c > 0 || t == Nil) {
+          if (c > 1 || t == Nil) {
             files = (f, c - 1) :: t
           } else {
             files = t
           }
+          info(s"sending $f")
           img(f)
       }
     }

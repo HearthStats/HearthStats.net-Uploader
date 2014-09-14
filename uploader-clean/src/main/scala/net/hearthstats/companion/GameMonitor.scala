@@ -34,13 +34,17 @@ import rx.subjects.PublishSubject
 import rx.lang.scala.JavaConversions.toScalaObservable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import net.hearthstats.game.FirstTurn
+import net.hearthstats.game.StartingHand
+import net.hearthstats.game.MatchState
+import net.hearthstats.core.HearthstoneMatch
 
 class GameMonitor(
   programHelper: ProgramHelper,
   config: UserConfig,
   deckUtils: DeckUtils,
   companionState: CompanionState,
-  hsMatch: HearthstoneMatch,
+  matchState: MatchState,
   lobbyAnalyser: LobbyAnalyser,
   classAnalyser: HsClassAnalyser,
   inGameAnalyser: InGameAnalyser,
@@ -96,6 +100,18 @@ class GameMonitor(
     debug(evt)
     evt match {
       case s: ScreenEvent => handleScreenEvent(s)
+
+      case FirstTurn(image) =>
+        testForYourClass(image)
+        testForOpponentClass(image)
+        iterationsSinceClassCheckingStarted += 1
+        testForCoin(image)
+        testForOpponentName(image)
+
+      case StartingHand(image) =>
+        matchState.currentMatch = Some(new HearthstoneMatch)
+        testForCoin(image)
+        testForOpponentName(image)
     }
   } catch {
     case t: Throwable =>
@@ -120,17 +136,6 @@ class GameMonitor(
         uiLog.info("Arena Mode detected")
         companionState.mode = Some(ARENA)
         companionState.isNewArenaRun = isNewArenaRun(evt.image)
-
-      case MATCH_VS =>
-        testForYourClass(evt.image)
-        testForOpponentClass(evt.image)
-        iterationsSinceClassCheckingStarted += 1
-        testForCoin(evt.image)
-        testForOpponentName(evt.image)
-
-      case MATCH_STARTINGHAND =>
-        testForCoin(evt.image)
-        testForOpponentName(evt.image)
 
       case _ =>
         debug("no change in game mode")
@@ -259,4 +264,5 @@ class GameMonitor(
     }
   }
 
+  def hsMatch = matchState.currentMatch.get
 }
