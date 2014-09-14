@@ -131,7 +131,7 @@ class CompanionFrame(val environment: Environment, val monitor: Monitor) extends
   }
 
   def updateTitle() {
-    var title = "HearthStats.net Uploader"
+    var title = "HearthStats Companion"
     if (monitor._hearthstoneDetected) {
       if (HearthstoneAnalyser.screen != null) {
         title += " - " + HearthstoneAnalyser.screen.title
