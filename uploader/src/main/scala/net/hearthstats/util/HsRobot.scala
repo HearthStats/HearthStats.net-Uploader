@@ -1,8 +1,8 @@
 package net.hearthstats.util
 
-import java.awt.{Rectangle, Robot}
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent._
+import java.awt.{Rectangle, Robot}
 
 import grizzled.slf4j.Logging
 import net.hearthstats.Deck
@@ -111,41 +111,26 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) extends Logging {
     robot.keyRelease(code)
   }
 
-  lazy val resolution: Resolution = {
-    import scala.math._
-    val ratio = hsWindow.width.toFloat / hsWindow.height
-    def score(r: Resolution) =
-      abs(log(ratio / r.ratio))
-    Seq(Res16_9, Res4_3).sortBy(score).head
-  }
+  lazy val resolution = new Resolution {
+    import hsWindow._
 
-  sealed trait Resolution {
-    def search: Point = applyRatio(searchRatio)
-    def card: Point = applyRatio(cardRatio)
-    def collectionScroll: Point = applyRatio(collectionScrollRatio)
+    val extraWidth = (width.toFloat - (height.toFloat * 4 / 3)).toInt
+    val xOffset = (extraWidth / 2).toInt
 
-    def searchRatio: (Float, Float)
-    def cardRatio: (Float, Float)
-    def collectionScrollRatio: (Float, Float)
-    def ratio: Float
+    def search: Point = applyRatio(0.48f, 0.915f)
+    def card: Point = applyRatio(0.12f, 0.31f)
+    def collectionScroll: Point = applyRatio(0.972f, 0.05f)
 
-    def applyRatio(r: (Float, Float)) = {
-      import hsWindow._
+    private def applyRatio(r: (Float, Float)) = {
       val (a, b) = r
-      Point(x + a * width, y + b * height)
+      Point(x + xOffset + a * (width - extraWidth), y + b * height)
     }
   }
 
-  case object Res16_9 extends Resolution {
-    val searchRatio = (425f / 900, 82f / 90)
-    val cardRatio = (15f / 80, 13f / 40)
-    val collectionScrollRatio = (0.90f, 0.05f)
-    val ratio = 16f / 9
+  sealed trait Resolution {
+    def search: Point
+    def card: Point
+    def collectionScroll: Point
   }
-  case object Res4_3 extends Resolution {
-    val searchRatio = (0.48f, 0.915f)
-    val cardRatio = (0.12f, 0.31f)
-    val collectionScrollRatio = (0.98f, 0.05f)
-    val ratio = 4f / 3
-  }
+
 }
