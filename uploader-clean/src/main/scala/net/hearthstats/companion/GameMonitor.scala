@@ -38,6 +38,8 @@ import net.hearthstats.game.FirstTurn
 import net.hearthstats.game.StartingHand
 import net.hearthstats.game.MatchState
 import net.hearthstats.core.HearthstoneMatch
+import java.util.concurrent.ScheduledFuture
+import javax.imageio.ImageIO
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -59,15 +61,19 @@ class GameMonitor(
   private val subject = PublishSubject.create[Boolean]
   val hsFound: Observable[Boolean] = subject.asObservable.cache
 
-  val checkIfRunning = Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new Runnable {
-    def run(): Unit = {
-      val found = programHelper.foundProgram
-      trace(s"HS found ? :$found ")
-      subject.onNext(found)
-    }
-  }, config.pollingDelayMs.get, config.pollingDelayMs.get, TimeUnit.MILLISECONDS)
+  var checkIfRunning: ScheduledFuture[_] = _
 
-  info("started")
+  def start() {
+    checkIfRunning = Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new Runnable {
+      def run(): Unit = {
+        val found = programHelper.foundProgram
+        trace(s"HS found ? :$found ")
+        subject.onNext(found)
+      }
+    }, config.pollingDelayMs.get, config.pollingDelayMs.get, TimeUnit.MILLISECONDS)
+
+    info("started")
+  }
 
   def stop(): Unit = {
     info("stopping")
@@ -102,9 +108,6 @@ class GameMonitor(
       case s: ScreenEvent => handleScreenEvent(s)
 
       case FirstTurn(image) =>
-        testForYourClass(image)
-        testForOpponentClass(image)
-        iterationsSinceClassCheckingStarted += 1
         testForCoin(image)
         testForOpponentName(image)
 
@@ -112,6 +115,9 @@ class GameMonitor(
         matchState.currentMatch = Some(new HearthstoneMatch)
         testForCoin(image)
         testForOpponentName(image)
+        testForYourClass(image)
+        testForOpponentClass(image)
+        iterationsSinceClassCheckingStarted += 1
     }
   } catch {
     case t: Throwable =>
@@ -239,6 +245,7 @@ class GameMonitor(
         case Some(newClass) =>
           hsMatch.userClass = newClass
           hsPresenter.setYourClass(newClass)
+          uiLog.info(s"Your class detected : $newClass")
         case None =>
       }
       if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
@@ -255,6 +262,7 @@ class GameMonitor(
         case Some(newClass) =>
           hsMatch.opponentClass = newClass
           hsPresenter.setOpponentClass(newClass)
+          uiLog.info(s"Opponent class detected : $newClass")
         case None =>
       }
       if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {

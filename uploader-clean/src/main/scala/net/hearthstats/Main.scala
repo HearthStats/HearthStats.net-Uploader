@@ -59,7 +59,7 @@ class Main(
   val classAnalyser = wire[HsClassAnalyser]
   val hsMatch = wire[HearthstoneMatch]
   val deckOverlay = wire[DeckOverlaySwing]
-  val monitor = wire[GameMonitor]
+  val monitor: GameMonitor = wire[GameMonitor]
 
   def start(): Unit = {
     val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")
@@ -70,6 +70,7 @@ class Main(
     mainFrame.createAndShowGui()
     loadingNotification.close()
     startup.start()
+    monitor.start()
   }
 
   private def logSystemInformation(): Unit = {

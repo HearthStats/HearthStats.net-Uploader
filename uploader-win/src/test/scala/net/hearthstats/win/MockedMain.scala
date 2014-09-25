@@ -10,6 +10,7 @@ import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.config.TestConfig
 import grizzled.slf4j.Logging
+import net.hearthstats.game.imageanalysis.HsClassAnalyser
 
 object MockedMain extends TesseractSetup with App with Logging {
   val environment = TestEnvironment
@@ -30,20 +31,17 @@ object MockedMain extends TesseractSetup with App with Logging {
     def foundProgram = true
 
     def getScreenCapture = {
-      files match {
-        case (f, c) :: t =>
-          if (c > 1 || t == Nil) {
-            files = (f, c - 1) :: t
-          } else {
-            files = t
-          }
-          info(s"sending $f")
-          img(f)
-      }
+      val (f, c) :: t = files
+      files = if (c > 1 || t == Nil)
+        (f, c - 1) :: t
+      else t
+      info(s"sending $f")
+      img(f)
     }
 
     def getHSWindowBounds = null
 
-    def img(fileName: String) = ImageIO.read(classOf[InGameAnalyser].getResourceAsStream(fileName + ".png"))
   }
+
+  def img(fileName: String) = ImageIO.read(classOf[InGameAnalyser].getResourceAsStream(fileName + ".png"))
 }
