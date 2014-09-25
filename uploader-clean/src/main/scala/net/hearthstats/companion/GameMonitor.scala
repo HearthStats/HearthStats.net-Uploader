@@ -40,6 +40,7 @@ import net.hearthstats.game.MatchState
 import net.hearthstats.core.HearthstoneMatch
 import java.util.concurrent.ScheduledFuture
 import javax.imageio.ImageIO
+import net.hearthstats.game.FindingOpponent
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -107,12 +108,16 @@ class GameMonitor(
     evt match {
       case s: ScreenEvent => handleScreenEvent(s)
 
+      case FindingOpponent =>
+        uiLog.info(s"Finding opponent, new match will start soon ...")
+        uiLog.divider()
+        matchState.nextMatch()
+
       case FirstTurn(image) =>
         testForCoin(image)
         testForOpponentName(image)
 
       case StartingHand(image) =>
-        matchState.currentMatch = Some(new HearthstoneMatch)
         testForCoin(image)
         testForOpponentName(image)
         testForYourClass(image)
@@ -146,14 +151,28 @@ class GameMonitor(
       case _ =>
         debug("no change in game mode")
     }
-    if (PRACTICE != companionState.mode) evt.screen.group match {
+    evt.screen.group match {
       case ScreenGroup.MATCH_PLAYING => testForOpponentOrYourTurn(evt.image)
-      //      case ScreenGroup.MATCH_END => testForVictoryOrDefeat(evt.image)
+      case ScreenGroup.MATCH_END => testForVictoryOrDefeat(evt.image)
       case _ =>
     }
-    //    if (evt.screen.group != ScreenGroup.MATCH_END) victoryOrDefeatDetected = false
+
     detectDeck(evt)
   }
+
+  private def testForVictoryOrDefeat(image: BufferedImage) {
+    if (!victoryOrDefeatDetected) {
+      info("Testing for victory or defeat")
+      inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
+        case Some(outcome) =>
+          uiLog.info(s"Result detected by screen capture : $outcome")
+          hsMatch.result = Some(outcome)
+        case _ =>
+      }
+    }
+  }
+
+  def victoryOrDefeatDetected = hsMatch.result.isDefined
 
   private def testForOpponentOrYourTurn(image: BufferedImage) {
     import companionState._

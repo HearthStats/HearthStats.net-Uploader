@@ -19,4 +19,9 @@ class MatchState {
       else m.editUrl
     }
 
+  def nextMatch(): Unit = {
+    lastMatch = currentMatch
+    currentMatch = Some(new HearthstoneMatch)
+  }
+
 }

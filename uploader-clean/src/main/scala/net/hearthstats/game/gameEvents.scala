@@ -19,6 +19,7 @@ object CardEvents {
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent
 
 object ArenaRunEnd extends GameEvent
+object FindingOpponent extends GameEvent
 case class StartingHand(image: BufferedImage) extends GameEvent
 case class FirstTurn(image: BufferedImage) extends GameEvent
 

@@ -18,6 +18,7 @@ import net.hearthstats.game.imageanalysis.UniquePixel._
 import net.hearthstats.game.imageanalysis.UniquePixel
 import net.hearthstats.core.GameMode
 import net.hearthstats.game.ScreenEvent
+import net.hearthstats.game.FindingOpponent
 
 /**
  * Converts screenshots to game events and updates the last screen.
@@ -73,8 +74,10 @@ class ImageToEvent(
       } else {
         iterationsSinceFindingOpponent = 0
         val screenToEvent: PartialFunction[Screen, GameEvent] = _ match {
-          case s if Seq(PLAY_LOBBY, ARENA_LOBBY, PRACTICE_LOBBY, VERSUS_LOBBY) contains s => ScreenEvent(s, image)
+          case s if (Seq(PLAY_LOBBY, ARENA_LOBBY, PRACTICE_LOBBY, VERSUS_LOBBY) contains s) ||
+            (s.group == ScreenGroup.MATCH_END) => ScreenEvent(s, image)
           case ARENA_END => ArenaRunEnd
+          case FINDING_OPPONENT => FindingOpponent
           case s if s.group == MATCH_START => StartingHand(image)
           case s if s.group == MATCH_PLAYING => FirstTurn(image)
         }
