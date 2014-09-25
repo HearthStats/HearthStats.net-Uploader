@@ -61,23 +61,23 @@ class GameMonitor(
   private val subject = PublishSubject.create[Boolean]
   val hsFound: Observable[Boolean] = subject.asObservable.cache
 
-  var checkIfRunning: ScheduledFuture[_] = _
+  var checkIfRunning: Option[ScheduledFuture[_]] = None
 
   def start() {
-    checkIfRunning = Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new Runnable {
+    checkIfRunning = Some(Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new Runnable {
       def run(): Unit = {
         val found = programHelper.foundProgram
         trace(s"HS found ? :$found ")
         subject.onNext(found)
       }
-    }, config.pollingDelayMs.get, config.pollingDelayMs.get, TimeUnit.MILLISECONDS)
+    }, config.pollingDelayMs.get, config.pollingDelayMs.get, TimeUnit.MILLISECONDS))
 
     info("started")
   }
 
   def stop(): Unit = {
     info("stopping")
-    checkIfRunning.cancel(true)
+    checkIfRunning.map(_.cancel(true))
   }
 
   hsFound.distinctUntilChanged.subscribe(found =>

@@ -65,6 +65,8 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
 
   val sleep = config.pollingDelayMs.get * 2
 
+  before { monitor.start() }
+
   after { monitor.stop() }
 
   "The monitor" should "warn when HS is not detected" in {
