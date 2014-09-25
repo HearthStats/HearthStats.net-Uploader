@@ -195,6 +195,7 @@ class GameMonitor(
       if (inGameAnalyser.imageShowsOpponentName(image)) {
         val opponentName = opponentNameOcr.process(image)
         hsMatch.opponentName = opponentName
+        hsPresenter.setOpponentName(opponentName)
         uiLog.info(s"Opponent name : $opponentName")
       }
     }
