@@ -8,7 +8,7 @@ import grizzled.slf4j.Logging
 
 //TODO use options
 //TODO avoid mutable 
-class HearthstoneMatch(var mode: String = null,
+class HearthstoneMatch(var mode: GameMode = null,
   var userClass: HeroClass = HeroClass.UNDETECTED,
   var opponentClass: HeroClass = HeroClass.UNDETECTED,
   var coin: Option[Boolean] = None,
@@ -99,7 +99,7 @@ class HearthstoneMatch(var mode: String = null,
 
   def toJsonObject: JSONObject = {
     val map = collection.mutable.Map(
-      "mode" -> mode,
+      "mode" -> mode.toString,
       "slot" -> deckSlot,
       "class" -> userClass.toString,
       "oppclass" -> opponentClass.toString,
@@ -130,8 +130,8 @@ class HearthstoneMatch(var mode: String = null,
   def isDataComplete: Boolean =
     mandatoryFieldsOK &&
       (mode match {
-        case "Ranked" => rankLevel != null && deckSlotOk
-        case "Casual" => deckSlotOk
+        case GameMode.RANKED => rankLevel != null && deckSlotOk
+        case GameMode.CASUAL => deckSlotOk
         case _ => true
       })
 
@@ -143,7 +143,7 @@ class HearthstoneMatch(var mode: String = null,
       userClass != null &&
       opponentClass != null &&
       StringUtils.isNotBlank(opponentName) &&
-      StringUtils.isNotBlank(mode)
+      mode != null
 
   def editUrl: String =
     s"http://hearthstats.net/constructeds/$id/edit"

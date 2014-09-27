@@ -20,7 +20,9 @@ object MockedMain extends TesseractSetup with App with Logging {
     "finding" -> 10,
     "Druid_VS_Hunter" -> 1,
     "starting_hand_4_cards" -> 1,
-    "orgrimmar_with_coin" -> 1))
+    "orgrimmar_with_coin" -> 1,
+    //    "victory_pandaria" -> 1))
+    "defeat_stranglehorn" -> 1))
   val main = wire[Main]
 
   setupTesseract()

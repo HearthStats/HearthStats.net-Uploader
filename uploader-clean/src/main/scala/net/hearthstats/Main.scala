@@ -28,6 +28,8 @@ import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.game.imageanalysis.HsClassAnalyser
 import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
+import net.hearthstats.hstatsapi.MatchUtils
+import net.hearthstats.util.AnalyticsTrackerFactory
 
 class Main(
   environment: Environment,
@@ -35,6 +37,7 @@ class Main(
   programHelper: ProgramHelper) extends Logging {
 
   private var ocrLanguage: String = "eng"
+  import config._
 
   val translationConfig = TranslationConfig("net.hearthstats.resources.Main", "en")
   val uiLog = wire[Log]
@@ -47,7 +50,10 @@ class Main(
   val cardUtils = wire[CardUtils]
   val deckUtils = wire[DeckUtils]
 
+  val notificationQueue = environment.newNotificationQueue(notificationType)
+
   val mainFrame: CompanionFrame = wire[CompanionFrame]
+  val analytics = AnalyticsTrackerFactory.tracker(enableAnalytics)
 
   val startup: Startup = wire[Startup]
 
@@ -59,6 +65,9 @@ class Main(
   val classAnalyser = wire[HsClassAnalyser]
   val hsMatch = wire[HearthstoneMatch]
   val deckOverlay = wire[DeckOverlaySwing]
+
+  val matchUtils = wire[MatchUtils]
+
   val monitor: GameMonitor = wire[GameMonitor]
 
   def start(): Unit = {

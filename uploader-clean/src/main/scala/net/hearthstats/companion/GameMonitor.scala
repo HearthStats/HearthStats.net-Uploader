@@ -41,11 +41,13 @@ import net.hearthstats.core.HearthstoneMatch
 import java.util.concurrent.ScheduledFuture
 import javax.imageio.ImageIO
 import net.hearthstats.game.FindingOpponent
+import net.hearthstats.hstatsapi.MatchUtils
 
 class GameMonitor(
   programHelper: ProgramHelper,
   config: UserConfig,
   deckUtils: DeckUtils,
+  matchUtils: MatchUtils,
   companionState: CompanionState,
   matchState: MatchState,
   lobbyAnalyser: LobbyAnalyser,
@@ -111,7 +113,7 @@ class GameMonitor(
       case FindingOpponent =>
         uiLog.info(s"Finding opponent, new match will start soon ...")
         uiLog.divider()
-        matchState.nextMatch()
+        matchState.nextMatch(companionState.mode.get)
 
       case FirstTurn(image) =>
         testForCoin(image)
@@ -126,8 +128,8 @@ class GameMonitor(
     }
   } catch {
     case t: Throwable =>
-      uiLog.error(t.getMessage, t)
       error(t.getMessage, t)
+      uiLog.error(t.getMessage, t)
   }
 
   private def handleScreenEvent(evt: ScreenEvent) = {
@@ -167,6 +169,7 @@ class GameMonitor(
         case Some(outcome) =>
           uiLog.info(s"Result detected by screen capture : $outcome")
           hsMatch.result = Some(outcome)
+          matchUtils.submitMatchResult()
         case _ =>
       }
     }

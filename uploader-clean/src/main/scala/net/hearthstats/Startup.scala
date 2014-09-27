@@ -7,7 +7,6 @@ import net.hearthstats.util.Translation
 import net.hearthstats.config.Application
 import net.hearthstats.config.OS
 import net.hearthstats.config.UserConfig
-import net.hearthstats.util.AnalyticsTracker
 import net.hearthstats.util.Updater
 import net.hearthstats.ui.CompanionFrame
 import javax.swing.JOptionPane._
@@ -15,10 +14,14 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import net.hearthstats.util.Updater
 import scala.swing.Swing
+import net.hearthstats.util.AnalyticsTrackerFactory
+import net.hearthstats.config.UserConfig
+import net.hearthstats.util.Tracker
 
 class Startup(
   translation: Translation,
   uiLog: Log,
+  analytics: Tracker,
   environment: Environment,
   updater: Updater,
   config: UserConfig,
@@ -28,14 +31,9 @@ class Startup(
   import config._
   import companionFrame._
 
-  val analytics = AnalyticsTracker.tracker
-
   def start(): Unit = {
     showWelcomeLog()
-    if (enableAnalytics) {
-      debug("Enabling analytics")
-      analytics.trackEvent("app", "AppStart")
-    }
+    analytics.trackEvent("app", "AppStart")
     Swing.onEDT(checkForUpdates())
   }
 

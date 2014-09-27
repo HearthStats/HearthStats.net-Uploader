@@ -8,6 +8,7 @@ import org.json.simple.parser.JSONParser
 import grizzled.slf4j.Logging
 import net.hearthstats.core.{ ArenaRun, HearthstoneMatch }
 import net.hearthstats.config.UserConfig
+import net.hearthstats.core.GameMode
 
 //TODO : replace this JSON implementation with a more typesafe one
 class API(config: UserConfig) extends Logging {
@@ -64,18 +65,13 @@ class API(config: UserConfig) extends Logging {
     _post("decks/slots", jsonData)
   }
 
-  def createMatch(hsMatch: HearthstoneMatch): Unit = {
-    _post("matches/new", hsMatch.toJsonObject) match {
-      case Some(result) =>
-        try {
-          lastMatchId = result.get("id").asInstanceOf[java.lang.Long].toInt
-          if (hsMatch.mode != "Arena") {
-            info(s"Success. <a href='http://hearthstats.net/constructeds/$lastMatchId/edit'>Edit match #$lastMatchId on HearthStats.net</a>")
-          } else info("Arena match successfully created")
-        } catch {
-          case e: Exception => warn("Error occurred while creating new match", e)
-        }
-      case None => warn("Error occurred while creating new match")
+  /**
+   * Returns the matchId if created OK.
+   */
+  def createMatch(hsMatch: HearthstoneMatch): Option[Int] = {
+    _post("matches/new", hsMatch.toJsonObject) map { result =>
+      lastMatchId = result.get("id").asInstanceOf[java.lang.Long].toInt
+      lastMatchId
     }
   }
 

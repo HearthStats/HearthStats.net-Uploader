@@ -2,6 +2,7 @@ package net.hearthstats.game
 
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.core.Rank
+import net.hearthstats.core.GameMode
 
 class MatchState {
   var currentMatch: Option[HearthstoneMatch] = None
@@ -19,9 +20,9 @@ class MatchState {
       else m.editUrl
     }
 
-  def nextMatch(): Unit = {
+  def nextMatch(mode: GameMode): Unit = {
     lastMatch = currentMatch
-    currentMatch = Some(new HearthstoneMatch)
+    currentMatch = Some(new HearthstoneMatch(mode = mode))
   }
 
 }

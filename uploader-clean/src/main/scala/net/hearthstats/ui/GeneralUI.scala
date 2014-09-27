@@ -31,10 +31,9 @@ trait GeneralUI extends JFrame with Logging {
   val environment: Environment
   val uiLog: Log
   val config: UserConfig
+  val notificationQueue: NotificationQueue
 
   import config._
-
-  var notificationQueue: NotificationQueue = environment.newNotificationQueue(notificationType)
 
   addWindowListener(new WindowAdapter {
     override def windowClosing(e: WindowEvent) {
@@ -109,10 +108,6 @@ trait GeneralUI extends JFrame with Logging {
     super.toFront()
     requestFocus()
     setAlwaysOnTop(false)
-  }
-
-  def setNotificationQueue(notificationQueue: NotificationQueue) {
-    this.notificationQueue = notificationQueue
   }
 
   def notify(header: String) {

@@ -33,6 +33,7 @@ import net.hearthstats.core.HeroClass
 class CompanionFrame(val environment: Environment,
   val config: UserConfig,
   val uiLog: Log,
+  val notificationQueue: NotificationQueue,
   programHelper: ProgramHelper,
   companionState: CompanionState,
   matchState: MatchState,

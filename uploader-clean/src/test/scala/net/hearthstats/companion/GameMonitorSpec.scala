@@ -37,6 +37,7 @@ import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 import net.hearthstats.ui.deckoverlay.DeckOverlayPresenter
 import net.hearthstats.core.Deck
 import net.hearthstats.game.MatchState
+import net.hearthstats.hstatsapi.MatchUtils
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest with BeforeAndAfter {
@@ -54,6 +55,7 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val log = mock[Log]
 
   val deckUtils = mock[DeckUtils]
+  val matchUtils = mock[MatchUtils]
 
   val matchState = wire[MatchState]
   val hsPresenter = mock[HearthstatsPresenter]
