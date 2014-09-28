@@ -1,6 +1,5 @@
 package net.hearthstats.game.imageanalysis;
 
-import java.util.Arrays;
 
 /**
  * Defines pixel tests that aren't in the standard locations.
@@ -169,7 +168,7 @@ public enum UniquePixel {
   DECK_SLOT_6A        ( 791,  527,  25, 115, 212,  66, 255, 255),
   DECK_SLOT_6B        ( 822,  527,  25, 115, 212,  66, 255, 255),
 
-  DECK_SLOT_7A        ( 255,  775,  25, 115, 212,  63, 255, 255),
+  DECK_SLOT_7A(255, 775, 25, 108, 212, 63, 255, 255),
   DECK_SLOT_7B        ( 286,  775,  25, 115, 212,  63, 255, 255),
 
   DECK_SLOT_8A        ( 544,  775,  25, 115, 212,  66, 255, 255),
