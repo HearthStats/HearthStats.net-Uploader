@@ -13,8 +13,9 @@ import java.io.IOException
 import net.hearthstats.core.Card
 import net.hearthstats.config.Environment
 import net.hearthstats.ui.log.Log
+import grizzled.slf4j.Logging
 
-class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) {
+class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Logging {
 
   lazy val cards: Map[Int, Card] =
     (for {
@@ -51,8 +52,9 @@ class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) {
         } catch {
           case e: IOException => uiLog.warn(s"Could not download $card", e)
         }
-      } else
-        uiLog.debug(card.originalName + " already in cache, skipping")
+      } else {
+        debug(card.originalName + " already in cache, skipping")
+      }
     }
     val all = Future.sequence(futures)
 
