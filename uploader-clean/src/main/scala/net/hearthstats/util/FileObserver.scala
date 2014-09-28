@@ -20,7 +20,7 @@ case class FileObserver(file: File) extends Logging {
 
   info("observing file " + file)
 
-  def observable: Observable[String] = subject.asObservable.cache
+  def observable: Observable[String] = subject.asObservable
   def stop() = {
     tailer.stop()
     stopped = true

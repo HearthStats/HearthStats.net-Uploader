@@ -48,6 +48,7 @@ object LogMonitorDeckOverlayMain extends App {
       Thread.sleep(5000)
       writer.write(mulligan)
       writer.close()
+      Thread.sleep(500)
     }
   }
 
