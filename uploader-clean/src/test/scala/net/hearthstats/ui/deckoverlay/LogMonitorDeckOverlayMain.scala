@@ -38,10 +38,9 @@ object LogMonitorDeckOverlayMain extends App {
   println(s"monitoring $tempLogFile ")
   val deck = deckUtils.getDeck(20034)
 
-  deckOverlay.show(deck)
-
-  new Thread {
+  def runIt: Thread = new Thread {
     override def run() = {
+      deckOverlay.show(deck)
       val writer = new BufferedWriter(new FileWriter(tempLogFile))
       Thread.sleep(500)
       writer.write(initialHand)
@@ -50,7 +49,13 @@ object LogMonitorDeckOverlayMain extends App {
       writer.write(mulligan)
       writer.close()
     }
-  }.start()
+  }
+
+  val runOnce = runIt
+  runOnce.start()
+  runOnce.join()
+  val runSecond = runIt
+  runSecond.start()
 
   def initialHand =
     """

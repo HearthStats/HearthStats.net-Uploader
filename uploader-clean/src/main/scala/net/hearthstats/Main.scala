@@ -30,6 +30,9 @@ import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 import net.hearthstats.hstatsapi.MatchUtils
 import net.hearthstats.util.AnalyticsTrackerFactory
+import net.hearthstats.util.FileObserver
+import net.hearthstats.game.HearthstoneLogMonitor
+import net.hearthstats.companion.DeckOverlayModule
 
 class Main(
   environment: Environment,
@@ -67,6 +70,11 @@ class Main(
   val deckOverlay = wire[DeckOverlaySwing]
 
   val matchUtils = wire[MatchUtils]
+
+  val hsLogFile = new File(environment.hearthstoneLogFile)
+  val fileObserver = wire[FileObserver]
+  val logMonitor = wire[HearthstoneLogMonitor]
+  val deckOverlayModule = wire[DeckOverlayModule]
 
   val monitor: GameMonitor = wire[GameMonitor]
 

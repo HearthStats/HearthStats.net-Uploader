@@ -55,7 +55,7 @@ class GameMonitor(
   inGameAnalyser: InGameAnalyser,
   uiLog: Log,
   hsPresenter: HearthstatsPresenter,
-  deckPresenter: DeckOverlayPresenter,
+  deckOverlay: DeckOverlayModule,
   imageToEvent: ImageToEvent) extends Logging {
 
   import lobbyAnalyser._
@@ -232,7 +232,7 @@ class GameMonitor(
       } {
         uiLog.info(s"deck $deck detected")
         companionState.deckSlot = Some(deckSlot)
-        deckPresenter.showDeck(deck)
+        deckOverlay.show(deck)
       }
     }
   }
