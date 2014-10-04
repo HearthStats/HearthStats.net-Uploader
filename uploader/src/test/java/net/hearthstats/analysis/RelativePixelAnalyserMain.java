@@ -56,7 +56,7 @@ public class RelativePixelAnalyserMain {
 
                 Screen screen = analyser.identifyScreen(bufferedImage, null);
 
-                if (screen == Screen.MATCH_ORGRIMMAR_END || screen == Screen.MATCH_PANDARIA_END
+                if (screen == Screen.MATCH_NAXXRAMAS_END || screen == Screen.MATCH_ORGRIMMAR_END || screen == Screen.MATCH_PANDARIA_END
                         || screen == Screen.MATCH_STORMWIND_END || screen == Screen.MATCH_STRANGLETHORN_END) {
                     // This is a match end screen, so it is suitable for testing with the RelativePixelAnalyser
                     images.add(image);

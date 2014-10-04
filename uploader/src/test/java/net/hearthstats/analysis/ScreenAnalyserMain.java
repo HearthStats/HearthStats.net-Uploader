@@ -149,7 +149,8 @@ public class ScreenAnalyserMain {
               writeScreenSpecificTest(output, "opponentClass", (String) HearthstoneAnalyser
                   .imageIdentifyOpponentClass(bufferedImage).getOrElse(null));
             }
-            if (primaryMatches.contains(Screen.MATCH_ORGRIMMAR)
+            if (primaryMatches.contains(Screen.MATCH_NAXXRAMAS)
+                || primaryMatches.contains(Screen.MATCH_ORGRIMMAR)
                 || primaryMatches.contains(Screen.MATCH_PANDARIA)
                 || primaryMatches.contains(Screen.MATCH_STORMWIND)
                 || primaryMatches.contains(Screen.MATCH_STRANGLETHORN)) {
@@ -158,7 +159,8 @@ public class ScreenAnalyserMain {
               writeScreenSpecificTest(output, "opponentTurn",
                   HearthstoneAnalyser.imageShowsOpponentTurn(bufferedImage));
             }
-            if (primaryMatches.contains(Screen.MATCH_ORGRIMMAR_END)
+            if (primaryMatches.contains(Screen.MATCH_NAXXRAMAS_END)
+                || primaryMatches.contains(Screen.MATCH_ORGRIMMAR_END)
                 || primaryMatches.contains(Screen.MATCH_PANDARIA_END)
                 || primaryMatches.contains(Screen.MATCH_STORMWIND_END)
                 || primaryMatches.contains(Screen.MATCH_STRANGLETHORN_END)) {
