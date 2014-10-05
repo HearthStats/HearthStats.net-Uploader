@@ -117,11 +117,11 @@ public enum Pixel {
     MATCH_VS_Q              (Q,  10,  13,  19,  38,  48,  71),
     MATCH_VS_R              (R,  15,  12,   0,  38,  42,  24),
 
-    MATCH_STARTINGHAND_C    (C,  10,   3,   0,  32,  28,  24),
-    MATCH_STARTINGHAND_E    (E, 132,  93,  48, 152, 113,  68),
-    MATCH_STARTINGHAND_O    (O, 116, 186, 245, 140, 207, 255),
-    MATCH_STARTINGHAND_Q    (Q,  10,  13,  19,  38,  48,  71),
-    MATCH_STARTINGHAND_R    (R,  15,  13,   0,  38,  42,  25),
+    MATCH_STARTINGHAND_C    (C,   3,   3,   0,  32,  28,  24),
+    MATCH_STARTINGHAND_E    (E, 130,  90,  48, 152, 113,  68),
+    MATCH_STARTINGHAND_O    (O, 110, 178, 245, 140, 207, 255),
+    MATCH_STARTINGHAND_Q    (Q,   3,   3,   5,  38,  48,  71),
+    MATCH_STARTINGHAND_R    (R,   0,   0,   0,  38,  42,  25),
 
     MATCH_NAXXRAMAS_B       (B,  50,  23,   7,  85,  78,  45),
     MATCH_NAXXRAMAS_C       (C,  25,  20,  10,  70,  90,  48),
