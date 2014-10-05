@@ -5,7 +5,7 @@
 
 	<parent>
 		<groupId>net.hearthstats</groupId>
-		<version>0.20.2-SNAPSHOT</version>
+		<version>0.20.2</version>
 		<artifactId>uploader-parent</artifactId>
 	</parent>
 
@@ -144,7 +144,7 @@
 									<option value="-DLOG_FILE=Library/Application Support/HearthStatsCompanion/log.txt" />
 									<option value="-Xdock:icon=Contents/Resources/${bundle.icon}" />
 									<option value="-Xms96m" />
-									<option value="-Xmx192m" />
+									<option value="-Xmx1024m" />
 								</bundleapp>
 
 								<!-- Copy Tesseract data into the Resources folder of the bundle -->
