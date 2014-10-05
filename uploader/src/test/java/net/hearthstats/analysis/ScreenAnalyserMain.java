@@ -166,8 +166,8 @@ public class ScreenAnalyserMain {
                 || primaryMatches.contains(Screen.MATCH_STRANGLETHORN_END)) {
               Option<MatchOutcome> matchOutcome = HearthstoneAnalyser
                   .imageShowsVictoryOrDefeat(bufferedImage);
-              writeScreenSpecificTest(output, "victory", matchOutcome.get() == MatchOutcome.VICTORY);
-              writeScreenSpecificTest(output, "defeat", matchOutcome.get() == MatchOutcome.DEFEAT);
+              writeScreenSpecificTest(output, "victory", matchOutcome.isDefined() && matchOutcome.get() == MatchOutcome.VICTORY);
+              writeScreenSpecificTest(output, "defeat", matchOutcome.isDefined() && matchOutcome.get() == MatchOutcome.DEFEAT);
             }
 
             // Write pixels

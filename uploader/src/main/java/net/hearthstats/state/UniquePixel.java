@@ -232,8 +232,11 @@ public enum UniquePixel {
   DEFEAT_3B           ( 430,  540, 107, 108, 104, 167, 168, 164),
   DEFEAT_3C           ( 840,  243, 205, 196,  37, 255, 255,  97),
 
-  TURN_OPPONENT_1A    (PixelLocation.I,  66,  61,  52, 129, 135, 136),
-  TURN_OPPONENT_1B    (PixelLocation.J, 106,  93,  73, 176, 175, 168),
+  TURN_OPPONENT_1A    (PixelLocation.I,  66,  61,  52, 129, 135, 136),  // Standard Grey
+  TURN_OPPONENT_1B    (PixelLocation.J, 106,  93,  73, 176, 175, 168),  // Standard Grey
+
+  TURN_OPPONENT_1AN   (PixelLocation.I,  26,  25,  39,  86,  85,  99),  // Naxxramas Grey
+  TURN_OPPONENT_1BN   (PixelLocation.J,  53,  50,  62, 113, 110, 122),  // Naxxramas Grey
 
   TURN_OPPONENT_2A    (1444,  535, 104, 107, 111, 164, 167, 171),
   TURN_OPPONENT_2B    (1468,  563, 104, 107, 110, 164, 167, 170),
@@ -241,11 +244,17 @@ public enum UniquePixel {
   TURN_OPPONENT_3A    (1457,  525,  76,  60,  50, 136, 120, 110),
   TURN_OPPONENT_3B    (1449,  561, 163,  88,  66, 223, 148, 126),
 
-  TURN_YOUR_1A        (PixelLocation.I,  15, 180,   0,  76, 255,  37),
-  TURN_YOUR_1B        (PixelLocation.J,  45, 170,  10, 100, 255,  70),
+  TURN_YOUR_1A        (PixelLocation.I,  15, 180,   0,  76, 255,  37),  // Standard Green
+  TURN_YOUR_1B        (PixelLocation.J,  45, 170,  10, 100, 255,  70),  // Standard Green
 
-  TURN_YOUR_2A        (PixelLocation.I, 210, 180,   0, 255, 255,  10),
-  TURN_YOUR_2B        (PixelLocation.J, 195, 160,  10, 255, 255,  80),
+  TURN_YOUR_1AN       (PixelLocation.I,  10, 100,   0,  50, 180,  20),  // Naxxramas Green
+  TURN_YOUR_1BN       (PixelLocation.J,  20,  90,  10,  80, 180,  50),  // Naxxramas Green
+
+  TURN_YOUR_2A        (PixelLocation.I, 210, 180,   0, 255, 255,  10),  // Standard Yellow
+  TURN_YOUR_2B        (PixelLocation.J, 195, 160,  10, 255, 255,  80),  // Standard Yellow
+
+  TURN_YOUR_2AN       (PixelLocation.I, 120, 100,   0, 180, 170,  20),  // Naxxramas Yellow
+  TURN_YOUR_2BN       (PixelLocation.J, 100,  90,   0, 170, 160,  30),  // Naxxramas Yellow
 
   BACKGROUND_PLAY_1   ( 260,  434,   0,   0,   0,  30,  30,  30),
   BACKGROUND_PLAY_2   ( 526,  434,   0,   0,   0,  30,  30,  30),
