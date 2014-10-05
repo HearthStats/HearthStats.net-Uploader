@@ -132,9 +132,9 @@ public class ScreenAnalyserMain {
               writeScreenSpecificTest(output, "ranked",
                   HearthstoneAnalyser.imageShowsRankedPlaySelected(bufferedImage));
               writeScreenSpecificTest(output, "deckSlot", (Integer) HearthstoneAnalyser
-                  .imageIdentifyDeckSlot(bufferedImage).getOrElse(null));
+                .imageIdentifyDeckSlot(bufferedImage).getOrElse(null));
               writeScreenSpecificTest(output, "rankLevel",
-                  rankLevelOcr.processNumber(bufferedImage));
+                rankLevelOcr.processNumber(bufferedImage));
             }
             if (primaryMatches.contains(Screen.MATCH_VS)
                 || primaryMatches.contains(Screen.MATCH_STARTINGHAND)) {
@@ -144,10 +144,10 @@ public class ScreenAnalyserMain {
                   HearthstoneAnalyser.imageShowsOpponentName(bufferedImage));
             }
             if (primaryMatches.contains(Screen.MATCH_VS)) {
-              writeScreenSpecificTest(output, "yourClass", (String) HearthstoneAnalyser
-                  .imageIdentifyYourClass(bufferedImage).getOrElse(null));
-              writeScreenSpecificTest(output, "opponentClass", (String) HearthstoneAnalyser
-                  .imageIdentifyOpponentClass(bufferedImage).getOrElse(null));
+              writeScreenSpecificTest(output, "yourClass", HearthstoneAnalyser
+                .imageIdentifyYourClass(bufferedImage));
+              writeScreenSpecificTest(output, "opponentClass", HearthstoneAnalyser
+                  .imageIdentifyOpponentClass(bufferedImage));
             }
             if (primaryMatches.contains(Screen.MATCH_NAXXRAMAS)
                 || primaryMatches.contains(Screen.MATCH_ORGRIMMAR)
@@ -267,6 +267,15 @@ public class ScreenAnalyserMain {
       writeScreenSpecificTest(output, label, (String) null);
     } else {
       writeScreenSpecificTest(output, label, String.valueOf(value));
+    }
+  }
+
+  private void writeScreenSpecificTest(BufferedWriter output, String label, Option<String> value)
+    throws IOException {
+    if (value.isEmpty()) {
+      writeScreenSpecificTest(output, label, (String) null);
+    } else {
+      writeScreenSpecificTest(output, label, value.get());
     }
   }
 

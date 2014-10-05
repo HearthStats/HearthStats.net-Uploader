@@ -121,7 +121,7 @@ public enum Pixel {
     MATCH_STARTINGHAND_E    (E, 130,  90,  48, 152, 113,  68),
     MATCH_STARTINGHAND_O    (O, 110, 178, 245, 140, 207, 255),
     MATCH_STARTINGHAND_Q    (Q,   3,   3,   5,  38,  48,  71),
-    MATCH_STARTINGHAND_R    (R,   0,   0,   0,  38,  42,  25),
+    MATCH_STARTINGHAND_R    (R,   2,   2,   2,  38,  42,  25),
 
     MATCH_NAXXRAMAS_B       (B,  50,  23,   7,  85,  78,  45),
     MATCH_NAXXRAMAS_C       (C,  25,  20,  10,  70,  90,  48),
@@ -168,8 +168,8 @@ public enum Pixel {
     MATCH_NAXXRAMAS_END_D   (D,  25,  24,  24,  69,  68,  64),
     MATCH_NAXXRAMAS_END_E   (E,  44,  36,  34,  84,  76,  74),
     MATCH_NAXXRAMAS_END_K   (K,  45,  43,  39,  80,  77,  69),
-    MATCH_NAXXRAMAS_END_L   (L,  13,  13,  11,  53,  55,  53),
-    MATCH_NAXXRAMAS_END_R   (R,  12,  11,  10,  47,  46,  45),
+    MATCH_NAXXRAMAS_END_L   (L,  18,  13,  11,  53,  55,  47),
+    MATCH_NAXXRAMAS_END_R   (R,  12,  11,  17,  47,  46,  45),
 
     MATCH_ORGRIMMAR_END_B   (B,  67,  56,  54, 106,  96,  95),
     MATCH_ORGRIMMAR_END_C   (C,  71,  63,  58, 104,  96,  92),

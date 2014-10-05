@@ -288,7 +288,8 @@ public class ScreenAnalyser {
     }
 
     int matchedCount = 0;
-    int unmatchedCount = 0;
+    // Boost the unmatched count on the Starting Hand screen because it doesn't have sufficient pixels for a reliable partial match
+    int unmatchedCount = screen == Screen.MATCH_STARTINGHAND ? 1 : 0;
 
     for (Pixel pixel : screen.primaryAndSecondary) {
       Coordinate coordinate = pixelMap.get(pixel.pixelLocation);

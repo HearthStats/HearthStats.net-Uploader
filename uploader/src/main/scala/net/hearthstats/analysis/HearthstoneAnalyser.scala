@@ -407,7 +407,7 @@ object HearthstoneAnalyser extends Observable with Logging {
    * and so we only get the background. This can happen whenever there is something layered over the main screen, for example
    * during the 'Finding Opponent', 'Victory' and 'Defeat' screens.</p>
    * <p>At the moment I haven't worked out how to ensure we always get the completed screen. So this method detects when
-   * we've receive and incomplete play background instead of the 'Finding Opponent' screen, so we can reject it and try again.</p>
+   * we've received an incomplete play background instead of the 'Finding Opponent' screen, so we can reject it and try again.</p>
    * @param image
    * @return true if this screenshot shows a background image that should be ignored
    */
