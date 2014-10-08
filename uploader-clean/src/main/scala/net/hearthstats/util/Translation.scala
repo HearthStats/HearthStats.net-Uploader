@@ -4,17 +4,25 @@ import java.util.ResourceBundle
 import scala.util.Try
 import java.text.MessageFormat
 import java.util.Locale
+import grizzled.slf4j.Logging
 
 case class TranslationConfig(bundle: String, language: String) {
   def getBundle: ResourceBundle =
     ResourceBundle.getBundle(bundle, Locale.forLanguageTag(language), new UTF8Control)
 }
 
-class Translation(config: TranslationConfig) {
+class Translation(config: TranslationConfig) extends Logging {
   val resourceBundle: Option[ResourceBundle] =
     Try(config.getBundle).toOption
 
-  def t(key: String): String = resourceBundle.get.getString(key)
+  def t(key: String): String =
+    Option(resourceBundle.get.getString(key)) match {
+      case Some(value) =>
+        value
+      case None =>
+        warn(s"$key not found in ${config.bundle} for language ${config.language}")
+        key
+    }
 
   def t(key: String, args: Any*): String =
     MessageFormat.format(t(key), args.map(_.toString): _*)

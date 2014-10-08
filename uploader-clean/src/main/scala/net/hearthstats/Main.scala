@@ -33,6 +33,7 @@ import net.hearthstats.util.AnalyticsTrackerFactory
 import net.hearthstats.util.FileObserver
 import net.hearthstats.game.HearthstoneLogMonitor
 import net.hearthstats.companion.DeckOverlayModule
+import net.hearthstats.ui.MatchEndPopup
 
 class Main(
   environment: Environment,
@@ -69,6 +70,7 @@ class Main(
   val hsMatch = wire[HearthstoneMatch]
   val deckOverlay = wire[DeckOverlaySwing]
 
+  val matchEndPopup = wire[MatchEndPopup]
   val matchUtils = wire[MatchUtils]
 
   val hsLogFile = new File(environment.hearthstoneLogFile)

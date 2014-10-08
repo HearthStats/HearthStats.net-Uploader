@@ -19,7 +19,6 @@ import net.hearthstats.config.Environment;
 import net.hearthstats.win.jna.extra.GDI32Extra;
 import net.hearthstats.win.jna.extra.User32Extra;
 import net.hearthstats.win.jna.extra.WinGDIExtra;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

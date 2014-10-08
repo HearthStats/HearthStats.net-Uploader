@@ -9,6 +9,7 @@ class MatchState {
   var lastMatch: Option[HearthstoneMatch] = None
   var rankLevel: Rank = _
   var startTime: Long = _
+  var submitted = false
 
   def setOpponentName(n: String) = currentMatch.get.opponentName = n
   def setNotes(n: String) = currentMatch.get.notes = n
@@ -23,6 +24,7 @@ class MatchState {
   def nextMatch(mode: GameMode): Unit = {
     lastMatch = currentMatch
     currentMatch = Some(new HearthstoneMatch(mode = mode))
+    submitted = false
   }
 
 }

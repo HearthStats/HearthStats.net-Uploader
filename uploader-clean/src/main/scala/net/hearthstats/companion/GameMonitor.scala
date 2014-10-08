@@ -238,6 +238,9 @@ class GameMonitor(
   }
 
   private def handlePlayLobby(evt: ScreenEvent): Unit = {
+    if (matchState.lastMatch.isDefined && !matchState.submitted) {
+      matchUtils.submitMatchResult()
+    }
     mode(evt.image) match {
       case Some(Casual) if companionState.mode != Some(CASUAL) =>
         uiLog.info("Casual Mode detected")

@@ -13,23 +13,19 @@ class HearthstoneMatch(var mode: GameMode = null,
   var opponentClass: HeroClass = HeroClass.UNDETECTED,
   var coin: Option[Boolean] = None,
   var result: Option[MatchOutcome] = None,
-  private var _deckSlot: Int = -1,
+  var deckSlot: Int = -1,
   var opponentName: String = null,
   var rankLevel: Rank = null,
   var numTurns: Int = -1,
   var duration: Int = -1,
   var notes: String = null,
-  var id: Int = -1,
-  var initialized: Boolean = false,
-  var submitted: Boolean = false) extends Logging {
+  var id: Int = -1) extends Logging {
 
   debug("new HearthstoneMatch")
 
   private var _userClassUnconfirmed: Boolean = true
   //needed for java calls
   def this() = this(mode = null)
-
-  def deckSlot: Int = _deckSlot
 
   /**
    * Sets the deck slot being used for this match. This will apply the hero class of that deck to

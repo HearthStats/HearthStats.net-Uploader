@@ -23,6 +23,11 @@ class InGameAnalyserSpec extends FlatSpec with Matchers {
     analyser.imageShowsVictoryOrDefeat(img) shouldBe Some(DEFEAT)
   }
 
+  "Another defeat" should "be detected" in {
+    val img = ImageIO.read(getClass.getResourceAsStream("defeat.png"))
+    analyser.imageShowsVictoryOrDefeat(img) shouldBe Some(DEFEAT)
+  }
+
   //TODO someday ...
   //  "Victory (win streak)" should "be detected" in {
   //    val img = ImageIO.read(getClass.getResourceAsStream("win_streak_pandaria.png"))
