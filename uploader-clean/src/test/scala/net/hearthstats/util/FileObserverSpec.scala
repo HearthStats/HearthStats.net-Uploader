@@ -13,12 +13,12 @@ class FileObserverSpec extends FlatSpec with Matchers with OneInstancePerTest {
   "A FileObserver" should "notify observers of content changed" in {
     val f = File.createTempFile("prefa", "aazeae")
     val obs = FileObserver(f)
-    var read: String = ""
+    var read = ""
     obs.observable.subscribe(c => read = c)
     val writer = new BufferedWriter(new FileWriter(f))
     writer.write("content\n")
     writer.close()
-    Thread.sleep(obs.DEFAULT_DELAY_MS * 2)
+    Thread.sleep(4 * obs.DEFAULT_DELAY_MS)
     read shouldBe "content"
   }
 }
