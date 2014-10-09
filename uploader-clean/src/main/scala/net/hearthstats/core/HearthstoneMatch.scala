@@ -8,14 +8,14 @@ import grizzled.slf4j.Logging
 
 //TODO use options
 //TODO avoid mutable 
-class HearthstoneMatch(var mode: GameMode = null,
+class HearthstoneMatch(var mode: Option[GameMode] = None,
   var userClass: HeroClass = HeroClass.UNDETECTED,
   var opponentClass: HeroClass = HeroClass.UNDETECTED,
   var coin: Option[Boolean] = None,
   var result: Option[MatchOutcome] = None,
-  var deckSlot: Int = -1,
+  var deckSlot: Option[Int] = None,
   var opponentName: String = null,
-  var rankLevel: Rank = null,
+  var rankLevel: Option[Rank] = None,
   var numTurns: Int = -1,
   var duration: Int = -1,
   var notes: String = null,
@@ -95,8 +95,8 @@ class HearthstoneMatch(var mode: GameMode = null,
 
   def toJsonObject: JSONObject = {
     val map = collection.mutable.Map(
-      "mode" -> mode.toString,
-      "slot" -> deckSlot,
+      "mode" -> mode.get.toString,
+      "slot" -> deckSlot.getOrElse(-1),
       "class" -> userClass.toString,
       "oppclass" -> opponentClass.toString,
       "oppname" -> opponentName,
@@ -106,12 +106,12 @@ class HearthstoneMatch(var mode: GameMode = null,
       "numturns" -> numTurns,
       "duration" -> duration)
 
-    if ("Ranked" == mode) {
+    if (mode == GameMode.RANKED) {
       if (Rank.LEGEND == rankLevel) {
         map += "ranklvl" -> 26
         map += "legend" -> "true"
       } else {
-        map += "ranklvl" -> rankLevel.number
+        map += "ranklvl" -> rankLevel.get.number
         map += "legend" -> "false"
       }
     }
@@ -125,21 +125,21 @@ class HearthstoneMatch(var mode: GameMode = null,
    */
   def isDataComplete: Boolean =
     mandatoryFieldsOK &&
-      (mode match {
-        case GameMode.RANKED => rankLevel != null && deckSlotOk
+      (mode.get match {
+        case GameMode.RANKED => rankLevel.isDefined && deckSlotOk
         case GameMode.CASUAL => deckSlotOk
         case _ => true
       })
 
-  def deckSlotOk =
-    deckSlot >= 1 && deckSlot <= 9
+  def deckSlotOk = deckSlot.isDefined &&
+    deckSlot.get >= 1 && deckSlot.get <= 9
 
   def mandatoryFieldsOK =
-    result != null &&
-      userClass != null &&
-      opponentClass != null &&
+    result.isDefined &&
+      userClass != HeroClass.UNDETECTED &&
+      opponentClass != HeroClass.UNDETECTED &&
       StringUtils.isNotBlank(opponentName) &&
-      mode != null
+      mode.isDefined
 
   def editUrl: String =
     s"http://hearthstats.net/constructeds/$id/edit"

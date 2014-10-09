@@ -113,7 +113,7 @@ class GameMonitor(
       case FindingOpponent =>
         uiLog.info(s"Finding opponent, new match will start soon ...")
         uiLog.divider()
-        matchState.nextMatch(companionState.mode.get)
+        matchState.nextMatch(companionState)
 
       case FirstTurn(image) =>
         testForCoin(image)

@@ -23,7 +23,7 @@ object MockedMain extends TesseractSetup with App with Logging {
       players -> 1,
       "starting_hand_4_cards" -> 1,
       "orgrimmar_with_coin" -> 20,
-      result -> 5)
+      result -> 15)
 
   val firstGame = game("Druid_VS_Hunter", "defeat")
   val secondGame = game("Priest_VS_Warlock", "victory_pandaria")

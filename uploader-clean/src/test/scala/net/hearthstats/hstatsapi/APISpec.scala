@@ -33,14 +33,14 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
     arena.setUserClass("warlock")
     api.createArenaRun(arena).isDefined shouldBe true
     api.getLastArenaRun should not be null
-    api.createMatch(new HearthstoneMatch(GameMode.ARENA,
+    api.createMatch(new HearthstoneMatch(Some(GameMode.ARENA),
       WARLOCK,
       DRUID,
       Some(false),
       Some(MatchOutcome.VICTORY),
-      1,
+      Some(1),
       "unkownopp",
-      Rank.RANK_1,
+      Some(Rank.RANK_1),
       1,
       1,
       "")).isDefined shouldBe true

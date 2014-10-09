@@ -2,20 +2,17 @@ package net.hearthstats.ui
 
 import java.awt.{ Color, Component, Dimension, FlowLayout, Font, Insets }
 import java.awt.event.{ ActionEvent, KeyAdapter, KeyEvent }
-
 import scala.collection.JavaConversions.seqAsJavaList
 import scala.collection.mutable.ListBuffer
-
 import org.apache.commons.lang3.StringUtils
-
 import net.hearthstats.util.SwingHelper._
-
 import javax.swing._
 import javax.swing.event.{ ChangeEvent, ChangeListener }
 import net.hearthstats.core.{ GameMode, HearthstoneMatch, HeroClass, MatchOutcome, Rank }
 import net.hearthstats.hstatsapi.DeckUtils
 import net.hearthstats.util.Translation
 import net.miginfocom.swing.MigLayout
+import scala.swing.Swing
 
 /**
  * A popup to display at the end of the match that allows the match details to
@@ -59,7 +56,9 @@ class MatchEndPopup(
     setMinimumSize(new Dimension(660, 380))
     setPreferredSize(new Dimension(660, preferredHeight))
     setMaximumSize(new Dimension(660, preferredHeight + 200))
-    val heading = new JLabel(if (hsMatch.mode == null) t("match.popup.heading") else hsMatch.mode + " " + t("match.popup.heading"))
+    val heading = new JLabel(
+      if (hsMatch.mode.isEmpty) t("match.popup.heading")
+      else hsMatch.mode.get + " " + t("match.popup.heading"))
     val headingFont = heading.getFont.deriveFont(20f)
     heading.setFont(headingFont)
     add(heading, "span")
@@ -72,11 +71,11 @@ class MatchEndPopup(
 
     val gameModeComboBox = new JComboBox(GameMode.values)
     setDefaultSize(gameModeComboBox)
-    if (hsMatch.mode != null) {
-      gameModeComboBox.setSelectedItem(hsMatch.mode)
+    if (hsMatch.mode.isDefined) {
+      gameModeComboBox.setSelectedItem(hsMatch.mode.get)
     }
     gameModeComboBox.addActionListener(() => {
-      hsMatch.mode = gameModeComboBox.getItemAt(gameModeComboBox.getSelectedIndex)
+      hsMatch.mode = Some(gameModeComboBox.getItemAt(gameModeComboBox.getSelectedIndex))
       updateGameMode()
     })
     add(gameModeComboBox, "span")
@@ -85,9 +84,9 @@ class MatchEndPopup(
     val rankComboBox = new JComboBox(Rank.values)
     setDefaultSize(rankComboBox)
     rankComboBox.addActionListener(() =>
-      hsMatch.rankLevel = rankComboBox.getSelectedItem.asInstanceOf[Rank])
-    if (hsMatch.rankLevel != null) {
-      rankComboBox.setSelectedItem(hsMatch.rankLevel)
+      hsMatch.rankLevel = Some(rankComboBox.getSelectedItem.asInstanceOf[Rank]))
+    if (hsMatch.rankLevel.isDefined) {
+      rankComboBox.setSelectedItem(hsMatch.rankLevel.get)
     }
 
     add(rankPanel, "")
@@ -117,27 +116,22 @@ class MatchEndPopup(
     opponentClassComboBox.addActionListener(() =>
       hsMatch.opponentClass = HeroClass.values()(opponentClassComboBox.getSelectedIndex))
     add(opponentClassComboBox, "wrap")
+
     add(new JLabel(t("match.label.your_deck")), "right")
-    val deckSlotList = Array.ofDim[String](10)
-    deckSlotList(0) = undetectedLabel
-    var i = 1
-    while (i <= 9) {
-      val deck = deckUtils.getDeckFromSlot(i)
-      val sb = new StringBuilder()
-      sb.append(t("deck_slot.label", i))
-      sb.append(" ")
-      if (deck.isEmpty) {
-        sb.append(t("undetected"))
-      } else {
-        sb.append(deck.get.name)
-      }
-      deckSlotList(i) = sb.toString
-      i += 1
-    }
-    val yourDeckComboBox = new JComboBox(deckSlotList)
+
+    val slots = undetectedLabel +:
+      (for (i <- 1 until 9) yield {
+        val label = deckUtils.getDeckFromSlot(i) match {
+          case Some(d) => d.name
+          case None => t("undetected")
+        }
+        s"${t("deck_slot.label", i)} $label"
+      })
+
+    val yourDeckComboBox = new JComboBox(slots.toArray)
     setDefaultSize(yourDeckComboBox)
-    yourDeckComboBox.setSelectedIndex(hsMatch.deckSlot)
-    yourDeckComboBox.addActionListener(() => hsMatch.deckSlot = yourDeckComboBox.getSelectedIndex)
+    yourDeckComboBox.setSelectedIndex(hsMatch.deckSlot.getOrElse(0))
+    yourDeckComboBox.addActionListener(() => hsMatch.deckSlot = Some(yourDeckComboBox.getSelectedIndex))
     add(deckPanel, "wrap")
 
     add(new JLabel(t("match.label.coin")), "right")
@@ -198,18 +192,18 @@ class MatchEndPopup(
     })
     add(notesTextArea, "span 3, wrap")
 
-    updateGameMode()
+    Swing.onEDT(updateGameMode())
 
     private def updateGameMode() {
-      val isRanked = hsMatch.mode == GameMode.RANKED
+      val isRanked = hsMatch.mode == Some(GameMode.RANKED)
       rankPanel.removeAll()
       if (isRanked) {
-        if (hsMatch.rankLevel != null) {
-          rankComboBox.setSelectedIndex(25 - hsMatch.rankLevel.number)
+        if (hsMatch.rankLevel.isDefined) {
+          rankComboBox.setSelectedIndex(25 - hsMatch.rankLevel.get.number)
         }
         rankPanel.add(rankComboBox)
       } else {
-        val rankMessage = hsMatch.mode match {
+        val rankMessage = hsMatch.mode.get match {
           case GameMode.ARENA => "N/A: Arena Mode"
           case GameMode.CASUAL => "N/A: Casual Mode"
           case _ => "N/A"
@@ -221,14 +215,14 @@ class MatchEndPopup(
         rankPanel.add(rankNotApplicable)
       }
       deckPanel.removeAll()
-      if (GameMode.ARENA != hsMatch.mode) {
-        deckPanel.add(yourDeckComboBox)
-      } else {
+      if (Some(GameMode.ARENA) == hsMatch.mode) {
         val deckNotApplicable = new JLabel("N/A: Arena Mode")
         deckNotApplicable.setFont(deckNotApplicable.getFont.deriveFont(Font.ITALIC))
         deckNotApplicable.setEnabled(false)
         setDefaultSize(deckNotApplicable)
         deckPanel.add(deckNotApplicable)
+      } else {
+        deckPanel.add(yourDeckComboBox)
       }
       validate()
       repaint()
@@ -236,10 +230,10 @@ class MatchEndPopup(
 
     private def determineErrors(hsMatch: HearthstoneMatch) = {
       val result = ListBuffer.empty[String]
-      if (hsMatch.mode == null) {
+      if (hsMatch.mode.isEmpty) {
         result += t("match.popup.error.mode")
       }
-      if (hsMatch.rankLevel == null && GameMode.RANKED == hsMatch.mode) {
+      if (hsMatch.rankLevel.isEmpty && Some(GameMode.RANKED) == hsMatch.mode) {
         result += t("match.popup.error.rank")
       }
       if (hsMatch.userClass == HeroClass.UNDETECTED) {

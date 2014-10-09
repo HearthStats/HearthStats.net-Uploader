@@ -3,11 +3,11 @@ package net.hearthstats.game
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.core.Rank
 import net.hearthstats.core.GameMode
+import net.hearthstats.companion.CompanionState
 
 class MatchState {
   var currentMatch: Option[HearthstoneMatch] = None
   var lastMatch: Option[HearthstoneMatch] = None
-  var rankLevel: Rank = _
   var startTime: Long = _
   var submitted = false
 
@@ -21,9 +21,12 @@ class MatchState {
       else m.editUrl
     }
 
-  def nextMatch(mode: GameMode): Unit = {
+  def nextMatch(companionState: CompanionState): Unit = {
     lastMatch = currentMatch
-    currentMatch = Some(new HearthstoneMatch(mode = mode))
+    currentMatch = Some(new HearthstoneMatch(
+      mode = companionState.mode,
+      rankLevel = companionState.rank,
+      deckSlot = companionState.deckSlot))
     submitted = false
   }
 
