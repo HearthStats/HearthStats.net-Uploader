@@ -1,4 +1,4 @@
-package net.hearthstats.ocr;
+package net.hearthstats.game.ocr;
 
 import java.awt.image.BufferedImage;
 import java.net.URL;
@@ -6,7 +6,6 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 
 import junit.framework.Assert;
-import net.hearthstats.Main;
 
 import org.junit.BeforeClass;
 import org.slf4j.Logger;

@@ -1,11 +1,9 @@
-package net.hearthstats.ocr;
+package net.hearthstats.game.ocr;
 
 import java.awt.image.BufferedImage;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
-
-import net.hearthstats.Main;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Assert;
