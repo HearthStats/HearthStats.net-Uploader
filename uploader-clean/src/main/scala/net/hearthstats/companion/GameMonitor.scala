@@ -42,6 +42,7 @@ import java.util.concurrent.ScheduledFuture
 import javax.imageio.ImageIO
 import net.hearthstats.game.FindingOpponent
 import net.hearthstats.hstatsapi.MatchUtils
+import scala.util.Random
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -168,14 +169,20 @@ class GameMonitor(
       inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
         case Some(outcome) =>
           uiLog.info(s"Result detected by screen capture : $outcome")
+          if (matchState.currentMatch.isEmpty) {
+            uiLog.warn("Result detected but match start was not detected")
+            matchState.nextMatch(companionState)
+          }
           hsMatch.result = Some(outcome)
           matchUtils.submitMatchResult()
         case _ =>
+          BackgroundImageSave.savePngImage(image, "match_end" + Random.nextInt)
+          debug("Result not detected on screen capture")
       }
     }
   }
 
-  def victoryOrDefeatDetected = hsMatch.result.isDefined
+  def victoryOrDefeatDetected = matchState.currentMatch.flatMap(_.result).isDefined
 
   private def testForOpponentOrYourTurn(image: BufferedImage) {
     import companionState._
