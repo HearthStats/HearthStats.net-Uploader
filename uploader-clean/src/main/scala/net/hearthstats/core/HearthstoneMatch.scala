@@ -13,7 +13,7 @@ class HearthstoneMatch(var mode: Option[GameMode] = None,
   var opponentClass: HeroClass = HeroClass.UNDETECTED,
   var coin: Option[Boolean] = None,
   var result: Option[MatchOutcome] = None,
-  var deckSlot: Option[Int] = None,
+  var deck: Option[Deck] = None,
   var opponentName: String = null,
   var rankLevel: Option[Rank] = None,
   var numTurns: Int = -1,
@@ -44,54 +44,16 @@ class HearthstoneMatch(var mode: Option[GameMode] = None,
   //  }
 
   val startedAt = DateTime.now
-  private def propertyOrUnknown(propertyVal: String): String = {
-    if (propertyVal == null) "[undetected]" else propertyVal
-  }
 
-  //  override def toString: String =
-  //    describeMode + " " +
-  //      describeCoin + " " +
-  //      describePlayers + " " +
-  //      describeResult + " " +
-  //      describeDeck + " " +
-  //      describeTurns + " "
-
-  //  def describeMode: String = mode match {
-  //    case "Arena" => t("match.end.mode.arena")
-  //    case "Casual" => t("match.end.mode.casual")
-  //    case "Ranked" => t("match.end.mode.ranked", rankLevel)
-  //    case "Practice" => t("match.end.mode.practice")
-  //    case "Friendly" => t("match.end.mode.friendly")
-  //    case _ => "unknown mode"
-  //  }
-  //
-  //  def describeCoin: String = coin match {
-  //    case true => t("match.end.coin.true")
-  //    case _ => t("match.end.coin.false")
-  //  }
-  //
-  //  def describePlayers: String = opponentName match {
-  //    case null => t("match.end.vs.unnamed", propertyOrUnknown(userClass), propertyOrUnknown(opponentClass))
-  //    case _ => t("match.end.vs.named", propertyOrUnknown(userClass), propertyOrUnknown(opponentClass), opponentName)
-  //  }
-  //
   def describeResult: String = result match {
     case Some(r) => r.toString
     case None => "UnknownResult"
   }
 
-  //  def describeDeck: String = mode match {
-  //    case "Arena" => ""
-  //    case _ => {
-  //      val deck = DeckUtils.getDeckFromSlot(deckSlot)
-  //      t("match.end.deck.name", deck match {
-  //        case Some(d) => d.name
-  //        case None => "[unknown]"
-  //      })
-  //    }
-  //  }
-  //
-  //  def describeTurns: String = t("match.end.turns", numTurns)
+  def deckSlot = for {
+    d <- deck
+    s <- d.activeSlot
+  } yield s
 
   def toJsonObject: JSONObject = {
     val map = collection.mutable.Map(

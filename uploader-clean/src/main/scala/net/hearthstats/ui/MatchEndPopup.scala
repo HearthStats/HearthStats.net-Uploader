@@ -13,6 +13,7 @@ import net.hearthstats.hstatsapi.DeckUtils
 import net.hearthstats.util.Translation
 import net.miginfocom.swing.MigLayout
 import scala.swing.Swing
+import net.hearthstats.core.Deck
 
 /**
  * A popup to display at the end of the match that allows the match details to
@@ -131,7 +132,7 @@ class MatchEndPopup(
     val yourDeckComboBox = new JComboBox(slots.toArray)
     setDefaultSize(yourDeckComboBox)
     yourDeckComboBox.setSelectedIndex(hsMatch.deckSlot.getOrElse(0))
-    yourDeckComboBox.addActionListener(() => hsMatch.deckSlot = Some(yourDeckComboBox.getSelectedIndex))
+    yourDeckComboBox.addActionListener(() => hsMatch.deck = Some(Deck(activeSlot = Some(yourDeckComboBox.getSelectedIndex))))
     add(deckPanel, "wrap")
 
     add(new JLabel(t("match.label.coin")), "right")

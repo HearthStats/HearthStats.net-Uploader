@@ -115,6 +115,10 @@ class GameMonitor(
         uiLog.info(s"Finding opponent, new match will start soon ...")
         uiLog.divider()
         matchState.nextMatch(companionState)
+        hsMatch.deck = for {
+          slot <- companionState.deckSlot
+          d <- deckUtils.getDeckFromSlot(slot)
+        } yield d
 
       case FirstTurn(image) =>
         testForCoin(image)
@@ -235,11 +239,9 @@ class GameMonitor(
       for {
         deckSlot <- imageIdentifyDeckSlot(evt.image)
         if Some(deckSlot) != companionState.deckSlot
-        deck <- deckUtils.getDeckFromSlot(deckSlot)
       } {
-        uiLog.info(s"deck $deck detected")
+        uiLog.info(s"deck slot $deckSlot detected")
         companionState.deckSlot = Some(deckSlot)
-        deckOverlay.show(deck)
       }
     }
   }

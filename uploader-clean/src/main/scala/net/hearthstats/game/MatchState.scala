@@ -25,8 +25,7 @@ class MatchState {
     lastMatch = currentMatch
     currentMatch = Some(new HearthstoneMatch(
       mode = companionState.mode,
-      rankLevel = companionState.rank,
-      deckSlot = companionState.deckSlot))
+      rankLevel = companionState.rank))
     submitted = false
   }
 

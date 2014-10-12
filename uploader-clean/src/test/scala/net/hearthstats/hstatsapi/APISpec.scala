@@ -11,6 +11,7 @@ import net.hearthstats.config.UserConfig
 import org.scalatest.mock.MockitoSugar
 import net.hearthstats.core.HeroClass._
 import net.hearthstats.core.GameMode
+import net.hearthstats.core.Deck
 
 @RunWith(classOf[JUnitRunner])
 class APISpec extends FlatSpec with Matchers with MockitoSugar {
@@ -38,7 +39,7 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
       DRUID,
       Some(false),
       Some(MatchOutcome.VICTORY),
-      Some(1),
+      Some(Deck(id = 1, activeSlot = Some(1))),
       "unkownopp",
       Some(Rank.RANK_1),
       1,

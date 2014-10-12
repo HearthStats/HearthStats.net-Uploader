@@ -13,6 +13,8 @@ import net.hearthstats.ui.MatchEndPopup
 import net.hearthstats.ui.HearthstatsPresenter
 import java.awt.Component
 import net.hearthstats.ui.Button
+import net.hearthstats.core.GameMode
+import net.hearthstats.core.HearthstoneMatch
 
 class MatchUtils(
   matchState: MatchState,
@@ -40,18 +42,54 @@ class MatchUtils(
           matchState.submitted = true
       }
     }
-    //    import scala.concurrent.ExecutionContext.Implicits.global
-    //    HearthstoneAnalyser.videoEncoder.finish().onSuccess {
-    //      case fileName =>
-    //        ReplayHandler.handleNewReplay(fileName, hsMatch).onSuccess {
-    //          case name =>
-    //            val msg = s"Video replay of your match $name successfully uploaded"
-    //            Log.info(msg)
-    //            mainFrame.notify(msg)
-    //        }
-    //    }
   }
 
+  def describeMatch(m: HearthstoneMatch): String = {
+    import m._
+
+    val describeMode = mode match {
+      case Some(GameMode.ARENA) => t("match.end.mode.arena")
+      case Some(GameMode.CASUAL) => t("match.end.mode.casual")
+      case Some(GameMode.RANKED) => t("match.end.mode.ranked", rankLevel.get)
+      case Some(GameMode.PRACTICE) => t("match.end.mode.practice")
+      case Some(GameMode.FRIENDLY) => t("match.end.mode.friendly")
+      case _ => "unknown mode"
+    }
+
+    val describeCoin = coin match {
+      case Some(true) => t("match.end.coin.true")
+      case _ => t("match.end.coin.false")
+    }
+
+    val describePlayers = opponentName match {
+      case null => t("match.end.vs.unnamed", userClass.toString, opponentClass.toString)
+      case _ => t("match.end.vs.named", userClass.toString, opponentClass.toString, opponentName)
+    }
+
+    val describeDeck = mode match {
+      case Some(GameMode.ARENA) => ""
+      case _ => {
+        t("match.end.deck.name", deck match {
+          case Some(d) => d.name
+          case None => "[unknown]"
+        })
+      }
+    }
+
+    val describeTurns = t("match.end.turns", numTurns)
+
+    s"$describeMode $describeCoin $describePlayers $describeResult $describeDeck $describeTurns"
+  }
+
+  // import scala.concurrent.ExecutionContext.Implicits.global
+  //      HearthstoneAnalyser.videoEncoder.finish().onSuccess {
+  //        case fileName =>
+  //          ReplayHandler.handleNewReplay(fileName, hsMatch).onSuccess {
+  //            case name =>
+  //              val msg = s"Video replay of your match $name successfully uploaded"
+  //              Log.info(msg)
+  //              mainFrame.notify(msg)
+  //          }
   /**
    * Checks whether the match result is complete, showing a popup if necessary
    * to fix the match data, and then submits the match when ready.
@@ -106,7 +144,7 @@ class MatchUtils(
 
   private def submitMatchImpl(hsMatch: HearthstoneMatch): Unit = {
     val header = t("match.end.submitting")
-    val message = hsMatch.toString
+    val message = describeMatch(hsMatch)
     notifier.add(header, message, false)
     analytics.trackEvent("app", "Submit" + hsMatch.mode + "Match")
     uiLog.matchResult(header + ": " + message)
