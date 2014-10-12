@@ -50,7 +50,7 @@ class HearthstoneMatch(var mode: Option[GameMode] = None,
     case None => "UnknownResult"
   }
 
-  def deckSlot = for {
+  def deckSlot: Option[Int] = for {
     d <- deck
     s <- d.activeSlot
   } yield s

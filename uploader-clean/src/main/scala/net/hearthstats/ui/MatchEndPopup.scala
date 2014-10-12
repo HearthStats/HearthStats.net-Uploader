@@ -121,7 +121,7 @@ class MatchEndPopup(
     add(new JLabel(t("match.label.your_deck")), "right")
 
     val slots = undetectedLabel +:
-      (for (i <- 1 until 9) yield {
+      (for (i <- 1 to 9) yield {
         val label = deckUtils.getDeckFromSlot(i) match {
           case Some(d) => d.name
           case None => t("undetected")
@@ -239,6 +239,9 @@ class MatchEndPopup(
       }
       if (hsMatch.userClass == HeroClass.UNDETECTED) {
         result += t("match.popup.error.yourclass")
+      }
+      if (hsMatch.deck.isEmpty) {
+        result += t("match.popup.error.deck")
       }
       if (StringUtils.isBlank(hsMatch.opponentName)) {
         result += t("match.popup.error.opponentname")
