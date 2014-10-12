@@ -1,6 +1,7 @@
 package net.hearthstats.core;
 
 public enum GameMode {
+  UNDETECTED("Mode not detected"),
   ARENA("Arena"), 
   CASUAL("Casual"),
   RANKED("Ranked"),

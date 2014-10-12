@@ -10,7 +10,7 @@ import net.hearthstats.core.Rank
 class CompanionState extends Logging {
   debug("new CompanionState")
 
-  var mode: Option[GameMode] = None
+  var mode = GameMode.UNDETECTED
   var deckSlot: Option[Int] = None
   var rank: Option[Rank] = None
   var isNewArenaRun = false

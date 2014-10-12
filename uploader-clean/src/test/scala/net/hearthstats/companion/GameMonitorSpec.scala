@@ -94,13 +94,13 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
 
   "The monitor" should "detect ranked mode and rank" in {
     setupForPlayMode(Ranked)
-    state.mode shouldBe Some(RANKED)
+    state.mode shouldBe RANKED
     state.rank shouldBe Some(Rank.RANK_8)
   }
 
   "The monitor" should "detect casual mode" in {
     setupForPlayMode(Casual)
-    state.mode shouldBe Some(CASUAL)
+    state.mode shouldBe CASUAL
     state.rank shouldBe None
   }
 
@@ -112,7 +112,7 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   "The monitor" should "detect new Arena run" in {
     setupForArena(true)
     state.deckSlot shouldBe None
-    state.mode shouldBe Some(ARENA)
+    state.mode shouldBe ARENA
     state.isNewArenaRun shouldBe true
   }
 
@@ -123,11 +123,11 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
 
   "The monitor" should "detect changes in game mode" in {
     setupForPlayMode(Ranked)
-    state.mode shouldBe Some(RANKED)
+    state.mode shouldBe RANKED
     setupForPlayMode(Casual)
-    state.mode shouldBe Some(CASUAL)
+    state.mode shouldBe CASUAL
     setupForPlayMode(Ranked)
-    state.mode shouldBe Some(RANKED)
+    state.mode shouldBe RANKED
   }
 
   def setupForPlayMode(mode: LobbyMode) {

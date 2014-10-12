@@ -57,9 +57,7 @@ class MatchEndPopup(
     setMinimumSize(new Dimension(660, 380))
     setPreferredSize(new Dimension(660, preferredHeight))
     setMaximumSize(new Dimension(660, preferredHeight + 200))
-    val heading = new JLabel(
-      if (hsMatch.mode.isEmpty) t("match.popup.heading")
-      else hsMatch.mode.get + " " + t("match.popup.heading"))
+    val heading = new JLabel(hsMatch.mode + " " + t("match.popup.heading"))
     val headingFont = heading.getFont.deriveFont(20f)
     heading.setFont(headingFont)
     add(heading, "span")
@@ -72,11 +70,9 @@ class MatchEndPopup(
 
     val gameModeComboBox = new JComboBox(GameMode.values)
     setDefaultSize(gameModeComboBox)
-    if (hsMatch.mode.isDefined) {
-      gameModeComboBox.setSelectedItem(hsMatch.mode.get)
-    }
+    gameModeComboBox.setSelectedItem(hsMatch.mode)
     gameModeComboBox.addActionListener(() => {
-      hsMatch.mode = Some(gameModeComboBox.getItemAt(gameModeComboBox.getSelectedIndex))
+      hsMatch.mode = gameModeComboBox.getItemAt(gameModeComboBox.getSelectedIndex)
       updateGameMode()
     })
     add(gameModeComboBox, "span")
@@ -204,7 +200,7 @@ class MatchEndPopup(
         }
         rankPanel.add(rankComboBox)
       } else {
-        val rankMessage = hsMatch.mode.get match {
+        val rankMessage = hsMatch.mode match {
           case GameMode.ARENA => "N/A: Arena Mode"
           case GameMode.CASUAL => "N/A: Casual Mode"
           case _ => "N/A"
@@ -231,10 +227,10 @@ class MatchEndPopup(
 
     private def determineErrors(hsMatch: HearthstoneMatch) = {
       val result = ListBuffer.empty[String]
-      if (hsMatch.mode.isEmpty) {
+      if (hsMatch.mode == GameMode.UNDETECTED) {
         result += t("match.popup.error.mode")
       }
-      if (hsMatch.rankLevel.isEmpty && Some(GameMode.RANKED) == hsMatch.mode) {
+      if (hsMatch.rankLevel.isEmpty && GameMode.RANKED == hsMatch.mode) {
         result += t("match.popup.error.rank")
       }
       if (hsMatch.userClass == HeroClass.UNDETECTED) {

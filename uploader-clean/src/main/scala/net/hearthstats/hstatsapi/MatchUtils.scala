@@ -48,11 +48,11 @@ class MatchUtils(
     import m._
 
     val describeMode = mode match {
-      case Some(GameMode.ARENA) => t("match.end.mode.arena")
-      case Some(GameMode.CASUAL) => t("match.end.mode.casual")
-      case Some(GameMode.RANKED) => t("match.end.mode.ranked", rankLevel.get)
-      case Some(GameMode.PRACTICE) => t("match.end.mode.practice")
-      case Some(GameMode.FRIENDLY) => t("match.end.mode.friendly")
+      case GameMode.ARENA => t("match.end.mode.arena")
+      case GameMode.CASUAL => t("match.end.mode.casual")
+      case GameMode.RANKED => t("match.end.mode.ranked", rankLevel.get)
+      case GameMode.PRACTICE => t("match.end.mode.practice")
+      case GameMode.FRIENDLY => t("match.end.mode.friendly")
       case _ => "unknown mode"
     }
 
@@ -67,7 +67,7 @@ class MatchUtils(
     }
 
     val describeDeck = mode match {
-      case Some(GameMode.ARENA) => ""
+      case GameMode.ARENA => ""
       case _ => {
         t("match.end.deck.name", deck match {
           case Some(d) => d.name

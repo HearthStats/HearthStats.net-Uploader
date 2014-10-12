@@ -142,17 +142,17 @@ class GameMonitor(
       case PLAY_LOBBY =>
         handlePlayLobby(evt)
 
-      case PRACTICE_LOBBY if companionState.mode != Some(PRACTICE) =>
+      case PRACTICE_LOBBY if companionState.mode != PRACTICE =>
         uiLog.info("Practice Mode detected")
-        companionState.mode = Some(PRACTICE)
+        companionState.mode = PRACTICE
 
-      case VERSUS_LOBBY if companionState.mode != Some(FRIENDLY) =>
+      case VERSUS_LOBBY if companionState.mode != FRIENDLY =>
         uiLog.info("Versus Mode detected")
-        companionState.mode = Some(FRIENDLY)
+        companionState.mode = FRIENDLY
 
-      case ARENA_LOBBY if companionState.mode != Some(ARENA) =>
+      case ARENA_LOBBY if companionState.mode != ARENA =>
         uiLog.info("Arena Mode detected")
-        companionState.mode = Some(ARENA)
+        companionState.mode = ARENA
         companionState.isNewArenaRun = isNewArenaRun(evt.image)
 
       case _ =>
@@ -251,15 +251,15 @@ class GameMonitor(
       matchUtils.submitMatchResult()
     }
     mode(evt.image) match {
-      case Some(Casual) if companionState.mode != Some(CASUAL) =>
+      case Some(Casual) if companionState.mode != CASUAL =>
         uiLog.info("Casual Mode detected")
-        companionState.mode = Some(CASUAL)
-      case Some(Ranked) if companionState.mode != Some(RANKED) =>
+        companionState.mode = CASUAL
+      case Some(Ranked) if companionState.mode != RANKED =>
         uiLog.info("Ranked Mode detected")
-        companionState.mode = Some(RANKED)
+        companionState.mode = RANKED
       case _ => // assuming no change in the mode
     }
-    if (companionState.mode == Some(RANKED) && companionState.rank.isEmpty) {
+    if (companionState.mode == RANKED && companionState.rank.isEmpty) {
       companionState.rank = lobbyAnalyser.analyzeRankLevel(evt.image)
       uiLog.info(s"rank ${companionState.rank} detected")
     }
@@ -274,7 +274,7 @@ class GameMonitor(
   }
 
   private def testForYourClass(image: BufferedImage): Unit = {
-    if (UNDETECTED == hsMatch.userClass) {
+    if (HeroClass.UNDETECTED == hsMatch.userClass) {
       debug("Testing for your class")
       classAnalyser.imageIdentifyYourClass(image) match {
         case Some(newClass) =>
@@ -291,7 +291,7 @@ class GameMonitor(
   }
 
   private def testForOpponentClass(image: BufferedImage): Unit = {
-    if (UNDETECTED == hsMatch.opponentClass) {
+    if (HeroClass.UNDETECTED == hsMatch.opponentClass) {
       debug("Testing for opponent class")
       classAnalyser.imageIdentifyOpponentClass(image) match {
         case Some(newClass) =>
