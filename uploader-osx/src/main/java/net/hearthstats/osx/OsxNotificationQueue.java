@@ -1,8 +1,8 @@
 package net.hearthstats.osx;
 
-import net.hearthstats.notification.NotificationQueue;
 import net.hearthstats.osx.jna.NSUserNotification;
 import net.hearthstats.osx.jna.NSUserNotificationCenter;
+import net.hearthstats.ui.notification.NotificationQueue;
 import org.rococoa.cocoa.foundation.NSAutoreleasePool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

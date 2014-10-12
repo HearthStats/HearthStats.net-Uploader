@@ -4,9 +4,9 @@ import java.io.File
 
 import grizzled.slf4j.Logging
 import net.hearthstats.config._
-import net.hearthstats.notification.{DialogNotificationQueue, NotificationQueue}
+import net.hearthstats.ui.notification.{NotificationType, DialogNotificationQueue, NotificationQueue}
 import net.hearthstats.updater.api.model.Release
-import net.hearthstats.{OldConfig, ProgramHelper}
+import net.hearthstats.ProgramHelper
 import org.apache.commons.io.FileUtils
 
 /**

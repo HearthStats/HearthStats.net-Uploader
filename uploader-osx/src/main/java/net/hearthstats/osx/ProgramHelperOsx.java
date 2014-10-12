@@ -1,20 +1,10 @@
 package net.hearthstats.osx;
 
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
-import java.io.File;
-
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.NativeLongByReference;
 import net.hearthstats.ProgramHelper;
-import net.hearthstats.log.Log;
-import net.hearthstats.osx.jna.CFArrayRef;
-import net.hearthstats.osx.jna.CFDictionaryRef;
-import net.hearthstats.osx.jna.CGWindow;
-import net.hearthstats.osx.jna.CoreFoundationLibrary;
-import net.hearthstats.osx.jna.CoreGraphicsLibrary;
-import net.hearthstats.osx.jna.NSBitmapImageRep;
-import net.hearthstats.osx.jna.NSRunningApplication;
-
+import net.hearthstats.osx.jna.*;
 import org.rococoa.Foundation;
 import org.rococoa.ID;
 import org.rococoa.Rococoa;
@@ -24,9 +14,9 @@ import org.rococoa.cocoa.foundation.NSString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.NativeLongByReference;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 
 /**
  * Implementation of {@link ProgramHelper} for (Mac) OS X.
@@ -485,7 +475,7 @@ public class ProgramHelperOsx extends ProgramHelper {
     }
 
     // Couldn't find the Hearthstone window so return null... this will break the calling code.
-    Log.warn("Unable to find position of Hearthstone window.");
+    debugLog.warn("Unable to find position of Hearthstone window.");
     return null;
 	}
 
