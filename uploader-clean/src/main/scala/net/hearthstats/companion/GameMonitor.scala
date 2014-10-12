@@ -242,6 +242,7 @@ class GameMonitor(
       } {
         uiLog.info(s"deck slot $deckSlot detected")
         companionState.deckSlot = Some(deckSlot)
+        deckUtils.getDeckFromSlot(deckSlot) foreach deckOverlay.show
       }
     }
   }
