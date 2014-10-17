@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>net.hearthstats</groupId>
 		<version>0.19.1-SNAPSHOT</version>
-        <artifactId>uploader-parent</artifactId>
+		<artifactId>uploader-parent</artifactId>
 	</parent>
 
 	<artifactId>uploader-win</artifactId>
@@ -15,15 +16,22 @@
 	<name>HearthStats Companion Windows</name>
 	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
 
-    <properties>
-        <main.class>net.hearthstats.win.HearthStatsWin</main.class>
-    </properties>
+	<properties>
+		<main.class>net.hearthstats.win.HearthStatsWin</main.class>
+	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>net.hearthstats</groupId>
 			<artifactId>uploader</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.hearthstats</groupId>
+			<artifactId>uploader</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
@@ -52,32 +60,32 @@
 					</execution>
 				</executions>
 			</plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-updater</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>net.hearthstats</groupId>
-                                    <artifactId>updater</artifactId>
-                                    <version>${project.version}</version>
-                                    <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                                    <destFileName>updater.jar</destFileName>
-                                    <overWrite>true</overWrite>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-updater</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>net.hearthstats</groupId>
+									<artifactId>updater</artifactId>
+									<version>${project.version}</version>
+									<outputDirectory>${project.build.directory}/classes</outputDirectory>
+									<destFileName>updater.jar</destFileName>
+									<overWrite>true</overWrite>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>2.3</version>
@@ -99,7 +107,8 @@
 								</excludes>
 							</artifactSet>
 							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>${main.class}</mainClass>
 								</transformer>
 							</transformers>
