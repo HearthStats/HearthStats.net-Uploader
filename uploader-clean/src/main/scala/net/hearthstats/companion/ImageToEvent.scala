@@ -46,17 +46,21 @@ class ImageToEvent(
       case Some(screen) =>
         iterationsSinceScreenMatched = 0
         val e = eventFromScreen(screen, bi)
-        debug(e)
+        info(s"screen $screen => event $e")
         e
       case None =>
-        debug(s"no screen match on image, last match was $lastScreen $iterationsSinceScreenMatched iterations ago")
+        info(s"no screen match on image, last match was $lastScreen $iterationsSinceScreenMatched iterations ago")
         iterationsSinceScreenMatched += 1
         None
     }
   }
 
+  def canRepeatEvent(screen: Screen) =
+    (Seq(PLAY_LOBBY, PRACTICE_LOBBY, VERSUS_LOBBY) contains screen) ||
+      screen.group == ScreenGroup.MATCH_END
+
   private def eventFromScreen(newScreen: Screen, image: BufferedImage): Option[GameEvent] =
-    if (lastScreen.isEmpty || lastScreen.get != newScreen || newScreen == Screen.PLAY_LOBBY || newScreen == Screen.PRACTICE_LOBBY) {
+    if (lastScreen.isEmpty || lastScreen.get != newScreen || canRepeatEvent(newScreen)) {
       if (lastScreen != Some(newScreen)) {
         debug(s"Screen : $lastScreen => $newScreen")
       }

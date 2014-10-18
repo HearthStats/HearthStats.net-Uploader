@@ -23,7 +23,9 @@ object MockedMain extends TesseractSetup with App with Logging {
       players -> 1,
       "starting_hand_4_cards" -> 1,
       "orgrimmar_with_coin" -> 20,
-      result -> 15)
+      "match_end" -> 5,
+      result -> 10,
+      "play_lobby" -> 1)
 
   val firstGame = game("Druid_VS_Hunter", "defeat")
   val secondGame = game("Priest_VS_Warlock", "victory_pandaria")
@@ -35,7 +37,7 @@ object MockedMain extends TesseractSetup with App with Logging {
   main.start()
 
   class MockProgramHelper(var files: List[(String, Int)]) extends ProgramHelper {
-    def foundProgram = true
+    def foundProgram = files.nonEmpty
 
     def getScreenCapture = {
       val (f, c) :: t = files
