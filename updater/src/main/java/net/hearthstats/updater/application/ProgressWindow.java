@@ -173,6 +173,11 @@ class ProgressWindow {
 
     // Scroll pane for the logs
     logScrollPane = new JScrollPane(logTextArea) {
+      /**
+       * 
+       */
+      private static final long serialVersionUID = 1416654057851584623L;
+
       // Custom painting to make the text area partially translucent and show some of the background
       @Override
       protected void paintComponent(Graphics g) {

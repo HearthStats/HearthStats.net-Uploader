@@ -6,7 +6,6 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.Properties;
-import java.util.prefs.Preferences;
 
 
 public class UpdaterConfiguration {

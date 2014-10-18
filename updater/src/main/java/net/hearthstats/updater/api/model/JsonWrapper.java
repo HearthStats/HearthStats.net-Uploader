@@ -1,6 +1,7 @@
 package net.hearthstats.updater.api.model;
 
 import net.hearthstats.updater.exception.JsonException;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONAware;
 import org.json.simple.JSONObject;
@@ -95,6 +96,7 @@ public class JsonWrapper implements JSONAware {
   }
 
 
+  @SuppressWarnings("unchecked")
   private <T> List<T> getArray(String key) throws ClassCastException {
     Object value = obj.get(key);
     if (value == null) {

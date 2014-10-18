@@ -35,12 +35,6 @@ class ImageToEvent(
   var iterationsSinceYourTurn = 0
   var iterationsSinceOpponentTurn = 0
 
-  //  var isNewArena: Boolean = false
-  //  var arenaRunEndDetected = false
-  //  var victoryOrDefeatDetected = false
-  //
-  //  var isYourTurn = true
-
   /**
    * Also updates the current state.
    */

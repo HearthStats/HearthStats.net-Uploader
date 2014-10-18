@@ -44,7 +44,12 @@ public class DialogNotification {
 		
 		// close button
 		JButton closeButton = new JButton(new AbstractAction("x") {
-	        @Override
+	        /**
+       * 
+       */
+      private static final long serialVersionUID = 6997782610046566825L;
+
+          @Override
 	        public void actionPerformed(final ActionEvent e) {
 	               frame.dispose();
 	        }

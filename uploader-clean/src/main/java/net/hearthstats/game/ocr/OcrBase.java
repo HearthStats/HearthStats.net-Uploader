@@ -1,19 +1,15 @@
 package net.hearthstats.game.ocr;
 
-import net.hearthstats.Main;
 import net.sourceforge.tess4j.Tesseract;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.RescaleOp;
-import java.io.File;
 
 /**
  * Base class for performing OCR. Subclasses can override methods to customise the handling of OCR on different

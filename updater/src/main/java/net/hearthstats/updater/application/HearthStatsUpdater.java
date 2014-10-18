@@ -31,7 +31,7 @@ class HearthStatsUpdater implements ActionListener {
   private final String hearthstatsLocation;
   private final String downloadFile;
 
-  private SwingWorker downloadWorker;
+  private SwingWorker<Object, Object> downloadWorker;
 
   private HearthStatsUpdater(String version, long assetId, String hearthstatsLocation, String downloadFile) {
     window = new ProgressWindow(this);
@@ -45,7 +45,7 @@ class HearthStatsUpdater implements ActionListener {
 
 
   private void download() {
-    downloadWorker = new SwingWorker() {
+    downloadWorker = new SwingWorker<Object, Object>() {
       private boolean errorOccurred = false;
 
       @Override
@@ -146,7 +146,7 @@ class HearthStatsUpdater implements ActionListener {
 
 
   private void extractZip() {
-    SwingWorker extractWorker = new SwingWorker() {
+    SwingWorker<Object, Object> extractWorker = new SwingWorker<Object, Object>() {
       private boolean errorOccurred = false;
 
       @Override

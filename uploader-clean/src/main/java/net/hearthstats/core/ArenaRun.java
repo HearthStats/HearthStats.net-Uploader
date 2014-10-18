@@ -20,7 +20,8 @@ public class ArenaRun {
 		_userclass = userclass;
 	}
 	
-	public JSONObject toJsonObject() {
+  @SuppressWarnings("unchecked")
+  public JSONObject toJsonObject() {
 		JSONObject obj = new JSONObject();
 		obj.put("class", _userclass);
 		return obj;

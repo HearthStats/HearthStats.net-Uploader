@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 /**
  * Implementation of {@link ProgramHelper} for Windows.

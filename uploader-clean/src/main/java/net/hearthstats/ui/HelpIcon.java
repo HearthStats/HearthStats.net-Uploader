@@ -15,14 +15,12 @@ import java.net.URISyntaxException;
  */
 public class HelpIcon extends JLabel {
 
-    private final String url;
+  private static final long serialVersionUID = 50869548301146348L;
     private final ImageIcon normalIcon;
     private final ImageIcon hoverIcon;
 
 
     public HelpIcon(final String url, String tooltip) {
-        this.url = url;
-
         BufferedImage normalImage = null;
         BufferedImage hoverImage = null;
         try {

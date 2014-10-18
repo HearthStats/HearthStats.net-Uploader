@@ -212,7 +212,7 @@ class MatchEndPopup(
         rankPanel.add(rankNotApplicable)
       }
       deckPanel.removeAll()
-      if (Some(GameMode.ARENA) == hsMatch.mode) {
+      if (GameMode.ARENA == hsMatch.mode) {
         val deckNotApplicable = new JLabel("N/A: Arena Mode")
         deckNotApplicable.setFont(deckNotApplicable.getFont.deriveFont(Font.ITALIC))
         deckNotApplicable.setEnabled(false)

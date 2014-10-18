@@ -9,7 +9,6 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import net.hearthstats.game.Screen;
-import net.hearthstats.game.imageanalysis.*;
 import net.hearthstats.util.Coordinate;
 
 import org.junit.Assert;
