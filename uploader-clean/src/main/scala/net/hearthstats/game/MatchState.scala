@@ -10,6 +10,7 @@ class MatchState {
   var lastMatch: Option[HearthstoneMatch] = None
   var startTime: Long = _
   var submitted = false
+  var started = false
 
   def setOpponentName(n: String) = currentMatch.get.opponentName = n
   def setNotes(n: String) = currentMatch.get.notes = n
@@ -27,6 +28,7 @@ class MatchState {
       mode = companionState.mode,
       rankLevel = companionState.rank))
     submitted = false
+    started = false
   }
 
 }

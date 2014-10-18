@@ -123,6 +123,7 @@ class GameMonitor(
       case FirstTurn(image) =>
         testForCoin(image)
         testForOpponentName(image)
+        matchState.started = true
 
       case StartingHand(image) =>
         testForCoin(image)
@@ -173,14 +174,9 @@ class GameMonitor(
       inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
         case Some(outcome) =>
           uiLog.info(s"Result detected by screen capture : $outcome")
-          if (matchState.currentMatch.isEmpty) {
-            uiLog.warn("Result detected but match start was not detected")
-            matchState.nextMatch(companionState)
-          }
           hsMatch.result = Some(outcome)
           matchUtils.submitMatchResult()
         case _ =>
-          BackgroundImageSave.savePngImage(image, "match_end" + Random.nextInt)
           debug("Result not detected on screen capture")
       }
     }
@@ -248,7 +244,7 @@ class GameMonitor(
   }
 
   private def handlePlayLobby(evt: ScreenEvent): Unit = {
-    if (matchState.lastMatch.isDefined && !matchState.submitted) {
+    if (matchState.lastMatch.isDefined && !matchState.submitted && matchState.started) {
       matchUtils.submitMatchResult()
     }
     mode(evt.image) match {
@@ -308,5 +304,11 @@ class GameMonitor(
     }
   }
 
-  def hsMatch = matchState.currentMatch.get
+  def hsMatch = {
+    if (matchState.currentMatch.isEmpty) {
+      uiLog.warn("Match start was not detected")
+      matchState.nextMatch(companionState)
+    }
+    matchState.currentMatch.get
+  }
 }
