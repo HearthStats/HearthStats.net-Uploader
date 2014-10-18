@@ -192,7 +192,7 @@ class MatchEndPopup(
     Swing.onEDT(updateGameMode())
 
     private def updateGameMode() {
-      val isRanked = hsMatch.mode == Some(GameMode.RANKED)
+      val isRanked = hsMatch.mode == GameMode.RANKED
       rankPanel.removeAll()
       if (isRanked) {
         if (hsMatch.rankLevel.isDefined) {
