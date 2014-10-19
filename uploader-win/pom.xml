@@ -29,7 +29,6 @@
 
 	<build>
 		<plugins>
-
 			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
@@ -101,6 +100,48 @@
 					</execution>
 				</executions>
 			</plugin>
+			 <plugin>
+                <groupId>com.github.wvengen</groupId>
+                <artifactId>proguard-maven-plugin</artifactId>
+                <version>2.0.6</version>
+                <executions>
+                   <execution>
+                       <phase>package</phase>
+                       <goals><goal>proguard</goal></goals>
+                   </execution>
+                </executions>
+                <configuration>
+                 	<proguardVersion>4.9</proguardVersion>
+                	<obfuscate>false</obfuscate>
+                    <injar>${project.build.finalName}.jar</injar>
+                    <outjar>${project.build.finalName}.jar</outjar>
+                    <includeDependency>false</includeDependency>
+                    <options>
+                        <option>-allowaccessmodification</option>
+                        <option>-dontwarn</option>
+                        <option>-keep class * { &lt;init&gt;(...); } </option>
+                        <option> -keepclassmembers enum * {
+								    public static **[] values();
+								    public static ** valueOf(java.lang.String);
+								}
+						</option>
+                        <option>-optimizations !code/allocation/variable</option>
+                        <option>-keep public class net.hearthstats.Main { *; }</option>
+                        <option>-keep public class net.hearthstats.win.ProgramHelperWindows { *; }</option>
+                    </options>
+                    <libs>
+                        <lib>${java.home}/lib/rt.jar</lib>
+                    </libs>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sf.proguard</groupId>
+                        <artifactId>proguard-base</artifactId>
+	                        <version>4.9</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+            </plugin>
 			<plugin>
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
 				<artifactId>launch4j-maven-plugin</artifactId>
