@@ -26,6 +26,7 @@ import net.hearthstats.util.Browse
 import net.hearthstats.companion.CompanionState
 import net.hearthstats.game.MatchState
 import net.hearthstats.core.HeroClass
+import net.hearthstats.core.HearthstoneMatch
 
 /**
  * Main Frame for HearthStats Companion.
@@ -76,6 +77,7 @@ class CompanionFrame(val environment: Environment,
   def setYourClass(heroClass: HeroClass) = matchPanel.setYourClass(heroClass)
   def setOpponentName(n: String) = matchPanel.setOpponentName(n)
   def setCoin(coin: Boolean) = matchPanel.setCoin(coin)
+  def matchSubmitted(m: HearthstoneMatch, description: String): Unit = matchPanel.matchSubmitted(m, description)
 
   def updateTitle() {
     var title = "HearthStats.net Companion"

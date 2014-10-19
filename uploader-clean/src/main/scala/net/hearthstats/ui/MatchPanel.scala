@@ -3,7 +3,6 @@ package net.hearthstats.ui
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.event.{ ActionEvent, ActionListener, KeyAdapter, KeyEvent }
-
 import javax.swing.{ JButton, JCheckBox, JComboBox, JLabel, JPanel, JTextArea, JTextField }
 import javax.swing.BorderFactory.{ createCompoundBorder, createEmptyBorder, createMatteBorder }
 import javax.swing.event.{ ChangeEvent, ChangeListener }
@@ -13,6 +12,8 @@ import net.hearthstats.game.MatchState
 import net.hearthstats.ui.log.Log
 import net.hearthstats.util.{ Browse, Translation }
 import net.miginfocom.swing.MigLayout
+import net.hearthstats.core.GameMode
+import net.hearthstats.core.HearthstoneMatch
 
 class MatchPanel(
   matchState: MatchState,
@@ -96,15 +97,15 @@ class MatchPanel(
       case None =>
         _currentMatchLabel.setText("Waiting for next match to start ...")
     }
-    matchState.lastMatch map { m =>
-      if (m.mode != null && m.result != null) { //TODO use options
-        val tooltip = if (m.mode == "Arena") "View current arena run on" else "Edit the previous match"
-        _lastMatchButton.setToolTipText(tooltip + " on HearthStats.net")
-        _lastMatchButton.setText(m.toString)
-        _lastMatchButton.setEnabled(true)
-      }
-    }
   }
+
+  def matchSubmitted(m: HearthstoneMatch, description: String): Unit =
+    if (m.mode != GameMode.UNDETECTED && m.result.isDefined) {
+      val tooltip = if (m.mode == GameMode.ARENA) "View current arena run on" else "Edit the previous match"
+      _lastMatchButton.setToolTipText(tooltip + " on HearthStats.net")
+      _lastMatchButton.setText(description)
+      _lastMatchButton.setEnabled(true)
+    }
 
   def setCurrentMatchEnabled(enabled: Boolean) {
     _currentYourClassSelector.setEnabled(enabled)

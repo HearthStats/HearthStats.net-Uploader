@@ -151,10 +151,11 @@ class MatchUtils(
     api.createMatch(hsMatch) match {
       case Some(id) =>
         matchState.submitted = true
-        uiLog.info(s"Success. <a href='http://hearthstats.net/constructeds/$id/edit'>Edit match #$id on HearthStats.net</a>")
+        hsMatch.id = id
+        uiLog.info(s"Success. <a href='${hsMatch.editUrl}'>Edit match #$id on HearthStats.net</a>")
+        hsPresenter.matchSubmitted(hsMatch, describeMatch(hsMatch))
       case None => uiLog.warn("Could not submit the match to Hearthstats.net, API error")
     }
-
   }
 
   private def createArenaRun(): Unit = {
