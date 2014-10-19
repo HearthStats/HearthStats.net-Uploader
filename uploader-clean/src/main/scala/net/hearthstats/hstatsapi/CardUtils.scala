@@ -59,7 +59,7 @@ class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Loggin
     val all = Future.sequence(futures)
 
     all.onComplete {
-      case Success(_) => uiLog.info("All images downloaded successfully")
+      case Success(_) => debug("All images downloaded successfully (if any were missing)")
       case Failure(e) => uiLog.warn("Could not download an image", e)
     }
 
