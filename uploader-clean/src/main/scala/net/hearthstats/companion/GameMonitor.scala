@@ -269,7 +269,7 @@ class GameMonitor(
   }
 
   private def testForCoin(image: BufferedImage): Unit = {
-    if (inGameAnalyser.imageShowsCoin(image)) {
+    if (hsMatch.coin.isEmpty && inGameAnalyser.imageShowsCoin(image)) {
       uiLog.info("Coin detected")
       hsMatch.coin = Some(true)
       hsPresenter.setCoin(true)
