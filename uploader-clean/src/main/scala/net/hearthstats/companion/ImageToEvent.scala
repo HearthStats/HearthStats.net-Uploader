@@ -55,36 +55,28 @@ class ImageToEvent(
     }
   }
 
-  def canRepeatEvent(screen: Screen) =
-    (Seq(PLAY_LOBBY, PRACTICE_LOBBY, VERSUS_LOBBY) contains screen) ||
-      screen.group == ScreenGroup.MATCH_END
-
-  private def eventFromScreen(newScreen: Screen, image: BufferedImage): Option[GameEvent] =
-    if (lastScreen.isEmpty || lastScreen.get != newScreen || canRepeatEvent(newScreen)) {
-      if (lastScreen != Some(newScreen)) {
-        debug(s"Screen : $lastScreen => $newScreen")
+  private def eventFromScreen(newScreen: Screen, image: BufferedImage): Option[GameEvent] = {
+    if (newScreen == PLAY_LOBBY && imageShowsPlayBackground(image))
+      None
+    else if (lastScreen == FINDING_OPPONENT && iterationsSinceFindingOpponent < 5) {
+      iterationsSinceFindingOpponent += 1
+      None
+    } else {
+      iterationsSinceFindingOpponent = 0
+      val screenToEvent: PartialFunction[Screen, GameEvent] = _ match {
+        case s if (Seq(PLAY_LOBBY, ARENA_LOBBY, PRACTICE_LOBBY, VERSUS_LOBBY) contains s) ||
+          (s.group == ScreenGroup.MATCH_END) => ScreenEvent(s, image)
+        case ARENA_END => ArenaRunEnd
+        case FINDING_OPPONENT => FindingOpponent
+        case s if s.group == MATCH_START => StartingHand(image)
+        case s if s.group == MATCH_PLAYING => FirstTurn(image)
       }
-      if (newScreen == PLAY_LOBBY && imageShowsPlayBackground(image))
-        None
-      else if (lastScreen == FINDING_OPPONENT && iterationsSinceFindingOpponent < 5) {
-        iterationsSinceFindingOpponent += 1
-        None
-      } else {
-        iterationsSinceFindingOpponent = 0
-        val screenToEvent: PartialFunction[Screen, GameEvent] = _ match {
-          case s if (Seq(PLAY_LOBBY, ARENA_LOBBY, PRACTICE_LOBBY, VERSUS_LOBBY) contains s) ||
-            (s.group == ScreenGroup.MATCH_END) => ScreenEvent(s, image)
-          case ARENA_END => ArenaRunEnd
-          case FINDING_OPPONENT => FindingOpponent
-          case s if s.group == MATCH_START => StartingHand(image)
-          case s if s.group == MATCH_PLAYING => FirstTurn(image)
-        }
-        if (screenToEvent.isDefinedAt(newScreen) || newScreen == FINDING_OPPONENT) {
-          lastScreen = Some(newScreen)
-        }
-        screenToEvent.lift(newScreen)
+      if (screenToEvent.isDefinedAt(newScreen)) {
+        lastScreen = Some(newScreen)
       }
-    } else None
+      screenToEvent.lift(newScreen)
+    }
+  }
 
   /**
    * <p>Sometimes the OS X version captures a screenshot where, apparently, Hearthstone hasn't finished compositing the screen

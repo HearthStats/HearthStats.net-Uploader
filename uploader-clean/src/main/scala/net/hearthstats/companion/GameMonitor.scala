@@ -109,9 +109,12 @@ class GameMonitor(
   private def handleGameEvent(evt: GameEvent): Unit = try {
     debug(evt)
     evt match {
-      case s: ScreenEvent => handleScreenEvent(s)
+      case s: ScreenEvent =>
+        companionState.findingOpponent = false
+        handleScreenEvent(s)
 
-      case FindingOpponent =>
+      case FindingOpponent if !companionState.findingOpponent =>
+        companionState.findingOpponent = true
         uiLog.info(s"Finding opponent, new match will start soon ...")
         uiLog.divider()
         matchState.nextMatch(companionState)
@@ -126,11 +129,14 @@ class GameMonitor(
         matchState.started = true
 
       case StartingHand(image) =>
+        companionState.findingOpponent = false
         testForCoin(image)
         testForOpponentName(image)
         testForYourClass(image)
         testForOpponentClass(image)
         iterationsSinceClassCheckingStarted += 1
+
+      case _ =>
     }
   } catch {
     case t: Throwable =>

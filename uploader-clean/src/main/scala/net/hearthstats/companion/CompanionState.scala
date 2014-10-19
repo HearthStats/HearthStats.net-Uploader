@@ -13,6 +13,7 @@ class CompanionState extends Logging {
   var mode = GameMode.UNDETECTED
   var deckSlot: Option[Int] = None
   var rank: Option[Rank] = None
+  var findingOpponent = false
   var isNewArenaRun = false
   var iterationsSinceClassCheckingStarted = 0
   var iterationsSinceYourTurn = 0
