@@ -57,6 +57,11 @@ public class ScreenAnalyser {
 
     log.debug("Identifying screen");
 
+    // ProgramHelpers may return a null image if the window is minimised or still loading, so ignore those
+    if (image == null) {
+      return null;
+    }
+
     if (expectedWidth != image.getWidth() || expectedHeight != image.getHeight()) {
       pixelMap = calculatePixelPositions(image.getWidth(), image.getHeight());
       expectedWidth = image.getWidth();
