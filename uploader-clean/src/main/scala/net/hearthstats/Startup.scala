@@ -17,6 +17,8 @@ import scala.swing.Swing
 import net.hearthstats.util.AnalyticsTrackerFactory
 import net.hearthstats.config.UserConfig
 import net.hearthstats.util.Tracker
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.Executors
 
 class Startup(
   translation: Translation,
@@ -35,6 +37,15 @@ class Startup(
     showWelcomeLog()
     analytics.trackEvent("app", "AppStart")
     Swing.onEDT(checkForUpdates())
+    startAutoGc()
+  }
+
+  // It seems that the native libraries for screen capture have memory leak which are fixed this way
+  private def startAutoGc(): Unit = {
+    val GC_INTERVAL = 3000
+    Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
+      new Runnable { def run() = System.gc() },
+      GC_INTERVAL, GC_INTERVAL, TimeUnit.MILLISECONDS)
   }
 
   private def showWelcomeLog() {
