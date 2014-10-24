@@ -8,12 +8,10 @@ import net.hearthstats.ProgramHelper
 import net.hearthstats.config.UserConfig
 import net.hearthstats.core.GameMode.{ ARENA, CASUAL, FRIENDLY, PRACTICE, RANKED }
 import net.hearthstats.core.HeroClass
-import net.hearthstats.game.{ ArenaLobby, FindingOpponent, FriendlyLobby }
-import net.hearthstats.game.{ GameResultScreen, MatchStartScreen, MatchState, OngoingGameScreen, PlayLobby, PracticeLobby, Screen }
-import net.hearthstats.game.{ ScreenEvent, StartingHandScreen }
+import net.hearthstats.game._
 import net.hearthstats.game.GameEvents.screenToObject
-import net.hearthstats.game.Screen.{ FINDING_OPPONENT, PLAY_LOBBY }
-import net.hearthstats.game.imageanalysis.{ Casual, HsClassAnalyser, InGameAnalyser, IndividualPixelAnalyser, LobbyAnalyser, Ranked, ScreenAnalyser, UniquePixel }
+import net.hearthstats.game.Screen._
+import net.hearthstats.game.imageanalysis._
 import net.hearthstats.game.ocr.{ OpponentNameOcr, OpponentNameRankedOcr, OpponentNameUnrankedOcr }
 import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
 import net.hearthstats.ui.HearthstatsPresenter
@@ -42,7 +40,7 @@ class GameMonitor(
   import lobbyAnalyser._
   import companionState.iterationsSinceClassCheckingStarted
 
-  private val subject = PublishSubject.create[Boolean]
+  val subject = PublishSubject.create[Boolean]
   val hsFound: Observable[Boolean] = subject.asObservable.cache
 
   var checkIfRunning: Option[ScheduledFuture[_]] = None
@@ -93,58 +91,64 @@ class GameMonitor(
     }
     val image = evt.image
     evt.screen match {
-      case FindingOpponent if !companionState.findingOpponent =>
-        companionState.findingOpponent = true
-        uiLog.info(s"Finding opponent, new match will start soon ...")
-        uiLog.divider()
-        matchState.nextMatch(companionState)
-        hsMatch.deck = for {
-          slot <- companionState.deckSlot
-          d <- deckUtils.getDeckFromSlot(slot)
-        } yield d
-
-      case StartingHandScreen =>
-        testForCoin(image)
-        testForOpponentName(image)
-
-      case MatchStartScreen =>
-        companionState.findingOpponent = false
-        testForCoin(image)
-        testForOpponentName(image)
-        testForYourClass(image)
-        testForOpponentClass(image)
-        iterationsSinceClassCheckingStarted += 1
-
-      case PlayLobby =>
-        handlePlayLobby(evt)
-
-      case PracticeLobby if companionState.mode != PRACTICE =>
-        uiLog.info("Practice Mode detected")
-        companionState.mode = PRACTICE
-        detectDeck(evt)
-
-      case FriendlyLobby if companionState.mode != FRIENDLY =>
-        uiLog.info("Versus Mode detected")
-        companionState.mode = FRIENDLY
-        detectDeck(evt)
-
-      case ArenaLobby if companionState.mode != ARENA =>
-        uiLog.info("Arena Mode detected")
-        companionState.mode = ARENA
-        companionState.isNewArenaRun = isNewArenaRun(evt.image)
-
-      case OngoingGameScreen =>
-        testForOpponentOrYourTurn(evt.image)
-
-      case GameResultScreen =>
-        testForVictoryOrDefeat(evt.image)
-
+      case FindingOpponent if !companionState.findingOpponent => handleFindingOpponent()
+      case StartingHandScreen => handleStartingHand(image)
+      case MatchStartScreen => handleMatchStart(image)
+      case PlayLobby => handlePlayLobby(evt)
+      case PracticeLobby if companionState.mode != PRACTICE => handlePracticeLobby(image)
+      case FriendlyLobby if companionState.mode != FRIENDLY => handleFriendlyLobby(image)
+      case ArenaLobby if companionState.mode != ARENA => handleArenaLobby(image)
+      case OngoingGameScreen => testForOpponentOrYourTurn(image)
+      case GameResultScreen => testForVictoryOrDefeat(image)
       case _ =>
     }
   } catch {
     case NonFatal(t) =>
       error(t.getMessage, t)
       uiLog.error(t.getMessage, t)
+  }
+
+  private def handleFindingOpponent(): Unit = {
+    companionState.findingOpponent = true
+    uiLog.info(s"Finding opponent, new match will start soon ...")
+    uiLog.divider()
+    matchState.nextMatch(companionState)
+    hsMatch.deck = for {
+      slot <- companionState.deckSlot
+      d <- deckUtils.getDeckFromSlot(slot)
+    } yield d
+  }
+
+  private def handleStartingHand(image: BufferedImage): Unit = {
+    testForCoin(image)
+    testForOpponentName(image)
+  }
+
+  private def handleMatchStart(image: BufferedImage): Unit = {
+    companionState.findingOpponent = false
+    testForCoin(image)
+    testForOpponentName(image)
+    testForYourClass(image)
+    testForOpponentClass(image)
+    iterationsSinceClassCheckingStarted += 1
+  }
+
+  private def handlePracticeLobby(image: BufferedImage): Unit = {
+    uiLog.info("Practice Mode detected")
+    companionState.mode = PRACTICE
+    detectDeck(image)
+  }
+
+  private def handleArenaLobby(image: BufferedImage): Unit = {
+    uiLog.info("Arena Mode detected")
+    companionState.mode = ARENA
+    companionState.isNewArenaRun = isNewArenaRun(image)
+  }
+
+  private def handleFriendlyLobby(image: BufferedImage): Unit = {
+    uiLog.info("Versus Mode detected")
+    companionState.mode = FRIENDLY
+    detectDeck(image)
   }
 
   private def testForVictoryOrDefeat(image: BufferedImage) {
@@ -163,7 +167,8 @@ class GameMonitor(
     }
   }
 
-  def victoryOrDefeatDetected = matchState.currentMatch.flatMap(_.result).isDefined
+  private def victoryOrDefeatDetected =
+    matchState.currentMatch.flatMap(_.result).isDefined
 
   private def testForOpponentOrYourTurn(image: BufferedImage) {
     if (!matchState.started) {
@@ -216,9 +221,9 @@ class GameMonitor(
     }
   }
 
-  private def detectDeck(evt: ScreenEvent): Unit =
+  private def detectDeck(image: BufferedImage): Unit =
     for {
-      deckSlot <- imageIdentifyDeckSlot(evt.image)
+      deckSlot <- imageIdentifyDeckSlot(image)
       if Some(deckSlot) != companionState.deckSlot
     } {
       uiLog.info(s"deck slot $deckSlot detected")
@@ -243,7 +248,7 @@ class GameMonitor(
       companionState.rank = lobbyAnalyser.analyzeRankLevel(evt.image)
       companionState.rank.map(r => uiLog.info(s"rank $r detected"))
     }
-    detectDeck(evt)
+    detectDeck(evt.image)
   }
 
   private def testForCoin(image: BufferedImage): Unit = {
@@ -288,7 +293,7 @@ class GameMonitor(
     }
   }
 
-  def hsMatch = {
+  private def hsMatch = {
     if (matchState.currentMatch.isEmpty) {
       uiLog.warn("Match start was not detected")
       matchState.nextMatch(companionState)
@@ -296,9 +301,6 @@ class GameMonitor(
     matchState.currentMatch.get
   }
 
-  /**
-   * Also updates the current state.
-   */
   private def eventFromImage(bi: BufferedImage): Option[ScreenEvent] = try {
     import companionState._
     if (iterationsSinceScreenMatched > 10) { lastScreen = None }
@@ -318,7 +320,6 @@ class GameMonitor(
   }
 
   private def eventFromScreen(newScreen: Screen, image: BufferedImage): Option[ScreenEvent] = {
-    import Screen._
     import companionState._
     import net.hearthstats.game.GameEvents._
 
