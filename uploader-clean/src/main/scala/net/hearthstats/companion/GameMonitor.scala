@@ -1,48 +1,27 @@
 package net.hearthstats.companion
 
 import java.awt.image.BufferedImage
-import scala.concurrent.duration.DurationInt
+import java.util.concurrent.{ Executors, ScheduledFuture, TimeUnit }
+import scala.util.control.NonFatal
+import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 import net.hearthstats.config.UserConfig
-import net.hearthstats.game.GameEvent
-import net.hearthstats.game.Screen._
-import net.hearthstats.game.ScreenEvent
-import rx.lang.scala.Observable
-import net.hearthstats.game.imageanalysis.LobbyAnalyser
-import net.hearthstats.core.GameMode._
-import net.hearthstats.game.imageanalysis.LobbyAnalyser
-import grizzled.slf4j.Logging
-import net.hearthstats.game.imageanalysis.Casual
-import net.hearthstats.game.imageanalysis.Ranked
-import net.hearthstats.game.ScreenGroup
-import net.hearthstats.ui.log.Log
-import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.core.GameMode.{ ARENA, CASUAL, FRIENDLY, PRACTICE, RANKED }
 import net.hearthstats.core.HeroClass
-import net.hearthstats.core.HeroClass._
-import net.hearthstats.game.imageanalysis.HsClassAnalyser
-import net.hearthstats.game.ocr.BackgroundImageSave
+import net.hearthstats.game.{ ArenaLobby, FindingOpponent, FriendlyLobby }
+import net.hearthstats.game.{ GameResultScreen, MatchStartScreen, MatchState, OngoingGameScreen, PlayLobby, PracticeLobby, Screen }
+import net.hearthstats.game.{ ScreenEvent, StartingHandScreen }
+import net.hearthstats.game.GameEvents.screenToObject
+import net.hearthstats.game.Screen.{ FINDING_OPPONENT, PLAY_LOBBY }
+import net.hearthstats.game.imageanalysis.{ Casual, HsClassAnalyser, InGameAnalyser, IndividualPixelAnalyser, LobbyAnalyser, Ranked, ScreenAnalyser, UniquePixel }
+import net.hearthstats.game.ocr.{ OpponentNameOcr, OpponentNameRankedOcr, OpponentNameUnrankedOcr }
+import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
 import net.hearthstats.ui.HearthstatsPresenter
-import net.hearthstats.game.imageanalysis.InGameAnalyser
-import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
-import net.hearthstats.hstatsapi.DeckUtils
-import net.hearthstats.ui.deckoverlay.DeckOverlayPresenter
-import net.hearthstats.game.ocr.OpponentNameRankedOcr
-import net.hearthstats.game.ocr.OpponentNameUnrankedOcr
-import net.hearthstats.game.ocr.OpponentNameOcr
-import org.apache.commons.io.input.Tailer
-import rx.subjects.PublishSubject
+import net.hearthstats.ui.log.Log
 import rx.lang.scala.JavaConversions.toScalaObservable
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import net.hearthstats.game.FirstTurn
-import net.hearthstats.game.StartingHand
-import net.hearthstats.game.MatchState
-import net.hearthstats.core.HearthstoneMatch
-import java.util.concurrent.ScheduledFuture
-import javax.imageio.ImageIO
-import net.hearthstats.game.FindingOpponent
-import net.hearthstats.hstatsapi.MatchUtils
-import scala.util.Random
+import rx.lang.scala.Observable
+import rx.subjects.PublishSubject
+import net.hearthstats.game.ocr.BackgroundImageSave
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -52,12 +31,13 @@ class GameMonitor(
   companionState: CompanionState,
   matchState: MatchState,
   lobbyAnalyser: LobbyAnalyser,
+  individualPixelAnalyser: IndividualPixelAnalyser,
   classAnalyser: HsClassAnalyser,
   inGameAnalyser: InGameAnalyser,
+  screenAnalyser: ScreenAnalyser,
   uiLog: Log,
   hsPresenter: HearthstatsPresenter,
-  deckOverlay: DeckOverlayModule,
-  imageToEvent: ImageToEvent) extends Logging {
+  deckOverlay: DeckOverlayModule) extends Logging {
 
   import lobbyAnalyser._
   import companionState.iterationsSinceClassCheckingStarted
@@ -99,20 +79,20 @@ class GameMonitor(
         None
     }.filter(_.isDefined).map(_.get)
 
-  val gameEvents: Observable[GameEvent] = gameImages.
-    map(imageToEvent.eventFromImage).
+  val gameEvents: Observable[ScreenEvent] = gameImages.
+    map(eventFromImage).
     filter(_.isDefined).
     map(_.get)
 
   gameEvents.subscribe(handleGameEvent _)
 
-  private def handleGameEvent(evt: GameEvent): Unit = try {
+  private def handleGameEvent(evt: ScreenEvent): Unit = try {
     debug(evt)
-    evt match {
-      case s: ScreenEvent =>
-        companionState.findingOpponent = false
-        handleScreenEvent(s)
-
+    if (evt.screen != FindingOpponent) {
+      companionState.findingOpponent = false
+    }
+    val image = evt.image
+    evt.screen match {
       case FindingOpponent if !companionState.findingOpponent =>
         companionState.findingOpponent = true
         uiLog.info(s"Finding opponent, new match will start soon ...")
@@ -123,7 +103,11 @@ class GameMonitor(
           d <- deckUtils.getDeckFromSlot(slot)
         } yield d
 
-      case StartingHand(image) =>
+      case StartingHandScreen =>
+        testForCoin(image)
+        testForOpponentName(image)
+
+      case MatchStartScreen =>
         companionState.findingOpponent = false
         testForCoin(image)
         testForOpponentName(image)
@@ -131,42 +115,36 @@ class GameMonitor(
         testForOpponentClass(image)
         iterationsSinceClassCheckingStarted += 1
 
-      case _ =>
-    }
-  } catch {
-    case t: Throwable =>
-      error(t.getMessage, t)
-      uiLog.error(t.getMessage, t)
-  }
-
-  private def handleScreenEvent(evt: ScreenEvent) = {
-    evt.screen match {
-      case PLAY_LOBBY =>
+      case PlayLobby =>
         handlePlayLobby(evt)
 
-      case PRACTICE_LOBBY if companionState.mode != PRACTICE =>
+      case PracticeLobby if companionState.mode != PRACTICE =>
         uiLog.info("Practice Mode detected")
         companionState.mode = PRACTICE
+        detectDeck(evt)
 
-      case VERSUS_LOBBY if companionState.mode != FRIENDLY =>
+      case FriendlyLobby if companionState.mode != FRIENDLY =>
         uiLog.info("Versus Mode detected")
         companionState.mode = FRIENDLY
+        detectDeck(evt)
 
-      case ARENA_LOBBY if companionState.mode != ARENA =>
+      case ArenaLobby if companionState.mode != ARENA =>
         uiLog.info("Arena Mode detected")
         companionState.mode = ARENA
         companionState.isNewArenaRun = isNewArenaRun(evt.image)
 
-      case _ =>
-        debug("no change in game mode")
-    }
-    evt.screen.group match {
-      case ScreenGroup.MATCH_PLAYING => testForOpponentOrYourTurn(evt.image)
-      case ScreenGroup.MATCH_END => testForVictoryOrDefeat(evt.image)
-      case _ =>
-    }
+      case OngoingGameScreen =>
+        testForOpponentOrYourTurn(evt.image)
 
-    detectDeck(evt)
+      case GameResultScreen =>
+        testForVictoryOrDefeat(evt.image)
+
+      case _ =>
+    }
+  } catch {
+    case NonFatal(t) =>
+      error(t.getMessage, t)
+      uiLog.error(t.getMessage, t)
   }
 
   private def testForVictoryOrDefeat(image: BufferedImage) {
@@ -176,7 +154,7 @@ class GameMonitor(
         case Some(outcome) =>
           uiLog.info(s"Result detected by screen capture : $outcome")
           hsMatch.result = Some(outcome)
-          hsMatch.endMatch 
+          hsMatch.endMatch
           matchUtils.submitMatchResult()
           deckOverlay.reset
         case _ =>
@@ -188,10 +166,10 @@ class GameMonitor(
   def victoryOrDefeatDetected = matchState.currentMatch.flatMap(_.result).isDefined
 
   private def testForOpponentOrYourTurn(image: BufferedImage) {
-    if (!matchState.started ) {
-        testForCoin(image)
-        testForOpponentName(image)
-        matchState.started = true
+    if (!matchState.started) {
+      testForCoin(image)
+      testForOpponentName(image)
+      matchState.started = true
     }
     import companionState._
     import inGameAnalyser._
@@ -238,18 +216,15 @@ class GameMonitor(
     }
   }
 
-  private def detectDeck(evt: ScreenEvent): Unit = {
-    if (Seq(ScreenGroup.PLAY, ScreenGroup.PRACTICE) contains evt.screen.group) {
-      for {
-        deckSlot <- imageIdentifyDeckSlot(evt.image)
-        if Some(deckSlot) != companionState.deckSlot
-      } {
-        uiLog.info(s"deck slot $deckSlot detected")
-        companionState.deckSlot = Some(deckSlot)
-        deckUtils.getDeckFromSlot(deckSlot) foreach deckOverlay.show
-      }
+  private def detectDeck(evt: ScreenEvent): Unit =
+    for {
+      deckSlot <- imageIdentifyDeckSlot(evt.image)
+      if Some(deckSlot) != companionState.deckSlot
+    } {
+      uiLog.info(s"deck slot $deckSlot detected")
+      companionState.deckSlot = Some(deckSlot)
+      deckUtils.getDeckFromSlot(deckSlot) foreach deckOverlay.show
     }
-  }
 
   private def handlePlayLobby(evt: ScreenEvent): Unit = {
     if (matchState.lastMatch.isDefined && !matchState.submitted && matchState.started) {
@@ -266,8 +241,9 @@ class GameMonitor(
     }
     if (companionState.mode == RANKED && companionState.rank.isEmpty) {
       companionState.rank = lobbyAnalyser.analyzeRankLevel(evt.image)
-      uiLog.info(s"rank ${companionState.rank} detected")
+      companionState.rank.map(r => uiLog.info(s"rank $r detected"))
     }
+    detectDeck(evt)
   }
 
   private def testForCoin(image: BufferedImage): Unit = {
@@ -319,4 +295,47 @@ class GameMonitor(
     }
     matchState.currentMatch.get
   }
+
+  /**
+   * Also updates the current state.
+   */
+  private def eventFromImage(bi: BufferedImage): Option[ScreenEvent] = try {
+    import companionState._
+    if (iterationsSinceScreenMatched > 10) { lastScreen = None }
+    Option(screenAnalyser.identifyScreen(bi, lastScreen.getOrElse(null))) match {
+      case Some(screen) =>
+        iterationsSinceScreenMatched = 0
+        val e = eventFromScreen(screen, bi)
+        debug(s"screen $screen => event $e")
+        e
+      case None =>
+        info(s"no screen match on image, last match was $lastScreen $iterationsSinceScreenMatched iterations ago")
+        iterationsSinceScreenMatched += 1
+        None
+    }
+  } catch {
+    case NonFatal(e) => error(e.getMessage, e); None
+  }
+
+  private def eventFromScreen(newScreen: Screen, image: BufferedImage): Option[ScreenEvent] = {
+    import Screen._
+    import companionState._
+    import net.hearthstats.game.GameEvents._
+
+    if (newScreen == PLAY_LOBBY && individualPixelAnalyser.testAllPixelsMatch(image, UniquePixel.allBackgroundPlay))
+      //      Sometimes the OS X version captures a screenshot where, apparently, Hearthstone hasn't finished compositing the screen
+      //    and so we only get the background. This can happen whenever there is something layered over the main screen, for example
+      //    during the 'Finding Opponent', 'Victory' and 'Defeat' screens.</p>
+      //   At the moment I haven't worked out how to ensure we always get the completed screen. So this method detects when
+      //    we've receive and incomplete play background instead of the 'Finding Opponent' screen, so we can reject it and try again.</p>
+      None
+    else if (lastScreen == FINDING_OPPONENT && iterationsSinceFindingOpponent < 5) {
+      iterationsSinceFindingOpponent += 1
+      None
+    } else {
+      iterationsSinceFindingOpponent = 0
+      Some(ScreenEvent(newScreen, image))
+    }
+  }
+
 }

@@ -23,7 +23,6 @@ import net.hearthstats.game.imageanalysis.IndividualPixelAnalyser
 import net.hearthstats.companion.GameMonitor
 import net.hearthstats.game.imageanalysis.LobbyAnalyser
 import net.hearthstats.game.imageanalysis.ScreenAnalyser
-import net.hearthstats.companion.ImageToEvent
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.game.imageanalysis.HsClassAnalyser
 import net.hearthstats.game.imageanalysis.InGameAnalyser
@@ -63,7 +62,6 @@ class Main(
 
   val screenAnalyser = wire[ScreenAnalyser]
   val individualPixelAnalyser = wire[IndividualPixelAnalyser]
-  val imageToEvent = wire[ImageToEvent]
   val lobbyAnalyser = wire[LobbyAnalyser]
   val igAnalyser = wire[InGameAnalyser]
   val classAnalyser = wire[HsClassAnalyser]

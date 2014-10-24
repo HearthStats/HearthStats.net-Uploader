@@ -3,6 +3,7 @@ package net.hearthstats.companion
 import grizzled.slf4j.Logging
 import net.hearthstats.core.GameMode
 import net.hearthstats.core.Rank
+import net.hearthstats.game.Screen
 
 /**
  * Current perception of HearthStone game by the companion.
@@ -19,4 +20,10 @@ class CompanionState extends Logging {
   var iterationsSinceYourTurn = 0
   var iterationsSinceOpponentTurn = 0
   var isYourTurn = false
+
+  var lastScreen: Option[Screen] = None
+
+  var iterationsSinceFindingOpponent = 0
+  var iterationsSinceScreenMatched = 0
 }
+

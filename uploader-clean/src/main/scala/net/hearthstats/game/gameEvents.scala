@@ -2,8 +2,7 @@ package net.hearthstats.game
 
 import java.awt.image.BufferedImage
 
-import CardEventType.DRAWN
-import CardEventType.REPLACED
+import CardEventType.{ DRAWN, REPLACED }
 import net.hearthstats.core.Card
 
 sealed trait GameEvent
@@ -18,11 +17,40 @@ object CardEvents {
 
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent
 
-object ArenaRunEnd extends GameEvent
-object FindingOpponent extends GameEvent
-case class StartingHand(image: BufferedImage) extends GameEvent
-case class FirstTurn(image: BufferedImage) extends GameEvent
-
-case class ScreenEvent(screen: Screen, image: BufferedImage) extends GameEvent {
+case class ScreenEvent(screen: HsScreen, image: BufferedImage) extends GameEvent {
   override def toString = s"ScreenEvent($screen)"
+}
+
+sealed trait HsScreen
+case object MainScreen extends HsScreen
+case object QuestsScreen extends HsScreen
+case object ArenaLobby extends HsScreen
+case object ArenaRunEnd extends HsScreen
+case object FriendlyLobby extends HsScreen
+case object PlayLobby extends HsScreen
+case object PracticeLobby extends HsScreen
+case object FindingOpponent extends HsScreen
+case object MatchStartScreen extends HsScreen
+case object StartingHandScreen extends HsScreen
+case object OngoingGameScreen extends HsScreen
+case object GameResultScreen extends HsScreen
+
+package object GameEvents {
+  import net.hearthstats.game.Screen._
+  import net.hearthstats.game.ScreenGroup._
+
+  implicit def screenToObject(s: Screen): HsScreen = s match {
+    case MAIN => MainScreen
+    case MAIN_TODAYSQUESTS => QuestsScreen
+    case ARENA_LOBBY => ArenaLobby
+    case ARENA_END => ArenaRunEnd
+    case VERSUS_LOBBY => FriendlyLobby
+    case PLAY_LOBBY => PlayLobby
+    case PRACTICE_LOBBY => PracticeLobby
+    case FINDING_OPPONENT => FindingOpponent
+    case MATCH_VS => MatchStartScreen
+    case MATCH_STARTINGHAND => StartingHandScreen
+    case s if s.group == MATCH_PLAYING => OngoingGameScreen
+    case s if s.group == MATCH_END => GameResultScreen
+  }
 }

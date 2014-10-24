@@ -5,8 +5,8 @@ import java.awt.image.BufferedImage
 import grizzled.slf4j.Logging
 
 trait ImageAnalyser extends Logging {
-  val individualPixelAnalyser = new IndividualPixelAnalyser
-  val rankLevelOcr = new RankLevelOcr
+  protected val individualPixelAnalyser = new IndividualPixelAnalyser
+  protected val rankLevelOcr = new RankLevelOcr
 
   protected def identify[T](image: BufferedImage, pixelRules: Iterable[(Array[UniquePixel], T)]): Option[T] =
     (for {

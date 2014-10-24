@@ -47,7 +47,6 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val screenAnalyser = mock[ScreenAnalyser]
   val individualPixelAnalyser = mock[IndividualPixelAnalyser]
 
-  val imageToEvent = wire[ImageToEvent]
   val lobbyAnalyser = mock[LobbyAnalyser]
   val classAnalyser = mock[HsClassAnalyser]
   val igAnalyser = mock[InGameAnalyser]
