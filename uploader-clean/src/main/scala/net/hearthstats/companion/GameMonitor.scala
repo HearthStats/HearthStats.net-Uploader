@@ -244,9 +244,11 @@ class GameMonitor(
         companionState.mode = RANKED
       case _ => // assuming no change in the mode
     }
-    if (companionState.mode == RANKED && companionState.rank.isEmpty) {
-      companionState.rank = lobbyAnalyser.analyzeRankLevel(evt.image)
-      companionState.rank.map(r => uiLog.info(s"rank $r detected"))
+    if (companionState.mode == RANKED) {
+      for (r <- lobbyAnalyser.analyzeRankLevel(evt.image) if companionState.rank != Some(r)) {
+        companionState.rank = Some(r)
+        uiLog.info(s"rank $r detected")
+      }
     }
     detectDeck(evt.image)
   }
