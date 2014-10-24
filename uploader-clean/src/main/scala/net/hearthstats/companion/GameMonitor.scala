@@ -123,11 +123,6 @@ class GameMonitor(
           d <- deckUtils.getDeckFromSlot(slot)
         } yield d
 
-      case FirstTurn(image) =>
-        testForCoin(image)
-        testForOpponentName(image)
-        matchState.started = true
-
       case StartingHand(image) =>
         companionState.findingOpponent = false
         testForCoin(image)
@@ -181,7 +176,9 @@ class GameMonitor(
         case Some(outcome) =>
           uiLog.info(s"Result detected by screen capture : $outcome")
           hsMatch.result = Some(outcome)
+          hsMatch.endMatch 
           matchUtils.submitMatchResult()
+          deckOverlay.reset
         case _ =>
           debug("Result not detected on screen capture")
       }
@@ -191,6 +188,11 @@ class GameMonitor(
   def victoryOrDefeatDetected = matchState.currentMatch.flatMap(_.result).isDefined
 
   private def testForOpponentOrYourTurn(image: BufferedImage) {
+    if (!matchState.started ) {
+        testForCoin(image)
+        testForOpponentName(image)
+        matchState.started = true
+    }
     import companionState._
     import inGameAnalyser._
     if (isYourTurn) {

@@ -85,15 +85,6 @@ class DeckOverlaySwing(
     super.dispose()
   }
 
-  //  val newEvents = cardEvents.publish
-  //  val connection = newEvents.connect
-  //  newEvents.subscribe {
-  //    _ match {
-  //      case CardEvent(card, DRAWN) => findLabel(card) map (_.decreaseRemaining())
-  //      case CardEvent(card, REPLACED) => findLabel(card) map (_.increaseRemaining())
-  //    }
-  //  }
-
   private def findLabel(c: Card): Option[ClickableLabel] =
     if (c.collectible) {
       val l = cardLabels.get(c.name)
@@ -111,7 +102,10 @@ class DeckOverlaySwing(
   def addCard(card: Card): Unit = {
     findLabel(card) map (_.increaseRemaining())
   }
-
+  def reset = {
+    cardLabels.foreach { keyVal => keyVal._2.reset() }
+  }
+  
   case class MouseHandler(card: Card, imageLabel: JLabel) extends MouseAdapter {
     override def mouseEntered(e: MouseEvent) {
       val localFile = environment.imageCacheFile(card.fileName).getAbsolutePath
@@ -135,4 +129,8 @@ trait DeckOverlayPresenter {
    * When a card is replaced (ie mulligan).
    */
   def addCard(card: Card)
+  /**
+   * Reset the overlay without changing the deck
+   */
+  def reset
 }

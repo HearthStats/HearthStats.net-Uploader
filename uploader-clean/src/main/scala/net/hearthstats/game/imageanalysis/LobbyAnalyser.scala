@@ -40,8 +40,8 @@ class LobbyAnalyser extends ImageAnalyser {
         Array(DECK_SLOT_8A, DECK_SLOT_8B) -> 8,
         Array(DECK_SLOT_9A, DECK_SLOT_9B) -> 9))
     res match {
-      case Some(deckSlot) => info(s"deck $deckSlot selected")
-      case None => info(s"deckslot not detected")
+      case Some(deckSlot) => debug(s"deck $deckSlot selected")
+      case None => debug(s"deckslot not detected")
     }
     res
   }

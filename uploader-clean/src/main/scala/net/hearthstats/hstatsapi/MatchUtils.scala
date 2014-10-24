@@ -77,70 +77,12 @@ class MatchUtils(
     }
 
     val describeTurns = t("match.end.turns", numTurns)
+    
+    val describeDuration = t("match.end.duration", duration)
 
-    s"$describeMode $describeCoin $describePlayers $describeResult $describeDeck $describeTurns"
+
+    s"$describeMode $describeCoin $describePlayers $describeResult $describeDeck $describeTurns $describeDuration"
   }
-
-  // import scala.concurrent.ExecutionContext.Implicits.global
-  //      HearthstoneAnalyser.videoEncoder.finish().onSuccess {
-  //        case fileName =>
-  //          ReplayHandler.handleNewReplay(fileName, hsMatch).onSuccess {
-  //            case name =>
-  //              val msg = s"Video replay of your match $name successfully uploaded"
-  //              Log.info(msg)
-  //              mainFrame.notify(msg)
-  //          }
-  /**
-   * Checks whether the match result is complete, showing a popup if necessary
-   * to fix the match data, and then submits the match when ready.
-   *
-   * @param hsMatch
-   *          The match to check and submit.
-   */
-  //  private def showEndMatchPopup(): Unit = {
-  //      val matchPopup = optionMatchPopup.get
-  //      val showPopup = matchPopup match {
-  //        case MatchPopup.ALWAYS => true
-  //        case MatchPopup.INCOMPLETE => !hsMatch.isDataComplete
-  //        case MatchPopup.NEVER => false
-  //        case _ => throw new UnsupportedOperationException("Unknown config option " + matchPopup)
-  //      }
-  //      if (showPopup) {
-  //        Swing.onEDT {
-  //          try {
-  //            var matchHasValidationErrors = !hsMatch.isDataComplete
-  //            var infoMessage: String = null
-  //            do {
-  //              if (infoMessage == null) {
-  //                infoMessage = if (matchPopup == MatchPopup.INCOMPLETE)
-  //                  t("match.popup.message.incomplete")
-  //                else
-  //                  t("match.popup.message.always")
-  //              }
-  //              mainFrame.bringWindowToFront()
-  //              val buttonPressed = MatchEndPopup.showPopup(mainFrame, hsMatch, infoMessage, t("match.popup.title"))
-  //              matchHasValidationErrors = !hsMatch.isDataComplete
-  //              buttonPressed match {
-  //                case Button.SUBMIT => if (matchHasValidationErrors) {
-  //                  infoMessage = "Some match information is incomplete.<br>Please update these details then click Submit to submit the match to HearthStats:"
-  //                } else {
-  //                  _submitMatchResult(hsMatch)
-  //                }
-  //                case Button.CANCEL => return
-  //              }
-  //            } while (matchHasValidationErrors);
-  //          } catch {
-  //            case e: Exception => Main.showErrorDialog("Error submitting match result", e)
-  //          }
-  //        }
-  //      } else
-  //        try {
-  //          _submitMatchResult(hsMatch)
-  //        } catch {
-  //          case e: Exception => Main.showErrorDialog("Error submitting match result", e)
-  //        }
-  //    }
-  //  }
 
   private def submitMatchImpl(hsMatch: HearthstoneMatch): Unit = {
     val header = t("match.end.submitting")
