@@ -26,7 +26,7 @@ class HearthstoneMatch(var mode: GameMode = GameMode.UNDETECTED,
   private var _userClassUnconfirmed: Boolean = true
   //needed for java calls
   def this() = this(mode = null)
-  
+
   val startedAt: Long = System.currentTimeMillis
 
   def describeResult: String = result match {
@@ -87,8 +87,10 @@ class HearthstoneMatch(var mode: GameMode = GameMode.UNDETECTED,
       StringUtils.isNotBlank(opponentName) &&
       mode != GameMode.UNDETECTED
 
-  def editUrl: String =
-    s"http://hearthstats.net/constructeds/$id/edit"
-    
-  def endMatch = duration =  Math.round((System.currentTimeMillis - startedAt) / 1000)
+  def editUrl: String = {
+    val m = if (mode == GameMode.ARENA) "arenas" else "constructeds"
+    s"http://hearthstats.net/$m/$id/edit"
+  }
+
+  def endMatch = duration = Math.round((System.currentTimeMillis - startedAt) / 1000)
 }
