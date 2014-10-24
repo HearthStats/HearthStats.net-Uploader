@@ -41,10 +41,21 @@ class MatchPanel(
 
   add(new JLabel(t("match.label.your_class") + " "), "skip,right")
   add(_currentYourClassSelector, "wrap")
+    _currentYourClassSelector.addActionListener( new ActionListener() {
+ 	override def actionPerformed(e: ActionEvent)
+	{
+	  matchState.setUserClass( _currentYourClassSelector.selection )
+	}
+  })
   add(new JLabel(t("match.label.opponents_class") + " "), "skip,right")
   add(_currentOpponentClassSelect, "wrap")
   add(new JLabel("Opponent's Name: "), "skip,right")
-
+  _currentOpponentClassSelect.addActionListener( new ActionListener() {
+ 	override def actionPerformed(e: ActionEvent)
+	{
+	  matchState.setOpponentClass( _currentOpponentClassSelect.selection )
+	}
+  })
   _currentOpponentNameField.setMinimumSize(new Dimension(100, 1))
   _currentOpponentNameField.addKeyListener(new KeyAdapter {
     override def keyReleased(e: KeyEvent) {
@@ -105,6 +116,9 @@ class MatchPanel(
       _lastMatchButton.setToolTipText(tooltip + " on HearthStats.net")
       _lastMatchButton.setText(description)
       _lastMatchButton.setEnabled(true)
+      
+      resetFields
+      
     }
 
   def setCurrentMatchEnabled(enabled: Boolean) {
@@ -115,9 +129,13 @@ class MatchPanel(
     _currentNotesField.setEnabled(enabled)
   }
 
-  def resetMatchClassSelectors() {
+  def resetFields() {
     _currentYourClassSelector.selection = HeroClass.UNDETECTED
     _currentOpponentClassSelect.selection = HeroClass.UNDETECTED
+    _currentGameCoinField.setSelected(false)
+    _currentNotesField.setText("")
+    _currentOpponentNameField.setText("")
+    
   }
 
   def setOpponentClass(hc: HeroClass) = _currentOpponentClassSelect.selection = hc

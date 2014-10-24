@@ -46,10 +46,10 @@ class ImageToEvent(
       case Some(screen) =>
         iterationsSinceScreenMatched = 0
         val e = eventFromScreen(screen, bi)
-        info(s"screen $screen => event $e")
+        debug(s"screen $screen => event $e")
         e
       case None =>
-        info(s"no screen match on image, last match was $lastScreen $iterationsSinceScreenMatched iterations ago")
+        debug(s"no screen match on image, last match was $lastScreen $iterationsSinceScreenMatched iterations ago")
         iterationsSinceScreenMatched += 1
         None
     }
@@ -65,11 +65,12 @@ class ImageToEvent(
       iterationsSinceFindingOpponent = 0
       val screenToEvent: PartialFunction[Screen, GameEvent] = _ match {
         case s if (Seq(PLAY_LOBBY, ARENA_LOBBY, PRACTICE_LOBBY, VERSUS_LOBBY) contains s) ||
+          (s.group == ScreenGroup.MATCH_PLAYING) ||
           (s.group == ScreenGroup.MATCH_END) => ScreenEvent(s, image)
         case ARENA_END => ArenaRunEnd
         case FINDING_OPPONENT => FindingOpponent
         case s if s.group == MATCH_START => StartingHand(image)
-        case s if s.group == MATCH_PLAYING => FirstTurn(image)
+//        case s if s.group == MATCH_PLAYING => FirstTurn(image)
       }
       if (screenToEvent.isDefinedAt(newScreen)) {
         lastScreen = Some(newScreen)

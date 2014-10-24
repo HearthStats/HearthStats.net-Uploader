@@ -26,24 +26,8 @@ class HearthstoneMatch(var mode: GameMode = GameMode.UNDETECTED,
   private var _userClassUnconfirmed: Boolean = true
   //needed for java calls
   def this() = this(mode = null)
-
-  /**
-   * Sets the deck slot being used for this match. This will apply the hero class of that deck to
-   * the match, unless a hero class has already been detected and set.
-   * @param value
-   */
-  //  def deckSlot_=(value: Int) {
-  //    _deckSlot = value
-  //    if (_userClassUnconfirmed) {
-  //      val deck = DeckUtils.getDeckFromSlot(value)
-  //      if (deck.isDefined) {
-  //        // Set the user class, but it may be overridden later if it's detected to be different
-  //        _userClass = deck.get.hero
-  //      }
-  //    }
-  //  }
-
-  val startedAt = DateTime.now
+  
+  val startedAt: Long = System.currentTimeMillis
 
   def describeResult: String = result match {
     case Some(r) => r.toString
@@ -105,4 +89,6 @@ class HearthstoneMatch(var mode: GameMode = GameMode.UNDETECTED,
 
   def editUrl: String =
     s"http://hearthstats.net/constructeds/$id/edit"
+    
+  def endMatch = duration =  Math.round((System.currentTimeMillis - startedAt) / 1000)
 }

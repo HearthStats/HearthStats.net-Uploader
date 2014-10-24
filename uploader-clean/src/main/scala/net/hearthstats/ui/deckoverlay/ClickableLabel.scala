@@ -116,6 +116,13 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
     remaining += 1
     updateRemaining()
   }
+  
+  def reset(): Unit =  {
+    while ( remaining < card.count ) {
+      remaining += 1
+    }
+    updateRemaining()
+  }
 
   private def updateRemaining() {
     currentBack =
