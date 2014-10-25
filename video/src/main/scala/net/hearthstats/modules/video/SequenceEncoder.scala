@@ -18,7 +18,7 @@ class SequenceEncoder extends VideoEncoder with Logging {
     videoHeight: Int = 600) = new OngoingVideo {
 
     val video = File.createTempFile("HSReplay", ".mp4").getAbsolutePath
-    debug(s"writing to $video")
+    info(s"writing to $video")
 
     var time = 0
     var closed = false
@@ -44,6 +44,7 @@ class SequenceEncoder extends VideoEncoder with Logging {
         closed = true
         Future {
           writer.close()
+          info(s"Video $video finished encoding")
           video
         }
       } else Promise[String].future // never completes
@@ -54,7 +55,9 @@ class SequenceEncoder extends VideoEncoder with Logging {
       val filtered =
         if (w <= x && h <= y) bi
         else {
-          val scale = Math.min(x.toFloat / w, y.toFloat / h)
+          val computedHeight = (h * Math.min(x.toFloat / w, y.toFloat / h)).toInt
+          val targetHeight = if (computedHeight % 2 == 0) computedHeight else computedHeight + 1
+          val scale = computedHeight / h.toFloat
           val at = AffineTransform.getScaleInstance(scale, scale)
           val scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR)
           scaleOp.filter(bi, null)

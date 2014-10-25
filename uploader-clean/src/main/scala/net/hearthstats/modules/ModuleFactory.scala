@@ -13,13 +13,12 @@ import grizzled.slf4j.Logging
 abstract class ModuleFactory[M](
   name: String,
   moduleInterface: Class[M],
-  use: => Boolean = false,
   dummyClass: Class[_ <: M]) extends Logging {
 
   var status: Status = INITIAL
 
-  def newInstance: M =
-    if (FAILURE == status || !use) dummyImpl
+  def newInstance(useDummy: Boolean = false): M =
+    if (FAILURE == status || useDummy) dummyImpl
     else {
       try {
         val inst = moduleImpl
@@ -39,11 +38,15 @@ abstract class ModuleFactory[M](
       }
     }
 
-  lazy val moduleImpl: M =
+  lazy val moduleImpl: M = {
+    info(s"Instantiation $moduleInterface from SPI")
     ServiceLoader.load(moduleInterface).iterator.toList.head
+  }
 
-  lazy val dummyImpl: M =
+  lazy val dummyImpl: M = {
+    info(s"Dummy instantiation for $moduleInterface :$dummyClass")
     dummyClass.newInstance
+  }
 
 }
 sealed trait Status

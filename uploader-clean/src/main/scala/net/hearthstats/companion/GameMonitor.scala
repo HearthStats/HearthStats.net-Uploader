@@ -20,6 +20,7 @@ import rx.lang.scala.JavaConversions.toScalaObservable
 import rx.lang.scala.Observable
 import rx.subjects.PublishSubject
 import net.hearthstats.game.ocr.BackgroundImageSave
+import net.hearthstats.modules.VideoEncoderFactory
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -33,11 +34,13 @@ class GameMonitor(
   classAnalyser: HsClassAnalyser,
   inGameAnalyser: InGameAnalyser,
   screenAnalyser: ScreenAnalyser,
+  videoEncoderFactory: VideoEncoderFactory,
   uiLog: Log,
   hsPresenter: HearthstatsPresenter,
   deckOverlay: DeckOverlayModule) extends Logging {
 
   import lobbyAnalyser._
+  import config._
   import companionState.iterationsSinceClassCheckingStarted
 
   val subject = PublishSubject.create[Boolean]
@@ -98,8 +101,8 @@ class GameMonitor(
       case PracticeLobby if companionState.mode != PRACTICE => handlePracticeLobby(image)
       case FriendlyLobby if companionState.mode != FRIENDLY => handleFriendlyLobby(image)
       case ArenaLobby if companionState.mode != ARENA => handleArenaLobby(image)
-      case OngoingGameScreen => testForOpponentOrYourTurn(image)
-      case GameResultScreen => testForVictoryOrDefeat(image)
+      case OngoingGameScreen => handleOngoingGame(image)
+      case GameResultScreen => handleEndResult(image)
       case _ =>
     }
   } catch {
@@ -126,6 +129,8 @@ class GameMonitor(
 
   private def handleMatchStart(image: BufferedImage): Unit = {
     companionState.findingOpponent = false
+    val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
+    companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
     testForCoin(image)
     testForOpponentName(image)
     testForYourClass(image)
@@ -151,7 +156,8 @@ class GameMonitor(
     detectDeck(image)
   }
 
-  private def testForVictoryOrDefeat(image: BufferedImage) {
+  private def handleEndResult(image: BufferedImage) {
+    companionState.ongoingVideo.map(_.finish())
     if (!victoryOrDefeatDetected) {
       info("Testing for victory or defeat")
       inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
@@ -170,7 +176,8 @@ class GameMonitor(
   private def victoryOrDefeatDetected =
     matchState.currentMatch.flatMap(_.result).isDefined
 
-  private def testForOpponentOrYourTurn(image: BufferedImage) {
+  private def handleOngoingGame(image: BufferedImage) {
+    companionState.ongoingVideo.map(_.encodeImage(image))
     if (!matchState.started) {
       testForCoin(image)
       testForOpponentName(image)

@@ -37,6 +37,11 @@ class UserConfig extends Logging {
   val notifyDeck = config("notify.deck", true)
   val notifyTurn = config("notify.turn", true)
 
+  val recordVideo = config("video.record", true)
+  val videoFps = config("video.fps", 25)
+  val videoWidth = config("video.width", 800)
+  val videoHeight = config("video.fps", 600)
+
   val windowX = config("ui.window.x", 0)
   val windowY = config("ui.window.y", 0)
   val windowHeight = config("ui.window.height", 700)
@@ -131,6 +136,10 @@ class UserConfig extends Logging {
         prefs.put(key, value.toString)
     }
   }
+}
+
+object UserConfig {
+
 }
 
 trait ConfigValue[T] {
