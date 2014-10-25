@@ -14,9 +14,10 @@ import scala.util.control.NonFatal
 
 class SequenceEncoder extends VideoEncoder with Logging {
 
-  def newVideo(framesPerSec: Int = 10,
-    videoWidth: Int = 800,
-    videoHeight: Int = 600) = new OngoingVideo {
+  def newVideo(framesPerSec: Int = 10, videoWidth: Int = 800, videoHeight: Int = 600) =
+    new SequenceEncoderOngoingVideo(framesPerSec, videoWidth, videoHeight)
+
+  class SequenceEncoderOngoingVideo(framesPerSec: Int = 10, videoWidth: Int = 800, videoHeight: Int = 600) extends OngoingVideo {
 
     val video = File.createTempFile("HSReplay", ".mp4").getAbsolutePath
     info(s"writing to $video")
@@ -56,7 +57,7 @@ class SequenceEncoder extends VideoEncoder with Logging {
       } else Promise[String].future // never completes
     }
 
-    private def resize(bi: BufferedImage, x: Int, y: Int): BufferedImage = {
+    def resize(bi: BufferedImage, x: Int, y: Int): BufferedImage = {
       val (h, w) = (bi.getHeight, bi.getWidth)
       val filtered =
         if (w <= x && h <= y) bi

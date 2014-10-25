@@ -1,4 +1,4 @@
-package net.hearthstats.video
+package net.hearthstats.modules.video
 
 import java.io.File
 
