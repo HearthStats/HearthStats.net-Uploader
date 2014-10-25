@@ -1,10 +1,12 @@
-package net.hearthstats.upload
+package net.hearthstats.modules.upload
 
 import java.io.File
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import net.hearthstats.aws.HearthstatsAwsClient
+import net.hearthstats.modules.aws.HearthstatsAwsClient;
 import grizzled.slf4j.Logging
+
 import java.text.SimpleDateFormat
 import java.util.Date
 

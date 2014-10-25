@@ -2,6 +2,7 @@ package net.hearthstats.aws
 
 import java.io.{ File, FileOutputStream, OutputStreamWriter }
 
+import net.hearthstats.modules.aws.HearthstatsAwsClient;
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 
