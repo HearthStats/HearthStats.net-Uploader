@@ -22,6 +22,7 @@ case class ScreenEvent(screen: HsScreen, image: BufferedImage) extends GameEvent
 }
 
 sealed trait HsScreen
+case object TitleScreen extends HsScreen
 case object MainScreen extends HsScreen
 case object QuestsScreen extends HsScreen
 case object ArenaLobby extends HsScreen
@@ -40,6 +41,7 @@ package object GameEvents {
   import net.hearthstats.game.ScreenGroup._
 
   implicit def screenToObject(s: Screen): HsScreen = s match {
+    case TITLE => TitleScreen
     case MAIN => MainScreen
     case MAIN_TODAYSQUESTS => QuestsScreen
     case ARENA_LOBBY => ArenaLobby

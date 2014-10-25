@@ -103,7 +103,7 @@ class GameMonitor(
       case ArenaLobby if companionState.mode != ARENA => handleArenaLobby(image)
       case OngoingGameScreen => handleOngoingGame(image)
       case GameResultScreen => handleEndResult(image)
-      case _ =>
+      case other => info(s"$other, no action taken")
     }
   } catch {
     case NonFatal(t) =>
@@ -130,8 +130,10 @@ class GameMonitor(
 
   private def handleMatchStart(image: BufferedImage): Unit = {
     companionState.findingOpponent = false
-    val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
-    companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
+    if (companionState.ongoingVideo.isEmpty) {
+      val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
+      companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
+    }
     addImageToVideo(image)
     testForCoin(image)
     testForOpponentName(image)
@@ -161,6 +163,7 @@ class GameMonitor(
   private def handleEndResult(image: BufferedImage) {
     addImageToVideo(image)
     companionState.ongoingVideo.map(_.finish())
+    companionState.ongoingVideo = None
     if (!victoryOrDefeatDetected) {
       info("Testing for victory or defeat")
       inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
