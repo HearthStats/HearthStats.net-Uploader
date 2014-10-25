@@ -68,7 +68,7 @@
 			<id>travis</id>
 			<modules>
 				<module>video</module>
-<!-- 				<module>uploader-osx</module> -->
+				<module>uploader-osx</module>
 			</modules>
 		</profile>
 		<profile>
@@ -111,6 +111,12 @@
 				<artifactId>cobertura-maven-plugin</artifactId>
 				<version>2.6</version>
 				<configuration>
+					<instrumentation>
+						<excludes>
+							<exclude>**/*$*</exclude>
+							<exclude>**/*$</exclude>
+						</excludes>
+					</instrumentation>
 					<format>xml</format>
 					<maxmem>256m</maxmem>
 					<aggregate>true</aggregate>
