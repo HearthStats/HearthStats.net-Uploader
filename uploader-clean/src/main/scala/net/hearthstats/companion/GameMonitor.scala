@@ -41,7 +41,7 @@ class GameMonitor(
   import companionState.iterationsSinceClassCheckingStarted
 
   val subject = PublishSubject.create[Boolean]
-  val hsFound: Observable[Boolean] = subject.asObservable.cache
+  val hsFound: Observable[Boolean] = subject.asObservable
 
   var checkIfRunning: Option[ScheduledFuture[_]] = None
 
