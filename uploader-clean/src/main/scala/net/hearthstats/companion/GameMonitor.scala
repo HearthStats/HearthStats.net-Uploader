@@ -123,6 +123,7 @@ class GameMonitor(
   }
 
   private def handleStartingHand(image: BufferedImage): Unit = {
+    addImageToVideo(image)
     testForCoin(image)
     testForOpponentName(image)
   }
@@ -131,6 +132,7 @@ class GameMonitor(
     companionState.findingOpponent = false
     val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
     companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
+    addImageToVideo(image)
     testForCoin(image)
     testForOpponentName(image)
     testForYourClass(image)
@@ -157,6 +159,7 @@ class GameMonitor(
   }
 
   private def handleEndResult(image: BufferedImage) {
+    addImageToVideo(image)
     companionState.ongoingVideo.map(_.finish())
     if (!victoryOrDefeatDetected) {
       info("Testing for victory or defeat")
@@ -173,11 +176,14 @@ class GameMonitor(
     }
   }
 
+  private def addImageToVideo(i: BufferedImage): Unit =
+    companionState.ongoingVideo.map(_.encodeImage(i))
+
   private def victoryOrDefeatDetected =
     matchState.currentMatch.flatMap(_.result).isDefined
 
   private def handleOngoingGame(image: BufferedImage) {
-    companionState.ongoingVideo.map(_.encodeImage(image))
+    addImageToVideo(image)
     if (!matchState.started) {
       testForCoin(image)
       testForOpponentName(image)

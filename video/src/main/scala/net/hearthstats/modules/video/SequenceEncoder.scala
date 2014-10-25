@@ -10,6 +10,7 @@ import grizzled.slf4j.Logging
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import com.xuggle.xuggler.IRational
+import scala.util.control.NonFatal
 
 class SequenceEncoder extends VideoEncoder with Logging {
 
@@ -26,13 +27,18 @@ class SequenceEncoder extends VideoEncoder with Logging {
 
     override def encodeImage(bi: BufferedImage): Unit = video.synchronized {
       if (!closed) {
-        val resized = resize(bi, videoWidth, videoHeight)
-        if (writer == null) {
-          writer = createWriter(resized)
+        try {
+          val resized = resize(bi, videoWidth, videoHeight)
+          if (writer == null) {
+            writer = createWriter(resized)
+          }
+          writer.encodeVideo(0, resized, time, TimeUnit.MILLISECONDS)
+          time += 1000 / framesPerSec
+          debug(s"encoded until $time ms")
+        } catch {
+          case NonFatal(e) => warn(s"could not encode an image into video", e)
+          //normally only happens with screenshots used in tests
         }
-        writer.encodeVideo(0, resized, time, TimeUnit.MILLISECONDS)
-        time += 1000 / framesPerSec
-        debug(s"encoded until $time ms")
       }
     }
 
