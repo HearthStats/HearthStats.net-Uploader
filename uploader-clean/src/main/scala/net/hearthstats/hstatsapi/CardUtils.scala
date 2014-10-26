@@ -1,19 +1,16 @@
 package net.hearthstats.hstatsapi
 
-import java.io.FileOutputStream
-import java.io.File
+import java.io.{File, FileOutputStream, IOException}
 import java.net.URL
 import java.nio.channels.Channels
-import scala.collection.JavaConversions.asScalaBuffer
-import scala.concurrent._
-import scala.util.Failure
-import scala.util.Success
-import scala.concurrent.duration._
-import java.io.IOException
-import net.hearthstats.core.Card
-import net.hearthstats.config.Environment
-import net.hearthstats.ui.log.Log
+
 import grizzled.slf4j.Logging
+import net.hearthstats.config.Environment
+import net.hearthstats.core.Card
+import net.hearthstats.ui.log.Log
+
+import scala.concurrent._
+import scala.util.{Failure, Success}
 
 class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Logging {
 
@@ -39,7 +36,7 @@ class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Loggin
       environment.imageCacheFile(c.originalName)))
 
   def downloadImages(cards: List[Card]): Future[Unit] = {
-    import ExecutionContext.Implicits.global
+    import scala.concurrent.ExecutionContext.Implicits.global
     (new File(environment.imageCacheFolder)).mkdirs()
     val futures = for (card <- cards) yield future {
       val file = card.localFile getOrElse environment.imageCacheFile(card.originalName)

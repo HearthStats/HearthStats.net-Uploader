@@ -1,19 +1,16 @@
 package net.hearthstats.ui
 
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.event.{ ActionEvent, ActionListener, KeyAdapter, KeyEvent }
-import javax.swing.{ JButton, JCheckBox, JComboBox, JLabel, JPanel, JTextArea, JTextField }
-import javax.swing.BorderFactory.{ createCompoundBorder, createEmptyBorder, createMatteBorder }
-import javax.swing.event.{ ChangeEvent, ChangeListener }
-import net.hearthstats.companion.CompanionState
-import net.hearthstats.core.{ HearthstoneMatch, HeroClass }
+import java.awt.{Color, Dimension}
+import java.awt.event.{ActionEvent, ActionListener, KeyAdapter, KeyEvent}
+import javax.swing.BorderFactory.{createCompoundBorder, createEmptyBorder, createMatteBorder}
+import javax.swing.event.{ChangeEvent, ChangeListener}
+import javax.swing.{JButton, JCheckBox, JComboBox, JLabel, JPanel, JTextArea, JTextField}
+
+import net.hearthstats.core.{GameMode, HearthstoneMatch, HeroClass}
 import net.hearthstats.game.MatchState
 import net.hearthstats.ui.log.Log
-import net.hearthstats.util.{ Browse, Translation }
+import net.hearthstats.util.{Browse, Translation}
 import net.miginfocom.swing.MigLayout
-import net.hearthstats.core.GameMode
-import net.hearthstats.core.HearthstoneMatch
 
 class MatchPanel(
   matchState: MatchState,

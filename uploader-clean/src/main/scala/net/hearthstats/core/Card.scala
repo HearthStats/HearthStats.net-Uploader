@@ -1,7 +1,6 @@
 package net.hearthstats.core
 
 import java.io.File
-import java.net.URL
 
 case class Card(
   id: Int,

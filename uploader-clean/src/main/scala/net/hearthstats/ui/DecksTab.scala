@@ -2,32 +2,23 @@ package net.hearthstats.ui
 
 import java.awt.BorderLayout
 import java.io.IOException
-import javax.swing._
+import javax.swing.{JButton, JComboBox, JLabel, JOptionPane, JPanel}
 
-import grizzled.slf4j.Logging
-import net.hearthstats.Constants._
 import net.hearthstats._
-import net.hearthstats.util.Translations.t
-import net.hearthstats.util.{Browse, HsRobot}
-import net.miginfocom.swing.MigLayout
-import org.json.simple.JSONObject
-
-import scala.collection.JavaConversions._
-import scala.swing.Swing._
-import org.json.simple.JSONObject
-import javax.swing.{ JButton, JComboBox, JLabel, JOptionPane, JPanel }
-import net.hearthstats._
-import net.hearthstats.core.Deck
-import net.hearthstats.hstatsapi.{ API, DeckUtils }
+import net.hearthstats.core.{Deck, HeroClass}
 import net.hearthstats.hstatsapi.HearthStatsUrls._
-import net.hearthstats.util.{ Browse, Translation }
+import net.hearthstats.hstatsapi.{API, DeckUtils}
+import net.hearthstats.util.{Browse, Translation}
 import net.miginfocom.swing.MigLayout
-import net.hearthstats.core.HeroClass
+import org.json.simple.JSONObject
+
+import scala.swing.Swing._
 
 class DecksTab(
   translation: Translation,
   api: API,
   deckUtils: DeckUtils,
+  exportDeckBox: ExportDeckBox,
   programHelper: ProgramHelper) extends JPanel {
 
   import translation.t
@@ -74,7 +65,7 @@ class DecksTab(
   add(new JLabel(" "), "wrap")
   add(new JLabel(" "), "wrap")
   val exportButton = new JButton(t("button.export_deck"))
-  exportButton.addActionListener(ActionListener(_ => onEDT(ExportDeckBox.open(monitor))))
+  exportButton.addActionListener(ActionListener(_ => onEDT(exportDeckBox.open())))
   add(exportButton, "skip")
 
   add(new JLabel(" "), "wrap")
@@ -138,7 +129,7 @@ class DecksTab(
     }
 
     def doCreate(d: Deck) = {
-      monitor._hsHelper.bringWindowToForeground
+      programHelper.bringWindowToForeground
       HsRobot(programHelper.getHSWindowBounds).create(d)
     }
   }

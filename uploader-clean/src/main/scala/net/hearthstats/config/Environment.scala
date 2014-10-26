@@ -1,10 +1,11 @@
 package net.hearthstats.config
 
+import java.io.File
+
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
-import net.hearthstats.updater.api.model.Release
-import java.io.File
 import net.hearthstats.ui.notification._
+import net.hearthstats.updater.api.model.Release
 
 /**
  * Represents the environment-specific information that varies between OS X and Windows.

@@ -1,43 +1,23 @@
 package net.hearthstats.companion
 
-import org.scalatest._
-import org.junit.runner.RunWith
-import com.softwaremill.macwire.MacwireMacros._
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{ Finders, FlatSpec, Matchers }
-import com.softwaremill.macwire.MacwireMacros.wire
-import net.hearthstats.config.TestEnvironment
-import net.hearthstats.config.UserConfig
-import net.hearthstats.config.TestConfig
-import net.hearthstats.ui.log.Log
-import java.net.URL
-import org.scalatest.mock.MockitoSugar
-import net.hearthstats.ProgramHelper
-import org.mockito.Mockito._
-import org.mockito.Matchers._
-import javax.imageio.ImageIO
-import net.hearthstats.core.GameMode._
-import net.hearthstats.core.Rank
-import net.hearthstats.game.imageanalysis.LobbyAnalyser
-import net.hearthstats.game.imageanalysis.RelativePixelAnalyser
-import net.hearthstats.game.imageanalysis.ScreenAnalyser
-import net.hearthstats.game.imageanalysis.IndividualPixelAnalyser
-import net.hearthstats.game.Screen
 import java.awt.image.BufferedImage
-import net.hearthstats.game.imageanalysis.Ranked
-import net.hearthstats.game.imageanalysis.Casual
-import net.hearthstats.game.imageanalysis.LobbyMode
-import org.mockito.ArgumentCaptor
-import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.game.imageanalysis.HsClassAnalyser
+
+import com.softwaremill.macwire.MacwireMacros.wire
+import net.hearthstats.ProgramHelper
+import net.hearthstats.config.{TestConfig, UserConfig}
+import net.hearthstats.core.GameMode._
+import net.hearthstats.core.{Deck, Rank}
+import net.hearthstats.game.{MatchState, Screen}
+import net.hearthstats.game.imageanalysis.{Casual, HsClassAnalyser, InGameAnalyser, IndividualPixelAnalyser, LobbyAnalyser, LobbyMode, Ranked, ScreenAnalyser}
+import net.hearthstats.hstatsapi.{DeckUtils, MatchUtils}
 import net.hearthstats.ui.HearthstatsPresenter
-import net.hearthstats.game.imageanalysis.InGameAnalyser
-import net.hearthstats.hstatsapi.DeckUtils
-import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
-import net.hearthstats.ui.deckoverlay.DeckOverlayPresenter
-import net.hearthstats.core.Deck
-import net.hearthstats.game.MatchState
-import net.hearthstats.hstatsapi.MatchUtils
+import net.hearthstats.ui.log.Log
+import org.junit.runner.RunWith
+import org.mockito.Matchers._
+import org.mockito.Mockito._
+import org.scalatest.junit.JUnitRunner
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{FlatSpec, Matchers, _}
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest with BeforeAndAfter {

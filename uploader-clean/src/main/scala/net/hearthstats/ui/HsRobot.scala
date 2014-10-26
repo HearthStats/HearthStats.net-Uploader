@@ -1,11 +1,12 @@
 package net.hearthstats.ui
 
 import java.awt.event.InputEvent
-import net.hearthstats.core.Deck
 import java.awt.event.KeyEvent._
 import java.awt.{Rectangle, Robot}
 
 import grizzled.slf4j.Logging
+import net.hearthstats.core.Deck
+import net.hearthstats.util.Coordinate
 
 case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) extends Logging {
 
@@ -65,7 +66,7 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) extends Logging {
     robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
   }
 
-  def drag(from: Point, to: Point): Unit = {
+  def drag(from: Coordinate, to: Coordinate): Unit = {
     logger.debug(s"Dragged from  ${from.x},${from.y} to ${to.x},${to.y})")
     robot.mouseMove(from.x, from.y)
     robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
@@ -118,20 +119,20 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) extends Logging {
     val extraWidth = (width.toFloat - (height.toFloat * 4 / 3)).toInt
     val xOffset = (extraWidth / 2).toInt
 
-    def search: Point = applyRatio(0.48f, 0.915f)
-    def card: Point = applyRatio(0.12f, 0.31f)
-    def collectionScroll: Point = applyRatio(0.972f, 0.05f)
+    def search = applyRatio(0.48f, 0.915f)
+    def card = applyRatio(0.12f, 0.31f)
+    def collectionScroll = applyRatio(0.972f, 0.05f)
 
     private def applyRatio(r: (Float, Float)) = {
       val (a, b) = r
-      Point(x + xOffset + a * (width - extraWidth), y + b * height)
+      Coordinate(x + xOffset + a * (width - extraWidth), y + b * height)
     }
   }
 
   sealed trait Resolution {
-    def search: Point
-    def card: Point
-    def collectionScroll: Point
+    def search: Coordinate
+    def card: Coordinate
+    def collectionScroll: Coordinate
   }
 
 }

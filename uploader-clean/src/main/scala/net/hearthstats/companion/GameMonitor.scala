@@ -1,25 +1,25 @@
 package net.hearthstats.companion
 
 import java.awt.image.BufferedImage
-import java.util.concurrent.{ Executors, ScheduledFuture, TimeUnit }
-import scala.util.control.NonFatal
+import java.util.concurrent.{Executors, ScheduledFuture, TimeUnit}
+
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 import net.hearthstats.config.UserConfig
-import net.hearthstats.core.GameMode.{ ARENA, CASUAL, FRIENDLY, PRACTICE, RANKED }
+import net.hearthstats.core.GameMode.{ARENA, CASUAL, FRIENDLY, PRACTICE, RANKED}
 import net.hearthstats.core.HeroClass
-import net.hearthstats.game._
-import net.hearthstats.game.GameEvents.screenToObject
 import net.hearthstats.game.Screen._
+import net.hearthstats.game._
 import net.hearthstats.game.imageanalysis._
-import net.hearthstats.game.ocr.{ OpponentNameOcr, OpponentNameRankedOcr, OpponentNameUnrankedOcr }
-import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
+import net.hearthstats.game.ocr.{BackgroundImageSave, OpponentNameOcr, OpponentNameRankedOcr, OpponentNameUnrankedOcr}
+import net.hearthstats.hstatsapi.{DeckUtils, MatchUtils}
 import net.hearthstats.ui.HearthstatsPresenter
 import net.hearthstats.ui.log.Log
 import rx.lang.scala.JavaConversions.toScalaObservable
 import rx.lang.scala.Observable
 import rx.subjects.PublishSubject
-import net.hearthstats.game.ocr.BackgroundImageSave
+
+import scala.util.control.NonFatal
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -37,8 +37,8 @@ class GameMonitor(
   hsPresenter: HearthstatsPresenter,
   deckOverlay: DeckOverlayModule) extends Logging {
 
-  import lobbyAnalyser._
   import companionState.iterationsSinceClassCheckingStarted
+  import lobbyAnalyser._
 
   val subject = PublishSubject.create[Boolean]
   val hsFound: Observable[Boolean] = subject.asObservable.cache
@@ -330,7 +330,7 @@ class GameMonitor(
       //    and so we only get the background. This can happen whenever there is something layered over the main screen, for example
       //    during the 'Finding Opponent', 'Victory' and 'Defeat' screens.</p>
       //   At the moment I haven't worked out how to ensure we always get the completed screen. So this method detects when
-      //    we've receive and incomplete play background instead of the 'Finding Opponent' screen, so we can reject it and try again.</p>
+      //    we've received and incomplete play background instead of the 'Finding Opponent' screen, so we can reject it and try again.</p>
       None
     else if (lastScreen == FINDING_OPPONENT && iterationsSinceFindingOpponent < 5) {
       iterationsSinceFindingOpponent += 1

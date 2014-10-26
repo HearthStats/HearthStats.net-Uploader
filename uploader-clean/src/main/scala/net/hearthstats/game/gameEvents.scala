@@ -2,8 +2,8 @@ package net.hearthstats.game
 
 import java.awt.image.BufferedImage
 
-import CardEventType.{ DRAWN, REPLACED }
 import net.hearthstats.core.Card
+import net.hearthstats.game.CardEventType.{DRAWN, REPLACED}
 
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
@@ -22,6 +22,7 @@ case class ScreenEvent(screen: HsScreen, image: BufferedImage) extends GameEvent
 }
 
 sealed trait HsScreen
+case object TitleScreen extends HsScreen
 case object MainScreen extends HsScreen
 case object QuestsScreen extends HsScreen
 case object ArenaLobby extends HsScreen
@@ -34,6 +35,8 @@ case object MatchStartScreen extends HsScreen
 case object StartingHandScreen extends HsScreen
 case object OngoingGameScreen extends HsScreen
 case object GameResultScreen extends HsScreen
+case object CollectionScreen extends HsScreen
+case object CollectionDeckScreen extends HsScreen
 
 package object GameEvents {
   import net.hearthstats.game.Screen._
@@ -52,5 +55,9 @@ package object GameEvents {
     case MATCH_STARTINGHAND => StartingHandScreen
     case s if s.group == MATCH_PLAYING => OngoingGameScreen
     case s if s.group == MATCH_END => GameResultScreen
+    case COLLECTION_DECK => CollectionDeckScreen
+    case COLLECTION => CollectionScreen
+    case COLLECTION_ZOOM => CollectionScreen
+    case TITLE => TitleScreen
   }
 }

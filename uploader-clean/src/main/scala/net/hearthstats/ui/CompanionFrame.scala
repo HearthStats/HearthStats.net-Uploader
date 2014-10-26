@@ -1,32 +1,24 @@
 package net.hearthstats.ui
 
+import java.awt.Dimension
 import java.awt.Frame._
-import java.awt.{ AWTException, Desktop, Dimension, Font, MenuItem, PopupMenu, SystemTray, TrayIcon }
-import java.awt.event.{ ActionEvent, ActionListener, MouseAdapter, MouseEvent, WindowAdapter, WindowEvent, WindowStateListener }
-import java.io.IOException
-import java.net.URI
 import javax.swing.JOptionPane._
 import javax.swing.ScrollPaneConstants._
-import javax.swing.{ ImageIcon, JFrame, JPanel, JScrollPane, JTabbedPane, _ }
-import grizzled.slf4j.Logging
-import net.hearthstats.config.{ Application, Environment }
-import org.apache.commons.lang3.StringUtils
-import scala.swing.Swing
-import net.hearthstats.config.UserConfig
-import net.hearthstats.ui.log.LogPane
-import net.hearthstats.util.Translation
+import javax.swing.{ImageIcon, JScrollPane, JTabbedPane}
+
 import com.softwaremill.macwire.MacwireMacros.wire
-import net.hearthstats.ui.notification.NotificationQueue
-import net.hearthstats.ui.log.Log
-import net.hearthstats.hstatsapi.API
-import net.hearthstats.hstatsapi.DeckUtils
+import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
-import net.hearthstats.hstatsapi.HearthStatsUrls._
-import net.hearthstats.util.Browse
 import net.hearthstats.companion.CompanionState
+import net.hearthstats.config.{Environment, UserConfig}
+import net.hearthstats.core.{HearthstoneMatch, HeroClass}
 import net.hearthstats.game.MatchState
-import net.hearthstats.core.HeroClass
-import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.hstatsapi.HearthStatsUrls._
+import net.hearthstats.hstatsapi.{API, CardUtils, DeckUtils}
+import net.hearthstats.ui.log.{Log, LogPane}
+import net.hearthstats.ui.notification.NotificationQueue
+import net.hearthstats.util.{Browse, Translation}
+import org.apache.commons.lang3.StringUtils
 
 /**
  * Main Frame for HearthStats Companion.
@@ -39,6 +31,7 @@ class CompanionFrame(val environment: Environment,
   companionState: CompanionState,
   matchState: MatchState,
   api: API,
+  cardUtils: CardUtils,
   deckUtils: DeckUtils,
   translation: Translation) extends GeneralUI with HearthstatsPresenter with Logging {
 
@@ -48,6 +41,7 @@ class CompanionFrame(val environment: Environment,
   uiLog.logPane = logText
   val logScroll = new JScrollPane(logText, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED)
   val tabbedPane = new JTabbedPane
+  val exportDeckBox: ExportDeckBox = wire[ExportDeckBox]
   val optionsPanel: OptionsPanel = wire[OptionsPanel]
   val aboutPanel: AboutPanel = wire[AboutPanel]
   val matchPanel: MatchPanel = wire[MatchPanel]
@@ -80,7 +74,7 @@ class CompanionFrame(val environment: Environment,
   def matchSubmitted(m: HearthstoneMatch, description: String): Unit = matchPanel.matchSubmitted(m, description)
 
   def updateTitle() {
-    var title = "HearthStats.net Companion"
+    var title = "HearthStats Companion"
     //    if (monitor._hearthstoneDetected) {
     //      if (HearthstoneAnalyser.screen != null) {
     //        title += " - " + HearthstoneAnalyser.screen.title

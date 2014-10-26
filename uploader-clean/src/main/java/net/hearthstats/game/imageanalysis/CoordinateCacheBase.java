@@ -72,7 +72,7 @@ public class CoordinateCacheBase {
         return result;
     }
 
-    static class UniquePixelIdentifier {
+    public static class UniquePixelIdentifier {
         final int x;
         final int y;
         final int width;

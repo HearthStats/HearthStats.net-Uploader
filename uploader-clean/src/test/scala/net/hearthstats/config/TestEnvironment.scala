@@ -30,6 +30,7 @@ object TestProgramHelper extends ProgramHelper {
   def foundProgram = true
   def getHSWindowBounds = null
   def getScreenCapture = null
+  def bringWindowToForeground = false
   //  override def createConfig(environment: Environment) = false
 
 }

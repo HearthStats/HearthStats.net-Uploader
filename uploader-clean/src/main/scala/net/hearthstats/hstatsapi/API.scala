@@ -1,14 +1,15 @@
 package net.hearthstats.hstatsapi
 
 import java.io.IOException
-import java.net.{ HttpURLConnection, URL }
-import scala.collection.JavaConversions.{ asScalaBuffer, mapAsJavaMap }
-import org.json.simple.{ JSONArray, JSONObject }
-import org.json.simple.parser.JSONParser
+import java.net.{HttpURLConnection, URL}
+
 import grizzled.slf4j.Logging
-import net.hearthstats.core.{ ArenaRun, HearthstoneMatch }
 import net.hearthstats.config.UserConfig
-import net.hearthstats.core.GameMode
+import net.hearthstats.core.{ArenaRun, HearthstoneMatch}
+import org.json.simple.parser.JSONParser
+import org.json.simple.{JSONArray, JSONObject}
+
+import scala.collection.JavaConversions.{asScalaBuffer, mapAsJavaMap}
 
 //TODO : replace this JSON implementation with a more typesafe one
 class API(config: UserConfig) extends Logging {
@@ -68,10 +69,10 @@ class API(config: UserConfig) extends Logging {
   def createDeck(jsonDeck: JSONObject): Boolean = {
     _post("decks/create", jsonDeck) match {
       case Some(result) =>
-        _dispatchResultMessage("Deck was exported to HearthStats.net successfully")
+        info("Deck was exported to HearthStats.net successfully")
         true
       case None =>
-        _dispatchResultMessage("Error occurred while exporting deck to HearthStats.net")
+        warn("Error occurred while exporting deck to HearthStats.net")
         false
     }
   }

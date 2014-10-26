@@ -1,9 +1,8 @@
 package net.hearthstats.game.ocr;
 
-import net.hearthstats.analysis.HearthstoneAnalyser;
+import net.hearthstats.game.ScreenConfig;
 import net.sourceforge.tess4j.TessAPI;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 
 
@@ -14,8 +13,8 @@ public class DeckNameOcr extends OcrBase {
 
   @Override
   protected BufferedImage crop(BufferedImage image, int iteration) {
-    float ratio = HearthstoneAnalyser.getRatio(image);
-    int xOffset = HearthstoneAnalyser.getXOffset(image, ratio);
+    float ratio = ScreenConfig.getRatio(image);
+    int xOffset = ScreenConfig.getXOffset(image, ratio);
 
     int x = (int) (1256 * ratio + xOffset);
     int y = (int) (65 * ratio);

@@ -50,6 +50,8 @@ object MockedMain extends TesseractSetup with App with Logging {
 
     def getHSWindowBounds = null
 
+    def bringWindowToForeground = false
+
   }
 
   def img(fileName: String) = ImageIO.read(classOf[InGameAnalyser].getResourceAsStream(fileName + ".png"))

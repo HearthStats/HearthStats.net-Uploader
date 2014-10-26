@@ -2,37 +2,22 @@ package net.hearthstats
 
 import java.awt.Component
 import java.io.File
-import scala.collection.JavaConversions._
+import javax.swing.{JFrame, JOptionPane, WindowConstants}
+
 import com.softwaremill.macwire.MacwireMacros._
 import grizzled.slf4j.Logging
-import javax.swing.{ JDialog, JFrame, JOptionPane, WindowConstants }
-import net.hearthstats.config.{ Application, Environment }
+import net.hearthstats.companion.{CompanionState, DeckOverlayModule, GameMonitor}
+import net.hearthstats.config.{Application, Environment, UserConfig}
+import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.game.{HearthstoneLogMonitor, MatchState}
+import net.hearthstats.game.imageanalysis.{HsClassAnalyser, InGameAnalyser, IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser}
+import net.hearthstats.hstatsapi.{API, CardUtils, DeckUtils, MatchUtils}
+import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.DialogNotification
-import net.hearthstats.util.{ Translation, TranslationConfig }
+import net.hearthstats.ui.{CompanionFrame, ExportDeckBox, MatchEndPopup}
+import net.hearthstats.util.{AnalyticsTrackerFactory, FileObserver, Translation, TranslationConfig, Updater}
 import net.sourceforge.tess4j.Tesseract
-import net.hearthstats.config.UserConfig
-import net.hearthstats.util.Updater
-import net.hearthstats.ui.CompanionFrame
-import net.hearthstats.companion.CompanionState
-import net.hearthstats.game.MatchState
-import net.hearthstats.hstatsapi.API
-import net.hearthstats.hstatsapi.DeckUtils
-import net.hearthstats.hstatsapi.CardUtils
-import net.hearthstats.game.imageanalysis.IndividualPixelAnalyser
-import net.hearthstats.companion.GameMonitor
-import net.hearthstats.game.imageanalysis.LobbyAnalyser
-import net.hearthstats.game.imageanalysis.ScreenAnalyser
-import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.game.imageanalysis.HsClassAnalyser
-import net.hearthstats.game.imageanalysis.InGameAnalyser
-import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
-import net.hearthstats.hstatsapi.MatchUtils
-import net.hearthstats.util.AnalyticsTrackerFactory
-import net.hearthstats.util.FileObserver
-import net.hearthstats.game.HearthstoneLogMonitor
-import net.hearthstats.companion.DeckOverlayModule
-import net.hearthstats.ui.MatchEndPopup
 
 class Main(
   environment: Environment,

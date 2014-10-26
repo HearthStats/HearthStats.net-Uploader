@@ -62,7 +62,7 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
     val cards = new ListBuffer[Card]
 
 
-    for (i <- 0 until CardsVisibleOnScreen) {
+    for (i <- 0 until DeckAnalyser.CardsVisibleOnScreen) {
 
       val cardImg = extractCardImage(img, i)
 

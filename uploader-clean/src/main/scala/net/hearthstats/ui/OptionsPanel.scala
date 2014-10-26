@@ -1,22 +1,24 @@
 package net.hearthstats.ui
 
-import java.awt.{ Font, Dimension }
-import java.awt.event.{ ActionEvent, ActionListener }
+import java.awt.event.{ActionEvent, ActionListener}
+import java.awt.{Dimension, Font}
 import javax.swing._
 import javax.swing.event.{DocumentEvent, DocumentListener}
 
 import net.hearthstats.config._
-import net.miginfocom.swing.MigLayout
-import net.hearthstats.util.Translation
 import net.hearthstats.ui.notification.NotificationType
+import net.hearthstats.util.Translation
+import net.miginfocom.swing.MigLayout
+
+import scala.swing.Swing._
 
 class OptionsPanel(
   translation: Translation,
   config: UserConfig,
   environment: Environment) extends JPanel {
 
-  import translation.t
   import config._
+  import translation.t
 
   private var notificationsFormat: JComboBox[String] = _
 
@@ -37,8 +39,8 @@ class OptionsPanel(
     def changedUpdate(e: DocumentEvent): Unit = handleChange
     def removeUpdate(e: DocumentEvent): Unit = handleChange
     def handleChange = onEDT({
-      if (configUserKey.get != userKeyField.getText) {
-        configUserKey.set(userKeyField.getText)
+      if (userKey.get != userKeyField.getText) {
+        userKey.set(userKeyField.getText)
       }
     })
   })
@@ -156,14 +158,16 @@ class OptionsPanel(
 
   addLabel()
   val resetButton = new JButton(t("button.reset_default"))
+
   resetButton.addActionListener(new ActionListener {
     def actionPerformed(e: ActionEvent) = onEDT({
-      UserConfig.clearPreferences()
+      ConfigUtil.clearPreferences()
       // Recreate the options panel to cause it to reload all the defaults
-      mainFrame.tabbedPane.remove(3)
-      mainFrame.optionsPanel = new OptionsPanel(mainFrame)
-      mainFrame.tabbedPane.insertTab(t("tab.options"), null, mainFrame.optionsPanel, null, 3)
-      mainFrame.tabbedPane.setSelectedIndex(3)
+//      val mainFrame: CompanionFrame = wire[CompanionFrame]
+//      mainFrame.tabbedPane.remove(3)
+//      mainFrame.optionsPanel = wire[OptionsPanel]
+//      mainFrame.tabbedPane.insertTab(t("tab.options"), null, mainFrame.optionsPanel, null, 3)
+//      mainFrame.tabbedPane.setSelectedIndex(3)
     })
   })
   add(resetButton, "wrap")
@@ -236,7 +240,7 @@ class OptionsPanel(
         // This is a lazy way to get an instance of the class, the old value isn't actually used
         val oldValue = configValue.get;
         configValue.set(oldValue.getClass.getEnumConstants()(comboBox.getSelectedIndex))
-      }
+      })
     })
 
     add(comboBox, constraints)

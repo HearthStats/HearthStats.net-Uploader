@@ -3,16 +3,15 @@ package net.hearthstats.ui
 import java.awt.Color
 import java.io.{IOException, InputStreamReader}
 import java.util.HashMap
-
-import org.apache.commons.io.IOUtils
-import org.apache.commons.lang3.text.StrSubstitutor
-
-import javax.swing.{JEditorPane, JScrollPane}
 import javax.swing.ScrollPaneConstants.{HORIZONTAL_SCROLLBAR_NEVER, VERTICAL_SCROLLBAR_AS_NEEDED}
 import javax.swing.text.html.HTMLDocument
+import javax.swing.{JEditorPane, JScrollPane}
+
 import net.hearthstats.config.Application
 import net.hearthstats.ui.log.{Log, LogPane}
 import net.hearthstats.util.Translation
+import org.apache.commons.io.IOUtils
+import org.apache.commons.lang3.text.StrSubstitutor
 
 class AboutPanel(translation: Translation, uiLog: Log) extends JScrollPane {
   import translation.t

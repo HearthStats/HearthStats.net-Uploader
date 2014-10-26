@@ -1,10 +1,11 @@
 package net.hearthstats.ui.log
 
-import java.io.{ IOException, InputStreamReader }
-import javax.swing.{ JEditorPane, SwingUtilities }
-import javax.swing.text.BadLocationException
+import java.io.InputStreamReader
+import javax.swing.JEditorPane
 import javax.swing.text.html.HTMLDocument
+
 import net.hearthstats.ui.HyperLinkHandler
+
 import scala.swing.Swing
 
 /**

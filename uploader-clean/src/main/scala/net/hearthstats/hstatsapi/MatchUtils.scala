@@ -1,20 +1,14 @@
 package net.hearthstats.hstatsapi
 
-import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.game.MatchState
+import java.awt.Component
+
 import net.hearthstats.companion.CompanionState
-import net.hearthstats.core.ArenaRun
+import net.hearthstats.core.{ArenaRun, GameMode, HearthstoneMatch}
+import net.hearthstats.game.MatchState
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.NotificationQueue
-import net.hearthstats.util.Translation
-import net.hearthstats.util.Tracker
-import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.ui.MatchEndPopup
-import net.hearthstats.ui.HearthstatsPresenter
-import java.awt.Component
-import net.hearthstats.ui.Button
-import net.hearthstats.core.GameMode
-import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.ui.{Button, HearthstatsPresenter, MatchEndPopup}
+import net.hearthstats.util.{Tracker, Translation}
 
 class MatchUtils(
   matchState: MatchState,

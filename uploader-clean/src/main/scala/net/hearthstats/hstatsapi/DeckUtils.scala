@@ -1,13 +1,13 @@
 package net.hearthstats.hstatsapi
 
 import java.io.IOException
-import scala.collection.JavaConversions.{ asScalaBuffer, bufferAsJavaList, seqAsJavaList }
-import org.json.simple.JSONObject
-import net.hearthstats.core.Deck
+
+import net.hearthstats.core.{Card, Deck, HeroClass}
 import net.hearthstats.ui.log.Log
 import org.apache.commons.lang3.StringUtils
-import net.hearthstats.core.Card
-import net.hearthstats.core.HeroClass
+import org.json.simple.JSONObject
+
+import scala.collection.JavaConversions.seqAsJavaList
 
 class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
 
@@ -50,7 +50,7 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
     val cardList: List[Card] =
       Option(json.get("cardstring")) match {
         case Some(cs) if StringUtils.isNotBlank(cs.toString) =>
-          parseDeckString(cs.toString.trim)
+          parseCardString(cs.toString.trim)
         case _ => Nil
       }
 
@@ -65,7 +65,7 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
       activeSlot = Option(json.get("slot")).map(_.toString.toInt))
   }
 
-  def parseDeckString(ds: String): List[Card] = {
+  def parseCardString(ds: String): List[Card] = {
     val cardData = cardUtils.cards
     val cards = for {
       card <- ds.split(",").toList
@@ -76,4 +76,26 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
     } yield cd.copy(count = Integer.parseInt(count))
     cards.sorted
   }
+
+  def parseDeckString(ds: String): List[Card] = {
+    val cardMap = cardUtils.cards.values.map(c => c.name -> c).toMap
+    val cards = for {
+      card <- ds.split("\n").toList
+      count = try {
+        Integer.parseInt(card.substring(0, 1))
+      } catch {
+        case e: NumberFormatException => 0
+      }
+      cd = cardMap.get(card.substring(2))
+    } yield cd match {
+        case Some(c) =>
+          c.copy(count = count)
+        case None =>
+          // If the card is invalid, then return a made-up card. This might be better implemented as a different class
+          // to indicate that the card couldn't be identified
+          new Card(id = 0, originalName = card, collectible = false)
+      }
+    cards.sorted
+  }  
+
 }
