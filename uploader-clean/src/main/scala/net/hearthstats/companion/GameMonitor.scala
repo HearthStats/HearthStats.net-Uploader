@@ -21,6 +21,7 @@ import rx.lang.scala.Observable
 import rx.subjects.PublishSubject
 import net.hearthstats.game.ocr.BackgroundImageSave
 import net.hearthstats.modules.VideoEncoderFactory
+import net.hearthstats.modules.ReplayHandler
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -35,6 +36,7 @@ class GameMonitor(
   inGameAnalyser: InGameAnalyser,
   screenAnalyser: ScreenAnalyser,
   videoEncoderFactory: VideoEncoderFactory,
+  replayHandler: ReplayHandler,
   uiLog: Log,
   hsPresenter: HearthstatsPresenter,
   deckOverlay: DeckOverlayModule) extends Logging {
@@ -162,7 +164,9 @@ class GameMonitor(
 
   private def handleEndResult(image: BufferedImage) {
     addImageToVideo(image)
-    companionState.ongoingVideo.map(_.finish())
+    for (v <- companionState.ongoingVideo) {
+      hsMatch.replayFile = v.finish
+    }
     companionState.ongoingVideo = None
     if (!victoryOrDefeatDetected) {
       info("Testing for victory or defeat")
@@ -172,6 +176,11 @@ class GameMonitor(
           hsMatch.result = Some(outcome)
           hsMatch.endMatch
           matchUtils.submitMatchResult()
+          import scala.concurrent.ExecutionContext.Implicits.global
+          val submittedMatch = hsMatch
+          for (f <- hsMatch.replayFile) {
+            replayHandler.handleNewReplay(f, submittedMatch)
+          }
           deckOverlay.reset
         case _ =>
           debug("Result not detected on screen capture")

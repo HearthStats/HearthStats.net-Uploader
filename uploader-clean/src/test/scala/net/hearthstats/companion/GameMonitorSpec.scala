@@ -39,6 +39,7 @@ import net.hearthstats.core.Deck
 import net.hearthstats.game.MatchState
 import net.hearthstats.hstatsapi.MatchUtils
 import net.hearthstats.modules.VideoEncoderFactory
+import net.hearthstats.modules.ReplayHandler
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest with BeforeAndAfter {
@@ -61,6 +62,7 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val hsPresenter = mock[HearthstatsPresenter]
   val deckOverlay = mock[DeckOverlayModule]
   val videoEncoderFactory = wire[VideoEncoderFactory]
+  val replayHandler = mock[ReplayHandler]
   val monitor = wire[GameMonitor]
 
   val rank8Lobby = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)

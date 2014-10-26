@@ -34,6 +34,8 @@ import net.hearthstats.game.HearthstoneLogMonitor
 import net.hearthstats.companion.DeckOverlayModule
 import net.hearthstats.ui.MatchEndPopup
 import net.hearthstats.modules.VideoEncoderFactory
+import net.hearthstats.modules.ReplayHandler
+import net.hearthstats.modules.FileUploaderFactory
 
 class Main(
   environment: Environment,
@@ -77,6 +79,8 @@ class Main(
   val logMonitor = wire[HearthstoneLogMonitor]
   val deckOverlayModule = wire[DeckOverlayModule]
   val videoEncoderFactory = wire[VideoEncoderFactory]
+  val fileUploaderFactory = wire[FileUploaderFactory]
+  val replayHandler = wire[ReplayHandler]
 
   val monitor: GameMonitor = wire[GameMonitor]
 
