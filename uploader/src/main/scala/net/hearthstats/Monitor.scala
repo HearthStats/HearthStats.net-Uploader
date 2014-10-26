@@ -114,6 +114,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
     }
     API.createMatch(hsMatch)
     hsMatch.submitted = true
+    HearthstoneAnalyser.hsMatch = new HearthstoneMatch
 
     import scala.concurrent.ExecutionContext.Implicits.global
     HearthstoneAnalyser.videoEncoder.finish().onSuccess {
@@ -137,12 +138,12 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       }
       setupLogMonitoring()
     }
-    debug("  - screen capture")
+    trace("  - screen capture")
     val image = _hsHelper.getScreenCapture
     if (image == null)
-      debug("  - screen capture returned null")
+      trace("  - screen capture returned null")
     else if (image.getWidth >= 1024) {
-      debug("  - analysing image")
+      trace("  - analysing image")
       HearthstoneAnalyser.analyze(image)
       image.flush()
     }
@@ -295,8 +296,6 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       Log.info("Opponent: " + HearthstoneAnalyser.getOpponentName)
       mainFrame.matchPanel.updateCurrentMatchUi()
 
-      mainFrame.matchPanel.setCurrentMatchEnabled(false)
-      mainFrame.matchPanel.updateCurrentMatchUi()
     case SCREEN =>
       handleScreenChange()
 
@@ -392,6 +391,7 @@ class Monitor(val environment: Environment) extends Observer with Logging {
       mainFrame.matchPanel.lastMatch = lastMatch
       if (API.message.matches(".*(Edit match|Arena match successfully created).*")) {
         HearthstoneAnalyser.hsMatch = new HearthstoneMatch
+        mainFrame.matchPanel.updateCurrentMatchUi()
         mainFrame.matchPanel.resetMatchClassSelectors()
         Log.divider()
       }

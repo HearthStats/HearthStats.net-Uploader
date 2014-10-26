@@ -65,6 +65,17 @@ class API(config: UserConfig) extends Logging {
     _post("decks/slots", jsonData)
   }
 
+  def createDeck(jsonDeck: JSONObject): Boolean = {
+    _post("decks/create", jsonDeck) match {
+      case Some(result) =>
+        _dispatchResultMessage("Deck was exported to HearthStats.net successfully")
+        true
+      case None =>
+        _dispatchResultMessage("Error occurred while exporting deck to HearthStats.net")
+        false
+    }
+  }
+
   /**
    * Returns the matchId if created OK.
    */

@@ -13,7 +13,8 @@ public class UpdaterConfiguration {
   public static final String GITHUB_API_RELEASES = "github.api.releases";
   public static final String GITHUB_API_ASSET = "github.api.asset";
   public static final String GITHUB_OWNER = "github.owner";
-  public static final String GITHUB_REPO = "github.repo";
+  public static final String GITHUB_REPO_OLD = "github.repo.old";
+  public static final String GITHUB_REPO_NEW = "github.repo.new";
 
   private static Properties properties;
 
@@ -44,12 +45,20 @@ public class UpdaterConfiguration {
   }
 
 
-  public static String getReleasesApiUrl() {
-    return MessageFormat.format(prop(GITHUB_API_RELEASES), prop(GITHUB_OWNER), prop(GITHUB_REPO));
+  public static String getOldReleasesApiUrl() {
+    return MessageFormat.format(prop(GITHUB_API_RELEASES), prop(GITHUB_OWNER), prop(GITHUB_REPO_OLD));
   }
 
-  public static String getAssetApiUrl(long assetId) {
-    return MessageFormat.format(prop(GITHUB_API_ASSET), prop(GITHUB_OWNER), prop(GITHUB_REPO), String.valueOf(assetId));
+  public static String getNewReleasesApiUrl() {
+    return MessageFormat.format(prop(GITHUB_API_RELEASES), prop(GITHUB_OWNER), prop(GITHUB_REPO_NEW));
+  }
+
+  public static String getOldAssetApiUrl(long assetId) {
+    return MessageFormat.format(prop(GITHUB_API_ASSET), prop(GITHUB_OWNER), prop(GITHUB_REPO_OLD), String.valueOf(assetId));
+  }
+
+  public static String getNewAssetApiUrl(long assetId) {
+    return MessageFormat.format(prop(GITHUB_API_ASSET), prop(GITHUB_OWNER), prop(GITHUB_REPO_NEW), String.valueOf(assetId));
   }
 
 

@@ -6,8 +6,8 @@
 
 	<parent>
 		<groupId>net.hearthstats</groupId>
-		<version>0.19.1-SNAPSHOT</version>
-		<artifactId>uploader-parent</artifactId>
+		<version>0.20.3-SNAPSHOT</version>
+        <artifactId>uploader-parent</artifactId>
 	</parent>
 	<artifactId>uploader</artifactId>
 
@@ -212,6 +212,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.6</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.2.2</version>
 		</dependency>
 	</dependencies>
 

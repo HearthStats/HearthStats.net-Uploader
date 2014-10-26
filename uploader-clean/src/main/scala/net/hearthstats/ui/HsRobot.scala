@@ -1,14 +1,13 @@
 package net.hearthstats.ui
 
-import java.awt.Robot
-import java.awt.event.KeyEvent._
 import java.awt.event.InputEvent
-import java.awt.Rectangle
 import net.hearthstats.core.Deck
-import net.hearthstats.util.Coordinate
-import scala.math.abs
+import java.awt.event.KeyEvent._
+import java.awt.{Rectangle, Robot}
 
-case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) {
+import grizzled.slf4j.Logging
+
+case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) extends Logging {
 
   val robot = new Robot
 
@@ -21,9 +20,29 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) {
     "Windfury" -> "Windfury GIVE")
 
   def create(deck: Deck): Unit = {
+    // A click on the search field is necessary before constructing the deck to ensure that the window has focus.
+    click(resolution.search)
     for (card <- deck.cards) {
       add(card.name, card.count)
       robot.delay(mediumDelay)
+    }
+  }
+
+  def collectionScrollAway(): Unit = {
+    var i = 0
+    click(resolution.collectionScroll)
+    robot.delay(mediumDelay)
+    for (i <- 1 to 4) {
+      scrollAway()
+    }
+  }
+
+  def collectionScrollTowards(): Unit = {
+    var i = 0
+    click(resolution.collectionScroll)
+    robot.delay(mediumDelay)
+    for (i <- 1 to 4) {
+      scrollTowards()
     }
   }
 
@@ -40,9 +59,36 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) {
   }
 
   def click(p: Coordinate): Unit = {
+    logger.debug(s"Clicked on ${p.x},${p.y}")
     robot.mouseMove(p.x, p.y)
     robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
     robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
+  }
+
+  def drag(from: Point, to: Point): Unit = {
+    logger.debug(s"Dragged from  ${from.x},${from.y} to ${to.x},${to.y})")
+    robot.mouseMove(from.x, from.y)
+    robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
+    robot.mouseMove(to.x, to.y)
+    robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
+  }
+
+  /**
+   * Scroll the mouse wheel away from user
+   * (usually correlates to 'up' on Windows and 'down' on OS X)
+   */
+  private def scrollAway(): Unit = {
+    robot.mouseWheel(-5);
+    robot.delay(shortDelay)
+  }
+
+  /**
+   * Scroll the mouse wheel towards the user
+   * (usually correlates to 'down' on Windows and 'up' on OS X)
+   */
+  private def scrollTowards(): Unit = {
+    robot.mouseWheel(5);
+    robot.delay(shortDelay)
   }
 
   def send(s: String): Unit =
@@ -66,37 +112,26 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) {
     robot.keyRelease(code)
   }
 
-  lazy val resolution: Resolution = {
-    import math._
-    val ratio = hsWindow.width.toFloat / hsWindow.height
-    def score(r: Resolution) =
-      abs(log(ratio / r.ratio))
-    Seq(Res16_9, Res4_3).sortBy(score).head
-  }
+  lazy val resolution = new Resolution {
+    import hsWindow._
 
-  sealed trait Resolution {
-    def search: Coordinate = applyRatio(searchRatio)
-    def card: Coordinate = applyRatio(cardRatio)
+    val extraWidth = (width.toFloat - (height.toFloat * 4 / 3)).toInt
+    val xOffset = (extraWidth / 2).toInt
 
-    def searchRatio: (Float, Float)
-    def cardRatio: (Float, Float)
-    def ratio: Float
+    def search: Point = applyRatio(0.48f, 0.915f)
+    def card: Point = applyRatio(0.12f, 0.31f)
+    def collectionScroll: Point = applyRatio(0.972f, 0.05f)
 
     private def applyRatio(r: (Float, Float)) = {
-      import hsWindow._
       val (a, b) = r
-      Coordinate(x + a * width, y + b * height)
+      Point(x + xOffset + a * (width - extraWidth), y + b * height)
     }
   }
 
-  case object Res16_9 extends Resolution {
-    val searchRatio = (425f / 900, 82f / 90)
-    val cardRatio = (15f / 80, 13f / 40)
-    val ratio = 16f / 9
+  sealed trait Resolution {
+    def search: Point
+    def card: Point
+    def collectionScroll: Point
   }
-  case object Res4_3 extends Resolution {
-    val searchRatio = (0.48f, 0.915f)
-    val cardRatio = (0.12f, 0.31f)
-    val ratio = 4f / 3
-  }
+
 }

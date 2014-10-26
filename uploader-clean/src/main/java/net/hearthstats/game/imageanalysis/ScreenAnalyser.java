@@ -55,7 +55,7 @@ public class ScreenAnalyser {
    */
   public Screen identifyScreen(BufferedImage image, Screen previousScreen) {
 
-    log.debug("Identifying screen");
+    log.trace("Identifying screen");
 
     // ProgramHelpers may return a null image if the window is minimised or still loading, so ignore those
     if (image == null) {
@@ -88,7 +88,7 @@ public class ScreenAnalyser {
     if (previousScreen != null) {
       if (checkForExactMatch(image, previousScreen)) {
         // This screen matches
-        log.debug("Exact match on previous screen {}", previousScreen);
+        log.trace("Exact match on previous screen {}", previousScreen);
         match = previousScreen;
       }
     }
@@ -101,7 +101,7 @@ public class ScreenAnalyser {
           // This screen matches
           if (log.isDebugEnabled()) {
             if (match == null) {
-              log.debug("Exact match on new screen {}", screen);
+              log.trace("Exact match on new screen {}", screen);
             } else {
               log.warn(
                   "More that one screen matched! Matched screen {}, but have already matched {}",
@@ -198,7 +198,7 @@ public class ScreenAnalyser {
       }
 
       if (acceptBestMatch) {
-        log.debug("Partial match on screen {}", bestMatch);
+        log.trace("Partial match on screen {}", bestMatch);
         match = bestMatch;
       }
     }
@@ -218,7 +218,7 @@ public class ScreenAnalyser {
    */
   Map<PixelLocation, Coordinate> calculatePixelPositions(int width, int height) {
 
-    log.debug("Recalculating pixel position for width {} height {}", width, height);
+    log.trace("Recalculating pixel position for width {} height {}", width, height);
 
     Map<PixelLocation, Coordinate> result;
 
@@ -324,7 +324,8 @@ public class ScreenAnalyser {
     }
 
     int matchedCount = 0;
-    int unmatchedCount = 0;
+    // Boost the unmatched count on the Starting Hand screen because it doesn't have sufficient pixels for a reliable partial match
+    int unmatchedCount = screen == Screen.MATCH_STARTINGHAND ? 1 : 0;
 
     for (Pixel pixel : screen.primaryAndSecondary) {
       Coordinate coordinate = pixelMap.get(pixel.pixelLocation);

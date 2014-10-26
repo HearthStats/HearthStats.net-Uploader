@@ -18,7 +18,16 @@ public class GitHubReleases {
 
   private static List<Release> getReleases() {
 
-    List<JsonWrapper> unparsedReleases = GitHubRequest.connect(UpdaterConfiguration.getReleasesApiUrl()).readJsonArray();
+    // Try the new name. HearthStats Companion, first:
+    GitHubRequest request = GitHubRequest.connect(UpdaterConfiguration.getNewReleasesApiUrl());
+    Integer httpResponseCode = request.getResponseCode();
+
+    if (httpResponseCode == null || httpResponseCode != 200) {
+      // The new name is not yet in use so try the old name, HearthStats.net Uploader:
+      request = GitHubRequest.connect(UpdaterConfiguration.getOldReleasesApiUrl());
+    }
+
+    List<JsonWrapper> unparsedReleases = request.readJsonArray();
 
     List<Release> releases = new ArrayList<>();
     for (JsonWrapper unparsedRelease : unparsedReleases) {

@@ -9,6 +9,7 @@ case class Card(
   count: Int = 0,
   cost: Int = 0,
   rarity: Int = 0,
+  typeId: Int = 0,
   localFile: Option[File] = None,
   localizedName: Option[String] = None, // Some(frenchName) if the game is in French
   collectible: Boolean = true)

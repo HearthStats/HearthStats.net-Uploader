@@ -93,7 +93,7 @@ object HearthstoneAnalyser extends Observable with Logging {
 
   private def handleScreenActions(image: BufferedImage, newScreen: Screen) {
     if (newScreen != null) {
-      debug(s"Screen being processed $newScreen")
+      trace(s"Screen being processed $newScreen")
       newScreen match {
         case PLAY_LOBBY =>
           testForCasualOrRanked(image)
@@ -187,8 +187,12 @@ object HearthstoneAnalyser extends Observable with Logging {
       hsMatch.initialized = true
       hsMatch.result = None
       hsMatch.mode = mode
-      hsMatch.deckSlot = deckSlot
-      hsMatch.rankLevel = rankLevel
+      if (mode != "Arena") {
+        hsMatch.deckSlot = deckSlot
+      }
+      if (mode == "Ranked") {
+        hsMatch.rankLevel = rankLevel
+      }
       val heroEvents = monitor.hearthstoneLogMonitor.heroEvents
       heroEventSubscription.map(_.unsubscribe())
       heroEventSubscription = Some(heroEvents.subscribe(heroEventHandler))
@@ -308,7 +312,7 @@ object HearthstoneAnalyser extends Observable with Logging {
 
   private def testForVictoryOrDefeat(image: BufferedImage) {
     if (!victoryOrDefeatDetected) {
-      info("Testing for victory or defeat")
+      debug("Testing for victory or defeat")
       imageShowsVictoryOrDefeat(image) match {
         case Some(outcome) =>
           info("Result detected by screen capture")
@@ -348,12 +352,15 @@ object HearthstoneAnalyser extends Observable with Logging {
 
   def imageShowsOpponentTurn(image: BufferedImage): Boolean =
     individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_OPPONENT_1A, TURN_OPPONENT_1B)) ||
+      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_OPPONENT_1AN, TURN_OPPONENT_1BN)) ||
       individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_OPPONENT_2A, TURN_OPPONENT_2B)) ||
       individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_OPPONENT_3A, TURN_OPPONENT_3B))
 
   def imageShowsYourTurn(image: BufferedImage): Boolean =
     individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_YOUR_1A, TURN_YOUR_1B)) ||
-      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_YOUR_2A, TURN_YOUR_2B))
+      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_YOUR_1AN, TURN_YOUR_1BN)) ||
+      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_YOUR_2A, TURN_YOUR_2B)) ||
+      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_YOUR_2AN, TURN_YOUR_2BN))
 
   def imageShowsOpponentName(image: BufferedImage): Boolean =
     individualPixelAnalyser.testAllPixelsMatch(image, Array(NAME_OPPONENT_1A, NAME_OPPONENT_1B, NAME_OPPONENT_1C)) &&
@@ -389,7 +396,7 @@ object HearthstoneAnalyser extends Observable with Logging {
    * and so we only get the background. This can happen whenever there is something layered over the main screen, for example
    * during the 'Finding Opponent', 'Victory' and 'Defeat' screens.</p>
    * <p>At the moment I haven't worked out how to ensure we always get the completed screen. So this method detects when
-   * we've receive and incomplete play background instead of the 'Finding Opponent' screen, so we can reject it and try again.</p>
+   * we've received an incomplete play background instead of the 'Finding Opponent' screen, so we can reject it and try again.</p>
    * @param image
    * @return true if this screenshot shows a background image that should be ignored
    */

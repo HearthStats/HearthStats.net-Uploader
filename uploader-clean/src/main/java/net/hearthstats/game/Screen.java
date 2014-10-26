@@ -57,6 +57,7 @@ public enum Screen {
             ScreenGroup.GENERAL,
             EnumSet.of(
                     Pixel.COLLECTION_A,
+                    Pixel.COLLECTION_B,
                     Pixel.COLLECTION_E,
                     Pixel.COLLECTION_M,
                     Pixel.COLLECTION_Q
@@ -78,6 +79,21 @@ public enum Screen {
             EnumSet.of(
                     Pixel.COLLECTION_ZOOM_C,
                     Pixel.COLLECTION_ZOOM_I
+            )),
+
+    COLLECTION_DECK (
+            "Collection Deck",
+            ScreenGroup.GENERAL,
+            EnumSet.of(
+                    Pixel.COLLECTION_DECK_A,
+                    Pixel.COLLECTION_DECK_B,
+                    Pixel.COLLECTION_DECK_E,
+                    Pixel.COLLECTION_DECK_M,
+                    Pixel.COLLECTION_DECK_Q
+            ),
+            EnumSet.of(
+                    Pixel.COLLECTION_DECK_C,
+                    Pixel.COLLECTION_DECK_I
             )),
 
     ARENA_CHOOSE (
@@ -212,6 +228,21 @@ public enum Screen {
                     Pixel.MATCH_STARTINGHAND_R
             )),
 
+    MATCH_NAXXRAMAS (
+            "Playing",
+            ScreenGroup.MATCH_PLAYING,
+            EnumSet.of(
+                    Pixel.MATCH_NAXXRAMAS_B,
+                    Pixel.MATCH_NAXXRAMAS_C,
+                    Pixel.MATCH_NAXXRAMAS_K,
+                    Pixel.MATCH_NAXXRAMAS_L
+            ),
+            EnumSet.of(
+                    Pixel.MATCH_NAXXRAMAS_D,
+                    Pixel.MATCH_NAXXRAMAS_E,
+                    Pixel.MATCH_NAXXRAMAS_R
+            )),
+
     MATCH_ORGRIMMAR (
             "Playing",
             ScreenGroup.MATCH_PLAYING,
@@ -270,6 +301,21 @@ public enum Screen {
                     Pixel.MATCH_STRANGLETHORN_D,
                     Pixel.MATCH_STRANGLETHORN_E,
                     Pixel.MATCH_STRANGLETHORN_R
+            )),
+
+    MATCH_NAXXRAMAS_END (
+            "Result",
+            ScreenGroup.MATCH_END,
+            EnumSet.of(
+                    Pixel.MATCH_NAXXRAMAS_END_B,
+                    Pixel.MATCH_NAXXRAMAS_END_C,
+                    Pixel.MATCH_NAXXRAMAS_END_K,
+                    Pixel.MATCH_NAXXRAMAS_END_L
+            ),
+            EnumSet.of(
+                    Pixel.MATCH_NAXXRAMAS_END_D,
+                    Pixel.MATCH_NAXXRAMAS_END_E,
+                    Pixel.MATCH_NAXXRAMAS_END_R
             )),
 
     MATCH_ORGRIMMAR_END (
@@ -361,12 +407,20 @@ public enum Screen {
 
         COLLECTION.nextScreens = EnumSet.of(
                 Screen.MAIN,
+                Screen.COLLECTION_DECK,
+                Screen.COLLECTION_ZOOM
+        );
+
+        COLLECTION_DECK.nextScreens = EnumSet.of(
+                Screen.MAIN,
+                Screen.COLLECTION,
                 Screen.COLLECTION_ZOOM
         );
 
         COLLECTION_ZOOM.nextScreens = EnumSet.of(
                 Screen.MAIN,
-                Screen.COLLECTION
+                Screen.COLLECTION,
+                Screen.COLLECTION_DECK
         );
 
         ARENA_CHOOSE.nextScreens = EnumSet.of(
@@ -411,10 +465,15 @@ public enum Screen {
         );
 
         MATCH_STARTINGHAND.nextScreens = EnumSet.of(
+                Screen.MATCH_NAXXRAMAS,
                 Screen.MATCH_ORGRIMMAR,
                 Screen.MATCH_PANDARIA,
                 Screen.MATCH_STORMWIND,
                 Screen.MATCH_STRANGLETHORN
+        );
+
+        MATCH_NAXXRAMAS.nextScreens = EnumSet.of(
+                Screen.MATCH_NAXXRAMAS_END
         );
 
         MATCH_ORGRIMMAR.nextScreens = EnumSet.of(
@@ -442,6 +501,7 @@ public enum Screen {
                 Screen.ARENA_END
         );
 
+    MATCH_NAXXRAMAS_END.nextScreens = MATCH_ORGRIMMAR_END.nextScreens;
 		MATCH_PANDARIA_END.nextScreens = MATCH_ORGRIMMAR_END.nextScreens;
 		MATCH_STORMWIND_END.nextScreens = MATCH_ORGRIMMAR_END.nextScreens;
 		MATCH_STRANGLETHORN_END.nextScreens = MATCH_ORGRIMMAR_END.nextScreens;

@@ -68,9 +68,9 @@ public enum UniquePixel {
   OPPONENT_WARLOCK_2        (1300,  413, 210, 214, 222, 255, 255, 255),
   OPPONENT_WARLOCK_3        (1300,  102,  68,  99,   0, 128, 159,  25),
 
-  OPPONENT_WARLOCK_GOLDEN_1 (1111,  318,  60,  90,   0, 230, 255,  25),
-  OPPONENT_WARLOCK_GOLDEN_2 (1255,  484,  30,  40, 135,  70,  80, 175),
-  OPPONENT_WARLOCK_GOLDEN_3 (1300,  112,  60,  90,   0, 250, 255,  25),
+  OPPONENT_WARLOCK_GOLDEN_1 (1111,  318,  60,  80,   0, 230, 255,  25),
+  OPPONENT_WARLOCK_GOLDEN_2 (1255,  484,  30,  40, 135,  70,  90, 175),
+  OPPONENT_WARLOCK_GOLDEN_3 (1300,  112,  60,  80,   0, 250, 255,  25),
 
   OPPONENT_WARRIOR_1        (1243,  100,   7,   0,   0,  67,  34,  30),
   OPPONENT_WARRIOR_2        (1219,  130, 137,   0,   0, 197,  53,  34),
@@ -233,8 +233,11 @@ public enum UniquePixel {
   DEFEAT_3B           ( 430,  540, 107, 108, 104, 167, 168, 164),
   DEFEAT_3C           ( 840,  243, 205, 196,  37, 255, 255,  97),
 
-  TURN_OPPONENT_1A    (PixelLocation.I,  66,  61,  52, 129, 135, 136),
-  TURN_OPPONENT_1B    (PixelLocation.J, 106,  93,  73, 176, 175, 168),
+  TURN_OPPONENT_1A    (PixelLocation.I,  66,  61,  52, 129, 135, 136),  // Standard Grey
+  TURN_OPPONENT_1B    (PixelLocation.J, 106,  93,  73, 176, 175, 168),  // Standard Grey
+
+  TURN_OPPONENT_1AN   (PixelLocation.I,  26,  25,  39,  86,  85,  99),  // Naxxramas Grey
+  TURN_OPPONENT_1BN   (PixelLocation.J,  53,  50,  62, 113, 110, 122),  // Naxxramas Grey
 
   TURN_OPPONENT_2A    (1444,  535, 104, 107, 111, 164, 167, 171),
   TURN_OPPONENT_2B    (1468,  563, 104, 107, 110, 164, 167, 170),
@@ -242,11 +245,17 @@ public enum UniquePixel {
   TURN_OPPONENT_3A    (1457,  525,  76,  60,  50, 136, 120, 110),
   TURN_OPPONENT_3B    (1449,  561, 163,  88,  66, 223, 148, 126),
 
-  TURN_YOUR_1A        (PixelLocation.I,  15, 180,   0,  76, 255,  37),
-  TURN_YOUR_1B        (PixelLocation.J,  45, 170,  10, 100, 255,  70),
+  TURN_YOUR_1A        (PixelLocation.I,  15, 180,   0,  76, 255,  37),  // Standard Green
+  TURN_YOUR_1B        (PixelLocation.J,  45, 170,  10, 100, 255,  70),  // Standard Green
 
-  TURN_YOUR_2A        (PixelLocation.I, 210, 180,   0, 255, 255,  10),
-  TURN_YOUR_2B        (PixelLocation.J, 195, 160,  10, 255, 255,  80),
+  TURN_YOUR_1AN       (PixelLocation.I,  10, 100,   0,  50, 180,  20),  // Naxxramas Green
+  TURN_YOUR_1BN       (PixelLocation.J,  20,  90,  10,  80, 180,  50),  // Naxxramas Green
+
+  TURN_YOUR_2A        (PixelLocation.I, 210, 180,   0, 255, 255,  10),  // Standard Yellow
+  TURN_YOUR_2B        (PixelLocation.J, 195, 160,  10, 255, 255,  80),  // Standard Yellow
+
+  TURN_YOUR_2AN       (PixelLocation.I, 120, 100,   0, 180, 170,  20),  // Naxxramas Yellow
+  TURN_YOUR_2BN       (PixelLocation.J, 100,  90,   0, 170, 160,  30),  // Naxxramas Yellow
 
   BACKGROUND_PLAY_1   ( 260,  434,   0,   0,   0,  30,  30,  30),
   BACKGROUND_PLAY_2   ( 526,  434,   0,   0,   0,  30,  30,  30),
@@ -281,6 +290,33 @@ public enum UniquePixel {
   // 2A must match for a defeat. Coordinates are relative to the reference pixel above
   DEFEAT_REL_2A ( 120, 315, 60, 70, 140, 140, 160, 250 ),  // blue
 
+  // Hero classes on the deck screen
+  DECK_DRUID_1    (1269, 29,  86, 159, 146,  173, 234, 221),
+  DECK_DRUID_2    (1424, 57,   0, 135,  34,   67, 230, 237),
+
+  DECK_HUNTER_1   (1269, 29,  81,  66,  52,  144, 132, 120),
+  DECK_HUNTER_2   (1424, 57,  27,  26,  27,   90,  85,  82),
+
+  DECK_MAGE_1     (1269, 29,  21,   0,  30,   67,  36,  77),
+  DECK_MAGE_2     (1424, 57,   4,  43, 102,   50,  95, 158),
+
+  DECK_PALADIN_1  (1269, 29, 100,  85, 138,  161, 146, 209),
+  DECK_PALADIN_2  (1424, 57,  16,   0,   0,   63,  41,  33),
+
+  DECK_PRIEST_1   (1269, 29, 105,  97,  85,  173, 174, 159),
+  DECK_PRIEST_2   (1424, 57, 145, 140, 143,  205, 201, 192),
+
+  DECK_ROGUE_1    (1269, 29,  39,  40,  89,   90,  92, 152),
+  DECK_ROGUE_2    (1424, 57,  15,   0,   0,   88,  54,  42),
+
+  DECK_SHAMAN_1   (1269, 29,   0,  26,  58,   28,  75, 115),
+  DECK_SHAMAN_2   (1424, 57,   9,   0,   0,   64,  46,  39),
+
+  DECK_WARLOCK_1  (1269, 29,  16,   0,   0,   64,  32,  42),
+  DECK_WARLOCK_2  (1424, 57,  19,   0,  28,   85,  41,  95),
+
+  DECK_WARRIOR_1  (1269, 29, 155, 135, 106,  226, 209, 184),
+  DECK_WARRIOR_2  (1424, 57,  45,   0,   0,  145,  60,  22),
   ;
 
   public final int x;

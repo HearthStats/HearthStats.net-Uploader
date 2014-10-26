@@ -2,6 +2,16 @@ package net.hearthstats.ui
 
 import java.awt.BorderLayout
 import java.io.IOException
+import javax.swing._
+
+import grizzled.slf4j.Logging
+import net.hearthstats.Constants._
+import net.hearthstats._
+import net.hearthstats.util.Translations.t
+import net.hearthstats.util.{Browse, HsRobot}
+import net.miginfocom.swing.MigLayout
+import org.json.simple.JSONObject
+
 import scala.collection.JavaConversions._
 import scala.swing.Swing._
 import org.json.simple.JSONObject
@@ -25,6 +35,7 @@ class DecksTab(
   val deckSlotComboBoxes = 1 to 9 map { new DeckSlotPanel(_) }
 
   setLayout(new MigLayout)
+
   add(new JLabel(" "), "wrap")
   add(new JLabel(t("set_your_deck_slots")), "skip, span 2")
   add(new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Decks-Tab", "Help on Decks tab"), "right,wrap")
@@ -58,13 +69,17 @@ class DecksTab(
     } catch {
       case e1: IOException => Main.showErrorDialog("Error updating decks", e1)
     }))
-  add(refreshButton, "wrap,span")
+  add(refreshButton, "wrap")
 
   add(new JLabel(" "), "wrap")
+  add(new JLabel(" "), "wrap")
+  val exportButton = new JButton(t("button.export_deck"))
+  exportButton.addActionListener(ActionListener(_ => onEDT(ExportDeckBox.open(monitor))))
+  add(exportButton, "skip")
+
   add(new JLabel(" "), "wrap")
   val myDecksButton = new JButton(t("manage_decks_on_hsnet"))
   myDecksButton.addActionListener(ActionListener(_ => Browse(DECKS_URL)))
-
   add(myDecksButton, "skip,span")
 
   onEDT(updateDecks())
@@ -107,7 +122,7 @@ class DecksTab(
       case Some(d) => {
         if (!d.isValid) {
           JOptionPane.showConfirmDialog(this,
-            s"""${d.name} is not valid (${d.cardCount} cards). Do you want to edit it first on Heartstats.net ?""".stripMargin) match {
+            s"""${d.name} is not valid (${d.cardCount} cards). Do you want to edit it first on Hearthstats.net ?""".stripMargin) match {
               case JOptionPane.YES_OPTION =>
                 Browse(s"http://hearthstats.net/decks/${d.slug}/edit")
               case JOptionPane.NO_OPTION => doCreate(d)
@@ -122,8 +137,12 @@ class DecksTab(
       }
     }
 
-    def doCreate(d: Deck) = HsRobot(programHelper.getHSWindowBounds).create(d)
+    def doCreate(d: Deck) = {
+      monitor._hsHelper.bringWindowToForeground
+      HsRobot(programHelper.getHSWindowBounds).create(d)
+    }
   }
+
 
   class DeckSlotPanel(slot: Int) extends JPanel {
     setLayout(new BorderLayout)
