@@ -62,9 +62,7 @@ class SequenceEncoder extends VideoEncoder with Logging {
       val filtered =
         if (w <= x && h <= y) bi
         else {
-          val computedHeight = (h * Math.min(x.toFloat / w, y.toFloat / h)).toInt
-          val targetHeight = if (computedHeight % 2 == 0) computedHeight else computedHeight + 1
-          val scale = computedHeight / h.toFloat
+          val scale = Math.min(x.toFloat / w, y.toFloat / h)
           val at = AffineTransform.getScaleInstance(scale, scale)
           val scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR)
           scaleOp.filter(bi, null)
@@ -76,7 +74,9 @@ class SequenceEncoder extends VideoEncoder with Logging {
 
     private def createWriter(bi: BufferedImage) = {
       val writer = ToolFactory.makeWriter(video)
-      writer.addVideoStream(0, 0, IRational.make(framesPerSec, 1), bi.getWidth, bi.getHeight)
+      val w = if (bi.getWidth % 2 == 0) bi.getWidth else bi.getWidth + 1
+      val h = if (bi.getHeight % 2 == 0) bi.getHeight else bi.getHeight + 1
+      writer.addVideoStream(0, 0, IRational.make(framesPerSec, 1), w, h)
       writer
     }
   }
