@@ -41,6 +41,23 @@
 		</dependency>
 	</dependencies>
 
+	<profiles>
+		<profile>
+			<id>video</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<dependencies>
+				<!-- optional dependency. If present video replays will be generated. -->
+				<dependency>
+					<groupId>net.hearthstats</groupId>
+					<artifactId>video</artifactId>
+					<version>${project.version}</version>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+		
 	<build>
 		<plugins>
 

@@ -37,6 +37,16 @@ class UserConfig extends Logging {
   val notifyDeck = config("notify.deck", true)
   val notifyTurn = config("notify.turn", true)
 
+  val recordVideo = config("video.record", true)
+  val recordedVideoFolder = config("video.folder", System.getenv("HOME") + "/hearthstats/videos")
+  val videoFps = config("video.fps", 25)
+  val videoWidth = config("video.width", 2000)
+  val videoHeight = config("video.fps", 2000)
+
+  val uploadVideo = config("video.upload", true)
+  val awsBucket = config("video.awsBucket", "hearthstats-dev")
+  val awsVideoPrefix = config("video.awsVideoBucket", "prem-videos")
+
   val windowX = config("ui.window.x", 0)
   val windowY = config("ui.window.y", 0)
   val windowHeight = config("ui.window.height", 700)
@@ -138,6 +148,10 @@ class UserConfig extends Logging {
       prefs.clear()
     }
   }
+}
+
+object UserConfig {
+
 }
 
 trait ConfigValue[T] {

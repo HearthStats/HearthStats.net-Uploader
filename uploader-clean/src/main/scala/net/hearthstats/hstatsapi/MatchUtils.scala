@@ -26,14 +26,18 @@ class MatchUtils(
   def submitMatchResult(): Unit = {
     createArenaRun()
     val hsMatch = matchState.currentMatch.get
-    if (hsMatch.isDataComplete) {
-      submitMatchImpl(hsMatch)
+    if (hsMatch.mode == GameMode.PRACTICE) {
+      uiLog.info("Practice match was not submitted")
     } else {
-      matchPopup.showPopup(hsPresenter.asInstanceOf[Component], hsMatch) match {
-        case Button.SUBMIT => submitMatchImpl(hsMatch)
-        case _ =>
-          uiLog.info(s"Match was not submitted")
-          matchState.submitted = true
+      if (hsMatch.isDataComplete) {
+        submitMatchImpl(hsMatch)
+      } else {
+        matchPopup.showPopup(hsPresenter.asInstanceOf[Component], hsMatch) match {
+          case Button.SUBMIT => submitMatchImpl(hsMatch)
+          case _ =>
+            uiLog.info(s"Match was not submitted")
+            matchState.submitted = true
+        }
       }
     }
   }
@@ -71,9 +75,8 @@ class MatchUtils(
     }
 
     val describeTurns = t("match.end.turns", numTurns)
-    
-    val describeDuration = t("match.end.duration", duration)
 
+    val describeDuration = t("match.end.duration", duration)
 
     s"$describeMode $describeCoin $describePlayers $describeResult $describeDeck $describeTurns $describeDuration"
   }

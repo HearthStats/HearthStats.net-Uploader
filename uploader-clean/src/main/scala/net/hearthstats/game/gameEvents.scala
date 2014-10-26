@@ -43,6 +43,7 @@ package object GameEvents {
   import net.hearthstats.game.ScreenGroup._
 
   implicit def screenToObject(s: Screen): HsScreen = s match {
+    case TITLE => TitleScreen
     case MAIN => MainScreen
     case MAIN_TODAYSQUESTS => QuestsScreen
     case ARENA_LOBBY => ArenaLobby

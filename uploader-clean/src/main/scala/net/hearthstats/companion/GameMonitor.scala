@@ -18,6 +18,9 @@ import net.hearthstats.ui.log.Log
 import rx.lang.scala.JavaConversions.toScalaObservable
 import rx.lang.scala.Observable
 import rx.subjects.PublishSubject
+import net.hearthstats.game.ocr.BackgroundImageSave
+import net.hearthstats.modules.VideoEncoderFactory
+import net.hearthstats.modules.ReplayHandler
 
 import scala.util.control.NonFatal
 
@@ -33,15 +36,18 @@ class GameMonitor(
   classAnalyser: HsClassAnalyser,
   inGameAnalyser: InGameAnalyser,
   screenAnalyser: ScreenAnalyser,
+  videoEncoderFactory: VideoEncoderFactory,
+  replayHandler: ReplayHandler,
   uiLog: Log,
   hsPresenter: HearthstatsPresenter,
   deckOverlay: DeckOverlayModule) extends Logging {
 
+  import config._
   import companionState.iterationsSinceClassCheckingStarted
   import lobbyAnalyser._
 
   val subject = PublishSubject.create[Boolean]
-  val hsFound: Observable[Boolean] = subject.asObservable.cache
+  val hsFound: Observable[Boolean] = subject.asObservable
 
   var checkIfRunning: Option[ScheduledFuture[_]] = None
 
@@ -98,9 +104,9 @@ class GameMonitor(
       case PracticeLobby if companionState.mode != PRACTICE => handlePracticeLobby(image)
       case FriendlyLobby if companionState.mode != FRIENDLY => handleFriendlyLobby(image)
       case ArenaLobby if companionState.mode != ARENA => handleArenaLobby(image)
-      case OngoingGameScreen => testForOpponentOrYourTurn(image)
-      case GameResultScreen => testForVictoryOrDefeat(image)
-      case _ =>
+      case OngoingGameScreen => handleOngoingGame(image)
+      case GameResultScreen => handleEndResult(image)
+      case other => info(s"$other, no action taken")
     }
   } catch {
     case NonFatal(t) =>
@@ -120,12 +126,18 @@ class GameMonitor(
   }
 
   private def handleStartingHand(image: BufferedImage): Unit = {
+    addImageToVideo(image)
     testForCoin(image)
     testForOpponentName(image)
   }
 
   private def handleMatchStart(image: BufferedImage): Unit = {
     companionState.findingOpponent = false
+    if (companionState.ongoingVideo.isEmpty) {
+      val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
+      companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
+    }
+    addImageToVideo(image)
     testForCoin(image)
     testForOpponentName(image)
     testForYourClass(image)
@@ -151,7 +163,12 @@ class GameMonitor(
     detectDeck(image)
   }
 
-  private def testForVictoryOrDefeat(image: BufferedImage) {
+  private def handleEndResult(image: BufferedImage) {
+    addImageToVideo(image)
+    for (v <- companionState.ongoingVideo) {
+      hsMatch.replayFile = v.finish
+    }
+    companionState.ongoingVideo = None
     if (!victoryOrDefeatDetected) {
       info("Testing for victory or defeat")
       inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
@@ -160,6 +177,11 @@ class GameMonitor(
           hsMatch.result = Some(outcome)
           hsMatch.endMatch
           matchUtils.submitMatchResult()
+          import scala.concurrent.ExecutionContext.Implicits.global
+          val submittedMatch = hsMatch
+          for (f <- hsMatch.replayFile) {
+            replayHandler.handleNewReplay(f, submittedMatch)
+          }
           deckOverlay.reset
         case _ =>
           debug("Result not detected on screen capture")
@@ -167,10 +189,14 @@ class GameMonitor(
     }
   }
 
+  private def addImageToVideo(i: BufferedImage): Unit =
+    companionState.ongoingVideo.map(_.encodeImage(i))
+
   private def victoryOrDefeatDetected =
     matchState.currentMatch.flatMap(_.result).isDefined
 
-  private def testForOpponentOrYourTurn(image: BufferedImage) {
+  private def handleOngoingGame(image: BufferedImage) {
+    addImageToVideo(image)
     if (!matchState.started) {
       testForCoin(image)
       testForOpponentName(image)

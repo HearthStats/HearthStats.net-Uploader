@@ -34,7 +34,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.hearthstats</groupId>
-			<artifactId>modules</artifactId>
+			<artifactId>uploader</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

@@ -18,6 +18,31 @@ import net.hearthstats.ui.notification.DialogNotification
 import net.hearthstats.ui.{CompanionFrame, ExportDeckBox, MatchEndPopup}
 import net.hearthstats.util.{AnalyticsTrackerFactory, FileObserver, Translation, TranslationConfig, Updater}
 import net.sourceforge.tess4j.Tesseract
+import net.hearthstats.config.UserConfig
+import net.hearthstats.util.Updater
+import net.hearthstats.ui.CompanionFrame
+import net.hearthstats.companion.CompanionState
+import net.hearthstats.game.MatchState
+import net.hearthstats.hstatsapi.API
+import net.hearthstats.hstatsapi.DeckUtils
+import net.hearthstats.hstatsapi.CardUtils
+import net.hearthstats.game.imageanalysis.IndividualPixelAnalyser
+import net.hearthstats.companion.GameMonitor
+import net.hearthstats.game.imageanalysis.LobbyAnalyser
+import net.hearthstats.game.imageanalysis.ScreenAnalyser
+import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.game.imageanalysis.HsClassAnalyser
+import net.hearthstats.game.imageanalysis.InGameAnalyser
+import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
+import net.hearthstats.hstatsapi.MatchUtils
+import net.hearthstats.util.AnalyticsTrackerFactory
+import net.hearthstats.util.FileObserver
+import net.hearthstats.game.HearthstoneLogMonitor
+import net.hearthstats.companion.DeckOverlayModule
+import net.hearthstats.ui.MatchEndPopup
+import net.hearthstats.modules.VideoEncoderFactory
+import net.hearthstats.modules.ReplayHandler
+import net.hearthstats.modules.FileUploaderFactory
 
 class Main(
   environment: Environment,
@@ -60,6 +85,9 @@ class Main(
   val fileObserver = wire[FileObserver]
   val logMonitor = wire[HearthstoneLogMonitor]
   val deckOverlayModule = wire[DeckOverlayModule]
+  val videoEncoderFactory = wire[VideoEncoderFactory]
+  val fileUploaderFactory = wire[FileUploaderFactory]
+  val replayHandler = wire[ReplayHandler]
 
   val monitor: GameMonitor = wire[GameMonitor]
 

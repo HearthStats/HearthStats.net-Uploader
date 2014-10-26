@@ -1,4 +1,4 @@
-package net.hearthstats.aws
+package net.hearthstats.modules.aws
 
 import java.io.File
 

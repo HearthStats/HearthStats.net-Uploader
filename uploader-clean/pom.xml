@@ -50,19 +50,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>net.hearthstats</groupId>
-			<artifactId>modules</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<!-- optional dependency. If present video replays will be generated. -->
-		<!-- <dependency> -->
-		<!-- <groupId>net.hearthstats</groupId> -->
-		<!-- <artifactId>video</artifactId> -->
-		<!-- <version>${project.version}</version> -->
-		<!-- </dependency> -->
-
-		<dependency>
 			<artifactId>scala-library</artifactId>
 			<groupId>org.scala-lang</groupId>
 			<version>${scala.version}</version>

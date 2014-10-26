@@ -5,6 +5,8 @@ import org.apache.commons.lang3.StringUtils
 import org.json.simple.JSONObject
 import com.github.nscala_time.time.Imports.DateTime
 import grizzled.slf4j.Logging
+import scala.concurrent.Future
+import scala.concurrent.Promise
 
 //TODO use options
 //TODO avoid mutable 
@@ -19,6 +21,7 @@ class HearthstoneMatch(var mode: GameMode = GameMode.UNDETECTED,
   var numTurns: Int = -1,
   var duration: Int = -1,
   var notes: String = null,
+  var replayFile: Future[String] = Promise[String].future,
   var id: Int = -1) extends Logging {
 
   debug("new HearthstoneMatch")
