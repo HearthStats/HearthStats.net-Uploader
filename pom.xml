@@ -31,7 +31,7 @@
 
 	<modules>
         <module>updater</module>
-        <module>uploader-clean</module>
+        <module>uploader</module>
 	</modules>
 
 	<profiles>
