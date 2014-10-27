@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>net.hearthstats</groupId>
 		<version>0.20.3-SNAPSHOT</version>
-		<artifactId>uploader-parent</artifactId>
+		<artifactId>companion-parent</artifactId>
 	</parent>
 	<artifactId>video</artifactId>
 
@@ -16,7 +16,7 @@
 	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
 
 	<properties>
-		<product.name>HearthStats.net Uploader (video)</product.name>
+		<product.name>HearthStats.netcompanionon (video)</product.name>
 		<scala.version>2.11.1</scala.version>
 		<project.youtube.version>v3-rev107-1.18.0-rc</project.youtube.version>
 		<project.youtube.analytics.version>v1-rev24-1.17.0-rc</project.youtube.analytics.version>
@@ -34,7 +34,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.hearthstats</groupId>
-			<artifactId>uploader</artifactId>
+			<artifactId>companion</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

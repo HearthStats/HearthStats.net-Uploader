@@ -7,9 +7,9 @@
 	<parent>
 		<groupId>net.hearthstats</groupId>
 		<version>0.20.3-SNAPSHOT</version>
-		<artifactId>uploader-parent</artifactId>
+		<artifactId>companion-parent</artifactId>
 	</parent>
-	<artifactId>uploader</artifactId>
+	<artifactId>companion</artifactId>
 
 	<packaging>jar</packaging>
 	<name>HearthStats Companion Core</name>

@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.hearthstats</groupId>
-	<artifactId>uploader-parent</artifactId>
+	<artifactId>companion-parent</artifactId>
 	<name>HearthStats Companion</name>
 	<version>0.20.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -31,7 +31,7 @@
 
 	<modules>
         <module>updater</module>
-        <module>uploader</module>
+        <module>companion</module>
 	</modules>
 
 	<profiles>
@@ -44,13 +44,13 @@
 		<profile>
 			<id>windows</id>
 			<modules>
-				<module>uploader-win</module>
+				<module>companion-win</module>
 			</modules>
 		</profile>
 		<profile>
 			<id>osx</id>
 			<modules>
-				<module>uploader-osx</module>
+				<module>companion-osx</module>
 			</modules>
 		</profile>
 		<profile>
@@ -60,15 +60,15 @@
 			</activation>
 			<modules>
 				<module>video</module>
-				<module>uploader-win</module>
-				<module>uploader-osx</module>
+				<module>companion-win</module>
+				<module>companion-osx</module>
 			</modules>
 		</profile>
 		<profile>
 			<id>travis</id>
 			<modules>
 				<module>video</module>
-				<module>uploader-osx</module>
+				<module>companion-osx</module>
 			</modules>
 		</profile>
 		<profile>

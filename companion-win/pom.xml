@@ -7,10 +7,10 @@
 	<parent>
 		<groupId>net.hearthstats</groupId>
 		<version>0.20.3-SNAPSHOT</version>
-        <artifactId>uploader-parent</artifactId>
+        <artifactId>companion-parent</artifactId>
 	</parent>
 
-	<artifactId>uploader-win</artifactId>
+	<artifactId>companion-win</artifactId>
 
 	<packaging>jar</packaging>
 	<name>HearthStats Companion Windows</name>
@@ -23,12 +23,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.hearthstats</groupId>
-			<artifactId>uploader</artifactId>
+			<artifactId>companion</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.hearthstats</groupId>
-			<artifactId>uploader</artifactId>
+			<artifactId>companion</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
@@ -108,7 +108,7 @@
 				<version>2.3</version>
 				<executions>
 					<execution>
-						<id>uploader-win</id>
+						<id>companion-win</id>
 						<phase>package</phase>
 						<goals>
 							<goal>shade</goal>

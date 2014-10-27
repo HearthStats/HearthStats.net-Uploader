@@ -6,10 +6,10 @@
 	<parent>
 		<groupId>net.hearthstats</groupId>
 		<version>0.20.3-SNAPSHOT</version>
-		<artifactId>uploader-parent</artifactId>
+		<artifactId>companion-parent</artifactId>
 	</parent>
 
-	<artifactId>uploader-osx</artifactId>
+	<artifactId>companion-osx</artifactId>
 
 	<packaging>jar</packaging>
 	<name>HearthStats Companion OS X</name>
@@ -30,7 +30,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.hearthstats</groupId>
-			<artifactId>uploader</artifactId>
+			<artifactId>companion</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -61,7 +61,7 @@
 				<version>2.3</version>
 				<executions>
 					<execution>
-						<id>uploader-osx</id>
+						<id>companion-osx</id>
 						<phase>package</phase>
 						<goals>
 							<goal>shade</goal>
