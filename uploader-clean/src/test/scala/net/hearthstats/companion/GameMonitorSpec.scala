@@ -50,6 +50,7 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val deckOverlay = mock[DeckOverlayModule]
   val videoEncoderFactory = wire[VideoEncoderFactory]
   val replayHandler = mock[ReplayHandler]
+  val companionEvents = wire[CompanionEvents]
   val monitor = wire[GameMonitor]
 
   val rank8Lobby = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)

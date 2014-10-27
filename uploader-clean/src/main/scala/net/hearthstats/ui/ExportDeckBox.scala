@@ -1,27 +1,27 @@
 package net.hearthstats.ui
 
 import java.awt.{Dimension, Font}
-import javax.imageio.ImageIO
-import javax.swing._
-
+import scala.collection.JavaConversions.mutableMapAsJavaMap
+import scala.swing.{BoxPanel, Frame, Label, Orientation, ScrollPane, TextArea, TextField}
+import scala.swing.event.ButtonClicked
+import scala.util.control.NonFatal
+import org.json.simple.JSONObject
 import grizzled.slf4j.Logging
-import net.hearthstats._
+import javax.imageio.ImageIO
+import javax.swing.ImageIcon
+import net.hearthstats.{Main, ProgramHelper}
+import net.hearthstats.companion.CompanionEvents
 import net.hearthstats.core.{Deck, HeroClass}
-import net.hearthstats.game._
+import net.hearthstats.game.{CollectionDeckScreen, CollectionScreen, ScreenEvent}
 import net.hearthstats.game.imageanalysis.DeckAnalyser
 import net.hearthstats.hstatsapi.{API, CardUtils, DeckUtils}
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.util.MigPanel
 import net.hearthstats.util.Translation
-import org.json.simple.JSONObject
-
-import scala.collection.JavaConversions._
-import scala.swing._
-import scala.swing.event.ButtonClicked
-import scala.util.control.NonFatal
+import scala.swing.ComboBox
 
 class ExportDeckBox(
-//      gameMonitor: GameMonitor,
+      companionEvents:CompanionEvents,
       programHelper: ProgramHelper,
       uiLog: Log,
       cardUtils: CardUtils,
@@ -58,7 +58,7 @@ class ExportDeckBox(
     box.peer.toFront()
     // TODO: Implement support for subscribing to screen events so that ExportDeckBox knows when it's on the Deck screen
 //    // Set the initial status based on the current screen
-//    box.handleScreenEvent(gameMonitor.gameEvents.last)
+//    box.handleScreenEvent(companionEvents.gameEvents.last)
 //    box.setScreen(HearthstoneAnalyser.screen)
     box
   }
@@ -210,14 +210,14 @@ class ExportDeckBox(
     contents = panel
 
     // TODO: Implement support for subscribing to screen events so that ExportDeckBox knows when it's on the Deck screen
-//    val screenEventSubscription = gameMonitor.gameEvents.subscribe(handleScreenEvent _)
+    val screenEventSubscription = companionEvents.gameEvents.subscribe(handleScreenEvent _)
 
 
 
     override def closeOperation {
       info("Closing deck export window")
         // TODO: Implement support for subscribing to screen events so that ExportDeckBox knows when it's on the Deck screen
-//      screenEventSubscription.unsubscribe()
+      screenEventSubscription.unsubscribe()
       close()
     }
 

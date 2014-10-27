@@ -2,21 +2,20 @@ package net.hearthstats
 
 import java.awt.Component
 import java.io.File
-import javax.swing.{JFrame, JOptionPane, WindowConstants}
-
+import javax.swing.{ JFrame, JOptionPane, WindowConstants }
 import com.softwaremill.macwire.MacwireMacros._
 import grizzled.slf4j.Logging
-import net.hearthstats.companion.{CompanionState, DeckOverlayModule, GameMonitor}
-import net.hearthstats.config.{Application, Environment, UserConfig}
+import net.hearthstats.companion.{ CompanionState, DeckOverlayModule, GameMonitor }
+import net.hearthstats.config.{ Application, Environment, UserConfig }
 import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.game.{HearthstoneLogMonitor, MatchState}
-import net.hearthstats.game.imageanalysis.{HsClassAnalyser, InGameAnalyser, IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser}
-import net.hearthstats.hstatsapi.{API, CardUtils, DeckUtils, MatchUtils}
+import net.hearthstats.game.{ HearthstoneLogMonitor, MatchState }
+import net.hearthstats.game.imageanalysis.{ HsClassAnalyser, InGameAnalyser, IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser }
+import net.hearthstats.hstatsapi.{ API, CardUtils, DeckUtils, MatchUtils }
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.DialogNotification
-import net.hearthstats.ui.{CompanionFrame, ExportDeckBox, MatchEndPopup}
-import net.hearthstats.util.{AnalyticsTrackerFactory, FileObserver, Translation, TranslationConfig, Updater}
+import net.hearthstats.ui.{ CompanionFrame, ExportDeckBox, MatchEndPopup }
+import net.hearthstats.util.{ AnalyticsTrackerFactory, FileObserver, Translation, TranslationConfig, Updater }
 import net.sourceforge.tess4j.Tesseract
 import net.hearthstats.config.UserConfig
 import net.hearthstats.util.Updater
@@ -43,6 +42,7 @@ import net.hearthstats.ui.MatchEndPopup
 import net.hearthstats.modules.VideoEncoderFactory
 import net.hearthstats.modules.ReplayHandler
 import net.hearthstats.modules.FileUploaderFactory
+import net.hearthstats.companion.CompanionEvents
 
 class Main(
   environment: Environment,
@@ -65,10 +65,7 @@ class Main(
 
   val notificationQueue = environment.newNotificationQueue(notificationType)
 
-  val mainFrame: CompanionFrame = wire[CompanionFrame]
   val analytics = AnalyticsTrackerFactory.tracker(enableAnalytics)
-
-  val startup: Startup = wire[Startup]
 
   val screenAnalyser = wire[ScreenAnalyser]
   val individualPixelAnalyser = wire[IndividualPixelAnalyser]
@@ -79,7 +76,6 @@ class Main(
   val deckOverlay = wire[DeckOverlaySwing]
 
   val matchEndPopup = wire[MatchEndPopup]
-  val matchUtils = wire[MatchUtils]
 
   val hsLogFile = new File(environment.hearthstoneLogFile)
   val fileObserver = wire[FileObserver]
@@ -88,6 +84,12 @@ class Main(
   val videoEncoderFactory = wire[VideoEncoderFactory]
   val fileUploaderFactory = wire[FileUploaderFactory]
   val replayHandler = wire[ReplayHandler]
+
+  val companionEvents = wire[CompanionEvents]
+  val exportDeckBox = wire[ExportDeckBox]
+  val mainFrame: CompanionFrame = wire[CompanionFrame]
+  val startup: Startup = wire[Startup]
+  val matchUtils = wire[MatchUtils]
 
   val monitor: GameMonitor = wire[GameMonitor]
 

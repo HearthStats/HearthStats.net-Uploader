@@ -4,20 +4,20 @@ import java.awt.Dimension
 import java.awt.Frame._
 import javax.swing.JOptionPane._
 import javax.swing.ScrollPaneConstants._
-import javax.swing.{ImageIcon, JScrollPane, JTabbedPane}
+import javax.swing.{ ImageIcon, JScrollPane, JTabbedPane }
 
 import com.softwaremill.macwire.MacwireMacros.wire
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 import net.hearthstats.companion.CompanionState
-import net.hearthstats.config.{Environment, UserConfig}
-import net.hearthstats.core.{HearthstoneMatch, HeroClass}
+import net.hearthstats.config.{ Environment, UserConfig }
+import net.hearthstats.core.{ HearthstoneMatch, HeroClass }
 import net.hearthstats.game.MatchState
 import net.hearthstats.hstatsapi.HearthStatsUrls._
-import net.hearthstats.hstatsapi.{API, CardUtils, DeckUtils}
-import net.hearthstats.ui.log.{Log, LogPane}
+import net.hearthstats.hstatsapi.{ API, CardUtils, DeckUtils }
+import net.hearthstats.ui.log.{ Log, LogPane }
 import net.hearthstats.ui.notification.NotificationQueue
-import net.hearthstats.util.{Browse, Translation}
+import net.hearthstats.util.{ Browse, Translation }
 import org.apache.commons.lang3.StringUtils
 
 /**
@@ -33,6 +33,7 @@ class CompanionFrame(val environment: Environment,
   api: API,
   cardUtils: CardUtils,
   deckUtils: DeckUtils,
+  exportDeckBox: ExportDeckBox,
   translation: Translation) extends GeneralUI with HearthstatsPresenter with Logging {
 
   import config._
@@ -41,7 +42,6 @@ class CompanionFrame(val environment: Environment,
   uiLog.logPane = logText
   val logScroll = new JScrollPane(logText, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED)
   val tabbedPane = new JTabbedPane
-  val exportDeckBox: ExportDeckBox = wire[ExportDeckBox]
   val optionsPanel: OptionsPanel = wire[OptionsPanel]
   val aboutPanel: AboutPanel = wire[AboutPanel]
   val matchPanel: MatchPanel = wire[MatchPanel]
