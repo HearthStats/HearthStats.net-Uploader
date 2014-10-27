@@ -1,28 +1,23 @@
 package net.hearthstats.companion
 
 import java.awt.image.BufferedImage
-import java.util.concurrent.{ Executors, ScheduledFuture, TimeUnit }
+import java.util.concurrent.{Executors, ScheduledFuture, TimeUnit}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.control.NonFatal
 
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 import net.hearthstats.config.UserConfig
-import net.hearthstats.core.GameMode.{ ARENA, CASUAL, FRIENDLY, PRACTICE, RANKED }
+import net.hearthstats.core.GameMode.{ARENA, CASUAL, FRIENDLY, PRACTICE, RANKED}
 import net.hearthstats.core.HeroClass
-import net.hearthstats.game.Screen._
 import net.hearthstats.game._
 import net.hearthstats.game.imageanalysis._
-import net.hearthstats.game.ocr.{ BackgroundImageSave, OpponentNameOcr, OpponentNameRankedOcr, OpponentNameUnrankedOcr }
-import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
+import net.hearthstats.game.ocr.{BackgroundImageSave, OpponentNameOcr, OpponentNameRankedOcr, OpponentNameUnrankedOcr}
+import net.hearthstats.hstatsapi.{DeckUtils, MatchUtils}
+import net.hearthstats.modules.{ReplayHandler, VideoEncoderFactory}
 import net.hearthstats.ui.HearthstatsPresenter
 import net.hearthstats.ui.log.Log
-import rx.lang.scala.JavaConversions.toScalaObservable
-import rx.lang.scala.Observable
-import rx.subjects.PublishSubject
-import net.hearthstats.game.ocr.BackgroundImageSave
-import net.hearthstats.modules.VideoEncoderFactory
-import net.hearthstats.modules.ReplayHandler
-
-import scala.util.control.NonFatal
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -33,10 +28,8 @@ class GameMonitor(
   companionEvents: CompanionEvents,
   matchState: MatchState,
   lobbyAnalyser: LobbyAnalyser,
-  individualPixelAnalyser: IndividualPixelAnalyser,
   classAnalyser: HsClassAnalyser,
   inGameAnalyser: InGameAnalyser,
-  screenAnalyser: ScreenAnalyser,
   videoEncoderFactory: VideoEncoderFactory,
   replayHandler: ReplayHandler,
   uiLog: Log,
