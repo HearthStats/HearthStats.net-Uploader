@@ -118,7 +118,10 @@
 							<exclude>**/*$</exclude>
 						</excludes>
 					</instrumentation>
-					<format>xml</format>
+					<formats>
+						<format>html</format>
+						<format>xml</format>
+					</formats>
 					<maxmem>256m</maxmem>
 					<aggregate>true</aggregate>
 				</configuration>
