@@ -17,7 +17,6 @@
 
 	<properties>
 		<product.name>HearthStats.netcompanionon (video)</product.name>
-		<scala.version>2.11.1</scala.version>
 		<project.youtube.version>v3-rev107-1.18.0-rc</project.youtube.version>
 		<project.youtube.analytics.version>v1-rev24-1.17.0-rc</project.youtube.analytics.version>
 		<project.http.version>1.18.0-rc</project.http.version>
