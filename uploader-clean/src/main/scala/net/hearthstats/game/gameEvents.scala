@@ -59,6 +59,5 @@ package object GameEvents {
     case COLLECTION_DECK => CollectionDeckScreen
     case COLLECTION => CollectionScreen
     case COLLECTION_ZOOM => CollectionScreen
-    case TITLE => TitleScreen
   }
 }
