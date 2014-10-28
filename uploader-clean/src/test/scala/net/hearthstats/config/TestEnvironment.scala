@@ -1,12 +1,11 @@
 package net.hearthstats.config
 
 import java.io.File
-import net.hearthstats.config._
-import net.hearthstats.ui.notification.NotificationType
-import net.hearthstats.updater.api.model.Release
+import javax.imageio.ImageIO
+
 import net.hearthstats.ProgramHelper
-import net.hearthstats.hstatsapi.API
-import net.hearthstats.ui.notification.DialogNotificationQueue
+import net.hearthstats.ui.notification.{DialogNotificationQueue, NotificationType}
+import net.hearthstats.updater.api.model.Release
 
 /**
  * Implementation which can be injected in test scenario.
@@ -29,9 +28,11 @@ object TestEnvironment extends Environment {
 object TestProgramHelper extends ProgramHelper {
   def foundProgram = true
   def getHSWindowBounds = null
-  def getScreenCapture = null
+  def getScreenCapture = img("/net/hearthstats/game/imageanalysis/play_lobby.png")
   def bringWindowToForeground = false
   //  override def createConfig(environment: Environment) = false
+
+  private def img(fileName: String) = ImageIO.read(TestProgramHelper.getClass().getResourceAsStream(fileName))
 
 }
 
