@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.hearthstats</groupId>
-	<artifactId>uploader-parent</artifactId>
+	<artifactId>companion-parent</artifactId>
 	<name>HearthStats Companion</name>
 	<version>0.20.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -17,6 +17,7 @@
 		<!-- parsedVersion will be populated automatically by the build-helper-maven-plugin -->
 		<project.longVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}</project.longVersion>
 		<java.version>1.7</java.version>
+		<scala.version>2.11.2</scala.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -31,7 +32,7 @@
 
 	<modules>
         <module>updater</module>
-        <module>uploader-clean</module>
+        <module>companion</module>
 	</modules>
 
 	<profiles>
@@ -44,13 +45,13 @@
 		<profile>
 			<id>windows</id>
 			<modules>
-				<module>uploader-win</module>
+				<module>companion-win</module>
 			</modules>
 		</profile>
 		<profile>
 			<id>osx</id>
 			<modules>
-				<module>uploader-osx</module>
+				<module>companion-osx</module>
 			</modules>
 		</profile>
 		<profile>
@@ -60,15 +61,15 @@
 			</activation>
 			<modules>
 				<module>video</module>
-				<module>uploader-win</module>
-				<module>uploader-osx</module>
+				<module>companion-win</module>
+				<module>companion-osx</module>
 			</modules>
 		</profile>
 		<profile>
 			<id>travis</id>
 			<modules>
 				<module>video</module>
-				<module>uploader-osx</module>
+				<module>companion-osx</module>
 			</modules>
 		</profile>
 		<profile>
