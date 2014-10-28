@@ -3,7 +3,6 @@ cache/
 tmp/
 target/
 .settings/
-lib/
 
 .classpath
 .idea
