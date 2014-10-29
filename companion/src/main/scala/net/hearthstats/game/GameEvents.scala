@@ -3,7 +3,7 @@ package net.hearthstats.game
 import java.awt.image.BufferedImage
 
 import net.hearthstats.core.Card
-import net.hearthstats.game.CardEventType.{DRAWN, REPLACED}
+import net.hearthstats.game.CardEventType.{ DRAWN, REPLACED }
 
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
@@ -38,7 +38,7 @@ case object GameResultScreen extends HsScreen
 case object CollectionScreen extends HsScreen
 case object CollectionDeckScreen extends HsScreen
 
-package object GameEvents {
+object GameEvents {
   import net.hearthstats.game.Screen._
   import net.hearthstats.game.ScreenGroup._
 
