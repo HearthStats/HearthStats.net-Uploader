@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+
+	<!-- Outputs logs to the standard console -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} %-5level %20.20logger{20} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Outputs logs to a file called log.txt (may be overridden using JVM 
+		parameters) -->
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+		<file>${LOG_FILE:-log.txt}</file>
+		<append>false</append>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%8.8thread] %-5level %20.20logger{20} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Send all other logs to the log file and the console. -->
+	<!-- Change the level to DEBUG to enable full log output. -->
+	<logger name="net.hearthstats" level="INFO"></logger>
+
+	<logger name="net.hearthstats.video" level="INFO"></logger>
+
+
+
+	<root level="INFO">
+		<appender-ref ref="FILE" />
+		<appender-ref ref="STDOUT" />
+	</root>
+
+</configuration>

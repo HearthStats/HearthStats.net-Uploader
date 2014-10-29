@@ -13,6 +13,10 @@ import java.io.IOException;
  */
 public class ImagePanel extends JPanel {
 
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 6488610821169302008L;
   private final Image image;
   private final boolean hidpi;
   private final int x;
