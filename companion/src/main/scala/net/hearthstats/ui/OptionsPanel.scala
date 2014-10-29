@@ -130,6 +130,12 @@ class OptionsPanel(
   addLabel(t("options.label.video.delay") + " ")
   add(new IntOptionTextField(pollingDelayMs), "wrap")
 
+  addLabel(t("options.label.video.width") + " ")
+  add(new IntOptionTextField(videoWidth), "wrap")
+
+  addLabel(t("options.label.video.height") + " ")
+  add(new IntOptionTextField(videoHeight), "wrap")
+
   // Minimize to System Tray
   addLabel("Interface: ")
   addCheckBox(t("options.notification.min_to_tray"), enableMinToTray, enableMinToTray.set)
