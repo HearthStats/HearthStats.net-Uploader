@@ -56,18 +56,13 @@ class ExportDeckBox(
     box.open()
     box.pack()
     box.peer.toFront()
-    // TODO: Implement support for subscribing to screen events so that ExportDeckBox knows when it's on the Deck screen
-//    // Set the initial status based on the current screen
-//    box.handleScreenEvent(companionEvents.gameEvents.last)
-//    box.setScreen(HearthstoneAnalyser.screen)
     box
   }
 
-  def close() = currentWindow match {
+  def closeCurrent() = currentWindow match {
     case Some(box) =>
       box.close()
       box.dispose()
-//      HearthstoneAnalyser.deleteObserver(box)
       currentWindow = None
     case None =>
   }
@@ -178,7 +173,7 @@ class ExportDeckBox(
       reactions += {
         case ButtonClicked(`cancelButton`) =>
           debug("Cancelling deck export")
-          close();
+          closeCurrent();
         case ButtonClicked(`exportButton`) =>
           debug("Exporting deck")
           exportDeck()
@@ -209,16 +204,13 @@ class ExportDeckBox(
     }
     contents = panel
 
-    // TODO: Implement support for subscribing to screen events so that ExportDeckBox knows when it's on the Deck screen
     val screenEventSubscription = companionEvents.gameEvents.subscribe(handleScreenEvent _)
-
 
 
     override def closeOperation {
       info("Closing deck export window")
-        // TODO: Implement support for subscribing to screen events so that ExportDeckBox knows when it's on the Deck screen
       screenEventSubscription.unsubscribe()
-      close()
+      closeCurrent()
     }
 
 
@@ -332,7 +324,7 @@ class ExportDeckBox(
             case true =>
               // Deck was loaded onto HearthStats.net successfully
               Main.showMessageDialog(peer, s"Deck ${deck.name} was exported to HearthStats.net successfully")
-              close()
+              closeCurrent()
             case false =>
               // An error occurred loading the deck onto HearthStats.net
               setStatus(t("export.status.error"), t("export.instructions.error"))
