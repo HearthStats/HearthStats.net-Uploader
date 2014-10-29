@@ -9,7 +9,7 @@ import scala.concurrent.{ Future, Promise }
  * This module should encode images in a video file and return its name when finish is called.
  */
 trait VideoEncoder {
-  def newVideo(framesPerSec: Int, videoWidth: Int, videoHeight: Int): OngoingVideo
+  def newVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int): OngoingVideo
 }
 
 trait OngoingVideo {
@@ -18,7 +18,7 @@ trait OngoingVideo {
 }
 
 class DummyVideoEncoder extends VideoEncoder {
-  def newVideo(framesPerSec: Int, videoWidth: Int, videoHeight: Int) = new OngoingVideo {
+  def newVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int) = new OngoingVideo {
     def encodeImage(bi: BufferedImage): Unit = {}
     def finish(): Future[String] = Promise[String].future
   }

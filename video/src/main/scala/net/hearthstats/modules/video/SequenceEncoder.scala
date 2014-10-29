@@ -14,15 +14,15 @@ import scala.util.control.NonFatal
 
 class SequenceEncoder extends VideoEncoder with Logging {
 
-  def newVideo(framesPerSec: Int = 10, videoWidth: Int = 800, videoHeight: Int = 600) =
+  def newVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int) =
     new SequenceEncoderOngoingVideo(framesPerSec, videoWidth, videoHeight)
 
-  class SequenceEncoderOngoingVideo(framesPerSec: Int = 10, videoWidth: Int = 800, videoHeight: Int = 600) extends OngoingVideo {
+  class SequenceEncoderOngoingVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int) extends OngoingVideo {
 
     val video = File.createTempFile("HSReplay", ".mp4").getAbsolutePath
     info(s"writing to $video")
 
-    var time = 0
+    var time = 0.0
     var closed = false
     var writer: IMediaWriter = _
 
@@ -33,7 +33,7 @@ class SequenceEncoder extends VideoEncoder with Logging {
           if (writer == null) {
             writer = createWriter(resized)
           }
-          writer.encodeVideo(0, resized, time, TimeUnit.MILLISECONDS)
+          writer.encodeVideo(0, resized, time.toInt, TimeUnit.MILLISECONDS)
           time += 1000 / framesPerSec
           debug(s"encoded until $time ms")
         } catch {
@@ -76,7 +76,7 @@ class SequenceEncoder extends VideoEncoder with Logging {
       val writer = ToolFactory.makeWriter(video)
       val w = if (bi.getWidth % 2 == 0) bi.getWidth else bi.getWidth + 1
       val h = if (bi.getHeight % 2 == 0) bi.getHeight else bi.getHeight + 1
-      writer.addVideoStream(0, 0, IRational.make(framesPerSec, 1), w, h)
+      writer.addVideoStream(0, 0, IRational.make((framesPerSec * 1000).toInt, 1000), w, h)
       writer
     }
   }

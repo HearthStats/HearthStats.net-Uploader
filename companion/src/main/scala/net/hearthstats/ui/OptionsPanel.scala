@@ -1,16 +1,18 @@
 package net.hearthstats.ui
 
-import java.awt.event.{ActionEvent, ActionListener}
-import java.awt.{Dimension, Font}
+import java.awt.event.{ ActionEvent, ActionListener }
+import java.awt.{ Dimension, Font }
 import javax.swing._
-import javax.swing.event.{DocumentEvent, DocumentListener}
-
+import javax.swing.event.{ DocumentEvent, DocumentListener }
 import net.hearthstats.config._
 import net.hearthstats.ui.notification.NotificationType
 import net.hearthstats.util.Translation
 import net.miginfocom.swing.MigLayout
-
 import scala.swing.Swing._
+import net.hearthstats.ui.util.OptionTextField
+import net.hearthstats.ui.util.OptionTextField
+import net.hearthstats.ui.util.StringOptionTextField
+import net.hearthstats.ui.util.IntOptionTextField
 
 class OptionsPanel(
   translation: Translation,
@@ -29,21 +31,7 @@ class OptionsPanel(
 
   // User Key
   addLabel(t("options.label.userkey") + " ")
-  val userKeyFieldSize = new Dimension(280, 28)
-  var userKeyField: JTextField = new JTextField()
-  userKeyField.setText(userKey)
-  userKeyField.setMinimumSize(userKeyFieldSize)
-  userKeyField.setPreferredSize(userKeyFieldSize)
-  userKeyField.getDocument.addDocumentListener(new DocumentListener {
-    def insertUpdate(e: DocumentEvent): Unit = handleChange
-    def changedUpdate(e: DocumentEvent): Unit = handleChange
-    def removeUpdate(e: DocumentEvent): Unit = handleChange
-    def handleChange = onEDT({
-      if (userKey.get != userKeyField.getText) {
-        userKey.set(userKeyField.getText)
-      }
-    })
-  })
+  var userKeyField: JTextField = new StringOptionTextField(userKey)
   add(userKeyField, "wrap")
 
   // Monitoring Method
@@ -138,6 +126,10 @@ class OptionsPanel(
     "Help on the match popup options")
   add(matchPopupHelpIcon, "wrap")
 
+  // Video
+  addLabel(t("options.label.video.delay") + " ")
+  add(new IntOptionTextField(pollingDelayMs), "wrap")
+
   // Minimize to System Tray
   addLabel("Interface: ")
   addCheckBox(t("options.notification.min_to_tray"), enableMinToTray, enableMinToTray.set)
@@ -163,15 +155,14 @@ class OptionsPanel(
     def actionPerformed(e: ActionEvent) = onEDT({
       ConfigUtil.clearPreferences()
       // Recreate the options panel to cause it to reload all the defaults
-//      val mainFrame: CompanionFrame = wire[CompanionFrame]
-//      mainFrame.tabbedPane.remove(3)
-//      mainFrame.optionsPanel = wire[OptionsPanel]
-//      mainFrame.tabbedPane.insertTab(t("tab.options"), null, mainFrame.optionsPanel, null, 3)
-//      mainFrame.tabbedPane.setSelectedIndex(3)
+      //      val mainFrame: CompanionFrame = wire[CompanionFrame]
+      //      mainFrame.tabbedPane.remove(3)
+      //      mainFrame.optionsPanel = wire[OptionsPanel]
+      //      mainFrame.tabbedPane.insertTab(t("tab.options"), null, mainFrame.optionsPanel, null, 3)
+      //      mainFrame.tabbedPane.setSelectedIndex(3)
     })
   })
   add(resetButton, "wrap")
-
 
   private def updateNotificationCheckboxes(isEnabled: Boolean) {
     if (notificationsFormat != null) {

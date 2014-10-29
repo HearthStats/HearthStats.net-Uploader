@@ -17,7 +17,7 @@ class UserConfig extends Logging {
   val apiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
   val userKey = config("api.userkey", "your_userkey_here")
 
-  val pollingDelayMs = config("polling.delay.ms", 100)
+  val pollingDelayMs = config("polling.delay.ms", 1000 / 25)
 
   val enableAnalytics = config("enable.analytics", true)
   val enableDeckOverlay = config("enable.deckoverlay", false)
@@ -39,7 +39,7 @@ class UserConfig extends Logging {
 
   val recordVideo = config("video.record", true)
   val recordedVideoFolder = config("video.folder", System.getenv("HOME") + "/hearthstats/videos")
-  val videoFps = config("video.fps", 25)
+  def videoFps = 1000.0 / pollingDelayMs
   val videoWidth = config("video.width", 2000)
   val videoHeight = config("video.fps", 2000)
 
