@@ -17,7 +17,7 @@
 		<!-- parsedVersion will be populated automatically by the build-helper-maven-plugin -->
 		<project.longVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}</project.longVersion>
 		<java.version>1.7</java.version>
-		<scala.version>2.11.2</scala.version>
+		<scala.version>2.11.4</scala.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
