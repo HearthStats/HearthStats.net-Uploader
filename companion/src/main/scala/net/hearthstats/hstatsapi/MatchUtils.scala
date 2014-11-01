@@ -10,6 +10,7 @@ import net.hearthstats.ui.{ Button, HearthstatsPresenter, MatchEndPopup }
 import net.hearthstats.util.{ Tracker, Translation }
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.modules.ReplayHandler
 
 class MatchUtils(
   matchState: MatchState,
@@ -19,6 +20,7 @@ class MatchUtils(
   notifier: NotificationQueue,
   matchPopup: MatchEndPopup,
   hsPresenter: HearthstatsPresenter,
+  replayHandler: ReplayHandler,
   analytics: Tracker,
   uiLog: Log) {
 
@@ -96,9 +98,19 @@ class MatchUtils(
     api.createMatch(hsMatch) match {
       case Some(id) =>
         matchState.submitted = true
-        uiLog.info(s"Success. <a href='${hsMatch.editUrl}'>Edit match #$id on HearthStats.net</a>")
-        hsPresenter.matchSubmitted(hsMatch, describeMatch(hsMatch))
-        Some(hsMatch.copy(id = id))
+        val submittedMatch = hsMatch.copy(id = id)
+        uiLog.info(s"Success. <a href='${submittedMatch.editUrl}'>Edit match #$id on HearthStats.net</a>")
+        hsPresenter.matchSubmitted(submittedMatch, describeMatch(submittedMatch))
+
+        import scala.concurrent.ExecutionContext.Implicits.global
+        for {
+          v <- companionState.ongoingVideo
+          fileName <- v.finish()
+        } {
+          replayHandler.handleNewReplay(fileName, submittedMatch)
+        }
+        companionState.ongoingVideo = None
+        Some(submittedMatch)
       case None =>
         uiLog.warn("Could not submit the match to Hearthstats.net, API error")
         None

@@ -30,7 +30,6 @@ class GameMonitor(
   classAnalyser: HsClassAnalyser,
   inGameAnalyser: InGameAnalyser,
   videoEncoderFactory: VideoEncoderFactory,
-  replayHandler: ReplayHandler,
   uiLog: Log,
   hsPresenter: HearthstatsPresenter,
   deckOverlay: DeckOverlayModule) extends Logging {
@@ -144,10 +143,6 @@ class GameMonitor(
 
   private def handleEndResult(image: BufferedImage) {
     addImageToVideo(image)
-    for (v <- companionState.ongoingVideo) {
-      updateMatch(_.withReplay(v.finish()))
-    }
-    companionState.ongoingVideo = None
     if (!victoryOrDefeatDetected) {
       info("Testing for victory or defeat")
       inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
@@ -155,11 +150,7 @@ class GameMonitor(
           uiLog.info(s"Result detected by screen capture : $outcome")
           updateMatch(_.withResult(outcome))
           hsMatch.endMatch()
-          val submittedMatch = matchUtils.submitMatchResult()
-          import scala.concurrent.ExecutionContext.Implicits.global
-          for (f <- hsMatch.replayFile; m <- submittedMatch) {
-            replayHandler.handleNewReplay(f, m)
-          }
+          matchUtils.submitMatchResult()
           deckOverlay.reset()
         case _ =>
           debug("Result not detected on screen capture")
