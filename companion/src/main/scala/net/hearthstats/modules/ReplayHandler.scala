@@ -37,7 +37,9 @@ class ReplayHandler(
     val newName = s"${date}_${userClass}_${result.get}_VS_$opponentClass.mp4"
     val newFile = new File(recordedVideoFolder, newName)
     if (f.renameTo(newFile)) {
-      uiLog.info("Video replay of your match is saved in " + newFile.getAbsolutePath)
+      val p = newFile.getAbsolutePath
+      val u = newFile.toURL
+      uiLog.info(s"Video replay of your match is saved in <a href='$u'>$p</a>")
     } else throw new IllegalArgumentException(s"Could not rename $f to $newFile")
 
     val msg = s"""Do you want to upload $gameDesc ?
