@@ -7,28 +7,25 @@ import com.github.nscala_time.time.Imports.DateTime
 import grizzled.slf4j.Logging
 import scala.concurrent.Future
 import scala.concurrent.Promise
+import java.util.regex.MatchResult
 
-//TODO use options
-//TODO avoid mutable 
-class HearthstoneMatch(var mode: GameMode = GameMode.UNDETECTED,
-  var userClass: HeroClass = HeroClass.UNDETECTED,
-  var opponentClass: HeroClass = HeroClass.UNDETECTED,
-  var coin: Option[Boolean] = None,
-  var result: Option[MatchOutcome] = None,
-  var deck: Option[Deck] = None,
-  var opponentName: String = null,
-  var rankLevel: Option[Rank] = None,
-  var numTurns: Int = -1,
-  var duration: Int = -1,
-  var notes: String = null,
-  var replayFile: Future[String] = Promise[String].future,
-  var id: Int = -1) extends Logging {
+case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
+  userClass: HeroClass = HeroClass.UNDETECTED,
+  opponentClass: HeroClass = HeroClass.UNDETECTED,
+  coin: Option[Boolean] = None,
+  result: Option[MatchOutcome] = None,
+  deck: Option[Deck] = None,
+  opponentName: String = null,
+  rankLevel: Option[Rank] = None,
+  numTurns: Int = -1,
+  duration: Int = -1,
+  notes: String = null,
+  replayFile: Future[String] = Promise[String].future,
+  id: Int = -1) extends Logging {
 
-  debug("new HearthstoneMatch")
+  info("new HearthstoneMatch")
 
-  private var _userClassUnconfirmed: Boolean = true
-  //needed for java calls
-  def this() = this(mode = null)
+  def this() = this(GameMode.UNDETECTED)
 
   val startedAt: Long = System.currentTimeMillis
 
@@ -95,5 +92,19 @@ class HearthstoneMatch(var mode: GameMode = GameMode.UNDETECTED,
     s"http://hearthstats.net/$m/$id/edit"
   }
 
-  def endMatch = duration = Math.round((System.currentTimeMillis - startedAt) / 1000)
+  //methods to update the match (return an updated copy)
+
+  def withDeck(d: Deck) = copy(deck = Some(d))
+  def withMode(m: GameMode) = copy(mode = m)
+  def withRankLevel(r: Rank) = copy(rankLevel = Some(r))
+  def withCoin(b: Boolean) = copy(coin = Some(b))
+  def withResult(r: MatchOutcome) = copy(result = Some(r))
+  def withOpponentName(n: String) = copy(opponentName = n)
+  def withOpponentClass(c: HeroClass) = copy(opponentClass = c)
+  def withUserClass(c: HeroClass) = copy(userClass = c)
+  def withReplay(r: Future[String]) = copy(replayFile = r)
+  def withNewTurn = copy(numTurns = numTurns + 1)
+
+  def endMatch() =
+    copy(duration = Math.round((System.currentTimeMillis - startedAt) / 1000))
 }

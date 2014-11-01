@@ -23,9 +23,9 @@ class DeckOverlayModule(presenter: DeckOverlaySwing, logMonitor: HearthstoneLogM
     })
 
   }
-  
-  def reset : Unit = {
-    presenter.reset
+
+  def reset(): Unit = {
+    presenter.reset()
   }
 
 }

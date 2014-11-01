@@ -1,14 +1,15 @@
 package net.hearthstats.hstatsapi
 
 import java.awt.Component
-
 import net.hearthstats.companion.CompanionState
-import net.hearthstats.core.{ArenaRun, GameMode, HearthstoneMatch}
+import net.hearthstats.core.{ ArenaRun, GameMode, HearthstoneMatch }
 import net.hearthstats.game.MatchState
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.NotificationQueue
-import net.hearthstats.ui.{Button, HearthstatsPresenter, MatchEndPopup}
-import net.hearthstats.util.{Tracker, Translation}
+import net.hearthstats.ui.{ Button, HearthstatsPresenter, MatchEndPopup }
+import net.hearthstats.util.{ Tracker, Translation }
+import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.core.HearthstoneMatch
 
 class MatchUtils(
   matchState: MatchState,
@@ -23,20 +24,25 @@ class MatchUtils(
 
   import translation.t
 
-  def submitMatchResult(): Unit = {
+  /**
+   * Returns the submitted match if it was accepted by hs.net.
+   */
+  def submitMatchResult(): Option[HearthstoneMatch] = {
     createArenaRun()
     val hsMatch = matchState.currentMatch.get
     if (hsMatch.mode == GameMode.PRACTICE) {
       uiLog.info("Practice match was not submitted")
+      None
     } else {
       if (hsMatch.isDataComplete) {
         submitMatchImpl(hsMatch)
       } else {
         matchPopup.showPopup(hsPresenter.asInstanceOf[Component], hsMatch) match {
-          case Button.SUBMIT => submitMatchImpl(hsMatch)
+          case Some(m) => submitMatchImpl(m)
           case _ =>
             uiLog.info(s"Match was not submitted")
             matchState.submitted = true
+            None
         }
       }
     }
@@ -81,7 +87,7 @@ class MatchUtils(
     s"$describeMode $describeCoin $describePlayers $describeResult $describeDeck $describeTurns $describeDuration"
   }
 
-  private def submitMatchImpl(hsMatch: HearthstoneMatch): Unit = {
+  private def submitMatchImpl(hsMatch: HearthstoneMatch): Option[HearthstoneMatch] = {
     val header = t("match.end.submitting")
     val message = describeMatch(hsMatch)
     notifier.add(header, message, false)
@@ -90,10 +96,12 @@ class MatchUtils(
     api.createMatch(hsMatch) match {
       case Some(id) =>
         matchState.submitted = true
-        hsMatch.id = id
         uiLog.info(s"Success. <a href='${hsMatch.editUrl}'>Edit match #$id on HearthStats.net</a>")
         hsPresenter.matchSubmitted(hsMatch, describeMatch(hsMatch))
-      case None => uiLog.warn("Could not submit the match to Hearthstats.net, API error")
+        Some(hsMatch.copy(id = id))
+      case None =>
+        uiLog.warn("Could not submit the match to Hearthstats.net, API error")
+        None
     }
   }
 

@@ -1,23 +1,22 @@
 package net.hearthstats.companion
 
 import java.awt.image.BufferedImage
-import java.util.concurrent.{Executors, ScheduledFuture, TimeUnit}
-
+import java.util.concurrent.{ Executors, ScheduledFuture, TimeUnit }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.control.NonFatal
-
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 import net.hearthstats.config.UserConfig
-import net.hearthstats.core.GameMode.{ARENA, CASUAL, FRIENDLY, PRACTICE, RANKED}
+import net.hearthstats.core.GameMode.{ ARENA, CASUAL, FRIENDLY, PRACTICE, RANKED }
 import net.hearthstats.core.HeroClass
 import net.hearthstats.game._
 import net.hearthstats.game.imageanalysis._
-import net.hearthstats.game.ocr.{BackgroundImageSave, OpponentNameOcr, OpponentNameRankedOcr, OpponentNameUnrankedOcr}
-import net.hearthstats.hstatsapi.{DeckUtils, MatchUtils}
-import net.hearthstats.modules.{ReplayHandler, VideoEncoderFactory}
+import net.hearthstats.game.ocr.{ BackgroundImageSave, OpponentNameOcr, OpponentNameRankedOcr, OpponentNameUnrankedOcr }
+import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
+import net.hearthstats.modules.{ ReplayHandler, VideoEncoderFactory }
 import net.hearthstats.ui.HearthstatsPresenter
 import net.hearthstats.ui.log.Log
+import net.hearthstats.core.HearthstoneMatch
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -97,10 +96,12 @@ class GameMonitor(
     uiLog.info(s"Finding opponent, new match will start soon ...")
     uiLog.divider()
     matchState.nextMatch(companionState)
-    hsMatch.deck = for {
+    for {
       slot <- companionState.deckSlot
       d <- deckUtils.getDeckFromSlot(slot)
-    } yield d
+    } {
+      updateMatch(_.withDeck(d))
+    }
   }
 
   private def handleStartingHand(image: BufferedImage): Unit = {
@@ -144,7 +145,7 @@ class GameMonitor(
   private def handleEndResult(image: BufferedImage) {
     addImageToVideo(image)
     for (v <- companionState.ongoingVideo) {
-      hsMatch.replayFile = v.finish
+      updateMatch(_.withReplay(v.finish()))
     }
     companionState.ongoingVideo = None
     if (!victoryOrDefeatDetected) {
@@ -152,15 +153,15 @@ class GameMonitor(
       inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
         case Some(outcome) =>
           uiLog.info(s"Result detected by screen capture : $outcome")
-          hsMatch.result = Some(outcome)
-          hsMatch.endMatch
+          updateMatch(_.withResult(outcome))
+          hsMatch.endMatch()
           matchUtils.submitMatchResult()
           import scala.concurrent.ExecutionContext.Implicits.global
           val submittedMatch = hsMatch
           for (f <- hsMatch.replayFile) {
             replayHandler.handleNewReplay(f, submittedMatch)
           }
-          deckOverlay.reset
+          deckOverlay.reset()
         case _ =>
           debug("Result not detected on screen capture")
       }
@@ -198,7 +199,7 @@ class GameMonitor(
         iterationsSinceOpponentTurn += 1
         if (iterationsSinceOpponentTurn > 2) {
           isYourTurn = true
-          hsMatch.numTurns += 1
+          updateMatch(_.withNewTurn)
           uiLog.info("Your turn")
           iterationsSinceOpponentTurn = 0
         }
@@ -218,7 +219,7 @@ class GameMonitor(
       debug("Testing for opponent name")
       if (inGameAnalyser.imageShowsOpponentName(image)) {
         val opponentName = opponentNameOcr.process(image)
-        hsMatch.opponentName = opponentName
+        updateMatch(_.withOpponentName(opponentName))
         hsPresenter.setOpponentName(opponentName)
         uiLog.info(s"Opponent name : $opponentName")
       }
@@ -260,7 +261,7 @@ class GameMonitor(
   private def testForCoin(image: BufferedImage): Unit = {
     if (hsMatch.coin.isEmpty && inGameAnalyser.imageShowsCoin(image)) {
       uiLog.info("Coin detected")
-      hsMatch.coin = Some(true)
+      updateMatch(_.withCoin(true))
       hsPresenter.setCoin(true)
     }
   }
@@ -270,7 +271,7 @@ class GameMonitor(
       debug("Testing for your class")
       classAnalyser.imageIdentifyYourClass(image) match {
         case Some(newClass) =>
-          hsMatch.userClass = newClass
+          updateMatch(_.withUserClass(newClass))
           hsPresenter.setYourClass(newClass)
           uiLog.info(s"Your class detected : $newClass")
         case None =>
@@ -287,7 +288,7 @@ class GameMonitor(
       debug("Testing for opponent class")
       classAnalyser.imageIdentifyOpponentClass(image) match {
         case Some(newClass) =>
-          hsMatch.opponentClass = newClass
+          updateMatch(_.withOpponentClass(newClass))
           hsPresenter.setOpponentClass(newClass)
           uiLog.info(s"Opponent class detected : $newClass")
         case None =>
@@ -299,7 +300,10 @@ class GameMonitor(
     }
   }
 
-  private def hsMatch = {
+  private def updateMatch(f: HearthstoneMatch => HearthstoneMatch): Unit =
+    matchState.currentMatch = Some(f(hsMatch))
+
+  private def hsMatch: HearthstoneMatch = {
     if (matchState.currentMatch.isEmpty) {
       uiLog.warn("Match start was not detected")
       matchState.nextMatch(companionState)

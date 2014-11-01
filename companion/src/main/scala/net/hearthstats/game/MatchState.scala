@@ -12,12 +12,11 @@ class MatchState {
   var submitted = false
   var started = false
 
-  def setOpponentName(n: String) = currentMatch.get.opponentName = n
-  def setNotes(n: String) = currentMatch.get.notes = n
-  def setCoin(c: Boolean) = currentMatch.get.coin = Some(c)
-  def setOpponentClass(hc: HeroClass) = currentMatch.get.opponentClass = hc
-  def setUserClass(hc: HeroClass) = currentMatch.get.userClass  = hc
-
+  def setOpponentName(n: String) = updateMatch(_.withOpponentName(n))
+  def setNotes(n: String) = updateMatch(_.copy(notes = n))
+  def setCoin(c: Boolean) = updateMatch(_.withCoin(c))
+  def setOpponentClass(hc: HeroClass) = updateMatch(_.withOpponentClass(hc))
+  def setUserClass(hc: HeroClass) = updateMatch(_.withUserClass(hc))
 
   def lastMatchUrl: Option[String] =
     for (m <- lastMatch) yield {
@@ -33,5 +32,8 @@ class MatchState {
     submitted = false
     started = false
   }
+
+  private def updateMatch(f: HearthstoneMatch => HearthstoneMatch): Unit =
+    currentMatch = Some(f(currentMatch.get))
 
 }

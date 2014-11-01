@@ -14,6 +14,7 @@ import net.hearthstats.util.Translation
 import net.miginfocom.swing.MigLayout
 import scala.swing.Swing
 import net.hearthstats.core.Deck
+import net.hearthstats.core.HearthstoneMatch
 
 /**
  * A popup to display at the end of the match that allows the match details to
@@ -28,14 +29,16 @@ class MatchEndPopup(
 
   import translation._
 
-  def showPopup(parentComponent: Component, hsMatch: HearthstoneMatch): Button = {
+  /**
+   * Returns None if the user did not confirm, the updated match otherwise.
+   */
+  def showPopup(parentComponent: Component, hsMatch: HearthstoneMatch): Option[HearthstoneMatch] = {
     val popup = new MatchEndPopupImpl(hsMatch)
     val value = JOptionPane.showOptionDialog(parentComponent, popup, "Incomplete match detected", JOptionPane.INFORMATION_MESSAGE,
       JOptionPane.YES_NO_OPTION, null, Array("Submit", "Cancel"), "Submit")
     value match {
-      case 0 => Button.SUBMIT
-      case 1 => Button.CANCEL
-      case _ => Button.CANCEL
+      case 0 => Some(popup.hsMatch)
+      case _ => None
     }
   }
 
@@ -44,7 +47,7 @@ class MatchEndPopup(
     c.setPreferredSize(new Dimension(200, 28))
   }
 
-  class MatchEndPopupImpl(hsMatch: HearthstoneMatch)
+  class MatchEndPopupImpl(var hsMatch: HearthstoneMatch)
     extends JPanel {
 
     setLayout(new MigLayout("", "[]10[grow]20[]10[grow]", ""))
@@ -72,7 +75,7 @@ class MatchEndPopup(
     setDefaultSize(gameModeComboBox)
     gameModeComboBox.setSelectedItem(hsMatch.mode)
     gameModeComboBox.addActionListener(() => {
-      hsMatch.mode = gameModeComboBox.getItemAt(gameModeComboBox.getSelectedIndex)
+      hsMatch = hsMatch.withMode(gameModeComboBox.getItemAt(gameModeComboBox.getSelectedIndex))
       updateGameMode()
     })
     add(gameModeComboBox, "span")
@@ -81,7 +84,7 @@ class MatchEndPopup(
     val rankComboBox = new JComboBox(Rank.values)
     setDefaultSize(rankComboBox)
     rankComboBox.addActionListener(() =>
-      hsMatch.rankLevel = Some(rankComboBox.getSelectedItem.asInstanceOf[Rank]))
+      hsMatch = hsMatch.withRankLevel(rankComboBox.getSelectedItem.asInstanceOf[Rank]))
     if (hsMatch.rankLevel.isDefined) {
       rankComboBox.setSelectedItem(hsMatch.rankLevel.get)
     }
@@ -93,7 +96,7 @@ class MatchEndPopup(
     opponentNameField.setText(hsMatch.opponentName)
     opponentNameField.addKeyListener(new KeyAdapter {
       override def keyReleased(e: KeyEvent) {
-        hsMatch.opponentName = opponentNameField.getText.trim
+        hsMatch = hsMatch.withOpponentName(opponentNameField.getText.trim)
       }
     })
     add(opponentNameField, "wrap")
@@ -103,7 +106,7 @@ class MatchEndPopup(
     setDefaultSize(yourClassComboBox)
     yourClassComboBox.setSelectedItem(hsMatch.userClass)
     yourClassComboBox.addActionListener(() =>
-      hsMatch.userClass = HeroClass.values()(yourClassComboBox.getSelectedIndex))
+      hsMatch = hsMatch.withUserClass(HeroClass.values()(yourClassComboBox.getSelectedIndex)))
     add(yourClassComboBox, "")
 
     add(new JLabel(t("match.label.opponents_class")), "right")
@@ -111,7 +114,7 @@ class MatchEndPopup(
     setDefaultSize(opponentClassComboBox)
     opponentClassComboBox.setSelectedItem(hsMatch.opponentClass)
     opponentClassComboBox.addActionListener(() =>
-      hsMatch.opponentClass = HeroClass.values()(opponentClassComboBox.getSelectedIndex))
+      hsMatch = hsMatch.withOpponentClass(HeroClass.values()(opponentClassComboBox.getSelectedIndex)))
     add(opponentClassComboBox, "wrap")
 
     add(new JLabel(t("match.label.your_deck")), "right")
@@ -128,13 +131,16 @@ class MatchEndPopup(
     val yourDeckComboBox = new JComboBox(slots.toArray)
     setDefaultSize(yourDeckComboBox)
     yourDeckComboBox.setSelectedIndex(hsMatch.deckSlot.getOrElse(0))
-    yourDeckComboBox.addActionListener(() => hsMatch.deck = Some(Deck(activeSlot = Some(yourDeckComboBox.getSelectedIndex))))
+    yourDeckComboBox.addActionListener(() => {
+      val d = Deck(activeSlot = Some(yourDeckComboBox.getSelectedIndex))
+      hsMatch = hsMatch.withDeck(d)
+    })
     add(deckPanel, "wrap")
 
     add(new JLabel(t("match.label.coin")), "right")
     val coinCheckBox = new JCheckBox(t("match.coin"))
     coinCheckBox.setSelected(hsMatch.coin.getOrElse(false))
-    coinCheckBox.addChangeListener(() => hsMatch.coin = Some(coinCheckBox.isSelected))
+    coinCheckBox.addChangeListener(() => hsMatch = hsMatch.withCoin(coinCheckBox.isSelected))
     add(coinCheckBox, "wrap")
 
     add(new JLabel("Result:"), "right, gapy 20px 20px")
@@ -146,7 +152,7 @@ class MatchEndPopup(
       resultVictory.setSelected(true)
     }
     resultVictory.addActionListener(() =>
-      if (resultVictory.isSelected) { hsMatch.result = Some(MatchOutcome.VICTORY) })
+      if (resultVictory.isSelected) { hsMatch = hsMatch.withResult(MatchOutcome.VICTORY) })
     resultPanel.add(resultVictory)
     val resultDefeat = new JRadioButton(t("match.label.result_defeat"))
     resultDefeat.setMnemonic(KeyEvent.VK_D)
@@ -155,7 +161,7 @@ class MatchEndPopup(
       resultDefeat.setSelected(true)
     }
     resultDefeat.addActionListener(() =>
-      if (resultDefeat.isSelected) { hsMatch.result = Some(MatchOutcome.DEFEAT) })
+      if (resultDefeat.isSelected) { hsMatch = hsMatch.withResult(MatchOutcome.DEFEAT) })
     resultPanel.add(resultDefeat)
     val resultDraw = new JRadioButton(t("match.label.result_draw"))
     resultDraw.setMnemonic(KeyEvent.VK_R)
@@ -164,7 +170,7 @@ class MatchEndPopup(
       resultDraw.setSelected(true)
     }
     resultDraw.addActionListener(() =>
-      if (resultDraw.isSelected) { hsMatch.result = Some(MatchOutcome.DRAW) })
+      if (resultDraw.isSelected) { hsMatch = hsMatch.withResult(MatchOutcome.DRAW) })
     resultPanel.add(resultDraw)
     val resultGroup = new ButtonGroup
     resultGroup.add(resultVictory)
@@ -184,7 +190,7 @@ class MatchEndPopup(
     notesTextArea.setText(hsMatch.notes)
     notesTextArea.addKeyListener(new KeyAdapter {
       override def keyReleased(e: KeyEvent) {
-        hsMatch.notes = notesTextArea.getText
+        hsMatch = hsMatch.copy(notes = notesTextArea.getText)
       }
     })
     add(notesTextArea, "span 3, wrap")

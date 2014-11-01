@@ -1,16 +1,16 @@
 package net.hearthstats.ui.deckoverlay
 
-import java.awt.event.{MouseAdapter, MouseEvent}
-import java.awt.{BorderLayout, Dimension}
+import java.awt.event.{ MouseAdapter, MouseEvent }
+import java.awt.{ BorderLayout, Dimension }
 import javax.swing.Box.createVerticalBox
-import javax.swing.{ImageIcon, JCheckBox, JFrame, JLabel, WindowConstants}
+import javax.swing.{ ImageIcon, JCheckBox, JFrame, JLabel, WindowConstants }
 
-import net.hearthstats.config.{Environment, UserConfig}
-import net.hearthstats.core.{Card, Deck}
+import net.hearthstats.config.{ Environment, UserConfig }
+import net.hearthstats.core.{ Card, Deck }
 import net.hearthstats.hstatsapi.CardUtils
 import net.hearthstats.ui.log.Log
 
-import scala.swing.Swing.{ChangeListener, onEDT}
+import scala.swing.Swing.{ ChangeListener, onEDT }
 
 class DeckOverlaySwing(
   config: UserConfig,
@@ -95,17 +95,15 @@ class DeckOverlaySwing(
       }
     } else None
 
-  def removeCard(card: Card): Unit = {
+  def removeCard(card: Card): Unit =
     findLabel(card) map (_.decreaseRemaining())
-  }
 
-  def addCard(card: Card): Unit = {
+  def addCard(card: Card): Unit =
     findLabel(card) map (_.increaseRemaining())
-  }
-  def reset = {
+
+  def reset(): Unit =
     cardLabels.foreach { keyVal => keyVal._2.reset() }
-  }
-  
+
   case class MouseHandler(card: Card, imageLabel: JLabel) extends MouseAdapter {
     override def mouseEntered(e: MouseEvent) {
       val localFile = environment.imageCacheFile(card.fileName).getAbsolutePath
