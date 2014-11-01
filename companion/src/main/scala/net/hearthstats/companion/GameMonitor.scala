@@ -155,11 +155,10 @@ class GameMonitor(
           uiLog.info(s"Result detected by screen capture : $outcome")
           updateMatch(_.withResult(outcome))
           hsMatch.endMatch()
-          matchUtils.submitMatchResult()
+          val submittedMatch = matchUtils.submitMatchResult()
           import scala.concurrent.ExecutionContext.Implicits.global
-          val submittedMatch = hsMatch
-          for (f <- hsMatch.replayFile) {
-            replayHandler.handleNewReplay(f, submittedMatch)
+          for (f <- hsMatch.replayFile; m <- submittedMatch) {
+            replayHandler.handleNewReplay(f, m)
           }
           deckOverlay.reset()
         case _ =>
