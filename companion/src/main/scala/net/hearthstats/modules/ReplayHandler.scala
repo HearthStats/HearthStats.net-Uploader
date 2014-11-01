@@ -33,9 +33,13 @@ class ReplayHandler(
     val gameDesc = s"$userClass ${result.get} VS $opponentClass ($opponentName)"
 
     val f = new File(fileName)
-    val date = DateTimeFormat.forPattern("ddHHmm").print(startedAt)
-    val newName = s"${date}_${userClass}_${result.get}_VS_$opponentClass.mp4"
-    val newFile = new File(recordedVideoFolder, newName)
+    val dateFile = DateTimeFormat.forPattern("dd_HH'h'mm").print(startedAt)
+    val dateFolder = DateTimeFormat.forPattern("yyyy_MMM").print(startedAt)
+    val newName = s"${dateFile}_${userClass}_${result.get}_VS_$opponentClass.mp4"
+    val p = recordedVideoFolder.get
+    val folder = new File(s"$p/$dateFolder")
+    folder.mkdirs()
+    val newFile = new File(folder, newName)
     if (f.renameTo(newFile)) {
       val p = newFile.getAbsolutePath
       val u = newFile.toURL
