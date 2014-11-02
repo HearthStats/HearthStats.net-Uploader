@@ -149,7 +149,7 @@ class GameMonitor(
         case Some(outcome) =>
           uiLog.info(s"Result detected by screen capture : $outcome")
           updateMatch(_.withResult(outcome))
-          hsMatch.endMatch()
+          updateMatch(_.endMatch)
           matchUtils.submitMatchResult()
           deckOverlay.reset()
         case _ =>
