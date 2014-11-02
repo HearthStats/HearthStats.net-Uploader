@@ -83,11 +83,11 @@ class Main(
   val deckOverlayModule = wire[DeckOverlayModule]
   val videoEncoderFactory = wire[VideoEncoderFactory]
   val fileUploaderFactory = wire[FileUploaderFactory]
-  val replayHandler = wire[ReplayHandler]
 
   val companionEvents = wire[CompanionEvents]
   val exportDeckBox = wire[ExportDeckBox]
   val mainFrame: CompanionFrame = wire[CompanionFrame]
+  val replayHandler = wire[ReplayHandler]
   val startup: Startup = wire[Startup]
   val matchUtils = wire[MatchUtils]
 

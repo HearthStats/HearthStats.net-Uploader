@@ -1,22 +1,21 @@
 package net.hearthstats.modules
 
 import java.io.File
-
 import scala.concurrent.{ Future, Promise }
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import org.joda.time.format.DateTimeFormat
-
 import javax.swing.JOptionPane.{ YES_NO_OPTION, YES_OPTION, showConfirmDialog }
 import net.hearthstats.config.UserConfig
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.hstatsapi.API
 import net.hearthstats.ui.log.Log
+import net.hearthstats.ui.GeneralUI
 
 class ReplayHandler(
   fileUploaderFactory: FileUploaderFactory,
   config: UserConfig,
   uiLog: Log,
+  ui: GeneralUI,
   api: API) {
 
   import config._
@@ -49,7 +48,7 @@ class ReplayHandler(
     val msg = s"""Do you want to upload $gameDesc ?
                 | You need to keep HearthStats Companion window 
                 | open during the upload""".stripMargin
-    val choice = showConfirmDialog(null, msg, "Upload last game ?", YES_NO_OPTION)
+    val choice = ui.showConfirmDialog(msg, "Upload last game ?", YES_NO_OPTION)
 
     if (YES_OPTION == choice && reallyUpload)
       videoUploader.uploadFile(newFile, config, api).map {
