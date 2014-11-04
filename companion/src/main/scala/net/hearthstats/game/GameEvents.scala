@@ -8,11 +8,11 @@ import net.hearthstats.game.CardEventType.{ DRAWN, REPLACED }
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
 
-case class CardEvent(card: Card, eventType: CardEventType) extends GameEvent
+case class CardEvent(card: String, eventType: CardEventType) extends GameEvent
 
 object CardEvents {
-  def CardDrawn(card: Card) = CardEvent(card, DRAWN)
-  def CardReplaced(card: Card) = CardEvent(card, REPLACED)
+  def CardDrawn(card: String) = CardEvent(card, DRAWN)
+  def CardReplaced(card: String) = CardEvent(card, REPLACED)
 }
 
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent

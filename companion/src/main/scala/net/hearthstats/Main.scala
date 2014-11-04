@@ -43,6 +43,7 @@ import net.hearthstats.modules.VideoEncoderFactory
 import net.hearthstats.modules.ReplayHandler
 import net.hearthstats.modules.FileUploaderFactory
 import net.hearthstats.companion.CompanionEvents
+import net.hearthstats.game.LogParser
 
 class Main(
   environment: Environment,
@@ -79,6 +80,7 @@ class Main(
 
   val hsLogFile = new File(environment.hearthstoneLogFile)
   val fileObserver = wire[FileObserver]
+  val logParser = wire[LogParser]
   val logMonitor = wire[HearthstoneLogMonitor]
   val deckOverlayModule = wire[DeckOverlayModule]
   val videoEncoderFactory = wire[VideoEncoderFactory]

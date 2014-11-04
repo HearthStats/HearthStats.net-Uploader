@@ -16,6 +16,7 @@ import net.hearthstats.config.TestEnvironment
 import net.hearthstats.companion.DeckOverlayModule
 import net.hearthstats.game.HearthstoneLogMonitor
 import net.hearthstats.util.FileObserver
+import net.hearthstats.game.LogParser
 
 object LogMonitorDeckOverlayMain extends App {
   val translationConfig = TranslationConfig("net.hearthstats.resources.Main", "en")
@@ -32,6 +33,7 @@ object LogMonitorDeckOverlayMain extends App {
   val presenter = wire[DeckOverlaySwing]
   val tempLogFile = File.createTempFile("hssample", "log")
   val fileObserver = wire[FileObserver]
+  val logParser = wire[LogParser]
   val monitor = wire[HearthstoneLogMonitor]
   val deckOverlay = wire[DeckOverlayModule]
 

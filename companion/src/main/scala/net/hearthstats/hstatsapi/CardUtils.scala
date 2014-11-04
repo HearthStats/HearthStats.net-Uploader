@@ -1,6 +1,6 @@
 package net.hearthstats.hstatsapi
 
-import java.io.{File, FileOutputStream, IOException}
+import java.io.{ File, FileOutputStream, IOException }
 import java.net.URL
 import java.nio.channels.Channels
 
@@ -10,9 +10,11 @@ import net.hearthstats.core.Card
 import net.hearthstats.ui.log.Log
 
 import scala.concurrent._
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Logging {
+
+  def byName(n: String): Option[Card] = cards.values.find(_.name == n)
 
   lazy val cards: Map[Int, Card] =
     (for {
