@@ -1,9 +1,9 @@
 package net.hearthstats.game
 
 import java.awt.image.BufferedImage
-
 import net.hearthstats.core.Card
 import net.hearthstats.game.CardEventType._
+import net.hearthstats.core.HeroClass
 
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
@@ -28,7 +28,7 @@ object CardEvents {
 }
 
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent
-case class HeroChosen(hero: String, id: Int, opponent: Boolean, player: Int) extends HeroEvent
+case class HeroChosen(hero: String, heroClass: HeroClass, opponent: Boolean, player: Int) extends HeroEvent
 
 case class ScreenEvent(screen: HsScreen, image: BufferedImage) extends GameEvent {
   override def toString = s"ScreenEvent($screen)"

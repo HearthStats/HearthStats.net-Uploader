@@ -2,12 +2,9 @@ package net.hearthstats.game
 
 import grizzled.slf4j.Logging
 import net.hearthstats.game.CardEvents._
+import net.hearthstats.core.HeroClass
 
 class LogParser extends Logging {
-  val ZONE_PROCESSCHANGES_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
-  val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
-  val TURN_CHANGE_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=.* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=.* cardId= name=GameEntity\] tag=NEXT_STEP value=MAIN_ACTION\] complete=False\] entity=GameEntity srcZoneTag=INVALID srcPos= dstZoneTag=INVALID dstPos=""".r
-  val HERO_POWER_USE_REGEX = """\[Power\].*cardId=(\w+).*player=(\d+).*""".r
 
   def analyseLine(line: String): Option[GameEvent] = {
     line match {
@@ -56,11 +53,9 @@ class LogParser extends Logging {
       case ("", "FRIENDLY PLAY") | ("", "FRIENDLY PLAY (Weapon)") | ("", "OPPOSING PLAY") | ("", "OPPOSING PLAY (Weapon)") =>
         CardPutInPlay(card, id, player)
       case ("", "FRIENDLY PLAY (Hero)") =>
-        val heroId(hid) = cardId
-        HeroChosen(card, hid.toInt, opponent = false, player)
+        HeroChosen(card, HERO_CLASSES(cardId), opponent = false, player)
       case ("", "OPPOSING PLAY (Hero)") =>
-        val heroId(id) = cardId
-        HeroChosen(card, id.toInt, opponent = true, player)
+        HeroChosen(card, HERO_CLASSES(cardId), opponent = true, player)
       case ("", "FRIENDLY PLAY (Hero Power)") | ("", "OPPOSING PLAY (Hero Power)") =>
         HeroPowerDeclared(cardId, player)
       case ("OPPOSING HAND", _) =>
@@ -110,6 +105,21 @@ class LogParser extends Logging {
     }
   }
 
-  val heroId = """HERO_(\d+)""".r
+  val ZONE_PROCESSCHANGES_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
+  val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
+  val TURN_CHANGE_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=.* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=.* cardId= name=GameEntity\] tag=NEXT_STEP value=MAIN_ACTION\] complete=False\] entity=GameEntity srcZoneTag=INVALID srcPos= dstZoneTag=INVALID dstPos=""".r
+  val HERO_POWER_USE_REGEX = """\[Power\].*cardId=(\w+).*player=(\d+).*""".r
 
+  import HeroClass._
+  val HERO_CLASSES = Map(
+    "HERO_09" -> PRIEST,
+    "HERO_03" -> ROGUE,
+    "HERO_08" -> MAGE,
+    "HERO_04" -> PALADIN,
+    "HERO_01" -> WARRIOR,
+    "HERO_07" -> WARLOCK,
+    "HERO_05" -> HUNTER,
+    "HERO_02" -> SHAMAN,
+    "HERO_06" -> DRUID)
+    .withDefaultValue(UNDETECTED) // to handle either Solo adventures or Lord Jarraxxus
 }
