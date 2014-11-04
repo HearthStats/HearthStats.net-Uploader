@@ -22,9 +22,10 @@ class DeckOverlayModule(
 
     lastSubscription = Some(logMonitor.cardEvents.subscribe {
       _ match {
-        case CardEvent(card, _, DRAWN) =>
+        //TODO : filter properly on player event
+        case CardEvent(card, _, DRAWN, _) =>
           cardUtils.byName(card).map(presenter.removeCard)
-        case CardEvent(card, _, REPLACED) =>
+        case CardEvent(card, _, REPLACED, _) =>
           cardUtils.byName(card).map(presenter.addCard)
       }
     })

@@ -30,7 +30,7 @@ class LogParser extends Logging {
     }
   }
 
-  val heroId = """HERO_(\d+)""".r
+  type ZoneToEvent = PartialFunction[(String, String), GameEvent]
 
   def analyseCard(
     cardZone: String,
@@ -39,84 +39,77 @@ class LogParser extends Logging {
     card: String,
     cardId: String,
     player: Int,
-    id: Int): Option[GameEvent] =
-    (cardZone, fromZone, toZone) match {
-      case ("DECK", "", "FRIENDLY DECK") =>
-        Some(CardAddedToDeck(card, id))
-      case ("DECK", "", "OPPOSING DECK") =>
-        Some(CardAddedToDeck(card, id))
-      case ("DECK", "OPPOSING HAND", "OPPOSING DECK") =>
-        Some(CardReplaced(card, id))
-      case ("DECK", "FRIENDLY HAND", "FRIENDLY DECK") =>
-        Some(CardReplaced(card, id))
-      case ("HAND", "", "FRIENDLY HAND") =>
-        Some(CardDrawn(card, id))
-      case ("HAND", "OPPOSING DECK", "OPPOSING HAND") =>
-        Some(CardDrawn(card, id))
-      case ("HAND", "FRIENDLY DECK", "FRIENDLY HAND") =>
-        Some(CardDrawn(card, id))
-      case ("HAND", "FRIENDLY HAND", "FRIENDLY PLAY") =>
-        Some(CardPlayed(card, id))
-      case ("HAND", "FRIENDLY HAND", "FRIENDLY PLAY (Weapon)") =>
-        Some(CardPlayed(card, id))
-      case ("HAND", "FRIENDLY HAND", "FRIENDLY SECRET") =>
-        Some(CardPlayed(card, id))
-      case ("HAND", "FRIENDLY HAND", "") =>
-        Some(CardPlayed(card, id))
-      case ("HAND", "FRIENDLY PLAY", "FRIENDLY HAND") =>
-        Some(CardReturned(card, id))
-      case ("PLAY", "", "FRIENDLY PLAY") =>
-        Some(CardPutInPlay(card, id))
-      case ("PLAY", "", "FRIENDLY PLAY (Weapon)") =>
-        Some(CardPutInPlay(card, id))
-      case ("PLAY", "", "FRIENDLY PLAY (Hero)") =>
+    id: Int): Option[GameEvent] = {
+
+    def analyseHandZone: ZoneToEvent = _ match {
+      case ("", "FRIENDLY HAND") | ("", "OPPOSING HAND") =>
+        CoinReceived(cardId, player)
+      case ("OPPOSING DECK", "OPPOSING HAND") | ("FRIENDLY DECK", "FRIENDLY HAND") =>
+        CardDrawn(card, id, player)
+      case ("FRIENDLY HAND", _) =>
+        CardPlayed(card, id, player)
+      case ("FRIENDLY PLAY", "FRIENDLY HAND") =>
+        CardReturned(card, id, player)
+    }
+
+    def analysePlayZone: ZoneToEvent = _ match {
+      case ("", "FRIENDLY PLAY") | ("", "FRIENDLY PLAY (Weapon)") | ("", "OPPOSING PLAY") | ("", "OPPOSING PLAY (Weapon)") =>
+        CardPutInPlay(card, id, player)
+      case ("", "FRIENDLY PLAY (Hero)") =>
         val heroId(hid) = cardId
-        Some(HeroChosen(card, hid.toInt, opponent = false, player))
-      case ("PLAY", "", "FRIENDLY PLAY (Hero Power)") =>
-        Some(HeroPowerDeclared(cardId, player))
-      case ("PLAY", "", "OPPOSING PLAY") =>
-        Some(CardPutInPlay(card, id))
-      case ("PLAY", "", "OPPOSING PLAY (Weapon)") =>
-        Some(CardPutInPlay(card, id))
-      case ("PLAY", "", "OPPOSING PLAY (Hero)") =>
+        HeroChosen(card, hid.toInt, opponent = false, player)
+      case ("", "OPPOSING PLAY (Hero)") =>
         val heroId(id) = cardId
-        Some(HeroChosen(card, id.toInt, opponent = true, player))
-      case ("PLAY", "", "OPPOSING PLAY (Hero Power)") =>
-        Some(HeroPowerDeclared(cardId, player))
-      case ("PLAY", "OPPOSING HAND", "OPPOSING PLAY") =>
-        Some(CardPlayed(card, id))
-      case ("PLAY", "OPPOSING HAND", "OPPOSING PLAY (Weapon)") =>
-        Some(CardPlayed(card, id))
-      case ("PLAY", "OPPOSING HAND", "") =>
-        Some(CardPlayed(card, id))
-      case ("SECRET", "OPPOSING DECK", "OPPOSING_SECRET") =>
-        Some(CardPutInPlay(card, id))
-      case ("GRAVEYARD", "", "FRIENDLY GRAVEYARD") =>
-        Some(CardDiscarded(card, id))
-      case ("GRAVEYARD", "", "OPPOSING GRAVEYARD") =>
-        Some(CardDiscarded(card, id))
-      case ("GRAVEYARD", "FRIENDLY HAND", "FRIENDLY GRAVEYARD") =>
-        Some(CardDiscarded(card, id))
-      case ("GRAVEYARD", "FRIENDLY PLAY", "FRIENDLY GRAVEYARD") =>
-        Some(CardDestroyed(card, id))
-      case ("GRAVEYARD", "FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") =>
-        Some(CardDestroyed(card, id))
-      case ("GRAVEYARD", "FRIENDLY PLAY (Hero)", "FRIENDLY GRAVEYARD") =>
-        Some(HeroDestroyedEvent(false))
-      case ("GRAVEYARD", "FRIENDLY SECRET", "FRIENDLY GRAVEYARD") =>
-        Some(CardDestroyed(card, id))
-      case ("GRAVEYARD", "OPPOSING HAND", "OPPOSING GRAVEYARD") =>
-        Some(CardDiscarded(card, id))
-      case ("GRAVEYARD", "OPPOSING PLAY", "OPPOSING GRAVEYARD") =>
-        Some(CardDestroyed(card, id))
-      case ("GRAVEYARD", "OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") =>
-        Some(CardDestroyed(card, id))
-      case ("GRAVEYARD", "OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
-        Some(HeroDestroyedEvent(true))
-      case ("GRAVEYARD", "OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
-        Some(CardDestroyed(card, id))
-      case _ =>
+        HeroChosen(card, id.toInt, opponent = true, player)
+      case ("", "FRIENDLY PLAY (Hero Power)") | ("", "OPPOSING PLAY (Hero Power)") =>
+        HeroPowerDeclared(cardId, player)
+      case ("OPPOSING HAND", _) =>
+        CardPlayed(card, id, player)
+    }
+
+    def analyseGraveyardZone: ZoneToEvent = _ match {
+      case ("", "FRIENDLY GRAVEYARD") | ("", "OPPOSING GRAVEYARD") | ("FRIENDLY HAND", "FRIENDLY GRAVEYARD") | ("OPPOSING HAND", "OPPOSING GRAVEYARD") =>
+        CardDiscarded(card, id, player)
+      case ("FRIENDLY PLAY", "FRIENDLY GRAVEYARD") |
+        ("FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") |
+        ("FRIENDLY SECRET", "FRIENDLY GRAVEYARD") |
+        ("OPPOSING PLAY", "OPPOSING GRAVEYARD") |
+        ("OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") |
+        ("OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
+        CardDestroyed(card, id, player)
+      case ("FRIENDLY PLAY (Hero)", "FRIENDLY GRAVEYARD") =>
+        HeroDestroyedEvent(false)
+      case ("OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
+        HeroDestroyedEvent(true)
+    }
+
+    def analyseDeckZone: ZoneToEvent = _ match {
+      case ("", "FRIENDLY DECK") | ("", "OPPOSING DECK") =>
+        CardAddedToDeck(card, id, player)
+      case ("OPPOSING HAND", "OPPOSING DECK") | ("FRIENDLY HAND", "FRIENDLY DECK") =>
+        CardReplaced(card, id, player)
+    }
+
+    def analyseSecretZone: ZoneToEvent = _ match {
+      case ("OPPOSING DECK", "OPPOSING SECRET") =>
+        CardPutInPlay(card, id, player)
+    }
+
+    val zoneToEvent: ZoneToEvent = cardZone match {
+      case "DECK" => analyseDeckZone
+      case "HAND" => analyseHandZone
+      case "PLAY" => analysePlayZone
+      case "GRAVEYARD" => analyseGraveyardZone
+      case "SECRET" => analyseSecretZone
+    }
+    zoneToEvent.lift(fromZone, toZone) match {
+      case None =>
         warn(s"Unhandled log for $card: zone $cardZone from $fromZone to $toZone")
         None
+      case e => e
     }
+  }
+
+  val heroId = """HERO_(\d+)""".r
+
 }

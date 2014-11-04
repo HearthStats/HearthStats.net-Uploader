@@ -12,17 +12,19 @@ case object TurnPassedEvent extends GameEvent
 case class HeroPowerEvent(cardId: String, player: Int) extends GameEvent
 case class HeroPowerDeclared(cardId: String, player: Int) extends GameEvent
 
-case class CardEvent(card: String, cardId: Int, eventType: CardEventType) extends GameEvent
+case class CoinReceived(cardId: String, player: Int) extends GameEvent
+
+case class CardEvent(card: String, cardId: Int, eventType: CardEventType, player: Int) extends GameEvent
 
 object CardEvents {
-  def CardAddedToDeck(card: String, cardId: Int) = CardEvent(card, cardId, ADDED_TO_DECK)
-  def CardPlayed(card: String, cardId: Int) = CardEvent(card, cardId, PLAYED)
-  def CardReturned(card: String, cardId: Int) = CardEvent(card, cardId, RETURNED)
-  def CardDrawn(card: String, cardId: Int) = CardEvent(card, cardId, DRAWN)
-  def CardReplaced(card: String, cardId: Int) = CardEvent(card, cardId, REPLACED)
-  def CardDiscarded(card: String, cardId: Int) = CardEvent(card, cardId, DISCARDED)
-  def CardPutInPlay(card: String, cardId: Int) = CardEvent(card, cardId, PUT_IN_PLAY)
-  def CardDestroyed(card: String, cardId: Int) = CardEvent(card, cardId, DESTROYED)
+  def CardAddedToDeck(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, ADDED_TO_DECK, player: Int)
+  def CardPlayed(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, PLAYED, player: Int)
+  def CardReturned(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, RETURNED, player: Int)
+  def CardDrawn(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, DRAWN, player: Int)
+  def CardReplaced(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, REPLACED, player: Int)
+  def CardDiscarded(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, DISCARDED, player: Int)
+  def CardPutInPlay(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, PUT_IN_PLAY, player: Int)
+  def CardDestroyed(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, DESTROYED, player: Int)
 }
 
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent
