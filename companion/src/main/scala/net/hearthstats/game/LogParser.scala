@@ -10,9 +10,8 @@ class LogParser extends Logging {
   def analyseLine(line: String): Option[GameEvent] = {
     line match {
       case ZONE_PROCESSCHANGES_REGEX(zoneId, local, card, id, cardZone, zonePos, cardId, player, fromZone, toZone) =>
-        debug("HS Zone uiLog: zoneId={} local={} cardName={} id={} cardZone={} zonePos={} cardId={} player={} fromZone={} toZone={}",
-          zoneId, local, card, id, cardZone, zonePos, cardId, player, fromZone, toZone)
-        analyseCard(cardZone, fromZone, toZone, card)
+        debug(s"HS Zone uiLog: zoneId=$zoneId local=$local cardName=$card id=$id cardZone=$cardZone zonePos=$zonePos cardId=$cardId player=$player fromZone=$fromZone toZone=$toZone")
+        analyseCard(cardZone, fromZone, toZone, card, cardId)
       case TURN_CHANGE_REGEX() =>
         debug("turn passed")
         Some(TurnPassedEvent)
@@ -22,8 +21,11 @@ class LogParser extends Logging {
     }
   }
 
-  def analyseCard(cardZone: String, fromZone: String, toZone: String, card: String): Option[GameEvent] =
+  val heroId = """HERO_(\d+)""".r
+
+  def analyseCard(cardZone: String, fromZone: String, toZone: String, card: String, cardId: String): Option[GameEvent] =
     (cardZone, fromZone, toZone) match {
+      //TODO : detect hero power activation
       case ("DECK", "FRIENDLY HAND", "FRIENDLY DECK") =>
         Some(CardReplaced(card))
       case ("HAND", "", "FRIENDLY HAND") =>
@@ -44,14 +46,20 @@ class LogParser extends Logging {
         Some(CardPutInPlay(card))
       case ("PLAY", "", "FRIENDLY PLAY (Weapon)") =>
         Some(CardPutInPlay(card))
+      case ("PLAY", "", "FRIENDLY PLAY (Hero)") =>
+        val heroId(id) = cardId
+        Some(HeroChosen(card, id.toInt, opponent = false))
       case ("PLAY", "", "FRIENDLY PLAY (Hero Power)") =>
-        None
+        None // hero power declared
       case ("PLAY", "", "OPPOSING PLAY") =>
         Some(CardPutInPlay(card))
       case ("PLAY", "", "OPPOSING PLAY (Weapon)") =>
         Some(CardPutInPlay(card))
+      case ("PLAY", "", "OPPOSING PLAY (Hero)") =>
+        val heroId(id) = cardId
+        Some(HeroChosen(card, id.toInt, opponent = true))
       case ("PLAY", "", "OPPOSING PLAY (Hero Power)") =>
-        None
+        None // hero powered declared
       case ("PLAY", "OPPOSING HAND", "OPPOSING PLAY") =>
         Some(CardPlayed(card))
       case ("PLAY", "OPPOSING HAND", "OPPOSING PLAY (Weapon)") =>
@@ -83,7 +91,7 @@ class LogParser extends Logging {
       case ("GRAVEYARD", "OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
         Some(CardDestroyed(card))
       case _ =>
-        debug("Unhandled log for {}: zone {} from {} to {}", card, cardZone, fromZone, toZone)
+        warn(s"Unhandled log for $card: zone $cardZone from $fromZone to $toZone")
         None
     }
 }
