@@ -3,16 +3,23 @@ package net.hearthstats.game
 import java.awt.image.BufferedImage
 
 import net.hearthstats.core.Card
-import net.hearthstats.game.CardEventType.{ DRAWN, REPLACED }
+import net.hearthstats.game.CardEventType._
 
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
 
+case object TurnPassedEvent extends GameEvent
+
 case class CardEvent(card: String, eventType: CardEventType) extends GameEvent
 
 object CardEvents {
+  def CardPlayed(card: String) = CardEvent(card, PLAYED)
+  def CardReturned(card: String) = CardEvent(card, RETURNED)
   def CardDrawn(card: String) = CardEvent(card, DRAWN)
   def CardReplaced(card: String) = CardEvent(card, REPLACED)
+  def CardDiscarded(card: String) = CardEvent(card, DISCARDED)
+  def CardPutInPlay(card: String) = CardEvent(card, PUT_IN_PLAY)
+  def CardDestroyed(card: String) = CardEvent(card, DESTROYED)
 }
 
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent

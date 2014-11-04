@@ -5,80 +5,85 @@ import net.hearthstats.game.CardEvents._
 
 class LogParser extends Logging {
   val ZONE_PROCESSCHANGES_REGEX = """^\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
+  val TURN_CHANGE_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=.* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=.* cardId= name=GameEntity\] tag=NEXT_STEP value=MAIN_ACTION\] complete=False\] entity=GameEntity srcZoneTag=INVALID srcPos= dstZoneTag=INVALID dstPos=""".r
 
   def analyseLine(line: String): Option[GameEvent] = {
     line match {
       case ZONE_PROCESSCHANGES_REGEX(zoneId, local, card, id, cardZone, zonePos, cardId, player, fromZone, toZone) =>
-
         debug("HS Zone uiLog: zoneId={} local={} cardName={} id={} cardZone={} zonePos={} cardId={} player={} fromZone={} toZone={}",
           zoneId, local, card, id, cardZone, zonePos, cardId, player, fromZone, toZone)
-
-        (cardZone, fromZone, toZone) match {
-          case ("DECK", "FRIENDLY HAND", "FRIENDLY DECK") =>
-            Some(CardReplaced(card))
-          case ("HAND", "", "FRIENDLY HAND") =>
-            Some(CardDrawn(card))
-          case ("HAND", "FRIENDLY DECK", "FRIENDLY HAND") =>
-            Some(CardDrawn(card))
-          case ("HAND", "FRIENDLY HAND", "FRIENDLY PLAY") =>
-            None
-          case ("HAND", "FRIENDLY HAND", "FRIENDLY PLAY (Weapon)") =>
-            None
-          case ("HAND", "FRIENDLY HAND", "FRIENDLY SECRET") =>
-            None
-          case ("HAND", "FRIENDLY HAND", "") =>
-            None
-          case ("HAND", "FRIENDLY PLAY", "FRIENDLY HAND") =>
-            None
-          case ("PLAY", "", "FRIENDLY PLAY") =>
-            None
-          case ("PLAY", "", "FRIENDLY PLAY (Weapon)") =>
-            None
-          case ("PLAY", "", "FRIENDLY PLAY (Hero Power)") =>
-            None
-          case ("PLAY", "", "OPPOSING PLAY") =>
-            None
-          case ("PLAY", "", "OPPOSING PLAY (Weapon)") =>
-            None
-          case ("PLAY", "", "OPPOSING PLAY (Hero Power)") =>
-            None
-          case ("PLAY", "OPPOSING HAND", "OPPOSING PLAY") =>
-            None
-          case ("PLAY", "OPPOSING HAND", "OPPOSING PLAY (Weapon)") =>
-            None
-          case ("PLAY", "OPPOSING HAND", "") =>
-            None
-          case ("GRAVEYARD", "", "FRIENDLY GRAVEYARD") =>
-            None
-          case ("GRAVEYARD", "", "OPPOSING GRAVEYARD") =>
-            None
-          case ("GRAVEYARD", "FRIENDLY HAND", "FRIENDLY GRAVEYARD") =>
-            Some(CardDrawn(card))
-          case ("GRAVEYARD", "FRIENDLY PLAY", "FRIENDLY GRAVEYARD") =>
-            None
-          case ("GRAVEYARD", "FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") =>
-            None
-          case ("GRAVEYARD", "FRIENDLY PLAY (Hero)", "FRIENDLY GRAVEYARD") =>
-            Some(HeroDestroyedEvent(false))
-          case ("GRAVEYARD", "FRIENDLY SECRET", "FRIENDLY GRAVEYARD") =>
-            None
-          case ("GRAVEYARD", "OPPOSING HAND", "OPPOSING GRAVEYARD") =>
-            None
-          case ("GRAVEYARD", "OPPOSING PLAY", "OPPOSING GRAVEYARD") =>
-            None
-          case ("GRAVEYARD", "OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") =>
-            None
-          case ("GRAVEYARD", "OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
-            Some(HeroDestroyedEvent(true))
-          case ("GRAVEYARD", "OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
-            None
-          case _ =>
-            debug("Unhandled log for {}: zone {} from {} to {}", card, cardZone, fromZone, toZone)
-            None
-        }
+        analyseCard(cardZone, fromZone, toZone, card)
+      case TURN_CHANGE_REGEX() =>
+        debug("turn passed")
+        Some(TurnPassedEvent)
       case _ =>
         // ignore line
         None
     }
   }
+
+  def analyseCard(cardZone: String, fromZone: String, toZone: String, card: String): Option[GameEvent] =
+    (cardZone, fromZone, toZone) match {
+      case ("DECK", "FRIENDLY HAND", "FRIENDLY DECK") =>
+        Some(CardReplaced(card))
+      case ("HAND", "", "FRIENDLY HAND") =>
+        Some(CardDrawn(card))
+      case ("HAND", "FRIENDLY DECK", "FRIENDLY HAND") =>
+        Some(CardDrawn(card))
+      case ("HAND", "FRIENDLY HAND", "FRIENDLY PLAY") =>
+        Some(CardPlayed(card))
+      case ("HAND", "FRIENDLY HAND", "FRIENDLY PLAY (Weapon)") =>
+        Some(CardPlayed(card))
+      case ("HAND", "FRIENDLY HAND", "FRIENDLY SECRET") =>
+        Some(CardPlayed(card))
+      case ("HAND", "FRIENDLY HAND", "") =>
+        Some(CardPlayed(card))
+      case ("HAND", "FRIENDLY PLAY", "FRIENDLY HAND") =>
+        Some(CardReturned(card))
+      case ("PLAY", "", "FRIENDLY PLAY") =>
+        Some(CardPutInPlay(card))
+      case ("PLAY", "", "FRIENDLY PLAY (Weapon)") =>
+        Some(CardPutInPlay(card))
+      case ("PLAY", "", "FRIENDLY PLAY (Hero Power)") =>
+        None
+      case ("PLAY", "", "OPPOSING PLAY") =>
+        Some(CardPutInPlay(card))
+      case ("PLAY", "", "OPPOSING PLAY (Weapon)") =>
+        Some(CardPutInPlay(card))
+      case ("PLAY", "", "OPPOSING PLAY (Hero Power)") =>
+        None
+      case ("PLAY", "OPPOSING HAND", "OPPOSING PLAY") =>
+        Some(CardPlayed(card))
+      case ("PLAY", "OPPOSING HAND", "OPPOSING PLAY (Weapon)") =>
+        Some(CardPlayed(card))
+      case ("PLAY", "OPPOSING HAND", "") =>
+        Some(CardPlayed(card))
+      case ("GRAVEYARD", "", "FRIENDLY GRAVEYARD") =>
+        Some(CardDiscarded(card))
+      case ("GRAVEYARD", "", "OPPOSING GRAVEYARD") =>
+        Some(CardDiscarded(card))
+      case ("GRAVEYARD", "FRIENDLY HAND", "FRIENDLY GRAVEYARD") =>
+        Some(CardDiscarded(card))
+      case ("GRAVEYARD", "FRIENDLY PLAY", "FRIENDLY GRAVEYARD") =>
+        Some(CardDestroyed(card))
+      case ("GRAVEYARD", "FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") =>
+        Some(CardDestroyed(card))
+      case ("GRAVEYARD", "FRIENDLY PLAY (Hero)", "FRIENDLY GRAVEYARD") =>
+        Some(HeroDestroyedEvent(false))
+      case ("GRAVEYARD", "FRIENDLY SECRET", "FRIENDLY GRAVEYARD") =>
+        Some(CardDestroyed(card))
+      case ("GRAVEYARD", "OPPOSING HAND", "OPPOSING GRAVEYARD") =>
+        Some(CardDiscarded(card))
+      case ("GRAVEYARD", "OPPOSING PLAY", "OPPOSING GRAVEYARD") =>
+        Some(CardDestroyed(card))
+      case ("GRAVEYARD", "OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") =>
+        Some(CardDestroyed(card))
+      case ("GRAVEYARD", "OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
+        Some(HeroDestroyedEvent(true))
+      case ("GRAVEYARD", "OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
+        Some(CardDestroyed(card))
+      case _ =>
+        debug("Unhandled log for {}: zone {} from {} to {}", card, cardZone, fromZone, toZone)
+        None
+    }
 }
