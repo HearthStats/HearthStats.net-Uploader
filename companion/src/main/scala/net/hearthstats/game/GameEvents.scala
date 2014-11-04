@@ -9,7 +9,8 @@ sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
 
 case object TurnPassedEvent extends GameEvent
-case object HeroPowerEvent extends GameEvent
+case class HeroPowerEvent(cardId: String, player: Int) extends GameEvent
+case class HeroPowerDeclared(cardId: String, player: Int) extends GameEvent
 
 case class CardEvent(card: String, eventType: CardEventType) extends GameEvent
 
@@ -24,7 +25,7 @@ object CardEvents {
 }
 
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent
-case class HeroChosen(hero: String, id: Int, opponent: Boolean) extends HeroEvent
+case class HeroChosen(hero: String, id: Int, opponent: Boolean, player: Int) extends HeroEvent
 
 case class ScreenEvent(screen: HsScreen, image: BufferedImage) extends GameEvent {
   override def toString = s"ScreenEvent($screen)"
