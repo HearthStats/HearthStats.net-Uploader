@@ -4,9 +4,12 @@ import java.awt.image.BufferedImage
 import net.hearthstats.core.Card
 import net.hearthstats.game.CardEventType._
 import net.hearthstats.core.HeroClass
+import net.hearthstats.core.GameMode
 
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
+
+case class GameModeDetected(mode: GameMode) extends GameEvent
 
 case object TurnPassedEvent extends GameEvent
 case class HeroPowerEvent(cardId: String, player: Int) extends GameEvent
@@ -29,6 +32,9 @@ object CardEvents {
 
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent
 case class HeroChosen(hero: String, heroClass: HeroClass, opponent: Boolean, player: Int) extends HeroEvent
+
+case class MatchStart(heroChose: HeroChosen) extends GameEvent
+case class LegendRank(rank: Int) extends GameEvent
 
 case class ScreenEvent(screen: HsScreen, image: BufferedImage) extends GameEvent {
   override def toString = s"ScreenEvent($screen)"

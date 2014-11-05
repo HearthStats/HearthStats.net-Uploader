@@ -3,16 +3,24 @@ package net.hearthstats.game
 import grizzled.slf4j.Logging
 import net.hearthstats.game.CardEvents._
 import net.hearthstats.core.HeroClass
+import net.hearthstats.core.GameMode
 
 class LogParser extends Logging {
 
   def analyseLine(line: String): Option[GameEvent] = {
     line match {
+      case RANKED_MODE_REGEX() =>
+        Some(GameModeDetected(GameMode.RANKED))
+      case GAME_MODE_REGEX(mode) =>
+        debug(s"$mode detected")
+        GAME_MODES.get(mode) map GameModeDetected
+      case LEGEND_RANK_REGEX(rank) => // TODO : test this on a legend log file ...
+        Some(LegendRank(rank.toInt))
       case ZONE_PROCESSCHANGES_REGEX(zoneId, local, card, id, cardZone, zonePos, cardId, player, fromZone, toZone) =>
-        debug(s"HS Zone uiLog: zoneId=$zoneId local=$local cardName=$card id=$id cardZone=$cardZone zonePos=$zonePos cardId=$cardId player=$player fromZone=$fromZone toZone=$toZone")
+        debug(s"zoneId=$zoneId local=$local cardName=$card id=$id cardZone=$cardZone zonePos=$zonePos cardId=$cardId player=$player fromZone=$fromZone toZone=$toZone")
         analyseCard(cardZone, fromZone, toZone, card, cardId, player.toInt, id.toInt)
       case HIDDEN_REGEX(zoneId, local, id, cardId, _, cardZone, zonePos, player, fromZone, toZone) =>
-        debug(s"HS Zone uiLog: zoneId=$zoneId local=$local cardName=HIDDEN id=$id cardZone=$cardZone zonePos=$zonePos cardId=$cardId player=$player fromZone=$fromZone toZone=$toZone")
+        debug(s"uiLog: zoneId=$zoneId local=$local cardName=HIDDEN id=$id cardZone=$cardZone zonePos=$zonePos cardId=$cardId player=$player fromZone=$fromZone toZone=$toZone")
         analyseCard(cardZone, fromZone, toZone, "", cardId, player.toInt, id.toInt)
       case TURN_CHANGE_REGEX() =>
         debug("turn passed")
@@ -53,7 +61,10 @@ class LogParser extends Logging {
       case ("", "FRIENDLY PLAY") | ("", "FRIENDLY PLAY (Weapon)") | ("", "OPPOSING PLAY") | ("", "OPPOSING PLAY (Weapon)") =>
         CardPutInPlay(card, id, player)
       case ("", "FRIENDLY PLAY (Hero)") =>
-        HeroChosen(card, HERO_CLASSES(cardId), opponent = false, player)
+        HERO_CLASSES.get(cardId) match {
+          case Some(hero) => MatchStart(HeroChosen(card, hero, opponent = false, player))
+          case None => HeroChosen(card, HeroClass.UNDETECTED, opponent = false, player) // either Naxx computer of Jaraxxus
+        }
       case ("", "OPPOSING PLAY (Hero)") =>
         HeroChosen(card, HERO_CLASSES(cardId), opponent = true, player)
       case ("", "FRIENDLY PLAY (Hero Power)") | ("", "OPPOSING PLAY (Hero Power)") =>
@@ -109,7 +120,15 @@ class LogParser extends Logging {
   val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val TURN_CHANGE_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=.* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=.* cardId= name=GameEntity\] tag=NEXT_STEP value=MAIN_ACTION\] complete=False\] entity=GameEntity srcZoneTag=INVALID srcPos= dstZoneTag=INVALID dstPos=""".r
   val HERO_POWER_USE_REGEX = """\[Power\].*cardId=(\w+).*player=(\d+).*""".r
+  val GAME_MODE_REGEX = """\[Bob\] ---(\w+)---""".r
+  val RANKED_MODE_REGEX = ".*name=rank_window.*".r
+  val LEGEND_RANK_REGEX = """\[Bob\] legend rank (\d*)""".r
 
+  import GameMode._
+  val GAME_MODES = Map("RegisterScreenPractice" -> PRACTICE,
+    "RegisterScreenTourneys" -> CASUAL,
+    "RegisterScreenForge" -> ARENA,
+    "RegisterScreenFriendly" -> FRIENDLY)
   import HeroClass._
   val HERO_CLASSES = Map(
     "HERO_09" -> PRIEST,
@@ -121,5 +140,5 @@ class LogParser extends Logging {
     "HERO_05" -> HUNTER,
     "HERO_02" -> SHAMAN,
     "HERO_06" -> DRUID)
-    .withDefaultValue(UNDETECTED) // to handle either Solo adventures or Lord Jarraxxus
+    .withDefaultValue(HeroClass.UNDETECTED) // to handle either Solo adventures or Lord Jarraxxus
 }
