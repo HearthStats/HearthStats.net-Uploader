@@ -1,39 +1,28 @@
 package net.hearthstats.game
 
 import org.junit.runner.RunWith
+import org.mockito.Mockito.when
 import org.scalatest.{ FlatSpec, Matchers }
-import net.hearthstats.config.{ TestConfig, TestEnvironment }
-import net.hearthstats.core.{ ArenaRun, HearthstoneMatch, MatchOutcome, Rank }
-import net.hearthstats.ui.log.Log
-import net.hearthstats.config.UserConfig
 import org.scalatest.mock.MockitoSugar
-import net.hearthstats.hstatsapi.API
-import net.hearthstats.hstatsapi.CardUtils
-import org.scalatest.junit.JUnitRunner
-import com.softwaremill.macwire.MacwireMacros._
-import net.hearthstats.util.FileObserver
-import scala.collection.mutable.ListBuffer
-import org.mockito.Mockito._
-import rx.subjects.PublishSubject
-import rx.lang.scala.JavaConversions._
+import com.softwaremill.macwire.MacwireMacros.wire
 import grizzled.slf4j.Logging
+import net.hearthstats.config.TestEnvironment
+import net.hearthstats.ui.log.Log
+import net.hearthstats.util.FileObserver
+import rx.lang.scala.JavaConversions.toScalaObservable
+import rx.subjects.PublishSubject
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class LogMonitorSpec extends FlatSpec with Matchers with MockitoSugar with Logging {
-  val logMonitorModule = new LogMonitorModule {
-    lazy val config: UserConfig = TestConfig
-    lazy val environment = TestEnvironment
-    lazy val uiLog = mock[Log]
+  val environment = TestEnvironment
+  val uiLog = mock[Log]
+  val fileObserver = mock[FileObserver]
+  val fileLines = PublishSubject.create[String]
+  when(fileObserver.observable).thenReturn(fileLines.asObservable)
 
-    lazy val api = wire[API]
-    lazy val cardUtils = mock[CardUtils]
-    override lazy val fileObserver = mock[FileObserver]
-
-    val fileLines = PublishSubject.create[String]
-    when(fileObserver.observable).thenReturn(fileLines.asObservable)
-  }
-
-  import logMonitorModule._
+  val logParser = wire[LogParser]
+  val hsLogMonitor = wire[HearthstoneLogMonitor]
 
   "The LogMonitor" should "detect when you won the game" in {
     var receivedEvent: GameEvent = null

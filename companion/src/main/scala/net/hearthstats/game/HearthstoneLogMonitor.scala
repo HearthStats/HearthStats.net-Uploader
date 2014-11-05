@@ -1,43 +1,21 @@
 package net.hearthstats.game
 
-import rx.lang.scala.Observable
-import rx.lang.scala.subscriptions._
-import rx.subjects.PublishSubject
-import rx.lang.scala.JavaConversions._
-import net.hearthstats.util.FileObserver
 import java.io.File
-import com.softwaremill.macwire.MacwireMacros._
-import net.hearthstats.hstatsapi.API
-import net.hearthstats.config.UserConfig
-import net.hearthstats.config.Environment
-import net.hearthstats.util.FileObserver
-import net.hearthstats.ui.log.Log
+
+import com.softwaremill.macwire.MacwireMacros.wire
+
 import grizzled.slf4j.Logging
-import net.hearthstats.hstatsapi.CardUtils
-import CardEvents._
-
-trait LogMonitorModule {
-  val config: UserConfig
-  val api: API
-  val cardUtils: CardUtils
-  val environment: Environment
-  val uiLog: Log
-  lazy val fileObserver = FileObserver(new File(environment.hearthstoneLogFile))
-
-  val logParser=wire[LogParser]
-  lazy val hsLogMonitor = wire[HearthstoneLogMonitor]
-}
+import net.hearthstats.config.{ Environment, UserConfig }
+import net.hearthstats.hstatsapi.{ API, CardUtils }
+import net.hearthstats.ui.log.Log
+import net.hearthstats.util.FileObserver
+import rx.lang.scala.JavaConversions.{ toJavaObservable, toScalaObservable }
+import rx.lang.scala.Observable
 
 class HearthstoneLogMonitor(
-  config: UserConfig,
-  api: API,
-  cardUtils: CardUtils,
-  environment: Environment,
   uiLog: Log,
-  logParser:LogParser,
+  logParser: LogParser,
   fileObserver: FileObserver) extends GameEventProducer with Logging {
-
-  import config._
 
   val lines = fileObserver.observable.
     doOnNext(line => debug(s"found : [$line]")).
@@ -54,10 +32,9 @@ class HearthstoneLogMonitor(
   }
 
   def zoneEvent(line: String): Option[GameEvent] = {
-    val ge=logParser.analyseLine(line)
+    val ge = logParser.analyseLine(line)
     ge.map(event => uiLog.info(event.toString))
     ge
   }
 
- 
 }
