@@ -16,6 +16,10 @@ class LogParser extends Logging {
         GAME_MODES.get(mode) map GameModeDetected
       case LEGEND_RANK_REGEX(rank) => // TODO : test this on a legend log file ...
         Some(LegendRank(rank.toInt))
+      case FIRST_PLAYER_REGEX(id, name) =>
+        Some(FirstPlayer(name, id.toInt))
+      case PLAYER_NAME_REGEX(id, name) =>
+        Some(PlayerName(name, id.toInt))
       case ZONE_PROCESSCHANGES_REGEX(zoneId, local, card, id, cardZone, zonePos, cardId, player, fromZone, toZone) =>
         debug(s"zoneId=$zoneId local=$local cardName=$card id=$id cardZone=$cardZone zonePos=$zonePos cardId=$cardId player=$player fromZone=$fromZone toZone=$toZone")
         analyseCard(cardZone, fromZone, toZone, card, cardId, player.toInt, id.toInt)
@@ -105,7 +109,7 @@ class LogParser extends Logging {
       case "DECK" => analyseDeckZone
       case "HAND" => analyseHandZone
       case "PLAY" => analysePlayZone
-      case "GRAVEYARD" => analyseGraveyardZone
+      case "GRAVEYARD" | "SETASIDE" => analyseGraveyardZone //TODO: handle cleanly Hex
       case "SECRET" => analyseSecretZone
     }
     zoneToEvent.lift(fromZone, toZone) match {
@@ -116,6 +120,8 @@ class LogParser extends Logging {
     }
   }
 
+  val PLAYER_NAME_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=\d* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=(\d*) cardId= name=(.*)\] tag=TIMEOUT value=\d*\] complete=\w*\] entity=.*""".r
+  val FIRST_PLAYER_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=\d* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=(\d*) cardId= name=(.*)\] tag=FIRST_PLAYER value=\d*\] complete=\w*\] entity=.*""".r
   val ZONE_PROCESSCHANGES_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val TURN_CHANGE_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=.* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=.* cardId= name=GameEntity\] tag=NEXT_STEP value=MAIN_ACTION\] complete=False\] entity=GameEntity srcZoneTag=INVALID srcPos= dstZoneTag=INVALID dstPos=""".r

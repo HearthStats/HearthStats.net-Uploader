@@ -11,9 +11,12 @@ sealed trait HeroEvent extends GameEvent
 
 case class GameModeDetected(mode: GameMode) extends GameEvent
 
+case class FirstPlayer(name: String, id: Int) extends GameEvent
+case class PlayerName(name: String, id: Int) extends GameEvent
+
 case object TurnPassedEvent extends GameEvent
-case class HeroPowerEvent(cardId: String, player: Int) extends GameEvent
-case class HeroPowerDeclared(cardId: String, player: Int) extends GameEvent
+case class HeroPowerEvent(cardId: String, hero: Int) extends GameEvent
+case class HeroPowerDeclared(cardId: String, hero: Int) extends GameEvent
 
 case class CoinReceived(cardId: String, player: Int) extends GameEvent
 
