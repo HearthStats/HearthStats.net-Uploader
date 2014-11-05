@@ -13,10 +13,17 @@ object GameLogMonitorMain extends App {
   val environment = new EnvironmentWin
   val uiLog = mock(classOf[Log])
   val file = new File(environment.hearthstoneLogFile)
-  file.delete()
-  file.createNewFile()
-  val fileObserver = wire[FileObserver]
   val logParser = wire[LogParser]
+  val lines = io.Source.fromFile(file).getLines
+  for {
+    l <- lines
+    r <- logParser.analyseLine(l)
+  } {
+    println(r)
+  }
+  //  file.delete()
+  //  file.createNewFile()
+  val fileObserver = wire[FileObserver]
   val monitor = wire[HearthstoneLogMonitor]
 
   monitor.gameEvents.toBlockingObservable.foreach(e => println(e))
