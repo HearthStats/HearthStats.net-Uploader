@@ -1,34 +1,26 @@
 package net.hearthstats.core
 
+import org.junit.runner.RunWith
+import org.scalatest.{ FlatSpec, Matchers }
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+import org.scalatest.junit.JUnitRunner
 
-object CardParserJsonMain extends App {
-  val mapper = new ObjectMapper with ScalaObjectMapper
-  mapper.registerModule(DefaultScalaModule)
+@RunWith(classOf[JUnitRunner])
+class LogMonitorSpec extends FlatSpec with Matchers {
 
-  val json = mapper.readValue[Map[String, List[CardJson]]](getClass.getResourceAsStream("AllSets.json"))
-  json.values.flatten
-    .filter {
-      case c => c.playerClass == Some("Rogue") && Option(c.mechanics).getOrElse(Nil).contains("Deathrattle") 
-    }.
-    foreach(println)
+  it should "parse correctly collectible cards" in {
+    val ambusher = CardData.collectible
+      .filter {
+        case c => c.playerClass == Some("Rogue") && Option(c.mechanics).getOrElse(Nil).contains("Deathrattle")
+      }.head
+    ambusher.name shouldBe "Anub'ar Ambusher"
+  }
+  
+   it should "parse correctly hero powers" in {
+    val steadyShot = CardData.heroPowers  
+      .filter {
+        case c => c.playerClass == Some("Hunter")  
+      }.head
+    steadyShot.cost shouldBe 2
+  }
 }
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-case class CardJson(
-  id: String,
-  `type`: String,
-  cost: Int,
-  attack: Int,
-  health: Int,
-  collectible: Boolean,
-  text: String,
-  playerClass: Option[String],
-  flavor: String,
-  rarity: String,
-  name: String,
-  mechanics: List[String])
-
