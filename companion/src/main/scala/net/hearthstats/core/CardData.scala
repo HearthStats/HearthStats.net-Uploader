@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import java.util.NoSuchElementException
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 case class CardData(
@@ -26,9 +27,17 @@ object CardData {
 
   lazy val json = mapper.readValue[Map[String, List[CardData]]](getClass.getResourceAsStream("AllSets.json"))
 
-  lazy val allCards = json.values.flatten
+  lazy val allCards: List[CardData] =
+    json.values.flatten.toList
 
-  lazy val collectible = allCards.filter(_.collectible == true)
-  
-  lazy val heroPowers = allCards.filter(_.`type` == "Hero Power") 
+  lazy val collectible: List[CardData] =
+    allCards.filter(_.collectible == true)
+
+  lazy val heroPowers: List[CardData] =
+    allCards.filter(_.`type` == "Hero Power")
+
+  def byId(id: String): CardData =
+    try { allCards.filter(_.id == id).head }
+    catch { case e: NoSuchElementException => throw new IllegalArgumentException(id) }
+
 }

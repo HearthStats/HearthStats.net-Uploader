@@ -52,41 +52,41 @@ class LogParser extends Logging {
 
     def analyseHandZone: ZoneToEvent = _ match {
       case ("", "FRIENDLY HAND") | ("", "OPPOSING HAND") =>
-        CoinReceived(cardId, player)
+        CoinReceived(id, player)
       case ("OPPOSING DECK", "OPPOSING HAND") | ("FRIENDLY DECK", "FRIENDLY HAND") =>
-        CardDrawn(card, id, player)
+        CardDrawn(cardId, id, player)
       case ("FRIENDLY HAND", _) =>
-        CardPlayed(card, id, player)
+        CardPlayed(cardId, id, player)
       case ("FRIENDLY PLAY", "FRIENDLY HAND") =>
-        CardReturned(card, id, player)
+        CardReturned(cardId, id, player)
     }
 
     def analysePlayZone: ZoneToEvent = _ match {
       case ("", "FRIENDLY PLAY") | ("", "FRIENDLY PLAY (Weapon)") | ("", "OPPOSING PLAY") | ("", "OPPOSING PLAY (Weapon)") =>
-        CardPutInPlay(card, id, player)
+        CardPutInPlay(cardId, id, player)
       case ("", "FRIENDLY PLAY (Hero)") =>
         HERO_CLASSES.get(cardId) match {
-          case Some(hero) => MatchStart(HeroChosen(card, hero, opponent = false, player))
-          case None => HeroChosen(card, HeroClass.UNDETECTED, opponent = false, player) // either Naxx computer of Jaraxxus
+          case Some(hero) => MatchStart(HeroChosen(cardId, hero, opponent = false, player))
+          case None => HeroChosen(cardId, HeroClass.UNDETECTED, opponent = false, player) // either Naxx computer of Jaraxxus
         }
       case ("", "OPPOSING PLAY (Hero)") =>
-        HeroChosen(card, HERO_CLASSES(cardId), opponent = true, player)
+        HeroChosen(cardId, HERO_CLASSES(cardId), opponent = true, player)
       case ("", "FRIENDLY PLAY (Hero Power)") | ("", "OPPOSING PLAY (Hero Power)") =>
         HeroPowerDeclared(cardId, player)
       case ("OPPOSING HAND", _) =>
-        CardPlayed(card, id, player)
+        CardPlayed(cardId, id, player)
     }
 
     def analyseGraveyardZone: ZoneToEvent = _ match {
       case ("", "FRIENDLY GRAVEYARD") | ("", "OPPOSING GRAVEYARD") | ("FRIENDLY HAND", "FRIENDLY GRAVEYARD") | ("OPPOSING HAND", "OPPOSING GRAVEYARD") =>
-        CardDiscarded(card, id, player)
+        CardDiscarded(cardId, id, player)
       case ("FRIENDLY PLAY", "FRIENDLY GRAVEYARD") |
         ("FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") |
         ("FRIENDLY SECRET", "FRIENDLY GRAVEYARD") |
         ("OPPOSING PLAY", "OPPOSING GRAVEYARD") |
         ("OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") |
         ("OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
-        CardDestroyed(card, id, player)
+        CardDestroyed(cardId, id, player)
       case ("FRIENDLY PLAY (Hero)", "FRIENDLY GRAVEYARD") =>
         HeroDestroyedEvent(false)
       case ("OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
@@ -95,14 +95,14 @@ class LogParser extends Logging {
 
     def analyseDeckZone: ZoneToEvent = _ match {
       case ("", "FRIENDLY DECK") | ("", "OPPOSING DECK") =>
-        CardAddedToDeck(card, id, player)
+        CardAddedToDeck(cardId, id, player)
       case ("OPPOSING HAND", "OPPOSING DECK") | ("FRIENDLY HAND", "FRIENDLY DECK") =>
-        CardReplaced(card, id, player)
+        CardReplaced(cardId, id, player)
     }
 
     def analyseSecretZone: ZoneToEvent = _ match {
       case ("OPPOSING DECK", "OPPOSING SECRET") =>
-        CardPutInPlay(card, id, player)
+        CardPutInPlay(cardId, id, player)
     }
 
     val zoneToEvent: ZoneToEvent = cardZone match {
