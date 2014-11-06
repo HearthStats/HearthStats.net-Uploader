@@ -27,7 +27,7 @@ class HearthstoneLogMonitor(
   val cardEvents: Observable[CardEvent] = gameEvents.ofType(classOf[CardEvent])
   val heroEvents: Observable[HeroEvent] = gameEvents.ofType(classOf[HeroEvent])
 
-  val gameEndEvents = gameEvents.ofType(classOf[HeroDestroyedEvent])
+  val gameEndEvents: Observable[GameOver] = gameEvents.ofType(classOf[GameOver])
 
   val games: Observable[Observable[GameEvent]] = gameEvents.tumbling(gameEndEvents)
 

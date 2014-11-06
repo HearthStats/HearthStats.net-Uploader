@@ -6,6 +6,7 @@ import net.hearthstats.game.CardEventType._
 import net.hearthstats.core.HeroClass
 import net.hearthstats.core.GameMode
 import net.hearthstats.core.CardData
+import net.hearthstats.core.MatchOutcome
 
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
@@ -58,6 +59,7 @@ case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent
 case class HeroChosen(hero: String, heroClass: HeroClass, opponent: Boolean, player: Int) extends HeroEvent
 
 case class MatchStart(heroChose: HeroChosen) extends GameEvent
+case class GameOver(outcome: MatchOutcome) extends GameEvent
 case class LegendRank(rank: Int) extends GameEvent
 
 case class ScreenEvent(screen: HsScreen, image: BufferedImage) extends GameEvent {

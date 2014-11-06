@@ -4,11 +4,14 @@ import grizzled.slf4j.Logging
 import net.hearthstats.game.CardEvents._
 import net.hearthstats.core.HeroClass
 import net.hearthstats.core.GameMode
+import net.hearthstats.core.MatchOutcome
 
 class LogParser extends Logging {
 
   def analyseLine(line: String): Option[GameEvent] = {
     line match {
+      case GAME_OVER_REGEX(result) =>
+        Some(GameOver(if (result == "victory") MatchOutcome.VICTORY else MatchOutcome.DEFEAT))
       case RANKED_MODE_REGEX() =>
         Some(GameModeDetected(GameMode.RANKED))
       case GAME_MODE_REGEX(mode) =>
@@ -127,6 +130,7 @@ class LogParser extends Logging {
   val TURN_CHANGE_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=.* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=.* cardId= name=GameEntity\] tag=NEXT_STEP value=MAIN_ACTION\] complete=False\] entity=GameEntity srcZoneTag=INVALID srcPos= dstZoneTag=INVALID dstPos=""".r
   val HERO_POWER_USE_REGEX = """\[Power\].*cardId=(\w+).*player=(\d+).*""".r
   val GAME_MODE_REGEX = """\[Bob\] ---(\w+)---""".r
+  val GAME_OVER_REGEX = """\[Asset\].*name=(victory|defeat)_screen_start.*""".r
   val RANKED_MODE_REGEX = ".*name=rank_window.*".r
   val LEGEND_RANK_REGEX = """\[Bob\] legend rank (\d*)""".r
 
