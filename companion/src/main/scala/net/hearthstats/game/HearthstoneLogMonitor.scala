@@ -1,9 +1,7 @@
 package net.hearthstats.game
 
 import java.io.File
-
 import com.softwaremill.macwire.MacwireMacros.wire
-
 import grizzled.slf4j.Logging
 import net.hearthstats.config.{ Environment, UserConfig }
 import net.hearthstats.hstatsapi.{ API, CardUtils }
@@ -11,6 +9,7 @@ import net.hearthstats.ui.log.Log
 import net.hearthstats.util.FileObserver
 import rx.lang.scala.JavaConversions.{ toJavaObservable, toScalaObservable }
 import rx.lang.scala.Observable
+import net.hearthstats.util.ObservableExtensions._
 
 class HearthstoneLogMonitor(
   uiLog: Log,
@@ -29,7 +28,10 @@ class HearthstoneLogMonitor(
 
   val gameEndEvents: Observable[GameOver] = gameEvents.ofType(classOf[GameOver])
 
-  val games: Observable[Observable[GameEvent]] = gameEvents.tumbling(gameEndEvents)
+  val games: Observable[Observable[GameEvent]] = gameEvents.span(_.isInstanceOf[GameOver])
+
+  def turns(game: Observable[GameEvent]): Observable[Observable[GameEvent]] =
+    game.span(_ == TurnPassedEvent)
 
   def stop(): Unit = {
     fileObserver.stop()
