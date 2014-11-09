@@ -58,7 +58,7 @@ object CardEvents {
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent
 case class HeroChosen(hero: String, heroClass: HeroClass, opponent: Boolean, player: Int) extends HeroEvent
 
-case class MatchStart(heroChose: HeroChosen) extends GameEvent
+case class MatchStart(heroChosen: HeroChosen) extends GameEvent
 case class GameOver(outcome: MatchOutcome) extends GameEvent
 case class LegendRank(rank: Int) extends GameEvent
 

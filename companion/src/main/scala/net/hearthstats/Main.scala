@@ -42,7 +42,7 @@ import net.hearthstats.ui.MatchEndPopup
 import net.hearthstats.modules.VideoEncoderFactory
 import net.hearthstats.modules.ReplayHandler
 import net.hearthstats.modules.FileUploaderFactory
-import net.hearthstats.companion.CompanionEvents
+import net.hearthstats.companion.ScreenEvents
 import net.hearthstats.game.LogParser
 
 class Main(
@@ -86,7 +86,7 @@ class Main(
   val videoEncoderFactory = wire[VideoEncoderFactory]
   val fileUploaderFactory = wire[FileUploaderFactory]
 
-  val companionEvents = wire[CompanionEvents]
+  val companionEvents = wire[ScreenEvents]
   val exportDeckBox = wire[ExportDeckBox]
   val mainFrame: CompanionFrame = wire[CompanionFrame]
   val replayHandler = wire[ReplayHandler]

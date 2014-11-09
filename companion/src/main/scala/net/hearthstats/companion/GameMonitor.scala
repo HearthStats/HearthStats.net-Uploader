@@ -17,6 +17,10 @@ import net.hearthstats.modules.{ ReplayHandler, VideoEncoderFactory }
 import net.hearthstats.ui.HearthstatsPresenter
 import net.hearthstats.ui.log.Log
 import net.hearthstats.core.HearthstoneMatch
+import net.hearthstats.core.MatchOutcome
+import akka.actor.ActorSystem
+import scala.concurrent.duration.DurationInt
+import akka.actor.Cancellable
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -24,7 +28,8 @@ class GameMonitor(
   deckUtils: DeckUtils,
   matchUtils: MatchUtils,
   companionState: CompanionState,
-  companionEvents: CompanionEvents,
+  screenEvents: ScreenEvents,
+  logMonitor: HearthstoneLogMonitor,
   matchState: MatchState,
   lobbyAnalyser: LobbyAnalyser,
   classAnalyser: HsClassAnalyser,
@@ -38,35 +43,82 @@ class GameMonitor(
   import companionState.iterationsSinceClassCheckingStarted
   import lobbyAnalyser._
 
-  var checkIfRunning: Option[ScheduledFuture[_]] = None
+  implicit val system = ActorSystem("companion")
+
+  val delay = config.pollingDelayMs.get.millis
+
+  var checkIfRunning: Option[Cancellable] = None
 
   def start() {
-    checkIfRunning = Some(Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new Runnable {
-      def run(): Unit = {
-        val found = programHelper.foundProgram
-        trace(s"HS found ? :$found ")
-        companionEvents.subject.onNext(found)
-      }
-    }, config.pollingDelayMs.get, config.pollingDelayMs.get, TimeUnit.MILLISECONDS))
-
+    val checkIfRunning = Some(system.scheduler.schedule(delay, delay) {
+      val found = programHelper.foundProgram
+      trace(s"HS found ? :$found ")
+      programFound ! found
+    })
     info("started")
   }
 
   def stop(): Unit = {
-    info("stopping")
-    checkIfRunning.map(_.cancel(true))
+    checkIfRunning.map(_.cancel())
+    info("stopped")
   }
 
-  companionEvents.hsFound.distinctUntilChanged.subscribe(found =>
-    if (found) {
-      uiLog.info("Hearthstone detected")
-    } else {
-      uiLog.warn("Hearthstone not detected")
-    })
+  import akka.actor.ActorDSL._
 
-  companionEvents.gameEvents.subscribe(handleGameEvent _)
+  val programFound = actor(new Act {
+    val start: Receive = {
+      case false =>
+        uiLog.warn("Hearthstone not detected")
+        become(notFound)
+      case true =>
+        uiLog.info("Hearthstone detected")
+        screenEvents.handleImage(programHelper.getScreenCapture)
+        become(found)
+    }
+    val found: Receive = {
+      case false =>
+        uiLog.warn("Hearthstone not detected")
+        become(notFound)
+      case true =>
+        screenEvents.handleImage(programHelper.getScreenCapture)
+    }
+    val notFound: Receive = {
+      case true =>
+        uiLog.info("Hearthstone detected")
+        screenEvents.handleImage(programHelper.getScreenCapture)
+        become(found)
+      case _ =>
+    }
+    become(start)
+  })
 
-  private def handleGameEvent(evt: ScreenEvent): Unit = try {
+  screenEvents.addReceive {
+    case e: ScreenEvent => handleScreenEvent(e)
+  }
+
+  logMonitor.addReceive {
+    case e: GameEvent => handleGameEvent(e)
+  }
+
+  private def handleGameEvent(evt: GameEvent): Unit = try {
+    info(evt)
+    evt match {
+      case GameOver(outcome) =>
+        uiLog.info(s"Result $outcome detected in log file")
+        endGameImpl(outcome)
+      case MatchStart(_) =>
+        uiLog.info(s"Match start detected in log file")
+        matchStartImpl()
+
+      case _ => debug(s"Ignoring event $evt")
+    }
+  } catch {
+    case NonFatal(t) =>
+      error(t.getMessage, t)
+      uiLog.error(t.getMessage, t)
+  }
+
+  private def handleScreenEvent(evt: ScreenEvent): Unit = try {
     debug(evt)
     if (evt.screen != FindingOpponent) {
       companionState.findingOpponent = false
@@ -109,12 +161,16 @@ class GameMonitor(
     testForOpponentName(image)
   }
 
-  private def handleMatchStart(image: BufferedImage): Unit = {
+  private def matchStartImpl(): Unit = {
     companionState.findingOpponent = false
     if (companionState.ongoingVideo.isEmpty) {
       val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
       companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
     }
+  }
+
+  private def handleMatchStart(image: BufferedImage): Unit = {
+    //    matchStartImpl()
     addImageToVideo(image)
     testForCoin(image)
     testForOpponentName(image)
@@ -143,19 +199,24 @@ class GameMonitor(
 
   private def handleEndResult(image: BufferedImage) {
     addImageToVideo(image)
-    if (!victoryOrDefeatDetected) {
-      info("Testing for victory or defeat")
-      inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
-        case Some(outcome) =>
-          uiLog.info(s"Result detected by screen capture : $outcome")
-          updateMatch(_.withResult(outcome))
-          updateMatch(_.endMatch)
-          matchUtils.submitMatchResult()
-          deckOverlay.reset()
-        case _ =>
-          debug("Result not detected on screen capture")
-      }
-    }
+    //    if (!victoryOrDefeatDetected) {
+    //      info("Testing for victory or defeat")
+    //      inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
+    //        case Some(outcome) =>
+    //          uiLog.info(s"Result detected by screen capture : $outcome")
+    //          endGameImpl(outcome)
+    //        case _ =>
+    //          debug("Result not detected on screen capture")
+    //      }
+    //    }
+  }
+
+  private def endGameImpl(outcome: MatchOutcome): Unit = {
+    updateMatch(_.withResult(outcome))
+    updateMatch(_.endMatch)
+    matchUtils.submitMatchResult()
+    deckOverlay.reset()
+
   }
 
   private def addImageToVideo(i: BufferedImage): Unit =

@@ -72,17 +72,10 @@
 		</dependency>
 
 		<dependency>
-			<groupId>io.reactivex</groupId>
-			<artifactId>rxscala_2.11</artifactId>
-			<version>0.21.1</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>scala-library</artifactId>
-					<groupId>org.scala-lang</groupId>
-				</exclusion>
-			</exclusions>
+			<groupId>com.typesafe.akka</groupId>
+			<artifactId>akka-actor_2.11</artifactId>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.github.nscala-time</groupId>
 			<artifactId>nscala-time_2.11</artifactId>

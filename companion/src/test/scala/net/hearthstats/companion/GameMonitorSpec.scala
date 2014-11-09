@@ -1,15 +1,14 @@
 package net.hearthstats.companion
 
 import java.awt.image.BufferedImage
-
 import com.softwaremill.macwire.MacwireMacros.wire
 import net.hearthstats.ProgramHelper
-import net.hearthstats.config.{TestConfig, UserConfig}
+import net.hearthstats.config.{ TestConfig, UserConfig }
 import net.hearthstats.core.GameMode._
-import net.hearthstats.core.{Deck, Rank}
-import net.hearthstats.game.{MatchState, Screen}
-import net.hearthstats.game.imageanalysis.{Casual, HsClassAnalyser, InGameAnalyser, IndividualPixelAnalyser, LobbyAnalyser, LobbyMode, Ranked, ScreenAnalyser}
-import net.hearthstats.hstatsapi.{DeckUtils, MatchUtils}
+import net.hearthstats.core.{ Deck, Rank }
+import net.hearthstats.game.{ MatchState, Screen }
+import net.hearthstats.game.imageanalysis.{ Casual, HsClassAnalyser, InGameAnalyser, IndividualPixelAnalyser, LobbyAnalyser, LobbyMode, Ranked, ScreenAnalyser }
+import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
 import net.hearthstats.ui.HearthstatsPresenter
 import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.hstatsapi.DeckUtils
@@ -26,7 +25,8 @@ import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{FlatSpec, Matchers, _}
+import org.scalatest.{ FlatSpec, Matchers, _ }
+import net.hearthstats.game.HearthstoneLogMonitor
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest with BeforeAndAfter {
@@ -50,7 +50,8 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val deckOverlay = mock[DeckOverlayModule]
   val videoEncoderFactory = wire[VideoEncoderFactory]
   val replayHandler = mock[ReplayHandler]
-  val companionEvents = wire[CompanionEvents]
+  val companionEvents = wire[ScreenEvents]
+  val logMonitor = mock[HearthstoneLogMonitor]
   val monitor = wire[GameMonitor]
 
   val rank8Lobby = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)

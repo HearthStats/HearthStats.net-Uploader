@@ -8,7 +8,7 @@ import net.hearthstats.ui.log.Log
 import net.hearthstats.util.{ Translation, TranslationConfig }
 import org.scalatest.mock.MockitoSugar
 import net.hearthstats.companion.GameMonitor
-import net.hearthstats.companion.CompanionEvents
+import net.hearthstats.companion.ScreenEvents
 
 /**
  * Simple test app that displays the Deck Export popup so that you can test the UI.
@@ -26,7 +26,7 @@ object ExportDeckBoxMain extends App with MockitoSugar {
   val deckUtils = wire[DeckUtils]
 
   val helper = mock[ProgramHelper]
-  val companionEvents = mock[CompanionEvents]
+  val companionEvents = mock[ScreenEvents]
 
   val exportDeckBox = wire[ExportDeckBox]
 

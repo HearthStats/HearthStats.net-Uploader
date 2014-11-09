@@ -31,8 +31,8 @@
 
 
 	<modules>
-        <module>updater</module>
-        <module>companion</module>
+		<module>updater</module>
+		<module>companion</module>
 	</modules>
 
 	<profiles>
@@ -80,7 +80,16 @@
 		</profile>
 	</profiles>
 
-
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.typesafe.akka</groupId>
+				<artifactId>akka-actor_2.11</artifactId>
+				<version>2.3.6</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	
 	<build>
 		<plugins>
 			<plugin>

@@ -4,23 +4,19 @@ import java.io.File
 import java.io.FileNotFoundException
 import org.apache.commons.io.input.Tailer
 import org.apache.commons.io.input.TailerListenerAdapter
-import rx.lang.scala.JavaConversions.toScalaObservable
-import rx.lang.scala.Observable
-import rx.subjects.PublishSubject
 import grizzled.slf4j.Logging
+import akka.actor.ActorRef
 
-case class FileObserver(file: File) extends Logging {
+case class FileObserver(file: File) extends ActorObservable with Logging { self =>
   import FileObserver._
 
   val DEFAULT_DELAY_MS = 500
   var stopped = false
 
-  private val subject = PublishSubject.create[String]
   private val tailer = Tailer.create(file, new SubjectAdapter, DEFAULT_DELAY_MS, true)
 
   info("observing file " + file)
 
-  def observable: Observable[String] = subject.asObservable
   def stop() = {
     tailer.stop()
     stopped = true
@@ -31,13 +27,13 @@ case class FileObserver(file: File) extends Logging {
     override def handle(line: String) =
       if (!stopped) {
         debug(s"$file: $line")
-        subject.onNext(line)
+        self.notify(line)
       } else warn("should be stopped")
 
     override def handle(ex: Exception) =
-      subject.onError(ex)
+      error(ex.getMessage, ex)
 
     override def fileNotFound() =
-      subject.onError(new FileNotFoundException)
+      handle(new FileNotFoundException(file.getAbsolutePath))
   }
 }

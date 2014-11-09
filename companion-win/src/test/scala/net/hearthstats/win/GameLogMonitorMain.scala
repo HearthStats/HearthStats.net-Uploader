@@ -7,7 +7,6 @@ import net.hearthstats.util.FileObserver
 import net.hearthstats.game.LogParser
 import java.io.File
 import net.hearthstats.game.HearthstoneLogMonitor
-import rx.schedulers.Schedulers
 
 object GameLogMonitorMain extends App {
   val environment = new EnvironmentWin
@@ -26,5 +25,7 @@ object GameLogMonitorMain extends App {
   val fileObserver = wire[FileObserver]
   val monitor = wire[HearthstoneLogMonitor]
 
-  monitor.gameEvents.toBlockingObservable.foreach(e => println(e))
+  monitor.addReceive {
+    case e => println(e)
+  }
 }

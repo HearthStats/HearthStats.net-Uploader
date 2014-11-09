@@ -1,33 +1,35 @@
 package net.hearthstats.ui
 
-import java.awt.{Dimension, Font}
+import java.awt.{ Dimension, Font }
 import scala.collection.JavaConversions.mutableMapAsJavaMap
-import scala.swing.{BoxPanel, Frame, Label, Orientation, ScrollPane, TextArea, TextField}
+import scala.swing.{ BoxPanel, Frame, Label, Orientation, ScrollPane, TextArea, TextField }
 import scala.swing.event.ButtonClicked
 import scala.util.control.NonFatal
 import org.json.simple.JSONObject
 import grizzled.slf4j.Logging
 import javax.imageio.ImageIO
 import javax.swing.ImageIcon
-import net.hearthstats.{Main, ProgramHelper}
-import net.hearthstats.companion.CompanionEvents
-import net.hearthstats.core.{Deck, HeroClass}
-import net.hearthstats.game.{CollectionDeckScreen, CollectionScreen, ScreenEvent}
+import net.hearthstats.{ Main, ProgramHelper }
+import net.hearthstats.companion.ScreenEvents
+import net.hearthstats.core.{ Deck, HeroClass }
+import net.hearthstats.game.{ CollectionDeckScreen, CollectionScreen, ScreenEvent }
 import net.hearthstats.game.imageanalysis.DeckAnalyser
-import net.hearthstats.hstatsapi.{API, CardUtils, DeckUtils}
+import net.hearthstats.hstatsapi.{ API, CardUtils, DeckUtils }
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.util.MigPanel
 import net.hearthstats.util.Translation
 import scala.swing.ComboBox
+import net.hearthstats.game.HearthstoneLogMonitor
+import net.hearthstats.companion.ScreenEvents
 
 class ExportDeckBox(
-      companionEvents:CompanionEvents,
-      programHelper: ProgramHelper,
-      uiLog: Log,
-      cardUtils: CardUtils,
-      deckUtils: DeckUtils,
-      hsAPI: API,
-      translation: Translation) extends Logging {
+  screenEvents: ScreenEvents,
+  programHelper: ProgramHelper,
+  uiLog: Log,
+  cardUtils: CardUtils,
+  deckUtils: DeckUtils,
+  hsAPI: API,
+  translation: Translation) extends Logging {
   import translation.t
 
   val minSizeWithoutDeck = new Dimension(450, 200)
@@ -67,8 +69,6 @@ class ExportDeckBox(
     case None =>
   }
 
-
-
   class ExportDeckBoxImpl() extends Frame with Logging {
 
     var hasDeck = false
@@ -77,7 +77,6 @@ class ExportDeckBox(
     preferredSize = minSizeWithDeck
     maximumSize = maxSize
 
-
     title = t("export.heading") + " - HearthStats Companion"
 
     // Array of hero classes
@@ -85,12 +84,10 @@ class ExportDeckBox(
     localizedClassOptions(0) = ""
     for (i <- 1 until localizedClassOptions.length) localizedClassOptions(i) = t(HeroClass.stringWithId(i))
 
-
     val panel = new MigPanel(
       layoutConstraints = "hidemode 3",
       colConstraints = "12[]12[]8[grow,fill]12",
-      rowConstraints = "12[]8[]8[]12[]8[grow]12[]12"
-    ) {
+      rowConstraints = "12[]8[]8[]12[]8[grow]12[]12") {
 
       // Heading
       contents += new Label {
@@ -169,7 +166,6 @@ class ExportDeckBox(
         contents += exportButton
       }, "skip, span 2, right")
 
-
       reactions += {
         case ButtonClicked(`cancelButton`) =>
           debug("Cancelling deck export")
@@ -204,15 +200,15 @@ class ExportDeckBox(
     }
     contents = panel
 
-    val screenEventSubscription = companionEvents.gameEvents.subscribe(handleScreenEvent _)
-
+    screenEvents.addReceive {
+      case e: ScreenEvent => handleScreenEvent(e)
+    }
 
     override def closeOperation {
       info("Closing deck export window")
-      screenEventSubscription.unsubscribe()
+      //      screenEventSubscription.unsubscribe()
       closeCurrent()
     }
-
 
     /**
      * Update status and instructions based on the screen currently being viewed in Hearthstone.
@@ -233,7 +229,6 @@ class ExportDeckBox(
         uiLog.error(t.getMessage, t)
     }
 
-
     private def setStatus(s: String, i: String) = {
       panel.status.text = s
       panel.instructions.text = i
@@ -251,7 +246,6 @@ class ExportDeckBox(
       hasDeck = true
 
       setStatus(t("export.status.detecting"), t("export.instructions.detecting"))
-
 
       var deck: Option[Deck] = None
 
@@ -332,7 +326,7 @@ class ExportDeckBox(
           }
         } else {
           Main.showMessageDialog(this.peer, "Could not export because deck is invalid.\n" +
-              s"Deck has ${deck.cardCount} cards, 30 are required.")
+            s"Deck has ${deck.cardCount} cards, 30 are required.")
         }
       }
 
