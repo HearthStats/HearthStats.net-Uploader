@@ -11,18 +11,6 @@ class InGameAnalyser extends ImageAnalyser {
   def imageShowsCoin(image: BufferedImage): Boolean =
     individualPixelAnalyser.testAnyPixelsMatch(image, Array(COIN_1, COIN_2, COIN_3, COIN_4, COIN_5))
 
-  def imageShowsOpponentTurn(image: BufferedImage): Boolean =
-    individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_OPPONENT_1A, TURN_OPPONENT_1B)) ||
-      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_OPPONENT_1AN, TURN_OPPONENT_1BN)) ||
-      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_OPPONENT_2A, TURN_OPPONENT_2B)) ||
-      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_OPPONENT_3A, TURN_OPPONENT_3B))
-
-  def imageShowsYourTurn(image: BufferedImage): Boolean =
-    individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_YOUR_1A, TURN_YOUR_1B)) ||
-      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_YOUR_1AN, TURN_YOUR_1BN)) ||
-      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_YOUR_2A, TURN_YOUR_2B)) ||
-      individualPixelAnalyser.testAllPixelsMatch(image, Array(TURN_YOUR_2AN, TURN_YOUR_2BN))
-
   def imageShowsOpponentName(image: BufferedImage): Boolean =
     individualPixelAnalyser.testAllPixelsMatch(image, Array(NAME_OPPONENT_1A, NAME_OPPONENT_1B, NAME_OPPONENT_1C)) &&
       individualPixelAnalyser.testAllPixelsMatch(image, Array(NAME_OPPONENT_2A, NAME_OPPONENT_2B, NAME_OPPONENT_2C))

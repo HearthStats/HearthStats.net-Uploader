@@ -109,6 +109,8 @@ class GameMonitor(
       case MatchStart(_) =>
         uiLog.info(s"Match start detected in log file")
         matchStartImpl()
+      case TurnPassedEvent =>
+        handleTurnChanged()
 
       case _ => debug(s"Ignoring event $evt")
     }
@@ -120,12 +122,8 @@ class GameMonitor(
 
   private def handleScreenEvent(evt: ScreenEvent): Unit = try {
     debug(evt)
-    if (evt.screen != FindingOpponent) {
-      companionState.findingOpponent = false
-    }
     val image = evt.image
     evt.screen match {
-      case FindingOpponent if !companionState.findingOpponent => handleFindingOpponent()
       case StartingHandScreen => handleStartingHand(image)
       case MatchStartScreen => handleMatchStart(image)
       case PlayLobby => handlePlayLobby(evt)
@@ -134,7 +132,7 @@ class GameMonitor(
       case ArenaLobby => handleArenaLobby(image)
       case OngoingGameScreen => handleOngoingGame(image)
       case GameResultScreen => handleEndResult(image)
-      case other => info(s"$other, no action taken")
+      case other => debug(s"$other, no action taken")
     }
   } catch {
     case NonFatal(t) =>
@@ -143,7 +141,6 @@ class GameMonitor(
   }
 
   private def handleFindingOpponent(): Unit = {
-    companionState.findingOpponent = true
     uiLog.info(s"Finding opponent, new match will start soon ...")
   }
 
@@ -154,7 +151,6 @@ class GameMonitor(
   }
 
   private def matchStartImpl(): Unit = {
-    companionState.findingOpponent = false
     uiLog.divider()
     matchState.nextMatch(companionState)
     for {
@@ -222,35 +218,17 @@ class GameMonitor(
 
   private def handleOngoingGame(image: BufferedImage) {
     addImageToVideo(image)
-    if (!matchState.started) {
-      testForCoin(image)
-      testForOpponentName(image)
-      matchState.started = true
-    }
+  }
+
+  private def handleTurnChanged() {
     import companionState._
-    import inGameAnalyser._
     if (isYourTurn) {
-      debug("Testing for opponent turn")
-      if (imageShowsOpponentTurn(image)) {
-        iterationsSinceYourTurn += 1
-        if (iterationsSinceYourTurn > 2) {
-          isYourTurn = false
-          uiLog.info("Opponent turn")
-          iterationsSinceYourTurn = 0
-        }
-      } else iterationsSinceYourTurn = 0
+      updateMatch(_.withNewTurn)
+      uiLog.info("Opponent turn")
     } else {
-      debug("Testing for your turn")
-      if (imageShowsYourTurn(image)) {
-        iterationsSinceOpponentTurn += 1
-        if (iterationsSinceOpponentTurn > 2) {
-          isYourTurn = true
-          updateMatch(_.withNewTurn)
-          uiLog.info("Your turn")
-          iterationsSinceOpponentTurn = 0
-        }
-      } else iterationsSinceOpponentTurn = 0
+      uiLog.info("Your turn")
     }
+    isYourTurn = !isYourTurn
   }
 
   private val opponentNameRankedOcr = new OpponentNameRankedOcr
