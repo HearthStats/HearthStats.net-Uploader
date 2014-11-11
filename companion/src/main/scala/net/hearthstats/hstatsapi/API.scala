@@ -1,15 +1,15 @@
 package net.hearthstats.hstatsapi
 
 import java.io.IOException
-import java.net.{HttpURLConnection, URL}
+import java.net.{ HttpURLConnection, URL }
 
 import grizzled.slf4j.Logging
 import net.hearthstats.config.UserConfig
-import net.hearthstats.core.{ArenaRun, HearthstoneMatch}
+import net.hearthstats.core.{ ArenaRun, HearthstoneMatch }
 import org.json.simple.parser.JSONParser
-import org.json.simple.{JSONArray, JSONObject}
+import org.json.simple.{ JSONArray, JSONObject }
 
-import scala.collection.JavaConversions.{asScalaBuffer, mapAsJavaMap}
+import scala.collection.JavaConversions.{ asScalaBuffer, mapAsJavaMap }
 
 //TODO : replace this JSON implementation with a more typesafe one
 class API(config: UserConfig) extends Logging {
@@ -100,15 +100,19 @@ class API(config: UserConfig) extends Logging {
   private def _get(method: String): Option[AnyRef] = {
     val baseUrl = config.apiBaseUrl.get + method + "?userkey="
     debug(s"API get $baseUrl********")
-    val url = new URL(baseUrl + config.userKey.get)
     try {
-      val resultString = io.Source.fromURL(url, "UTF-8").getLines.mkString("\n")
+      val timeout = config.apiTimeoutMs.get
+      val url = new URL(baseUrl + config.userKey.get)
+      val conn = url.openConnection()
+      conn.setConnectTimeout(timeout)
+      conn.setReadTimeout(timeout)
+      val inputStream = conn.getInputStream()
+      val resultString = io.Source.fromInputStream(inputStream)("UTF-8").getLines.mkString("\n")
       debug(s"API get result = $resultString")
       _parseResult(resultString)
     } catch {
       case e: IOException =>
-        warn("Error communicating with HearthStats.net (GET " + method + ")", e)
-        error("Error communicating with HearthStats.net", e)
+        error("Error communicating with HearthStats.net (GET " + method + ")", e)
         None
     }
 
@@ -166,6 +170,7 @@ class API(config: UserConfig) extends Logging {
       httpcon.setRequestProperty("Content-Type", "application/json")
       httpcon.setRequestProperty("Accept", "application/json")
       httpcon.setRequestMethod("POST")
+      httpcon.setReadTimeout(config.apiTimeoutMs.get)
       httpcon.connect()
       val outputBytes = jsonData.toJSONString.getBytes("UTF-8")
       val os = httpcon.getOutputStream

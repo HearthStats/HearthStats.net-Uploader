@@ -15,6 +15,7 @@ class UserConfig extends Logging {
   import ConfigUtil._
 
   val apiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
+  val apiTimeoutMs = config("api.timeout", 5000)
   val userKey = config("api.userkey", "your_userkey_here")
 
   val pollingDelayMs = config("polling.delay.ms", 1000 / 25)

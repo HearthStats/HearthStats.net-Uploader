@@ -2,7 +2,7 @@ package net.hearthstats.hstatsapi
 
 import java.io.IOException
 
-import net.hearthstats.core.{Card, Deck, HeroClass}
+import net.hearthstats.core.{ Card, Deck, HeroClass }
 import net.hearthstats.ui.log.Log
 import org.apache.commons.lang3.StringUtils
 import org.json.simple.JSONObject
@@ -16,6 +16,9 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
   def updateDecks() {
     try {
       _decks = api.getDecks
+      if (_decks.isEmpty) {
+        uiLog.warn("no deck were returned from Hearthstats.net. Either you have not created a deck or the site is down")
+      }
     } catch {
       case e: IOException => uiLog.warn("Error occurred while loading deck list from HearthStats.net", e)
     }
@@ -88,14 +91,14 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
       }
       cd = cardMap.get(card.substring(2))
     } yield cd match {
-        case Some(c) =>
-          c.copy(count = count)
-        case None =>
-          // If the card is invalid, then return a made-up card. This might be better implemented as a different class
-          // to indicate that the card couldn't be identified
-          new Card(id = 0, originalName = card, collectible = false)
-      }
+      case Some(c) =>
+        c.copy(count = count)
+      case None =>
+        // If the card is invalid, then return a made-up card. This might be better implemented as a different class
+        // to indicate that the card couldn't be identified
+        new Card(id = 0, originalName = card, collectible = false)
+    }
     cards.sorted
-  }  
+  }
 
 }
