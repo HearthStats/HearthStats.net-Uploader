@@ -99,6 +99,7 @@ class Main(
     cleanupDebugFiles()
     mainFrame.createAndShowGui()
     loadingNotification.close()
+    programHelper.createConfig(environment, uiLog)
     startup.start()
     monitor.start()
   }

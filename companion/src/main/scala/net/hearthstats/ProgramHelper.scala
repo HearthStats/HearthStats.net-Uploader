@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.io.FileWriter
 import java.awt.Rectangle
+import net.hearthstats.config.Environment
+import net.hearthstats.ui.log.Log
 
 /**
  * Abstract class that finds the Hearthstone program and takes screenshots of it.
@@ -38,19 +40,29 @@ abstract class ProgramHelper extends Observable {
   /**
    * Returns true if config was created.
    */
-  //  def createConfig(environment: Environment): Boolean = {
-  //    val logConfigFile = new File(s"${environment.hearthstoneConfigFolder}/log.config")
-  //    if (logConfigFile.exists) {
-  //      Log.info(s"Using existing Hearthstone log config $logConfigFile")
-  //      false
-  //    } else {
-  //      val writer = new FileWriter(logConfigFile)
-  //      writer.write(configContent)
-  //      writer.close()
-  //      Log.info(s"Created new Hearthstone log config $logConfigFile")
-  //      true
-  //    }
-  //  }
+  def createConfig(environment: Environment, uiLog: Log): Boolean = {
+    val logConfigFile = new File(s"${environment.hearthstoneConfigFolder}/log.config")
+    if (logConfigFile.exists) {
+      val content = io.Source.fromFile(logConfigFile).mkString
+      if (content == configContent) {
+        uiLog.info(s"Using existing Hearthstone log config $logConfigFile")
+        false
+      } else {
+        createConfigImpl(logConfigFile, uiLog)
+        true
+      }
+    } else {
+      createConfigImpl(logConfigFile, uiLog)
+      true
+    }
+  }
+
+  private def createConfigImpl(logConfigFile: File, uiLog: Log): Unit = {
+    val writer = new FileWriter(logConfigFile)
+    writer.write(configContent)
+    writer.close()
+    uiLog.info(s"Created new Hearthstone log config $logConfigFile")
+  }
 
   var configContent =
     """[LoadingScreen]
@@ -58,12 +70,24 @@ abstract class ProgramHelper extends Observable {
       |FilePrinting=false
       |ConsolePrinting=true
       |ScreenPrinting=false
-      |
+      | 
       |[Zone]
       |LogLevel=1
       |FilePrinting=false
       |ConsolePrinting=true
       |ScreenPrinting=false
+      | 
+      |[Asset]
+      |LogLevel=1
+      |ConsolePrinting=true
+      | 
+      |[Bob]
+      |LogLevel=1
+      |ConsolePrinting=true
+      | 
+      |[Power]
+      |LogLevel=1
+      |ConsolePrinting=true
     """.stripMargin
 
 }
