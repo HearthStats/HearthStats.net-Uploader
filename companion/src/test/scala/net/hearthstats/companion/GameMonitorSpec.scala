@@ -7,10 +7,9 @@ import net.hearthstats.config.{ TestConfig, UserConfig }
 import net.hearthstats.core.GameMode._
 import net.hearthstats.core.{ Deck, Rank }
 import net.hearthstats.game.{ MatchState, Screen }
-import net.hearthstats.game.imageanalysis.{ Casual, HsClassAnalyser, InGameAnalyser, IndividualPixelAnalyser, LobbyAnalyser, LobbyMode, Ranked, ScreenAnalyser }
+import net.hearthstats.game.imageanalysis.{ Casual, IndividualPixelAnalyser, LobbyAnalyser, LobbyMode, Ranked, ScreenAnalyser }
 import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
 import net.hearthstats.ui.HearthstatsPresenter
-import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.hstatsapi.DeckUtils
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 import net.hearthstats.ui.deckoverlay.DeckOverlayPresenter
@@ -37,8 +36,6 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val individualPixelAnalyser = mock[IndividualPixelAnalyser]
 
   val lobbyAnalyser = mock[LobbyAnalyser]
-  val classAnalyser = mock[HsClassAnalyser]
-  val igAnalyser = mock[InGameAnalyser]
 
   val log = mock[Log]
 

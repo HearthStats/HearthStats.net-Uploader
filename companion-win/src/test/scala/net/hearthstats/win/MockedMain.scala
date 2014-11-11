@@ -6,11 +6,9 @@ import net.hearthstats.ProgramHelper
 import net.hearthstats.Main
 import com.softwaremill.macwire.MacwireMacros._
 import javax.imageio.ImageIO
-import net.hearthstats.game.imageanalysis.InGameAnalyser
-import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.config.TestConfig
 import grizzled.slf4j.Logging
-import net.hearthstats.game.imageanalysis.HsClassAnalyser
+import net.hearthstats.game.imageanalysis.ImageAnalyser
 
 object MockedMain extends TesseractSetup with App with Logging {
   val environment = TestEnvironment
@@ -54,5 +52,5 @@ object MockedMain extends TesseractSetup with App with Logging {
 
   }
 
-  def img(fileName: String) = ImageIO.read(classOf[InGameAnalyser].getResourceAsStream(fileName + ".png"))
+  def img(fileName: String) = ImageIO.read(classOf[ImageAnalyser].getResourceAsStream(fileName + ".png"))
 }

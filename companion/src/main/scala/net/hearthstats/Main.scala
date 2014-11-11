@@ -9,7 +9,7 @@ import net.hearthstats.companion.{ CompanionState, DeckOverlayModule, GameMonito
 import net.hearthstats.config.{ Application, Environment, UserConfig }
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.game.{ HearthstoneLogMonitor, MatchState }
-import net.hearthstats.game.imageanalysis.{ HsClassAnalyser, InGameAnalyser, IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser }
+import net.hearthstats.game.imageanalysis.{ IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser }
 import net.hearthstats.hstatsapi.{ API, CardUtils, DeckUtils, MatchUtils }
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 import net.hearthstats.ui.log.Log
@@ -30,8 +30,6 @@ import net.hearthstats.companion.GameMonitor
 import net.hearthstats.game.imageanalysis.LobbyAnalyser
 import net.hearthstats.game.imageanalysis.ScreenAnalyser
 import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.game.imageanalysis.HsClassAnalyser
-import net.hearthstats.game.imageanalysis.InGameAnalyser
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 import net.hearthstats.hstatsapi.MatchUtils
 import net.hearthstats.util.AnalyticsTrackerFactory
@@ -71,8 +69,6 @@ class Main(
   val screenAnalyser = wire[ScreenAnalyser]
   val individualPixelAnalyser = wire[IndividualPixelAnalyser]
   val lobbyAnalyser = wire[LobbyAnalyser]
-  val igAnalyser = wire[InGameAnalyser]
-  val classAnalyser = wire[HsClassAnalyser]
   val hsMatch = wire[HearthstoneMatch]
   val deckOverlay = wire[DeckOverlaySwing]
 

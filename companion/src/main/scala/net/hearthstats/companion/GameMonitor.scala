@@ -32,15 +32,12 @@ class GameMonitor(
   logMonitor: HearthstoneLogMonitor,
   matchState: MatchState,
   lobbyAnalyser: LobbyAnalyser,
-  classAnalyser: HsClassAnalyser,
-  inGameAnalyser: InGameAnalyser,
   videoEncoderFactory: VideoEncoderFactory,
   uiLog: Log,
   hsPresenter: HearthstatsPresenter,
   deckOverlay: DeckOverlayModule) extends Logging {
 
   import config._
-  import companionState.iterationsSinceClassCheckingStarted
   import lobbyAnalyser._
 
   implicit val system = ActorSystem("companion")
@@ -113,6 +110,9 @@ class GameMonitor(
       case CoinReceived(id, player) =>
         handleCoin(player)
       case FirstPlayer(name, id) =>
+        handlePlayerName(name, true)
+      case PlayerName(name, id) =>
+        handlePlayerName(name, false)
 
       case _ => debug(s"Ignoring event $evt")
     }
@@ -142,13 +142,8 @@ class GameMonitor(
       uiLog.error(t.getMessage, t)
   }
 
-  private def handleFindingOpponent(): Unit = {
-    uiLog.info(s"Finding opponent, new match will start soon ...")
-  }
-
   private def handleStartingHand(image: BufferedImage): Unit = {
     addImageToVideo(image)
-    testForOpponentName(image)
   }
 
   private def handleGameStart(heroChosen: HeroChosen): Unit = {
@@ -184,6 +179,22 @@ class GameMonitor(
     }
   }
 
+  // we need to store the first player name (the user) to differentiate it from the opponent
+  private def handlePlayerName(name: String, first: Boolean): Unit = {
+    if (first) {
+      companionState.firstPlayerName = Some(name)
+    } else if (companionState.firstPlayerName != Some(name)) {
+      companionState.otherPlayerName = Some(name)
+    }
+  }
+
+  private def handleOpponentName(name: String): Unit = {
+    updateMatch(_.withOpponentName(name))
+    hsPresenter.setOpponentName(name)
+    uiLog.info(s"Opponent name : $name")
+
+  }
+
   private def handleCoin(playerId: Int): Unit = {
     if (companionState.playerId1 == Some(playerId)) {
       playerHasCoinAtStart(true)
@@ -198,17 +209,18 @@ class GameMonitor(
     companionState.isYourTurn = coin // turn changes before first turn
     updateMatch(_.withCoin(coin))
     hsPresenter.setCoin(coin)
-    if (coin) {
+    val oppName = if (coin) {
       uiLog.info("Opponent starts, you have the coin")
+      companionState.firstPlayerName
     } else {
       uiLog.info("You start, opponent has the coin")
+      companionState.otherPlayerName
     }
+    oppName.map(handleOpponentName)
   }
 
   private def handleMatchStart(image: BufferedImage): Unit = {
     addImageToVideo(image)
-    testForOpponentName(image)
-    iterationsSinceClassCheckingStarted += 1
   }
 
   private def handlePracticeLobby(image: BufferedImage): Unit = {
@@ -258,25 +270,6 @@ class GameMonitor(
       uiLog.info("Your turn")
     }
     isYourTurn = !isYourTurn
-  }
-
-  private val opponentNameRankedOcr = new OpponentNameRankedOcr
-  private val opponentNameUnrankedOcr = new OpponentNameUnrankedOcr
-
-  private def opponentNameOcr: OpponentNameOcr =
-    if (companionState.mode == RANKED) opponentNameRankedOcr
-    else opponentNameUnrankedOcr
-
-  private def testForOpponentName(image: BufferedImage) {
-    if (hsMatch.opponentName == null) {
-      debug("Testing for opponent name")
-      if (inGameAnalyser.imageShowsOpponentName(image)) {
-        val opponentName = opponentNameOcr.process(image)
-        updateMatch(_.withOpponentName(opponentName))
-        hsPresenter.setOpponentName(opponentName)
-        uiLog.info(s"Opponent name : $opponentName")
-      }
-    }
   }
 
   private def detectDeck(image: BufferedImage): Unit =

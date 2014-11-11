@@ -16,8 +16,9 @@ class CompanionState extends Logging {
   var deckSlot: Option[Int] = None
   var rank: Option[Rank] = None
   var isNewArenaRun = false
-  var iterationsSinceClassCheckingStarted = 0
   var isYourTurn = false
+  var firstPlayerName: Option[String] = None
+  var otherPlayerName: Option[String] = None
 
   var ongoingVideo: Option[OngoingVideo] = None
 
@@ -27,14 +28,12 @@ class CompanionState extends Logging {
 
   var playerId1: Option[Int] = None // used in CoinReceived and id for zone events
   var opponentId1: Option[Int] = None // used in CoinReceived and id for zone events
-  var playerId2: Option[Int] = None // used in FirstPlayer and PlayerName events
-  var opponentId2: Option[Int] = None // used in FirstPlayer and PlayerName events
 
   def reset() {
     playerId1 = None
     opponentId1 = None
-    playerId2 = None
-    opponentId2 = None
+    otherPlayerName = None
+    firstPlayerName = None
     info("reset companion state")
   }
 }
