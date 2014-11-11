@@ -106,11 +106,13 @@ class GameMonitor(
       case GameOver(outcome) =>
         uiLog.info(s"Result $outcome detected in log file")
         endGameImpl(outcome)
-      case MatchStart(_) =>
-        uiLog.info(s"Match start detected in log file")
-        matchStartImpl()
+      case MatchStart(hero) =>
+        handleGameStart(hero)
       case TurnPassedEvent =>
         handleTurnChanged()
+      case CoinReceived(id, player) =>
+        handleCoin(player)
+      case FirstPlayer(name, id) =>
 
       case _ => debug(s"Ignoring event $evt")
     }
@@ -130,8 +132,8 @@ class GameMonitor(
       case PracticeLobby => handlePracticeLobby(image)
       case FriendlyLobby => handleFriendlyLobby(image)
       case ArenaLobby => handleArenaLobby(image)
-      case OngoingGameScreen => handleOngoingGame(image)
-      case GameResultScreen => handleEndResult(image)
+      case OngoingGameScreen => addImageToVideo(image)
+      case GameResultScreen => addImageToVideo(image)
       case other => debug(s"$other, no action taken")
     }
   } catch {
@@ -146,13 +148,30 @@ class GameMonitor(
 
   private def handleStartingHand(image: BufferedImage): Unit = {
     addImageToVideo(image)
-    testForCoin(image)
     testForOpponentName(image)
   }
 
-  private def matchStartImpl(): Unit = {
-    uiLog.divider()
-    matchState.nextMatch(companionState)
+  private def handleGameStart(heroChosen: HeroChosen): Unit = {
+    val matchStart = // this is the first time the method is called for this match
+      (heroChosen.opponent && companionState.playerId1.isEmpty) ||
+        (!heroChosen.opponent && companionState.opponentId1.isEmpty)
+    if (matchStart) {
+      uiLog.info(s"Match start detected in log file")
+      uiLog.divider()
+      matchState.nextMatch(companionState)
+    }
+    val newClass = heroChosen.heroClass
+    if (heroChosen.opponent) {
+      companionState.opponentId1 = Some(heroChosen.player)
+      updateMatch(_.withOpponentClass(newClass))
+      hsPresenter.setOpponentClass(newClass)
+      uiLog.info(s"Opponent class detected : $newClass")
+    } else {
+      companionState.playerId1 = Some(heroChosen.player)
+      updateMatch(_.withUserClass(newClass))
+      hsPresenter.setYourClass(newClass)
+      uiLog.info(s"Your class detected : $newClass")
+    }
     for {
       slot <- companionState.deckSlot
       d <- deckUtils.getDeckFromSlot(slot)
@@ -165,12 +184,30 @@ class GameMonitor(
     }
   }
 
+  private def handleCoin(playerId: Int): Unit = {
+    if (companionState.playerId1 == Some(playerId)) {
+      playerHasCoinAtStart(true)
+    } else if (companionState.opponentId1 == Some(playerId)) {
+      playerHasCoinAtStart(false)
+    } else {
+      uiLog.warn(s"Coin detection failed : unexpected playerId $playerId")
+    }
+  }
+
+  private def playerHasCoinAtStart(coin: Boolean): Unit = {
+    companionState.isYourTurn = coin // turn changes before first turn
+    updateMatch(_.withCoin(coin))
+    hsPresenter.setCoin(coin)
+    if (coin) {
+      uiLog.info("Opponent starts, you have the coin")
+    } else {
+      uiLog.info("You start, opponent has the coin")
+    }
+  }
+
   private def handleMatchStart(image: BufferedImage): Unit = {
     addImageToVideo(image)
-    testForCoin(image)
     testForOpponentName(image)
-    testForYourClass(image)
-    testForOpponentClass(image)
     iterationsSinceClassCheckingStarted += 1
   }
 
@@ -198,16 +235,12 @@ class GameMonitor(
     detectDeck(image)
   }
 
-  private def handleEndResult(image: BufferedImage) {
-    addImageToVideo(image)
-  }
-
   private def endGameImpl(outcome: MatchOutcome): Unit = {
     updateMatch(_.withResult(outcome))
     updateMatch(_.endMatch)
     matchUtils.submitMatchResult()
     deckOverlay.reset()
-
+    companionState.reset()
   }
 
   private def addImageToVideo(i: BufferedImage): Unit =
@@ -215,10 +248,6 @@ class GameMonitor(
 
   private def victoryOrDefeatDetected =
     matchState.currentMatch.flatMap(_.result).isDefined
-
-  private def handleOngoingGame(image: BufferedImage) {
-    addImageToVideo(image)
-  }
 
   private def handleTurnChanged() {
     import companionState._
@@ -280,48 +309,6 @@ class GameMonitor(
       }
     }
     detectDeck(evt.image)
-  }
-
-  private def testForCoin(image: BufferedImage): Unit = {
-    if (hsMatch.coin.isEmpty && inGameAnalyser.imageShowsCoin(image)) {
-      uiLog.info("Coin detected")
-      updateMatch(_.withCoin(true))
-      hsPresenter.setCoin(true)
-    }
-  }
-
-  private def testForYourClass(image: BufferedImage): Unit = {
-    if (HeroClass.UNDETECTED == hsMatch.userClass) {
-      debug("Testing for your class")
-      classAnalyser.imageIdentifyYourClass(image) match {
-        case Some(newClass) =>
-          updateMatch(_.withUserClass(newClass))
-          hsPresenter.setYourClass(newClass)
-          uiLog.info(s"Your class detected : $newClass")
-        case None =>
-      }
-      if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
-        val filename = "class-yours-" + (iterationsSinceClassCheckingStarted >> 2)
-        BackgroundImageSave.saveCroppedPngImage(image, filename, 204, 600, 478, 530)
-      }
-    }
-  }
-
-  private def testForOpponentClass(image: BufferedImage): Unit = {
-    if (HeroClass.UNDETECTED == hsMatch.opponentClass) {
-      debug("Testing for opponent class")
-      classAnalyser.imageIdentifyOpponentClass(image) match {
-        case Some(newClass) =>
-          updateMatch(_.withOpponentClass(newClass))
-          hsPresenter.setOpponentClass(newClass)
-          uiLog.info(s"Opponent class detected : $newClass")
-        case None =>
-      }
-      if (iterationsSinceClassCheckingStarted > 3 && (iterationsSinceClassCheckingStarted & 3) == 0) {
-        val filename = "class-opponent-" + (iterationsSinceClassCheckingStarted >> 2)
-        BackgroundImageSave.saveCroppedPngImage(image, filename, 1028, 28, 478, 530)
-      }
-    }
   }
 
   private def updateMatch(f: HearthstoneMatch => HearthstoneMatch): Unit =

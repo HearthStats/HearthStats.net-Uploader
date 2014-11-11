@@ -32,7 +32,7 @@ class ScreenEvents(
           case _ =>
         }
       case None =>
-        info(s"no screen match on image, last match was $lastScreen $iterationsSinceScreenMatched iterations ago")
+        debug(s"no screen match on image, last match was $lastScreen $iterationsSinceScreenMatched iterations ago")
         iterationsSinceScreenMatched += 1
     }
   }
@@ -48,12 +48,8 @@ class ScreenEvents(
       //   At the moment I haven't worked out how to ensure we always get the completed screen. So this method detects when
       //    we've received and incomplete play background instead of the 'Finding Opponent' screen, so we can reject it and try again.</p>
       None
-    else if (lastScreen == FINDING_OPPONENT && iterationsSinceFindingOpponent < 5) {
-      iterationsSinceFindingOpponent += 1
-      None
-    } else {
-      iterationsSinceFindingOpponent = 0
+    else
       Some(ScreenEvent(newScreen, image))
-    }
+
   }
 }

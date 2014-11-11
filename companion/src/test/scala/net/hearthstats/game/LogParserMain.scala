@@ -12,7 +12,6 @@ object LogParserMain extends App {
     r <- p.analyseLine(l)
   } {
     println(r)
-    if (r.isInstanceOf[GameOver]) System.exit(0)
   }
 }
 

@@ -73,7 +73,10 @@ class LogParser extends Logging {
           case None => HeroChosen(cardId, HeroClass.UNDETECTED, opponent = false, player) // either Naxx computer of Jaraxxus
         }
       case ("", "OPPOSING PLAY (Hero)") =>
-        HeroChosen(cardId, HERO_CLASSES(cardId), opponent = true, player)
+        HERO_CLASSES.get(cardId) match {
+          case Some(hero) => MatchStart(HeroChosen(cardId, hero, opponent = true, player))
+          case None => HeroChosen(cardId, HeroClass.UNDETECTED, opponent = true, player) // either Naxx computer of Jaraxxus
+        }
       case ("", "FRIENDLY PLAY (Hero Power)") | ("", "OPPOSING PLAY (Hero Power)") =>
         HeroPowerDeclared(cardId, player)
       case ("OPPOSING HAND", _) =>
