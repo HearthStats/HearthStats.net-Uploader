@@ -97,10 +97,10 @@ class GameMonitor(
   }
 
   logMonitor.addReceive {
-    case e: GameEvent => handleGameEvent(e)
+    case e: GameEvent => handleLogEvent(e)
   }
 
-  private def handleGameEvent(evt: GameEvent): Unit = try {
+  private def handleLogEvent(evt: GameEvent): Unit = try {
     info(evt)
     evt match {
       case GameOver(outcome) =>
@@ -129,9 +129,9 @@ class GameMonitor(
       case StartingHandScreen => handleStartingHand(image)
       case MatchStartScreen => handleMatchStart(image)
       case PlayLobby => handlePlayLobby(evt)
-      case PracticeLobby if companionState.mode != PRACTICE => handlePracticeLobby(image)
-      case FriendlyLobby if companionState.mode != FRIENDLY => handleFriendlyLobby(image)
-      case ArenaLobby if companionState.mode != ARENA => handleArenaLobby(image)
+      case PracticeLobby => handlePracticeLobby(image)
+      case FriendlyLobby => handleFriendlyLobby(image)
+      case ArenaLobby => handleArenaLobby(image)
       case OngoingGameScreen => handleOngoingGame(image)
       case GameResultScreen => handleEndResult(image)
       case other => info(s"$other, no action taken")
@@ -145,14 +145,6 @@ class GameMonitor(
   private def handleFindingOpponent(): Unit = {
     companionState.findingOpponent = true
     uiLog.info(s"Finding opponent, new match will start soon ...")
-    uiLog.divider()
-    matchState.nextMatch(companionState)
-    for {
-      slot <- companionState.deckSlot
-      d <- deckUtils.getDeckFromSlot(slot)
-    } {
-      updateMatch(_.withDeck(d))
-    }
   }
 
   private def handleStartingHand(image: BufferedImage): Unit = {
@@ -163,6 +155,14 @@ class GameMonitor(
 
   private def matchStartImpl(): Unit = {
     companionState.findingOpponent = false
+    uiLog.divider()
+    matchState.nextMatch(companionState)
+    for {
+      slot <- companionState.deckSlot
+      d <- deckUtils.getDeckFromSlot(slot)
+    } {
+      updateMatch(_.withDeck(d))
+    }
     if (companionState.ongoingVideo.isEmpty) {
       val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
       companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
@@ -170,7 +170,6 @@ class GameMonitor(
   }
 
   private def handleMatchStart(image: BufferedImage): Unit = {
-    //    matchStartImpl()
     addImageToVideo(image)
     testForCoin(image)
     testForOpponentName(image)
@@ -180,35 +179,31 @@ class GameMonitor(
   }
 
   private def handlePracticeLobby(image: BufferedImage): Unit = {
-    uiLog.info("Practice Mode detected")
-    companionState.mode = PRACTICE
+    if (companionState.mode != PRACTICE) {
+      uiLog.info("Practice Mode detected")
+      companionState.mode = PRACTICE
+    }
     detectDeck(image)
   }
 
   private def handleArenaLobby(image: BufferedImage): Unit = {
-    uiLog.info("Arena Mode detected")
-    companionState.mode = ARENA
+    if (companionState.mode != ARENA) {
+      uiLog.info("Arena Mode detected")
+      companionState.mode = ARENA
+    }
     companionState.isNewArenaRun = isNewArenaRun(image)
   }
 
   private def handleFriendlyLobby(image: BufferedImage): Unit = {
-    uiLog.info("Versus Mode detected")
-    companionState.mode = FRIENDLY
+    if (companionState.mode != FRIENDLY) {
+      uiLog.info("Versus Mode detected")
+      companionState.mode = FRIENDLY
+    }
     detectDeck(image)
   }
 
   private def handleEndResult(image: BufferedImage) {
     addImageToVideo(image)
-    //    if (!victoryOrDefeatDetected) {
-    //      info("Testing for victory or defeat")
-    //      inGameAnalyser.imageShowsVictoryOrDefeat(image) match {
-    //        case Some(outcome) =>
-    //          uiLog.info(s"Result detected by screen capture : $outcome")
-    //          endGameImpl(outcome)
-    //        case _ =>
-    //          debug("Result not detected on screen capture")
-    //      }
-    //    }
   }
 
   private def endGameImpl(outcome: MatchOutcome): Unit = {
