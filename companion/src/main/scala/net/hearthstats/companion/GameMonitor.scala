@@ -166,6 +166,7 @@ class GameMonitor(
       updateMatch(_.withUserClass(newClass))
       hsPresenter.setYourClass(newClass)
       uiLog.info(s"Your class detected : $newClass")
+      deckOverlay.startMonitoringCards(heroChosen.player)
     }
     for {
       slot <- companionState.deckSlot

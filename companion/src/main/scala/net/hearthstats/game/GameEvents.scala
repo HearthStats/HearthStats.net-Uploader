@@ -17,31 +17,31 @@ case class FirstPlayer(name: String, id: Int) extends GameEvent
 case class PlayerName(name: String, id: Int) extends GameEvent
 
 case object TurnPassedEvent extends GameEvent
-case class HeroPowerEvent(card: String, hero: Int) extends GameEvent with NamedCard {
+case class HeroPowerEvent(cardCode: String, hero: Int) extends GameEvent with NamedCard {
   override def toString =
     if (isValid) s"hero $hero uses: $cardName"
     else ""
 
-  def isValid = CardData.heroPowers.exists(_.id == card)
+  def isValid = CardData.heroPowers.exists(_.id == cardCode)
 }
-case class HeroPowerDeclared(card: String, hero: Int) extends GameEvent with NamedCard {
+case class HeroPowerDeclared(cardCode: String, hero: Int) extends GameEvent with NamedCard {
   override def toString =
     s"hero $hero has power : $cardName"
 }
 
 case class CoinReceived(id: Int, player: Int) extends GameEvent
 
-case class CardEvent(card: String, cardId: Int, eventType: CardEventType, player: Int) extends GameEvent with NamedCard {
+case class CardEvent(cardCode: String, cardId: Int, eventType: CardEventType, player: Int) extends GameEvent with NamedCard {
   override def toString =
     s"player$player : $eventType $cardName"
 }
 
 trait NamedCard {
-  def card: String
+  def cardCode: String
 
   lazy val cardName =
-    if (card == "") "Unknown card"
-    else CardData.byId(card).name
+    if (cardCode == "") "Unknown card"
+    else CardData.byId(cardCode).name
 }
 
 object CardEvents {

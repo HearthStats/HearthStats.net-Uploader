@@ -3,18 +3,21 @@ package net.hearthstats.hstatsapi
 import java.io.{ File, FileOutputStream, IOException }
 import java.net.URL
 import java.nio.channels.Channels
-
 import grizzled.slf4j.Logging
 import net.hearthstats.config.Environment
-import net.hearthstats.core.Card
 import net.hearthstats.ui.log.Log
-
 import scala.concurrent._
 import scala.util.{ Failure, Success }
+import net.hearthstats.core.CardData
+import net.hearthstats.core.Card
 
 class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Logging {
 
   def byName(n: String): Option[Card] = cards.values.find(_.name == n)
+
+  def byCode(code: String): Option[Card] =
+    if (code == "") None
+    else byName(CardData.byId(code).name)
 
   lazy val cards: Map[Int, Card] =
     (for {
