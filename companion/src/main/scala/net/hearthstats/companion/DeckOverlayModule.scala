@@ -7,6 +7,9 @@ import net.hearthstats.game.HearthstoneLogMonitor
 import net.hearthstats.hstatsapi.CardUtils
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
 import grizzled.slf4j.Logging
+import net.hearthstats.game.GameOver
+import akka.actor.PoisonPill
+import akka.actor.ActorDSL._
 
 class DeckOverlayModule(
   presenter: DeckOverlaySwing,
@@ -19,13 +22,20 @@ class DeckOverlayModule(
 
   def startMonitoringCards(playerId: Int): Unit = {
     info(s"monitoring cards for player $playerId")
-    logMonitor.addReceive {
-      case CardEvent(cardCode, _, DRAWN, `playerId`) =>
-        cardUtils.byCode(cardCode).map(presenter.removeCard)
-      case CardEvent(cardCode, _, REPLACED, `playerId`) =>
-        cardUtils.byCode(cardCode).map(presenter.addCard)
-      case _ =>
-    }
+    implicit val actorSystem = logMonitor.system
+    logMonitor.addObserver(actor(new Act {
+      become {
+        case CardEvent(cardCode, _, DRAWN, `playerId`) =>
+          cardUtils.byCode(cardCode).map(presenter.removeCard)
+        case CardEvent(cardCode, _, REPLACED, `playerId`) =>
+          cardUtils.byCode(cardCode).map(presenter.addCard)
+        case GameOver(_) =>
+          info(s"Game Over, stop monitoring cards for player $playerId")
+          self ! PoisonPill
+        case _ =>
+
+      }
+    }))
 
   }
 

@@ -43,6 +43,7 @@ object LogMonitorDeckOverlayMain extends App {
   def runIt: Thread = new Thread {
     override def run() = {
       deckOverlay.show(deck)
+      deckOverlay.startMonitoringCards(1)
       val writer = new BufferedWriter(new FileWriter(tempLogFile))
       Thread.sleep(500)
       writer.write(initialHand)
