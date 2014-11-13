@@ -35,5 +35,8 @@ case class FileObserver(file: File) extends ActorObservable with Logging { self 
 
     override def fileNotFound() =
       handle(new FileNotFoundException(file.getAbsolutePath))
+
+    override def fileRotated() =
+      info(s"$file was rotated")
   }
 }

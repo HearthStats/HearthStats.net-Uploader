@@ -42,6 +42,7 @@ import net.hearthstats.modules.ReplayHandler
 import net.hearthstats.modules.FileUploaderFactory
 import net.hearthstats.companion.ScreenEvents
 import net.hearthstats.game.LogParser
+import scala.util.control.NonFatal
 
 class Main(
   environment: Environment,
@@ -129,7 +130,7 @@ class Main(
         }
       }
     } catch {
-      case e: Exception => warn("Ignoring exception when cleaning up debug files", e)
+      case NonFatal(e) => warn("Ignoring exception when cleaning up debug files", e)
     }
   }
 

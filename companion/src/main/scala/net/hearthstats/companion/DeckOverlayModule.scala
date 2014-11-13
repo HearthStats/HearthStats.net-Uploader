@@ -10,11 +10,15 @@ import grizzled.slf4j.Logging
 import net.hearthstats.game.GameOver
 import akka.actor.PoisonPill
 import akka.actor.ActorDSL._
+import scala.collection.mutable.ListBuffer
+import akka.actor.ActorRef
 
 class DeckOverlayModule(
   presenter: DeckOverlaySwing,
   cardUtils: CardUtils,
   logMonitor: HearthstoneLogMonitor) extends Logging {
+
+  val monitoringActors = ListBuffer.empty[ActorRef]
 
   def show(deck: Deck): Unit = {
     presenter.showDeck(deck)
@@ -22,20 +26,21 @@ class DeckOverlayModule(
 
   def startMonitoringCards(playerId: Int): Unit = {
     info(s"monitoring cards for player $playerId")
+    reset()
+    monitoringActors.foreach(_ ! PoisonPill)
+    monitoringActors.clear()
     implicit val actorSystem = logMonitor.system
-    logMonitor.addObserver(actor(new Act {
+    val monitoringActor = actor(new Act {
       become {
         case CardEvent(cardCode, _, DRAWN, `playerId`) =>
           cardUtils.byCode(cardCode).map(presenter.removeCard)
         case CardEvent(cardCode, _, REPLACED, `playerId`) =>
           cardUtils.byCode(cardCode).map(presenter.addCard)
-        case GameOver(_) =>
-          info(s"Game Over, stop monitoring cards for player $playerId")
-          self ! PoisonPill
         case _ =>
-
       }
-    }))
+    })
+    monitoringActors.append(monitoringActor)
+    logMonitor.addObserver(monitoringActor)
 
   }
 
