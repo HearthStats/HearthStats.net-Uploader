@@ -10,6 +10,8 @@ class LogParser extends Logging {
 
   def analyseLine(line: String): Option[GameEvent] = {
     line match {
+      case STARTUP_REGEX() =>
+        Some(StartupEvent)
       case GAME_OVER_REGEX(result) =>
         Some(GameOver(if (result == "victory") MatchOutcome.VICTORY else MatchOutcome.DEFEAT))
       case RANKED_MODE_REGEX() =>
@@ -136,6 +138,7 @@ class LogParser extends Logging {
   val GAME_OVER_REGEX = """\[Asset\].*name=(victory|defeat)_screen_start.*""".r
   val RANKED_MODE_REGEX = ".*name=rank_window.*".r
   val LEGEND_RANK_REGEX = """\[Bob\] legend rank (\d*)""".r
+  val STARTUP_REGEX = """^Initialize engine version.*""".r
 
   import GameMode._
   val GAME_MODES = Map("RegisterScreenPractice" -> PRACTICE,

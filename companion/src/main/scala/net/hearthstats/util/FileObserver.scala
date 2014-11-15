@@ -13,13 +13,17 @@ case class FileObserver(file: File) extends ActorObservable with Logging { self 
   val DEFAULT_DELAY_MS = 50
   var stopped = false
 
-  private val tailer = Tailer.create(file, new SubjectAdapter, DEFAULT_DELAY_MS, true)
+  private var tailer: Option[Tailer] = None
 
-  info("observing file " + file)
+  def start(): Unit = {
+    tailer = Some(Tailer.create(file, new SubjectAdapter, DEFAULT_DELAY_MS, true, true))
+    info(s"observing file $file")
+  }
 
   def stop() = {
-    tailer.stop()
+    tailer.map(_.stop())
     stopped = true
+    info(s"stopped observing file $file")
   }
 
   private class SubjectAdapter extends TailerListenerAdapter with Logging {

@@ -26,6 +26,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ FlatSpec, Matchers, _ }
 import net.hearthstats.game.HearthstoneLogMonitor
+import net.hearthstats.util.FileObserver
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest with BeforeAndAfter {

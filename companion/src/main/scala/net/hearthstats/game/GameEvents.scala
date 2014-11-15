@@ -11,6 +11,8 @@ import net.hearthstats.core.MatchOutcome
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
 
+case object StartupEvent extends GameEvent
+
 case class GameModeDetected(mode: GameMode) extends GameEvent
 
 case class FirstPlayer(name: String, id: Int) extends GameEvent

@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class HearthstoneLogMonitor(
   logParser: LogParser,
-  fileObserver: FileObserver) extends ActorObservable with Logging { observable =>
+  val fileObserver: FileObserver) extends ActorObservable with Logging { observable =>
 
   fileObserver.addObserver(actor(new Act {
     val normalBehaviour: Receive =
@@ -25,10 +25,10 @@ class HearthstoneLogMonitor(
         case l: String if l != null && l.length > 0 && l.charAt(0) == '[' =>
           debug(s"found : [$l]")
           zoneEvent(l) match {
-            case Some(CardEvent(_, _, CardEventType.ADDED_TO_DECK, _)) =>
+            case Some(StartupEvent) =>
               context.become(ignoringEvents, false)
-              system.scheduler.scheduleOnce(200.milliseconds, self, "resume")
-              info(s"Ignoring all logs for 200 milliseconds")
+              system.scheduler.scheduleOnce(2000.milliseconds, self, "resume")
+              info(s"Ignoring all logs for 2 seconds")
             case Some(e) =>
               debug(s"game event: $e")
               observable.notify(e)
@@ -40,7 +40,8 @@ class HearthstoneLogMonitor(
       case "resume" =>
         unbecome()
         info("Resume monitoring log file")
-      case _ =>
+      case e =>
+        debug(s"Ignoring event $e")
       // ignore all events for a short while to avoid processing everything from the log file when HS exits
       // the numbers might need a little more tweaking (check also the default delay in FileObserver)
     }

@@ -21,6 +21,7 @@ import net.hearthstats.core.MatchOutcome
 import akka.actor.ActorSystem
 import scala.concurrent.duration.DurationInt
 import akka.actor.Cancellable
+import net.hearthstats.util.FileObserver
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -39,6 +40,8 @@ class GameMonitor(
 
   import config._
   import lobbyAnalyser._
+
+  val fileObserver = logMonitor.fileObserver
 
   implicit val system = ActorSystem("companion")
 
@@ -69,6 +72,7 @@ class GameMonitor(
         become(notFound)
       case true =>
         uiLog.info("Hearthstone detected")
+        fileObserver.start()
         screenEvents.handleImage(programHelper.getScreenCapture)
         become(found)
     }
@@ -81,6 +85,7 @@ class GameMonitor(
     val notFound: Receive = {
       case true =>
         uiLog.info("Hearthstone detected")
+        fileObserver.start()
         screenEvents.handleImage(programHelper.getScreenCapture)
         become(found)
       case _ =>
@@ -91,6 +96,7 @@ class GameMonitor(
         screenEvents.handleImage(programHelper.getScreenCapture)
       case false =>
         uiLog.warn("Hearthstone not detected")
+        fileObserver.stop()
         become(notFound)
     }
     become(start)
