@@ -10,7 +10,7 @@ import akka.actor.ActorRef
 case class FileObserver(file: File) extends ActorObservable with Logging { self =>
   import FileObserver._
 
-  val DEFAULT_DELAY_MS = 500
+  val DEFAULT_DELAY_MS = 50
   var stopped = false
 
   private val tailer = Tailer.create(file, new SubjectAdapter, DEFAULT_DELAY_MS, true)
