@@ -17,36 +17,23 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class HearthstoneLogMonitor(
   logParser: LogParser,
-  val fileObserver: FileObserver) extends ActorObservable with Logging { observable =>
+  fileObserver: FileObserver) extends ActorObservable with Logging { observable =>
 
   fileObserver.addObserver(actor(new Act {
-    val normalBehaviour: Receive =
-      {
-        case l: String if l != null && l.length > 0 && l.charAt(0) == '[' =>
-          debug(s"found : [$l]")
-          zoneEvent(l) match {
-            case Some(StartupEvent) =>
-              context.become(ignoringEvents, false)
-              system.scheduler.scheduleOnce(2000.milliseconds, self, "resume")
-              info(s"Ignoring all logs for 2 seconds")
-            case Some(e) =>
-              debug(s"game event: $e")
-              observable.notify(e)
-            case None =>
-          }
-      }
-
-    val ignoringEvents: Receive = {
-      case "resume" =>
-        unbecome()
-        info("Resume monitoring log file")
-      case e =>
-        debug(s"Ignoring event $e")
-      // ignore all events for a short while to avoid processing everything from the log file when HS exits
-      // the numbers might need a little more tweaking (check also the default delay in FileObserver)
+    become {
+      case l: String if l != null && l.length > 0 && l.charAt(0) == '[' =>
+        debug(s"found : [$l]")
+        zoneEvent(l) match {
+          case Some(e) =>
+            debug(s"game event: $e")
+            observable.notify(e)
+          case None =>
+        }
     }
-    become(normalBehaviour)
   }))
+
+  def start(): Unit =
+    fileObserver.start()
 
   def stop(): Unit =
     fileObserver.stop()

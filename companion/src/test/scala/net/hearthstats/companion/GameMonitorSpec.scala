@@ -1,32 +1,24 @@
 package net.hearthstats.companion
 
 import java.awt.image.BufferedImage
+import org.junit.runner.RunWith
+import org.mockito.Matchers.{ any, anyString }
+import org.mockito.Mockito.{ never, verify, when }
+import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers, OneInstancePerTest }
+import org.scalatest.mock.MockitoSugar
 import com.softwaremill.macwire.MacwireMacros.wire
 import net.hearthstats.ProgramHelper
 import net.hearthstats.config.{ TestConfig, UserConfig }
-import net.hearthstats.core.GameMode._
-import net.hearthstats.core.{ Deck, Rank }
-import net.hearthstats.game.{ MatchState, Screen }
+import net.hearthstats.core.Deck
+import net.hearthstats.core.GameMode.{ ARENA, CASUAL, RANKED }
+import net.hearthstats.core.Rank
+import net.hearthstats.game.{ HearthstoneLogMonitor, MatchState, Screen }
 import net.hearthstats.game.imageanalysis.{ Casual, IndividualPixelAnalyser, LobbyAnalyser, LobbyMode, Ranked, ScreenAnalyser }
 import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
+import net.hearthstats.modules.{ ReplayHandler, VideoEncoderFactory }
 import net.hearthstats.ui.HearthstatsPresenter
-import net.hearthstats.hstatsapi.DeckUtils
-import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
-import net.hearthstats.ui.deckoverlay.DeckOverlayPresenter
-import net.hearthstats.core.Deck
-import net.hearthstats.game.MatchState
-import net.hearthstats.hstatsapi.MatchUtils
-import net.hearthstats.modules.VideoEncoderFactory
-import net.hearthstats.modules.ReplayHandler
 import net.hearthstats.ui.log.Log
-import org.junit.runner.RunWith
-import org.mockito.Matchers._
-import org.mockito.Mockito._
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.mock.MockitoSugar
-import org.scalatest.{ FlatSpec, Matchers, _ }
-import net.hearthstats.game.HearthstoneLogMonitor
-import net.hearthstats.util.FileObserver
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest with BeforeAndAfter {

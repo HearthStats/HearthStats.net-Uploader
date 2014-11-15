@@ -32,7 +32,11 @@ class MatchUtils(
   def submitMatchResult(): Option[HearthstoneMatch] = {
     createArenaRun()
     val hsMatch = matchState.currentMatch.get
-    if (hsMatch.mode == GameMode.PRACTICE) {
+    val d = hsMatch.duration
+    if (d <= 1) {
+      uiLog.warn(s"Ignoring match with duration $d, you should close Hearthstats Companion before Hearthstone to avoid this warning.")
+      None
+    } else if (hsMatch.mode == GameMode.PRACTICE) {
       uiLog.info("Practice match was not submitted")
       None
     } else {

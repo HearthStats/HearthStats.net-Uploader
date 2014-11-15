@@ -41,8 +41,6 @@ class GameMonitor(
   import config._
   import lobbyAnalyser._
 
-  val fileObserver = logMonitor.fileObserver
-
   implicit val system = ActorSystem("companion")
 
   val delay = config.pollingDelayMs.get.millis
@@ -66,16 +64,6 @@ class GameMonitor(
   import akka.actor.ActorDSL._
 
   val programFound = actor(new Act {
-    val start: Receive = {
-      case false =>
-        uiLog.warn("Hearthstone not detected")
-        become(notFound)
-      case true =>
-        uiLog.info("Hearthstone detected")
-        fileObserver.start()
-        screenEvents.handleImage(programHelper.getScreenCapture)
-        become(found)
-    }
     val found: Receive = {
       case false =>
         become(maybeNotFound)
@@ -85,7 +73,7 @@ class GameMonitor(
     val notFound: Receive = {
       case true =>
         uiLog.info("Hearthstone detected")
-        fileObserver.start()
+        logMonitor.start()
         screenEvents.handleImage(programHelper.getScreenCapture)
         become(found)
       case _ =>
@@ -96,10 +84,19 @@ class GameMonitor(
         screenEvents.handleImage(programHelper.getScreenCapture)
       case false =>
         uiLog.warn("Hearthstone not detected")
-        fileObserver.stop()
+        logMonitor.stop()
         become(notFound)
     }
-    become(start)
+    become {
+      case false =>
+        uiLog.warn("Hearthstone not detected")
+        become(notFound)
+      case true =>
+        uiLog.info("Hearthstone detected")
+        logMonitor.start()
+        screenEvents.handleImage(programHelper.getScreenCapture)
+        become(found)
+    }
   })
 
   screenEvents.addReceive({

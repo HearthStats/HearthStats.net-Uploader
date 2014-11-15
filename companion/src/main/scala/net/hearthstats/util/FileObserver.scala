@@ -11,13 +11,14 @@ case class FileObserver(file: File) extends ActorObservable with Logging { self 
   import FileObserver._
 
   val DEFAULT_DELAY_MS = 50
-  var stopped = false
+  var stopped = true
 
   private var tailer: Option[Tailer] = None
 
   def start(): Unit = {
     tailer = Some(Tailer.create(file, new SubjectAdapter, DEFAULT_DELAY_MS, true, true))
     info(s"observing file $file")
+    stopped = false
   }
 
   def stop() = {

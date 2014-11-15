@@ -26,6 +26,7 @@ class LogMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneIn
 
   it should "detect when you won the game" in {
     var receivedEvent: GameEvent = null
+    hsLogMonitor.start()
     hsLogMonitor.addReceive { case evt: GameEvent => receivedEvent = evt }
     fileObserver.notify(gameWonLog)
     Thread.sleep(50)
@@ -34,6 +35,7 @@ class LogMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneIn
 
   it should "detect when you lost the game" in {
     var receivedEvent: GameEvent = null
+    hsLogMonitor.start()
     hsLogMonitor.addReceive { case evt: GameEvent => receivedEvent = evt }
     fileObserver.notify(gameLostLog)
     Thread.sleep(50)
