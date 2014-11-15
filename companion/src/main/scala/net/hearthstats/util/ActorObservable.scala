@@ -12,11 +12,14 @@ trait ActorObservable {
   def addObserver(o: ActorRef): Unit =
     observers ::= o
 
+  def removeObserver(o: ActorRef): Unit =
+    observers = observers.diff(Seq(o))
+
   /**
    * Creates an actor which will receive the messages and pass them to this function.
    */
-  def addReceive(o: Actor.Receive): Unit = {
-    addObserver(actor(new Act {
+  def addReceive(o: Actor.Receive, name: Option[String] = None): Unit = {
+    addObserver(actor(name.getOrElse(null))(new Act {
       become(o)
     }))
   }

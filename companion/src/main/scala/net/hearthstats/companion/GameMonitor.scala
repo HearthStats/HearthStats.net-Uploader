@@ -74,8 +74,7 @@ class GameMonitor(
     }
     val found: Receive = {
       case false =>
-        uiLog.warn("Hearthstone not detected")
-        become(notFound)
+        become(maybeNotFound)
       case true =>
         screenEvents.handleImage(programHelper.getScreenCapture)
     }
@@ -86,12 +85,20 @@ class GameMonitor(
         become(found)
       case _ =>
     }
+    val maybeNotFound: Receive = {
+      case true =>
+        become(found)
+        screenEvents.handleImage(programHelper.getScreenCapture)
+      case false =>
+        uiLog.warn("Hearthstone not detected")
+        become(notFound)
+    }
     become(start)
   })
 
-  screenEvents.addReceive {
+  screenEvents.addReceive({
     case e: ScreenEvent => handleScreenEvent(e)
-  }
+  }, Some("GameMonitor"))
 
   logMonitor.addReceive {
     case e: GameEvent => handleLogEvent(e)
