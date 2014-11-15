@@ -40,7 +40,10 @@ abstract class ModuleFactory[M](
 
   lazy val moduleImpl: M = {
     info(s"Instantiation $moduleInterface from SPI")
-    ServiceLoader.load(moduleInterface).iterator.toList.head
+    ServiceLoader.load(moduleInterface).iterator.toList match {
+      case Nil => throw new IllegalArgumentException(s"$moduleInterface : no implementation found via SPI")
+      case h :: t => h
+    }
   }
 
   lazy val dummyImpl: M = {
