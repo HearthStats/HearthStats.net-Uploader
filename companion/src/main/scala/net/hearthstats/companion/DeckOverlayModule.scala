@@ -19,6 +19,7 @@ class DeckOverlayModule(
   logMonitor: HearthstoneLogMonitor) extends Logging {
 
   val monitoringActors = ListBuffer.empty[ActorRef]
+  var count = 0
 
   def show(deck: Deck): Unit = {
     presenter.showDeck(deck)
@@ -27,10 +28,14 @@ class DeckOverlayModule(
   def startMonitoringCards(playerId: Int): Unit = {
     info(s"monitoring cards for player $playerId")
     reset()
-    monitoringActors.foreach(_ ! PoisonPill)
+    for (a <- monitoringActors) {
+      a ! PoisonPill
+      logMonitor.removeObserver(a)
+    }
     monitoringActors.clear()
     implicit val actorSystem = logMonitor.system
-    val monitoringActor = actor(new Act {
+    count += 1
+    val monitoringActor = actor(s"DeckOverlay$count")(new Act {
       become {
         case CardEvent(cardCode, _, DRAWN, `playerId`) =>
           cardUtils.byCode(cardCode).map(presenter.removeCard)

@@ -24,8 +24,6 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
   startedAt: Long = System.currentTimeMillis,
   id: Int = -1) extends Logging {
 
-  info("new HearthstoneMatch")
-
   def this() = this(GameMode.UNDETECTED)
 
   def describeResult: String = result match {
