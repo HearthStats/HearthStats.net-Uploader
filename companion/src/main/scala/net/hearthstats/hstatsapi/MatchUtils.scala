@@ -33,7 +33,7 @@ class MatchUtils(
     createArenaRun()
     val hsMatch = matchState.currentMatch.get
     val d = hsMatch.duration
-    if (d <= 1) {
+    val submittedMatch = if (d <= 1) {
       uiLog.warn(s"Ignoring match with duration $d, you should close Hearthstats Companion before Hearthstone to avoid this warning.")
       None
     } else if (hsMatch.mode == GameMode.PRACTICE) {
@@ -52,6 +52,17 @@ class MatchUtils(
         }
       }
     }
+
+    import scala.concurrent.ExecutionContext.Implicits.global
+    for {
+      v <- companionState.ongoingVideo
+      fileName <- v.finish()
+      m <- submittedMatch
+    } {
+      replayHandler.handleNewReplay(fileName, m)
+    }
+    companionState.ongoingVideo = None
+    submittedMatch
   }
 
   def describeMatch(m: HearthstoneMatch): String = {
@@ -105,15 +116,6 @@ class MatchUtils(
         val submittedMatch = hsMatch.copy(id = id)
         uiLog.info(s"Success. <a href='${submittedMatch.editUrl}'>Edit match #$id on HearthStats.net</a>")
         hsPresenter.matchSubmitted(submittedMatch, describeMatch(submittedMatch))
-
-        import scala.concurrent.ExecutionContext.Implicits.global
-        for {
-          v <- companionState.ongoingVideo
-          fileName <- v.finish()
-        } {
-          replayHandler.handleNewReplay(fileName, submittedMatch)
-        }
-        companionState.ongoingVideo = None
         Some(submittedMatch)
       case None =>
         uiLog.warn("Could not submit the match to Hearthstats.net, API error")

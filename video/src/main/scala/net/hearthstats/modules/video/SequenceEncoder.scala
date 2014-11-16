@@ -40,8 +40,6 @@ class SequenceEncoder extends VideoEncoder with Logging {
       var closed = false
       var writer: IMediaWriter = _
 
-      info(s"writing to $video")
-
       def receive = {
         case bi: BufferedImage =>
           if (!closed) {
@@ -49,6 +47,9 @@ class SequenceEncoder extends VideoEncoder with Logging {
               val resized = resize(bi, videoWidth, videoHeight)
               if (writer == null) {
                 writer = createWriter(resized)
+                val w = resized.getWidth
+                val h = resized.getHeight
+                info(s"writing to $video : ${w}x$h @$framesPerSec")
               }
               writer.encodeVideo(0, resized, time.toInt, TimeUnit.MILLISECONDS)
               time += 1000 / framesPerSec

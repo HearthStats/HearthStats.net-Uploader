@@ -9,9 +9,6 @@
 		</encoder>
 	</appender>
 
-	<logger name="net.hearthstats.util" level="DEBUG"></logger>
-
-
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />
 	</root>

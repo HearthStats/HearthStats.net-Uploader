@@ -136,8 +136,8 @@ class GameMonitor(
     debug(evt)
     val image = evt.image
     evt.screen match {
-      case StartingHandScreen => handleStartingHand(image)
-      case MatchStartScreen => handleMatchStart(image)
+      case StartingHandScreen => addImageToVideo(image)
+      case MatchStartScreen => addImageToVideo(image)
       case PlayLobby => handlePlayLobby(evt)
       case PracticeLobby => handlePracticeLobby(image)
       case FriendlyLobby => handleFriendlyLobby(image)
@@ -150,10 +150,6 @@ class GameMonitor(
     case NonFatal(t) =>
       error(t.getMessage, t)
       uiLog.error(t.getMessage, t)
-  }
-
-  private def handleStartingHand(image: BufferedImage): Unit = {
-    addImageToVideo(image)
   }
 
   private def handleGameStart(heroChosen: HeroChosen): Unit = {
@@ -228,10 +224,6 @@ class GameMonitor(
       companionState.otherPlayerName
     }
     oppName.map(handleOpponentName)
-  }
-
-  private def handleMatchStart(image: BufferedImage): Unit = {
-    addImageToVideo(image)
   }
 
   private def handlePracticeLobby(image: BufferedImage): Unit = {
