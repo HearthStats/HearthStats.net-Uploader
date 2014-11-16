@@ -31,8 +31,6 @@ case class HeroPowerDeclared(cardCode: String, hero: Int) extends GameEvent with
     s"hero $hero has power : $cardName"
 }
 
-case class CoinReceived(id: Int, player: Int) extends GameEvent
-
 case class CardEvent(cardCode: String, cardId: Int, eventType: CardEventType, player: Int) extends GameEvent with NamedCard {
   override def toString =
     s"player$player : $eventType $cardName"
@@ -54,6 +52,7 @@ object CardEvents {
   def CardReplaced(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, REPLACED, player: Int)
   def CardDiscarded(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, DISCARDED, player: Int)
   def CardPutInPlay(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, PUT_IN_PLAY, player: Int)
+  def CardReceived(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, RECEIVED, player: Int)
   def CardDestroyed(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, DESTROYED, player: Int)
 }
 

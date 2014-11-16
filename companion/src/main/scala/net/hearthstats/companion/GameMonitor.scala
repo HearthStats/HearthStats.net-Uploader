@@ -117,7 +117,7 @@ class GameMonitor(
         handleGameStart(hero)
       case TurnPassedEvent =>
         handleTurnChanged()
-      case CoinReceived(id, player) =>
+      case CardEvent(_, _, CardEventType.RECEIVED, player) =>
         handleCoin(player)
       case FirstPlayer(name, id) =>
         handlePlayerName(name, true)
@@ -203,12 +203,16 @@ class GameMonitor(
   }
 
   private def handleCoin(playerId: Int): Unit = {
-    if (companionState.playerId1 == Some(playerId)) {
-      playerHasCoinAtStart(true)
-    } else if (companionState.opponentId1 == Some(playerId)) {
-      playerHasCoinAtStart(false)
-    } else {
-      uiLog.warn(s"Coin detection failed : unexpected playerId $playerId")
+    if (hsMatch.numTurns < 0) {
+      // the coin can only be received before the first turn of the game
+      // afterwards it can be wild growth => excess mana for instance
+      if (companionState.playerId1 == Some(playerId)) {
+        playerHasCoinAtStart(true)
+      } else if (companionState.opponentId1 == Some(playerId)) {
+        playerHasCoinAtStart(false)
+      } else {
+        uiLog.warn(s"Coin detection failed : unexpected playerId $playerId")
+      }
     }
   }
 

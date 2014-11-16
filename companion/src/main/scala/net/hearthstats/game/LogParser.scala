@@ -57,7 +57,7 @@ class LogParser extends Logging {
 
     def analyseHandZone: ZoneToEvent = _ match {
       case ("", "FRIENDLY HAND") | ("", "OPPOSING HAND") =>
-        CoinReceived(id, player)
+        CardReceived(cardId, id, player)
       case ("OPPOSING DECK", "OPPOSING HAND") | ("FRIENDLY DECK", "FRIENDLY HAND") =>
         CardDrawn(cardId, id, player)
       case ("FRIENDLY HAND", _) =>
