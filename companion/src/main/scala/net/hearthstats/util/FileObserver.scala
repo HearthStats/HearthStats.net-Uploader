@@ -6,6 +6,7 @@ import org.apache.commons.io.input.Tailer
 import org.apache.commons.io.input.TailerListenerAdapter
 import grizzled.slf4j.Logging
 import akka.actor.ActorRef
+import java.nio.charset.Charset
 
 case class FileObserver(file: File) extends ActorObservable with Logging { self =>
   import FileObserver._
@@ -31,9 +32,17 @@ case class FileObserver(file: File) extends ActorObservable with Logging { self 
 
     override def handle(line: String) =
       if (!stopped) {
-        debug(s"$file: $line")
-        self.notify(line)
+        val l = hackToUtf8(line)
+        debug(s"$file: $l")
+        self.notify(l)
       } else warn("should be stopped")
+
+    // Tailer does not handle UTF-8, see https://issues.apache.org/jira/browse/IO-354
+    private def hackToUtf8(line: String): String = {
+      val len = line.length
+      val bytes = (0 until len).map(line.charAt(_).toByte)
+      new String(bytes.toArray, "UTF8")
+    }
 
     override def handle(ex: Exception) =
       error(ex.getMessage, ex)
