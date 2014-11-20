@@ -340,7 +340,7 @@ class GameMonitor(
                 //encode the next image as soon as the last one was finished
                 case () => self ! true
               }
-            case None => system.scheduler.schedule(delay, delay, self, true)
+            case None => system.scheduler.scheduleOnce(delay, self, true)
             // video not started yet, try again soon
           }
       }
