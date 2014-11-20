@@ -13,13 +13,13 @@ trait VideoEncoder {
 }
 
 trait OngoingVideo {
-  def encodeImage(bi: BufferedImage): Unit
+  def encodeImage(bi: BufferedImage, timeMs: Long): Unit
   def finish(): Future[String]
 }
 
 class DummyVideoEncoder extends VideoEncoder {
   def newVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int) = new OngoingVideo {
-    def encodeImage(bi: BufferedImage): Unit = {}
+    def encodeImage(bi: BufferedImage, timeMs: Long): Unit = {}
     def finish(): Future[String] = Promise[String].future
   }
 }

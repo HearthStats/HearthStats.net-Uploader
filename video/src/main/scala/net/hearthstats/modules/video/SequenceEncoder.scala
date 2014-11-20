@@ -24,24 +24,23 @@ class SequenceEncoder extends VideoEncoder with Logging {
   def newVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int) = new OngoingVideo {
     val actor = system.actorOf(Props(new EncodeActor))
 
-    override def encodeImage(bi: BufferedImage): Unit = actor ! bi
+    def encodeImage(bi: BufferedImage, timeMs: Long): Unit = actor ! (bi, timeMs)
 
     /**
      * Returns the name of the compressed file.
      */
-    override def finish(): Future[String] =
+    def finish(): Future[String] =
       actor.ask(Finish)(60 seconds).asInstanceOf[Future[String]]
 
     case object Finish
 
     class EncodeActor extends Actor {
       val video = File.createTempFile("HSReplay", ".mp4").getAbsolutePath
-      var time = 0.0
       var closed = false
       var writer: IMediaWriter = _
 
       def receive = {
-        case bi: BufferedImage =>
+        case (bi: BufferedImage, timeMs: Long) =>
           if (!closed) {
             try {
               val resized = resize(bi, videoWidth, videoHeight)
@@ -51,9 +50,8 @@ class SequenceEncoder extends VideoEncoder with Logging {
                 val h = resized.getHeight
                 info(s"writing to $video : ${w}x$h @$framesPerSec")
               }
-              writer.encodeVideo(0, resized, time.toInt, TimeUnit.MILLISECONDS)
-              time += 1000 / framesPerSec
-              debug(s"encoded until $time ms")
+              writer.encodeVideo(0, resized, timeMs, TimeUnit.MILLISECONDS)
+              debug(s"encoded until $timeMs ms")
             } catch {
               case NonFatal(e) => warn(s"could not encode an image into video", e)
               //normally only happens with screenshots used in tests

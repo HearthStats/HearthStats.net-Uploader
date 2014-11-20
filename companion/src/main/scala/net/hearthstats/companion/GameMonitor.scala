@@ -263,7 +263,7 @@ class GameMonitor(
   }
 
   private def addImageToVideo(i: BufferedImage): Unit =
-    companionState.ongoingVideo.map(_.encodeImage(i))
+    companionState.ongoingVideo.map(_.encodeImage(i, hsMatch.currentDurationMs))
 
   private def victoryOrDefeatDetected =
     matchState.currentMatch.flatMap(_.result).isDefined
