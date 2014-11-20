@@ -183,6 +183,7 @@ class GameMonitor(
     if (companionState.ongoingVideo.isEmpty) {
       val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
       companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
+      companionState.startMatch()
     }
   }
 
@@ -256,14 +257,14 @@ class GameMonitor(
 
   private def endGameImpl(outcome: MatchOutcome): Unit = {
     updateMatch(_.withResult(outcome))
-    updateMatch(_.endMatch)
+    updateMatch(_.withDuration(companionState.currentDurationMs))
     matchUtils.submitMatchResult()
     deckOverlay.reset()
     companionState.reset()
   }
 
   private def addImageToVideo(i: BufferedImage): Unit =
-    companionState.ongoingVideo.map(_.encodeImage(i, hsMatch.currentDurationMs))
+    companionState.ongoingVideo.map(_.encodeImage(i, companionState.currentDurationMs))
 
   private def victoryOrDefeatDetected =
     matchState.currentMatch.flatMap(_.result).isDefined

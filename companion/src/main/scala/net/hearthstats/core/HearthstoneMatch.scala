@@ -18,10 +18,9 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
   opponentName: String = null,
   rankLevel: Option[Rank] = None,
   numTurns: Int = -1,
-  duration: Int = -1,
+  duration: Long = -1,
   notes: String = null,
   replayFile: Future[String] = Promise[String].future,
-  startedAt: Long = System.nanoTime / 1000000,
   id: Int = -1) extends Logging {
 
   def this() = this(GameMode.UNDETECTED)
@@ -101,9 +100,5 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
   def withUserClass(c: HeroClass) = copy(userClass = c)
   def withReplay(r: Future[String]) = copy(replayFile = r)
   def withNewTurn = copy(numTurns = numTurns + 1)
-
-  def currentDurationMs = System.nanoTime / 1000000 - startedAt
-
-  def endMatch =
-    copy(duration = Math.round(currentDurationMs / 1000))
+  def withDuration(d: Long) = copy(duration = d)
 }
