@@ -19,7 +19,10 @@ class ScreenEvents(
   individualPixelAnalyser: IndividualPixelAnalyser,
   screenAnalyser: ScreenAnalyser) extends ActorObservable with Logging { self =>
 
+  var lastImage: Option[BufferedImage] = None
+
   def handleImage(bi: BufferedImage): Unit = {
+    lastImage = Some(bi)
     import companionState._
     if (iterationsSinceScreenMatched > 10) { lastScreen = None }
     Option(screenAnalyser.identifyScreen(bi, lastScreen.getOrElse(null))) match {

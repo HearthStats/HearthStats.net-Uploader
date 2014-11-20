@@ -136,14 +136,11 @@ class GameMonitor(
     debug(evt)
     val image = evt.image
     evt.screen match {
-      case StartingHandScreen => addImageToVideo(image)
-      case MatchStartScreen => addImageToVideo(image)
+      case MatchStartScreen => handleGameStartScreen()
       case PlayLobby => handlePlayLobby(evt)
       case PracticeLobby => handlePracticeLobby(image)
       case FriendlyLobby => handleFriendlyLobby(image)
       case ArenaLobby => handleArenaLobby(image)
-      case OngoingGameScreen => addImageToVideo(image)
-      case GameResultScreen => addImageToVideo(image)
       case other => debug(s"$other, no action taken")
     }
   } catch {
@@ -151,6 +148,12 @@ class GameMonitor(
       error(t.getMessage, t)
       uiLog.error(t.getMessage, t)
   }
+
+  private def handleGameStartScreen() =
+    if (companionState.ongoingVideo.isEmpty) {
+      VideoEncoder.start()
+      companionState.startMatch()
+    }
 
   private def handleGameStart(heroChosen: HeroChosen): Unit = {
     val matchStart = // this is the first time the method is called for this match
@@ -179,11 +182,6 @@ class GameMonitor(
       d <- deckUtils.getDeckFromSlot(slot)
     } {
       updateMatch(_.withDeck(d))
-    }
-    if (companionState.ongoingVideo.isEmpty) {
-      val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
-      companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
-      companionState.startMatch()
     }
   }
 
@@ -261,10 +259,8 @@ class GameMonitor(
     matchUtils.submitMatchResult()
     deckOverlay.reset()
     companionState.reset()
+    VideoEncoder.stop()
   }
-
-  private def addImageToVideo(i: BufferedImage): Unit =
-    companionState.ongoingVideo.map(_.encodeImage(i, companionState.currentDurationMs))
 
   private def victoryOrDefeatDetected =
     matchState.currentMatch.flatMap(_.result).isDefined
@@ -321,6 +317,43 @@ class GameMonitor(
       matchState.nextMatch(companionState)
     }
     matchState.currentMatch.get
+  }
+
+  object VideoEncoder {
+    def start(): Unit = {
+      val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
+      companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
+      videoEncoderActor ! true
+    }
+
+    def stop(): Unit =
+      videoEncoderActor ! false
+
+    val videoEncoderActor = actor(new Act {
+      val encoding: Receive = {
+        case false =>
+          become(stopped)
+        case true =>
+          companionState.ongoingVideo match {
+            case Some(video) =>
+              video.encodeImage(screenEvents.lastImage.get, companionState.currentDurationMs).onSuccess {
+                //encode the next image as soon as the last one was finished
+                case () => self ! true
+              }
+            case None => system.scheduler.schedule(delay, delay, self, true)
+            // video not started yet, try again soon
+          }
+      }
+
+      val stopped: Receive = {
+        case false =>
+        case true =>
+          become(encoding)
+          self ! true
+      }
+
+      become(stopped)
+    })
   }
 
 }

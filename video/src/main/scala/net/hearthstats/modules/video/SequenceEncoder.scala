@@ -17,6 +17,7 @@ import akka.actor.Props
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
+import akka.pattern.ask
 
 class SequenceEncoder extends VideoEncoder with Logging {
   val system = ActorSystem("video")
@@ -24,7 +25,9 @@ class SequenceEncoder extends VideoEncoder with Logging {
   def newVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int) = new OngoingVideo {
     val actor = system.actorOf(Props(new EncodeActor))
 
-    def encodeImage(bi: BufferedImage, timeMs: Long): Unit = actor ! (bi, timeMs)
+    implicit val timeout = Timeout(2.seconds)
+
+    def encodeImage(bi: BufferedImage, timeMs: Long): Future[Unit] = (actor ? (bi, timeMs)).mapTo[Unit]
 
     /**
      * Returns the name of the compressed file.
@@ -41,6 +44,7 @@ class SequenceEncoder extends VideoEncoder with Logging {
 
       def receive = {
         case (bi: BufferedImage, timeMs: Long) =>
+          val encodingStart = System.nanoTime
           if (!closed) {
             try {
               val resized = resize(bi, videoWidth, videoHeight)
@@ -51,12 +55,14 @@ class SequenceEncoder extends VideoEncoder with Logging {
                 info(s"writing to $video : ${w}x$h @$framesPerSec")
               }
               writer.encodeVideo(0, resized, timeMs, TimeUnit.MILLISECONDS)
-              debug(s"encoded until $timeMs ms")
+              val duration = (System.nanoTime - encodingStart) / 1000000
+              info(s"encoded until $timeMs ms, took $duration ms")
             } catch {
               case NonFatal(e) => warn(s"could not encode an image into video", e)
               //normally only happens with screenshots used in tests
             }
           }
+          sender ! ()
         case Finish =>
           if (!closed) {
             closed = true
