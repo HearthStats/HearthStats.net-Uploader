@@ -14,8 +14,7 @@ import net.hearthstats.util.TranslationConfig
 class UserConfig extends Logging {
   import ConfigUtil._
 
-  val apiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
-  val apiTimeoutMs = config("api.timeout", 5000)
+  //public options, can be exposed via OptionsTab
   val userKey = config("api.userkey", "your_userkey_here")
 
   val pollingDelayMs = config("polling.delay.ms", 1000 / 25)
@@ -45,8 +44,13 @@ class UserConfig extends Logging {
   val videoHeight = config("video.fps", 2000)
 
   val uploadVideo = config("video.upload", true)
-  val awsBucket = config("video.awsBucket", "hearthstats-dev")
-  val awsVideoPrefix = config("video.awsVideoBucket", "prem-videos")
+
+  //private options, no need to be displayed
+  val apiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
+  val apiTimeoutMs = config("api.timeout", 5000)
+
+  val awsBucket = config("video.awsBucket", "hearthstats")
+  val awsVideoPrefix = config("video.awsVideoPrefix", "prem-videos")
 
   val windowX = config("ui.window.x", 0)
   val windowY = config("ui.window.y", 0)
