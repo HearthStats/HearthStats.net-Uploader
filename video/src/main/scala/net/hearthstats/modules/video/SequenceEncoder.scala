@@ -18,6 +18,9 @@ import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
 import akka.pattern.ask
+import com.xuggle.xuggler.video.ConverterFactory
+import com.xuggle.xuggler.IPixelFormat
+import com.xuggle.xuggler.video.ArgbConverter
 
 class SequenceEncoder extends VideoEncoder with Logging {
   val system = ActorSystem("video")
@@ -47,14 +50,15 @@ class SequenceEncoder extends VideoEncoder with Logging {
           val encodingStart = System.nanoTime
           if (!closed) {
             try {
-              val resized = resize(bi, videoWidth, videoHeight)
+              val image = new BufferedImage(bi.getWidth, bi.getHeight(), BufferedImage.TYPE_3BYTE_BGR)
+              image.getGraphics().drawImage(bi, 0, 0, null)
               if (writer == null) {
-                writer = createWriter(resized)
-                val w = resized.getWidth
-                val h = resized.getHeight
+                writer = createWriter
+                val w = image.getWidth
+                val h = image.getHeight
                 info(s"writing to $video : ${w}x$h @$framesPerSec")
               }
-              writer.encodeVideo(0, resized, timeMs, TimeUnit.MILLISECONDS)
+              writer.encodeVideo(0, image, timeMs, TimeUnit.MILLISECONDS)
               val duration = (System.nanoTime - encodingStart) / 1000000
               info(s"encoded until $timeMs ms, took $duration ms")
             } catch {
@@ -72,26 +76,9 @@ class SequenceEncoder extends VideoEncoder with Logging {
           }
       }
 
-      def resize(bi: BufferedImage, x: Int, y: Int): BufferedImage = {
-        val (h, w) = (bi.getHeight, bi.getWidth)
-        val filtered =
-          if (w <= x && h <= y) bi
-          else {
-            val scale = Math.min(x.toFloat / w, y.toFloat / h)
-            val at = AffineTransform.getScaleInstance(scale, scale)
-            val scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR)
-            scaleOp.filter(bi, null)
-          }
-        val res = new BufferedImage(filtered.getWidth, filtered.getHeight(), BufferedImage.TYPE_3BYTE_BGR) // type required by xuggle
-        res.getGraphics.drawImage(filtered, 0, 0, null)
-        res
-      }
-
-      private def createWriter(bi: BufferedImage) = {
+      private def createWriter = {
         val writer = ToolFactory.makeWriter(video)
-        val w = if (bi.getWidth % 2 == 0) bi.getWidth else bi.getWidth + 1
-        val h = if (bi.getHeight % 2 == 0) bi.getHeight else bi.getHeight + 1
-        writer.addVideoStream(0, 0, IRational.make((framesPerSec * 1000).toInt, 1000), w, h)
+        writer.addVideoStream(0, 0, IRational.make((framesPerSec * 1000).toInt, 1000), videoWidth, videoHeight)
         writer
       }
     }
