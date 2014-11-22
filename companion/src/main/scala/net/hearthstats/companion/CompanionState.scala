@@ -25,8 +25,15 @@ class CompanionState extends Logging {
   var lastScreen: Option[Screen] = None
 
   var matchStartedAt: Long = 0
-  def currentDurationMs = System.nanoTime / 1000000 - matchStartedAt
-  def startMatch() = matchStartedAt = System.nanoTime / 1000000
+
+  def currentDurationMs: Long =
+    timeMs - matchStartedAt
+
+  def startMatch(): Unit = {
+    matchStartedAt = timeMs
+  }
+
+  def timeMs = System.nanoTime / 1000000
 
   var iterationsSinceScreenMatched = 0
 

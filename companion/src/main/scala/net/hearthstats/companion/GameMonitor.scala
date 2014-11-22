@@ -255,7 +255,7 @@ class GameMonitor(
 
   private def endGameImpl(outcome: MatchOutcome): Unit = {
     updateMatch(_.withResult(outcome))
-    updateMatch(_.withDuration(companionState.currentDurationMs))
+    updateMatch(_.withDuration(companionState.currentDurationMs / 1000))
     matchUtils.submitMatchResult()
     deckOverlay.reset()
     companionState.reset()
@@ -321,6 +321,7 @@ class GameMonitor(
 
   object VideoEncoder {
     def start(): Unit = {
+      info("start recording video")
       val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
       companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
       videoEncoderActor ! true
@@ -333,6 +334,7 @@ class GameMonitor(
       val encoding: Receive = {
         case false =>
           become(stopped)
+          info("stop recording video")
         case true =>
           companionState.ongoingVideo match {
             case Some(video) =>

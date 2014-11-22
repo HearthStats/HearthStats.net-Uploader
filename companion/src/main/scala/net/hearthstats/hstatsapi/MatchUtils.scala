@@ -33,8 +33,8 @@ class MatchUtils(
     createArenaRun()
     val hsMatch = matchState.currentMatch.get
     val d = hsMatch.duration
-    val submittedMatch = if (d <= 1) {
-      uiLog.warn(s"Ignoring match with duration $d, you should close Hearthstats Companion before Hearthstone to avoid this warning.")
+    val submittedMatch = if (d <= 10) {
+      uiLog.warn(s"Ignoring match with duration $d s, you should close Hearthstats Companion before Hearthstone to avoid this warning.")
       None
     } else if (hsMatch.mode == GameMode.PRACTICE) {
       uiLog.info("Practice match was not submitted")
@@ -99,7 +99,11 @@ class MatchUtils(
 
     val describeTurns = t("match.end.turns", numTurns)
 
-    val describeDuration = t("match.end.duration", duration)
+    val describeDuration = {
+      val minutes = duration / 60
+      val seconds = duration % 60
+      t("match.end.duration", minutes, seconds)
+    }
 
     s"$describeMode $describeCoin $describePlayers $describeResult $describeDeck $describeTurns $describeDuration"
   }
