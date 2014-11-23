@@ -15,15 +15,24 @@ trait VideoEncoder {
 }
 
 trait OngoingVideo {
-  def encodeImage(bi: BufferedImage, timeMs: Long): Future[Unit]
+  /**
+   * Replies with the timeMs until it was encoded.
+   */
+  def encodeImages(images: List[TimedImage]): Future[Long]
   def finish(): Future[String]
 }
+
+case class TimedImage(bi: BufferedImage, timeMs: Long)
 
 class DummyVideoEncoder extends VideoEncoder {
   def newVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int) = new OngoingVideo {
 
-    def encodeImage(bi: BufferedImage, timeMs: Long): Future[Unit] =
-      Future { Thread.sleep((1000.0 / framesPerSec).toLong) } // avoids returning immediatly when we don't encode video
+    def encodeImages(images: List[TimedImage]): Future[Long] =
+      Future {
+        Thread.sleep((1000.0 / framesPerSec).toLong)
+        // avoids returning immediatly when we don't encode video
+        images.map(_.timeMs).max
+      }
 
     def finish(): Future[String] = Promise[String].future
   }

@@ -24,13 +24,15 @@ import com.xuggle.xuggler.video.ArgbConverter
 
 class SequenceEncoder extends VideoEncoder with Logging {
   val system = ActorSystem("video")
+  ToolFactory.setTurboCharged(true)
 
   def newVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int) = new OngoingVideo {
     val actor = system.actorOf(Props(new EncodeActor))
 
-    implicit val timeout = Timeout(2.seconds)
+    implicit val timeout = Timeout(10.seconds)
 
-    def encodeImage(bi: BufferedImage, timeMs: Long): Future[Unit] = (actor ? (bi, timeMs)).mapTo[Unit]
+    def encodeImages(images: List[TimedImage]): Future[Long] =
+      (actor ? images).mapTo[Long]
 
     /**
      * Returns the name of the compressed file.
@@ -46,27 +48,11 @@ class SequenceEncoder extends VideoEncoder with Logging {
       var writer: IMediaWriter = _
 
       def receive = {
-        case (bi: BufferedImage, timeMs: Long) =>
-          val encodingStart = System.nanoTime
+        case images: List[TimedImage] =>
           if (!closed) {
-            try {
-              val image = new BufferedImage(bi.getWidth, bi.getHeight(), BufferedImage.TYPE_3BYTE_BGR)
-              image.getGraphics().drawImage(bi, 0, 0, null)
-              if (writer == null) {
-                writer = createWriter
-                val w = image.getWidth
-                val h = image.getHeight
-                info(s"writing to $video : ${w}x$h @$framesPerSec")
-              }
-              writer.encodeVideo(0, image, timeMs, TimeUnit.MILLISECONDS)
-              val duration = (System.nanoTime - encodingStart) / 1000000
-              debug(s"encoded until $timeMs ms, took $duration ms")
-            } catch {
-              case NonFatal(e) => warn(s"could not encode an image into video", e)
-              //normally only happens with screenshots used in tests
-            }
+            for (i <- images) encode(i.bi, i.timeMs)
           }
-          sender ! ()
+          sender ! images.map(_.timeMs).max
         case Finish =>
           if (!closed) {
             closed = true
@@ -80,6 +66,27 @@ class SequenceEncoder extends VideoEncoder with Logging {
         val writer = ToolFactory.makeWriter(video)
         writer.addVideoStream(0, 0, IRational.make((framesPerSec * 1000).toInt, 1000), videoWidth, videoHeight)
         writer
+      }
+
+      private def encode(bi: BufferedImage, timeMs: Long) = {
+        try {
+          val encodingStart = System.nanoTime
+          val image = new BufferedImage(bi.getWidth, bi.getHeight, BufferedImage.TYPE_3BYTE_BGR)
+          image.getGraphics().drawImage(bi, 0, 0, null)
+          if (writer == null) {
+            writer = createWriter
+            val w = image.getWidth
+            val h = image.getHeight
+            info(s"writing to $video : ${w}x$h @$framesPerSec")
+          }
+          writer.encodeVideo(0, image, timeMs, TimeUnit.MILLISECONDS)
+          val duration = (System.nanoTime - encodingStart) / 1000000
+          info(s"encoded until $timeMs ms, took $duration ms")
+        } catch {
+          case NonFatal(e) => warn(s"could not encode an image into video", e)
+          //normally only happens with screenshots used in tests
+        }
+
       }
     }
   }

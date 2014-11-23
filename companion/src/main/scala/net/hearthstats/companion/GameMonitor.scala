@@ -22,6 +22,8 @@ import akka.actor.ActorSystem
 import scala.concurrent.duration.DurationInt
 import akka.actor.Cancellable
 import net.hearthstats.util.FileObserver
+import net.hearthstats.modules.video.TimedImage
+import akka.event.LoggingReceive
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -151,8 +153,8 @@ class GameMonitor(
 
   private def handleGameStartScreen() =
     if (companionState.ongoingVideo.isEmpty) {
-      VideoEncoder.start()
       companionState.startMatch()
+      VideoEncoder.start()
     }
 
   private def handleGameStart(heroChosen: HeroChosen): Unit = {
@@ -324,38 +326,45 @@ class GameMonitor(
       info("start recording video")
       val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
       companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
-      videoEncoderActor ! true
+      videoEncoderActor ! EncodeAfter(0)
     }
 
     def stop(): Unit =
-      videoEncoderActor ! false
+      videoEncoderActor ! StopRecording
 
     val videoEncoderActor = actor(new Act {
-      val encoding: Receive = {
-        case false =>
+      val encoding: Receive = LoggingReceive {
+        case StopRecording =>
           become(stopped)
           info("stop recording video")
-        case true =>
+        case EncodeAfter(timeMs) =>
           companionState.ongoingVideo match {
             case Some(video) =>
-              video.encodeImage(screenEvents.lastImage.get, companionState.currentDurationMs).onSuccess {
-                //encode the next image as soon as the last one was finished
-                case () => self ! true
+              val images = companionState.imagesAfter(timeMs).toList
+              info(s"batch of ${images.size} to encode")
+              if (images.nonEmpty) {
+                video.encodeImages(images).onSuccess {
+                  case time: Long => self ! EncodeAfter(time)
+                }
+              } else { // we are faster to encode, no screenshots ready yet
+                system.scheduler.scheduleOnce(delay, self, EncodeAfter(timeMs))
               }
-            case None => system.scheduler.scheduleOnce(delay, self, true)
+            case None => system.scheduler.scheduleOnce(delay, self, EncodeAfter(timeMs))
             // video not started yet, try again soon
           }
       }
 
-      val stopped: Receive = {
-        case false =>
-        case true =>
+      val stopped: Receive = LoggingReceive {
+        case StopRecording =>
+        case e =>
           become(encoding)
-          self ! true
+          self ! e
       }
 
       become(stopped)
     })
-  }
 
+    case object StopRecording
+    case class EncodeAfter(timeMs: Long)
+  }
 }
