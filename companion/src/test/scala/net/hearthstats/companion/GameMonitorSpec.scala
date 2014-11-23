@@ -55,7 +55,6 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
 
   "The monitor" should "warn when HS is not detected" in {
     verify(log, never).info(anyString)
-    verify(log, never).warn(anyString, any[Exception])
     when(helper.foundProgram).thenReturn(false)
 
     Thread.sleep(sleep)

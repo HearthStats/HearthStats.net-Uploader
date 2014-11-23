@@ -1,29 +1,26 @@
 package net.hearthstats.companion
 
 import java.awt.image.BufferedImage
-import java.util.concurrent.{ Executors, ScheduledFuture, TimeUnit }
+import java.util.concurrent.{ ScheduledThreadPoolExecutor, TimeUnit }
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
+
+import akka.actor.{ ActorSystem, Cancellable, actorRef2Scala }
+import akka.actor.ActorDSL.{ Act, actor }
+import akka.event.LoggingReceive
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 import net.hearthstats.config.UserConfig
-import net.hearthstats.core.GameMode.{ ARENA, CASUAL, FRIENDLY, PRACTICE, RANKED }
-import net.hearthstats.core.HeroClass
+import net.hearthstats.core.{ HearthstoneMatch, MatchOutcome }
+import net.hearthstats.core.GameMode._
 import net.hearthstats.game._
-import net.hearthstats.game.imageanalysis._
-import net.hearthstats.game.ocr.{ BackgroundImageSave, OpponentNameOcr, OpponentNameRankedOcr, OpponentNameUnrankedOcr }
+import net.hearthstats.game.imageanalysis.{ Casual, LobbyAnalyser, Ranked }
 import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
-import net.hearthstats.modules.{ ReplayHandler, VideoEncoderFactory }
+import net.hearthstats.modules.VideoEncoderFactory
 import net.hearthstats.ui.HearthstatsPresenter
 import net.hearthstats.ui.log.Log
-import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.core.MatchOutcome
-import akka.actor.ActorSystem
-import scala.concurrent.duration.DurationInt
-import akka.actor.Cancellable
-import net.hearthstats.util.FileObserver
-import net.hearthstats.modules.video.TimedImage
-import akka.event.LoggingReceive
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -45,69 +42,52 @@ class GameMonitor(
 
   implicit val system = ActorSystem("companion")
 
-  val delay = config.pollingDelayMs.get.millis
+  val delay = config.pollingDelayMs.get
 
   var checkIfRunning: Option[Cancellable] = None
+  val executor = new ScheduledThreadPoolExecutor(1)
+
+  var notFoundCount = 1
 
   def start() {
-    val checkIfRunning = Some(system.scheduler.schedule(delay, delay) {
-      val found = programHelper.foundProgram
-      trace(s"HS found ? :$found ")
-      programFound ! found
-    })
+    val checkIfRunning = Some(executor.scheduleAtFixedRate(new Runnable {
+      def run() = handleProgramFound(programHelper.foundProgram)
+    }, 0, delay, TimeUnit.MILLISECONDS))
     info("started")
   }
 
   def stop(): Unit = {
     checkIfRunning.map(_.cancel())
+    VideoEncoder.stop()
     info("stopped")
   }
 
   import akka.actor.ActorDSL._
 
-  val programFound = actor(new Act {
-    val found: Receive = {
-      case false =>
-        become(maybeNotFound)
-      case true =>
-        screenEvents.handleImage(programHelper.getScreenCapture)
+  private def handleProgramFound(found: Boolean): Unit = {
+    if (!found && notFoundCount == 1) {
+      uiLog.warn("Hearthstone not detected")
+      logMonitor.stop()
     }
-    val notFound: Receive = {
-      case true =>
-        uiLog.info("Hearthstone detected")
-        logMonitor.start()
-        screenEvents.handleImage(programHelper.getScreenCapture)
-        become(found)
-      case _ =>
+    if (found && notFoundCount > 0) {
+      uiLog.info("Hearthstone detected")
+      logMonitor.start()
     }
-    val maybeNotFound: Receive = {
-      case true =>
-        become(found)
-        screenEvents.handleImage(programHelper.getScreenCapture)
-      case false =>
-        uiLog.warn("Hearthstone not detected")
-        logMonitor.stop()
-        become(notFound)
+    if (found) {
+      notFoundCount = 0
+      screenEvents.handleImage(programHelper.getScreenCapture)
+    } else {
+      notFoundCount += 1
     }
-    become {
-      case false =>
-        uiLog.warn("Hearthstone not detected")
-        become(notFound)
-      case true =>
-        uiLog.info("Hearthstone detected")
-        logMonitor.start()
-        screenEvents.handleImage(programHelper.getScreenCapture)
-        become(found)
-    }
-  })
+  }
 
   screenEvents.addReceive({
     case e: ScreenEvent => handleScreenEvent(e)
   }, Some("GameMonitor"))
 
-  logMonitor.addReceive {
+  logMonitor.addReceive({
     case e: GameEvent => handleLogEvent(e)
-  }
+  }, Some("LogFileMonitor"))
 
   private def handleLogEvent(evt: GameEvent): Unit = try {
     info(evt)
@@ -347,9 +327,9 @@ class GameMonitor(
                   case time: Long => self ! EncodeAfter(time)
                 }
               } else { // we are faster to encode, no screenshots ready yet
-                system.scheduler.scheduleOnce(delay, self, EncodeAfter(timeMs))
+                system.scheduler.scheduleOnce(delay.millis, self, EncodeAfter(timeMs))
               }
-            case None => system.scheduler.scheduleOnce(delay, self, EncodeAfter(timeMs))
+            case None => system.scheduler.scheduleOnce(delay.millis, self, EncodeAfter(timeMs))
             // video not started yet, try again soon
           }
       }
