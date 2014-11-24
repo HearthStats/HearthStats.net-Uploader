@@ -33,6 +33,9 @@ class CompanionState extends Logging {
   def currentDurationMs: Long =
     timeMs - matchStartedAt
 
+  //this is deliberately called twice :
+  //once on game log start (to clear duration and avoid double submit)
+  //also on game start screen (to get precise duration for video recording sync with game log)
   def startMatch(): Unit = {
     matchStartedAt = timeMs
     lastImages.clear()

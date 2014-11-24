@@ -155,6 +155,7 @@ class GameMonitor(
       (heroChosen.opponent && companionState.playerId1.isEmpty) ||
         (!heroChosen.opponent && companionState.opponentId1.isEmpty)
     if (matchStart) {
+      companionState.startMatch()
       uiLog.info(s"Match start detected in log file")
       uiLog.divider()
       matchState.nextMatch(companionState)
