@@ -24,7 +24,6 @@ import com.xuggle.xuggler.video.ArgbConverter
 
 class SequenceEncoder extends VideoEncoder with Logging {
   val system = ActorSystem("video")
-  ToolFactory.setTurboCharged(true)
 
   def newVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int) = new OngoingVideo {
     val actor = system.actorOf(Props(new EncodeActor))
@@ -68,6 +67,8 @@ class SequenceEncoder extends VideoEncoder with Logging {
         writer
       }
 
+      var lastTime = 0
+
       private def encode(bi: BufferedImage, timeMs: Long) = {
         try {
           val encodingStart = System.nanoTime
@@ -79,9 +80,10 @@ class SequenceEncoder extends VideoEncoder with Logging {
             val h = image.getHeight
             info(s"writing to $video : ${w}x$h @$framesPerSec")
           }
-          writer.encodeVideo(0, image, timeMs, TimeUnit.MILLISECONDS)
+          lastTime += (1000 / framesPerSec).toInt
+          writer.encodeVideo(0, image, lastTime, TimeUnit.MILLISECONDS)
           val duration = (System.nanoTime - encodingStart) / 1000000
-          info(s"encoded until $timeMs ms, took $duration ms")
+          info(s"encoded until $lastTime ms, took $duration ms")
         } catch {
           case NonFatal(e) => warn(s"could not encode an image into video", e)
           //normally only happens with screenshots used in tests
