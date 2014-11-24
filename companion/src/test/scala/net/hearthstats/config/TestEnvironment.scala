@@ -2,10 +2,10 @@ package net.hearthstats.config
 
 import java.io.File
 import javax.imageio.ImageIO
-
 import net.hearthstats.ProgramHelper
-import net.hearthstats.ui.notification.{DialogNotificationQueue, NotificationType}
+import net.hearthstats.ui.notification.{ DialogNotificationQueue, NotificationType }
 import net.hearthstats.updater.api.model.Release
+import java.awt.Rectangle
 
 /**
  * Implementation which can be injected in test scenario.
@@ -27,8 +27,8 @@ object TestEnvironment extends Environment {
 
 object TestProgramHelper extends ProgramHelper {
   def foundProgram = true
-  def getHSWindowBounds = null
-  def getScreenCapture = img("/net/hearthstats/game/imageanalysis/play_lobby.png")
+  def getHSWindowBounds = new Rectangle(10, 10)
+  def getScreenCaptureNative = img("/net/hearthstats/game/imageanalysis/play_lobby.png")
   def bringWindowToForeground = false
   //  override def createConfig(environment: Environment) = false
 

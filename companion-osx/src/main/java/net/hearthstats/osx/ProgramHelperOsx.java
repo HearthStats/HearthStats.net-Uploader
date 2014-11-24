@@ -41,7 +41,7 @@ public class ProgramHelperOsx extends ProgramHelper {
 
 
     @Override
-    public BufferedImage getScreenCapture() {
+    public BufferedImage getScreenCaptureNative() {
         final NSAutoreleasePool pool = NSAutoreleasePool.new_();
         try {
 

@@ -9,6 +9,7 @@ import javax.imageio.ImageIO
 import net.hearthstats.config.TestConfig
 import grizzled.slf4j.Logging
 import net.hearthstats.game.imageanalysis.ImageAnalyser
+import java.awt.Rectangle
 
 object MockedMain extends TesseractSetup with App with Logging {
   val environment = TestEnvironment
@@ -37,7 +38,7 @@ object MockedMain extends TesseractSetup with App with Logging {
   class MockProgramHelper(var files: List[(String, Int)]) extends ProgramHelper {
     def foundProgram = files.nonEmpty
 
-    def getScreenCapture = {
+    def getScreenCaptureNative = {
       val (f, c) :: t = files
       files = if (c > 1 || t == Nil)
         (f, c - 1) :: t
@@ -46,7 +47,7 @@ object MockedMain extends TesseractSetup with App with Logging {
       img(f)
     }
 
-    def getHSWindowBounds = null
+    def getHSWindowBounds = new Rectangle(10, 10)
 
     def bringWindowToForeground = false
 

@@ -61,15 +61,9 @@ public class ProgramHelperWindows extends ProgramHelper {
 
 
   @Override
-  public BufferedImage getScreenCapture() {
+  public BufferedImage getScreenCaptureNative() {
     if (foundProgram()) {
-
-      BufferedImage image;
-
-      // only supports windows at the moment
-      image = _getScreenCaptureWindows(windowHandle);
-
-      return image;
+      return _getScreenCaptureWindows(windowHandle);
     }
     return null;
   }
@@ -160,17 +154,7 @@ public class ProgramHelperWindows extends ProgramHelper {
     return hearthstoneProcessFolder;
   }
 
-
-  private boolean _isFullScreen(Rectangle rect) {
-    // check to make sure Hearthstone's not in full screen
-    GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-    int width = gd.getDisplayMode().getWidth();
-    int height = gd.getDisplayMode().getHeight();
-    return (rect.width >= width && rect.height >= height);
-  }
-
-
-    public Rectangle getHSWindowBounds() {
+  public Rectangle getHSWindowBounds() {
         RECT bounds = new RECT();
         User32Extra.INSTANCE.GetWindowRect(windowHandle, bounds);
         return bounds.toRectangle();
@@ -205,7 +189,7 @@ public class ProgramHelperWindows extends ProgramHelper {
         isMinimised = false;
       }
 
-      if (_isFullScreen(bounds.toRectangle())) {
+      if (isFullScreen(bounds.toRectangle())) {
         if (!isFullscreen) {
           _notifyObserversOfChangeTo("Hearthstone running in fullscreen");
           isFullscreen = true;

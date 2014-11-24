@@ -44,20 +44,29 @@ class GameMonitor(
 
   val delay = config.pollingDelayMs.get
 
-  var checkIfRunning: Option[Cancellable] = None
-  val executor = new ScheduledThreadPoolExecutor(1)
+  var checkIfRunning = true
+  var programFoundIterations = 0
+  var lastFound = false
+  var lastCaptureMs = System.nanoTime / 1000000
 
   var notFoundCount = 1
 
   def start() {
-    val checkIfRunning = Some(executor.scheduleAtFixedRate(new Runnable {
-      def run() = handleProgramFound(programHelper.foundProgram)
-    }, 0, delay, TimeUnit.MILLISECONDS))
+    checkIfRunning = true
+    new Thread {
+      override def run(): Unit = {
+        while (checkIfRunning) {
+          lastFound = if (!lastFound || programFoundIterations % 100 == 0) programHelper.foundProgram else true
+          handleProgramFound(lastFound)
+          Thread.`yield`()
+        }
+      }
+    }.start()
     info("started")
   }
 
   def stop(): Unit = {
-    checkIfRunning.map(_.cancel())
+    checkIfRunning = false
     VideoEncoder.stop()
     info("stopped")
   }
@@ -75,7 +84,11 @@ class GameMonitor(
     }
     if (found) {
       notFoundCount = 0
-      screenEvents.handleImage(programHelper.getScreenCapture)
+      val now = System.nanoTime / 1000000
+      if (now > lastCaptureMs + delay) {
+        screenEvents.handleImage(programHelper.getScreenCapture)
+        lastCaptureMs = now
+      }
     } else {
       notFoundCount += 1
     }

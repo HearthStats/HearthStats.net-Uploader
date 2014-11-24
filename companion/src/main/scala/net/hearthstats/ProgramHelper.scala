@@ -7,6 +7,8 @@ import java.io.FileWriter
 import java.awt.Rectangle
 import net.hearthstats.config.Environment
 import net.hearthstats.ui.log.Log
+import java.awt.GraphicsEnvironment
+import java.awt.Robot
 
 /**
  * Abstract class that finds the Hearthstone program and takes screenshots of it.
@@ -21,12 +23,28 @@ abstract class ProgramHelper extends Observable {
    */
   def foundProgram: Boolean
 
+  val robot = new Robot
   /**
    * Takes a screenshot of the Hearthstone window.
    *
    * @return An image of the Hearthstone window, or null if not running or not available.
    */
-  def getScreenCapture: BufferedImage
+  def getScreenCapture: BufferedImage = {
+    val bounds = getHSWindowBounds
+    if (isFullScreen(bounds))
+      robot.createScreenCapture(bounds)
+    else
+      getScreenCaptureNative
+  }
+
+  def isFullScreen(rect: Rectangle): Boolean = {
+    val mode = GraphicsEnvironment.getLocalGraphicsEnvironment.getDefaultScreenDevice.getDisplayMode
+    val width = mode.getWidth
+    val height = mode.getHeight
+    rect.width >= width && rect.height >= height
+  }
+
+  def getScreenCaptureNative: BufferedImage
 
   protected def _notifyObserversOfChangeTo(property: String): Unit = {
     setChanged()
