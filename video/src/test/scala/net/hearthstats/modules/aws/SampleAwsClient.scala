@@ -2,7 +2,6 @@ package net.hearthstats.modules.aws
 
 import java.io.{ File, FileOutputStream, OutputStreamWriter }
 
-import net.hearthstats.modules.aws.HearthstatsAwsClient;
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -21,7 +20,7 @@ object S3Sample extends App {
   //  client.storeFile(bucketName, "video/DEMO/", new File("""C:\Users\tyrcho\AppData\Local\Temp\video3451076409001028894.mp4""")).onSuccess {
   //    case res => println(s"Success : $res")
   //  }
-  client.storeFile(bucketName, "video/REMOVE", createSampleFile()).onSuccess {
+  client.storeFile(bucketName, "video/REMOVE", createSampleFile(), "demo.tst").onSuccess {
     case res => println(s"Success : ${res.getContentMd5}")
   }
 

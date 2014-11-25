@@ -22,16 +22,13 @@ class AwsUploader extends FileUploader with Logging {
       awsClient.get
   }
 
-  val dateFormat = new SimpleDateFormat("yyyy/MM")
-
-  def uploadFile(f: File, config: UserConfig, api: API): Future[Unit] = {
+  def uploadFile(f: File, gameId: String, config: UserConfig, api: API): Future[Unit] = {
     val bucketName = config.awsBucket.get
     val prefix = config.awsVideoPrefix.get
-    val dateString = dateFormat.format(new Date)
     val user = api.premiumUserId.get
-    val folder = s"$prefix/$user/$dateString/"
+    val folder = s"$prefix/$user"
     info(s"uploading ${f.getName} to $bucketName in $folder")
-    for (_ <- getAwsClient(api).storeFile(bucketName, folder, f))
+    for (_ <- getAwsClient(api).storeFile(bucketName, folder, f, s"$gameId.mp4"))
       yield () // we are not doing anything with the result yet
   }
 }

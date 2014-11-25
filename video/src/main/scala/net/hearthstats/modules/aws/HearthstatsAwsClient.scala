@@ -6,9 +6,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.event.{ProgressEvent, ProgressListener}
+import com.amazonaws.event.{ ProgressEvent, ProgressListener }
 import com.amazonaws.services.s3.AmazonS3Client
-import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObjectResult}
+import com.amazonaws.services.s3.model.{ ObjectMetadata, PutObjectRequest, PutObjectResult }
 
 import grizzled.slf4j.Logging
 
@@ -18,9 +18,8 @@ class HearthstatsAwsClient(accessKey: String, secretKey: String) extends Logging
     val getAWSSecretKey = secretKey
   })
 
-  def storeFile(bucket: String, prefix: String, file: File): Future[PutObjectResult] = Future {
-    val name = file.getName
-    info(s"Uploading a new object to S3 from $name to $prefix")
+  def storeFile(bucket: String, prefix: String, file: File, name: String): Future[PutObjectResult] = Future {
+    info(s"Uploading a new object to S3 from ${file.getName} to $prefix/$name")
     val metadata = new ObjectMetadata
     metadata.setContentLength(file.length)
     val request = new PutObjectRequest(bucket, prefix + name, file)

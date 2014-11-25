@@ -52,7 +52,7 @@ class ReplayHandler(
     val choice = ui.showConfirmDialog(msg, "Upload last game ?", YES_NO_OPTION)
 
     if (YES_OPTION == choice && reallyUpload)
-      videoUploader.uploadFile(newFile, config, api).map {
+      videoUploader.uploadFile(newFile, lastMatch.id.toString, config, api).map {
         case () =>
           uiLog.info(s"$newName was uploaded to hearthstats.net")
           newName
