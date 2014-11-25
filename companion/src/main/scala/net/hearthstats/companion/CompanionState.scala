@@ -57,7 +57,7 @@ class CompanionState extends Logging {
     if (lastImages.size >= maxImages) {
       lastImages.remove(0)
     }
-    info(s"image captured $currentDurationMs ms after game start")
+    debug(s"image captured $currentDurationMs ms after game start")
     lastImages.append(TimedImage(bi, currentDurationMs))
   }
 

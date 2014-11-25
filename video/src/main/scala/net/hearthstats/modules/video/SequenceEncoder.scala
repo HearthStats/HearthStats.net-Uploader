@@ -83,7 +83,7 @@ class SequenceEncoder extends VideoEncoder with Logging {
           lastTime += (1000 / framesPerSec).toInt
           writer.encodeVideo(0, image, lastTime, TimeUnit.MILLISECONDS)
           val duration = (System.nanoTime - encodingStart) / 1000000
-          info(s"encoded until $lastTime ms, took $duration ms")
+          debug(s"encoded until $lastTime ms, took $duration ms")
         } catch {
           case NonFatal(e) => warn(s"could not encode an image into video", e)
           //normally only happens with screenshots used in tests
