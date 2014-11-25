@@ -19,10 +19,11 @@ class HearthstatsAwsClient(accessKey: String, secretKey: String) extends Logging
   })
 
   def storeFile(bucket: String, prefix: String, file: File, name: String): Future[PutObjectResult] = Future {
-    info(s"Uploading a new object to S3 from ${file.getName} to $prefix/$name")
+    val target = s"$prefix/$name"
+    info(s"Uploading a new object to S3 from ${file.getName} to $target")
     val metadata = new ObjectMetadata
     metadata.setContentLength(file.length)
-    val request = new PutObjectRequest(bucket, prefix + name, file)
+    val request = new PutObjectRequest(bucket, target, file)
     request.setMetadata(metadata)
     request.setGeneralProgressListener(new LogProgressListener)
     s3.putObject(request)
