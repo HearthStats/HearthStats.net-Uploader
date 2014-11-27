@@ -19,7 +19,14 @@ trait OngoingVideo {
    * Replies with the timeMs until it was encoded.
    */
   def encodeImages(images: List[TimedImage]): Future[Long]
+
   def finish(): Future[String]
+
+  /**
+   * Whether this video encoder expects images to be supplied to it.
+   * @return true if each frame of the video must be supplied, false if the video encoder gets its images from somewhere else
+   */
+  def expectsImages: Boolean
 }
 
 case class TimedImage(bi: BufferedImage, timeMs: Long)
@@ -30,10 +37,12 @@ class DummyVideoEncoder extends VideoEncoder {
     def encodeImages(images: List[TimedImage]): Future[Long] =
       Future {
         Thread.sleep((1000.0 / framesPerSec).toLong)
-        // avoids returning immediatly when we don't encode video
+        // avoids returning immediately when we don't encode video
         images.map(_.timeMs).max
       }
 
     def finish(): Future[String] = Promise[String].future
+
+    def expectsImages: Boolean = true
   }
 }

@@ -314,8 +314,12 @@ class GameMonitor(
     def start(): Unit = {
       info("start recording video")
       val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
-      companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
-      videoEncoderActor ! EncodeAfter(0)
+      val video = videoEncoder.newVideo(videoFps, videoWidth, videoHeight)
+      companionState.ongoingVideo = Some(video)
+      if (video.expectsImages) {
+        // Only start encoding images if the video encoder expects it (Windows does, OS X encoder does not)
+        videoEncoderActor ! EncodeAfter(0)
+      }
     }
 
     def stop(): Unit =

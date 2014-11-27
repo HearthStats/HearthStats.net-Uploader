@@ -39,6 +39,8 @@ class SequenceEncoder extends VideoEncoder with Logging {
     def finish(): Future[String] =
       actor.ask(Finish)(60 seconds).asInstanceOf[Future[String]]
 
+    def expectsImages: Boolean = true
+
     case object Finish
 
     class EncodeActor extends Actor {
