@@ -23,7 +23,7 @@ abstract class ProgramHelper extends Observable {
    */
   def foundProgram: Boolean
 
-  val robot = new Robot
+  lazy val robot = new Robot
   /**
    * Takes a screenshot of the Hearthstone window.
    *
