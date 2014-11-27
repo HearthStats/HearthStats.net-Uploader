@@ -8,6 +8,7 @@ public enum CardEventType {
 	RETURNED,
   PUT_IN_PLAY,
   RECEIVED,
-	DESTROYED,
+  DESTROYED,
+  DISCARDED_FROM_DECK,
 	DISCARDED;
 }

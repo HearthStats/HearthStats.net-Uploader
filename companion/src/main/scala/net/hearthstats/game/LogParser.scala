@@ -99,6 +99,9 @@ class LogParser extends Logging {
         HeroDestroyedEvent(false)
       case ("OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
         HeroDestroyedEvent(true)
+      case ("OPPOSING DECK", "OPPOSING GRAVEYARD") |
+        ("FRIENDLY DECK", "FRIENDLY GRAVEYARD") =>
+        CardDiscardedFromDeck(cardId, id, player)
     }
 
     def analyseDeckZone: ZoneToEvent = _ match {

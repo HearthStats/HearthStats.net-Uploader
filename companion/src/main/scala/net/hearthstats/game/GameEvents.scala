@@ -54,6 +54,7 @@ object CardEvents {
   def CardPutInPlay(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, PUT_IN_PLAY, player: Int)
   def CardReceived(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, RECEIVED, player: Int)
   def CardDestroyed(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, DESTROYED, player: Int)
+  def CardDiscardedFromDeck(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, DISCARDED_FROM_DECK, player: Int)
 }
 
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent

@@ -2,7 +2,7 @@ package net.hearthstats.companion
 
 import net.hearthstats.core.Deck
 import net.hearthstats.game.CardEvent
-import net.hearthstats.game.CardEventType.{ DRAWN, REPLACED }
+import net.hearthstats.game.CardEventType._
 import net.hearthstats.game.HearthstoneLogMonitor
 import net.hearthstats.hstatsapi.CardUtils
 import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
@@ -37,7 +37,7 @@ class DeckOverlayModule(
     count += 1
     val monitoringActor = actor(s"DeckOverlay$count")(new Act {
       become {
-        case CardEvent(cardCode, _, DRAWN, `playerId`) =>
+        case CardEvent(cardCode, _, evtType, `playerId`) if Seq(DISCARDED_FROM_DECK, DRAWN) contains evtType =>
           cardUtils.byCode(cardCode).map(presenter.removeCard)
         case CardEvent(cardCode, _, REPLACED, `playerId`) =>
           cardUtils.byCode(cardCode).map(presenter.addCard)
