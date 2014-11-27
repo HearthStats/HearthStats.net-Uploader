@@ -2,11 +2,9 @@ package net.hearthstats.companion
 
 import java.awt.image.BufferedImage
 import java.util.concurrent.{ ScheduledThreadPoolExecutor, TimeUnit }
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
-
 import akka.actor.{ ActorSystem, Cancellable, actorRef2Scala }
 import akka.actor.ActorDSL.{ Act, actor }
 import akka.event.LoggingReceive
@@ -21,6 +19,7 @@ import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
 import net.hearthstats.modules.VideoEncoderFactory
 import net.hearthstats.ui.HearthstatsPresenter
 import net.hearthstats.ui.log.Log
+import net.hearthstats.core.Rank
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -113,6 +112,8 @@ class GameMonitor(
         handlePlayerName(name, true)
       case PlayerName(name, id) =>
         handlePlayerName(name, false)
+      case LegendRank(rank) =>
+        handleLegendRank(rank)
 
       case _ => debug(s"Ignoring event $evt")
     }
@@ -297,6 +298,13 @@ class GameMonitor(
       }
     }
     detectDeck(evt.image)
+  }
+
+  private def handleLegendRank(rank: Int) {
+    if (rank > 0) {
+      companionState.rank = Some(Rank.LEGEND)
+      uiLog.info(s"Legand rank $rank detected")
+    }
   }
 
   private def updateMatch(f: HearthstoneMatch => HearthstoneMatch): Unit =

@@ -5,7 +5,7 @@ import scala.collection.JavaConversions._
 
 object LogParserMain extends App {
   val p = new LogParser
-  val lines = io.Source.fromInputStream(getClass.getResourceAsStream("several_games_log.txt")).getLines
+  val lines = io.Source.fromInputStream(getClass.getResourceAsStream("legend_log.txt")).getLines
 
   for {
     l <- lines
