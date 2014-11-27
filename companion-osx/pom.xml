@@ -59,7 +59,7 @@
 				<!-- optional dependency. If present video replays will be generated. -->
 				<dependency>
 					<groupId>net.hearthstats</groupId>
-					<artifactId>video</artifactId>
+					<artifactId>video-osx</artifactId>
 					<version>${project.version}</version>
 				</dependency>
 			</dependencies>

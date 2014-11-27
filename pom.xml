@@ -40,6 +40,7 @@
 			<id>video</id>
 			<modules>
 				<module>video</module>
+                <module>video-osx</module>
 			</modules>
 		</profile>
 		<profile>
@@ -60,7 +61,8 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<modules>
-				<module>video</module>
+                <module>video</module>
+                <module>video-osx</module>
 				<module>companion-win</module>
 				<module>companion-osx</module>
 			</modules>
@@ -69,6 +71,7 @@
 			<id>travis</id>
 			<modules>
 				<module>video</module>
+                <module>video-osx</module>
 				<module>companion-osx</module>
 			</modules>
 		</profile>
@@ -76,6 +79,7 @@
 			<id>coverall</id>
 			<modules>
 				<module>video</module>
+                <module>video-osx</module>
 			</modules>
 		</profile>
 	</profiles>

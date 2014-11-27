@@ -20,11 +20,12 @@
 
 	<!-- Send all other logs to the log file and the console. -->
 	<!-- Change the level to DEBUG to enable full log output. -->
-	<logger name="net.hearthstats" level="INFO"></logger>
+	<logger name="net.hearthstats" level="DEBUG"></logger>
 
-	<logger name="net.hearthstats.video" level="INFO"></logger>
+	<logger name="net.hearthstats.video" level="DEBUG"></logger>
 
 
+    <logger name="net.hearthstats.game.imageanalysis.IndividualPixelAnalyser" level="INFO"></logger>
 
 	<root level="INFO">
 		<appender-ref ref="FILE" />
