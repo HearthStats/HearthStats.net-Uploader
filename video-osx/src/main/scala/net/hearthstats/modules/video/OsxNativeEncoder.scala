@@ -13,20 +13,32 @@ import scala.concurrent.Future
 class OsxNativeEncoder extends VideoEncoder with Logging {
 
   def newVideo(framesPerSec: Double, videoWidth: Int, videoHeight: Int) = new OngoingVideo {
-    debug(s"Starting OS X native video encoding, fps=$framesPerSec w=$videoWidth h=$videoHeight")
+    info(s"Starting OS X native video encoding, fps=$framesPerSec w=$videoWidth h=$videoHeight")
 
     OsxNativeEncoder.loadNativeLibraries()
 
-    val pool: NSAutoreleasePool = NSAutoreleasePool.new_
-    val videoOsx = VideoOsx.CLASS.alloc()
+    val startupPool: NSAutoreleasePool = NSAutoreleasePool.new_
+    var videoOsx: VideoOsx = _
+    try {
+      videoOsx = VideoOsx.CLASS.alloc()
+      videoOsx.retain()
 
-    videoOsx.startVideo()
+      videoOsx.startVideo()
+    } finally {
+      startupPool.drain()
+    }
 
     override def finish(): Future[String] = Future {
-      debug(s"Finishing OS X native video encoding")
-      val filename = videoOsx.stopVideo()
-      info(s"### finish() filename $filename")
-      filename
+      info(s"Finishing OS X native video encoding")
+      val shutdownPool: NSAutoreleasePool = NSAutoreleasePool.new_
+      try {
+        val filename = videoOsx.stopVideo()
+        info(s"### finish() filename $filename")
+        videoOsx.release()
+        filename
+      } finally {
+        shutdownPool.drain()
+      }
     }
 
     override def encodeImages(images: List[TimedImage]): Future[Long] = {
@@ -35,10 +47,6 @@ class OsxNativeEncoder extends VideoEncoder with Logging {
 
     override def expectsImages = false
 
-    override def finalize(): Unit = {
-      super.finalize()
-      pool.drain()
-    }
   }
 }
 

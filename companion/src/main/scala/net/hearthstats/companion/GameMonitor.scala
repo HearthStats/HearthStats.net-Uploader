@@ -127,14 +127,10 @@ class GameMonitor(
     val image = evt.image
     evt.screen match {
       case MatchStartScreen => handleGameStartScreen()
-      case PlayLobby => {
-        testStartVideo()
-        handlePlayLobby(evt)
-      }
+      case PlayLobby => handlePlayLobby(evt)
       case PracticeLobby => handlePracticeLobby(image)
       case FriendlyLobby => handleFriendlyLobby(image)
       case ArenaLobby => handleArenaLobby(image)
-      case MainScreen => testStopVideo()
       case other => debug(s"$other, no action taken")
     }
   } catch {
@@ -142,31 +138,6 @@ class GameMonitor(
       error(t.getMessage, t)
       uiLog.error(t.getMessage, t)
   }
-
-  // TODO: DEBUG ONLY
-  var testVideoActive = false;
-  private def testStartVideo(): Unit = {
-    if (!testVideoActive) {
-      info("### testStartVideo()")
-      testVideoActive = true
-      VideoEncoder.start()
-    }
-  }
-
-  private def testStopVideo(): Unit = {
-    if (testVideoActive) {
-      info("### testStopVideo()")
-      testVideoActive = false
-      VideoEncoder.stop()
-      companionState.ongoingVideo match {
-        case Some(video) => video.finish()
-        case _ => debug("### no video to finish")
-      }
-    }
-  }
-
-
-
 
   private def handleGameStartScreen() =
     if (companionState.ongoingVideo.isEmpty) {
