@@ -43,7 +43,7 @@ class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Loggin
   def downloadImages(cards: List[Card]): Future[Unit] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     (new File(environment.imageCacheFolder)).mkdirs()
-    val futures = for (card <- cards) yield future {
+    val futures = for (card <- cards) yield Future {
       val file = card.localFile getOrElse environment.imageCacheFile(card.originalName)
       if (file.length < 30000) {
         val fos = new FileOutputStream(file)

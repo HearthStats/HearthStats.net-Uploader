@@ -64,7 +64,7 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
       slug = json.get("slug").toString,
       name = json.get("name").toString,
       cards = cardList,
-      hero = heroString,
+      hero = HeroClass.byName(heroString),
       activeSlot = Option(json.get("slot")).map(_.toString.toInt))
   }
 

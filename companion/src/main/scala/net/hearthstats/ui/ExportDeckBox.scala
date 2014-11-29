@@ -277,7 +277,7 @@ class ExportDeckBox(
           setStatus(t("export.status.ready"), t("export.instructions.ready"))
 
           panel.nameField.text = d.name
-          panel.classComboBox.selection.item = d.hero
+          panel.classComboBox.selection.item = d.hero.toString()
 
           panel.enableDeck()
           d.deckString
@@ -298,7 +298,7 @@ class ExportDeckBox(
       val cards = deckUtils.parseDeckString(panel.cardTextArea.text.trim)
       val invalidCards = cards.filter(_.id == 0)
 
-      if (invalidCards.length > 0) {
+      if (invalidCards.nonEmpty) {
         // At least one card couldn't be recognised
         val details = invalidCards.map(_.name).mkString("\n")
         Main.showMessageDialog(this.peer, if (invalidCards.length == 1)
@@ -307,10 +307,10 @@ class ExportDeckBox(
           s"Could not recognise these cards:\n$details")
       } else {
         // All cards were recognised
-        val deck = new Deck(
+        val deck = Deck(
           name = panel.nameField.text.trim,
           cards = cards,
-          hero = panel.classComboBox.selection.item)
+          hero = HeroClass.byName(panel.classComboBox.selection.item))
 
         if (deck.isValid) {
           val jsonDeck = new JSONObject(collection.mutable.Map("deck" -> deck.toJsonObject))

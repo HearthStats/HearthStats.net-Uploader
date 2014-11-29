@@ -42,7 +42,7 @@ class ReplayHandler(
     val newFile = new File(folder, newName)
     if (f.renameTo(newFile)) {
       val p = newFile.getAbsolutePath
-      val u = newFile.toURL
+      val u = newFile.toURI.toURL
       uiLog.info(s"Video replay of your match is saved in <a href='$u'>$p</a>")
     } else throw new IllegalArgumentException(s"Could not rename $f to $newFile")
 

@@ -9,36 +9,32 @@ case class Deck(
   name: String = "",
   slug: String = "",
   cards: List[Card] = List.empty,
-  hero: String = "Shaman",
+  hero: HeroClass = HeroClass.UNDETECTED,
   activeSlot: Option[Int] = None) {
 
-  def isValid =
+  lazy val isValid: Boolean =
     cards != null && 30 == cardCount
 
-  def cardCount =
+  lazy val cardCount: Int =
     cards.map(_.count).sum
 
-  def klassId: Int = {
-    HeroClass.values().find(_.name() == hero).map(_.ordinal()).getOrElse(0)
-  }
+  lazy val klassId: Int = hero.ordinal
 
-  def cardString: String = {
-    (for (c <- cards.sortBy(_.id)) yield s"${c.id}_${c.count}").mkString(",")
-  }
+  lazy val cardString: String =
+    (for (c <- cards.sortBy(_.id))
+      yield s"${c.id}_${c.count}")
+      .mkString(",")
 
-  def deckString: String = {
+  def deckString: String =
     (for (c <- cards.sortBy(card => (card.cost, -card.typeId, card.name)))
-    yield s"${c.count} ${c.originalName}").mkString("\n")
-  }
+      yield s"${c.count} ${c.originalName}").mkString("\n")
 
-  def toJsonObject: JSONObject = {
-    return new JSONObject(collection.mutable.Map(
+  def toJsonObject: JSONObject =
+    new JSONObject(collection.mutable.Map(
       "klass_id" -> klassId,
       "name" -> name,
       "notes" -> "",
-      "cardstring" -> cardString
-    ))
-  }
+      "cardstring" -> cardString))
 
   override def toString = s"$hero: $name"
 }

@@ -3,13 +3,13 @@ package net.hearthstats.game.imageanalysis
 import java.awt.image.BufferedImage
 
 import grizzled.slf4j.Logging
-import net.hearthstats.core.{Card, Deck}
+import net.hearthstats.core.{ Card, Deck }
 import net.hearthstats.game.imageanalysis.CoordinateCacheBase.UniquePixelIdentifier
 import net.hearthstats.game.imageanalysis.UniquePixel._
-import net.hearthstats.game.ocr.{DeckCardOcr, DeckNameOcr}
+import net.hearthstats.game.ocr.{ DeckCardOcr, DeckNameOcr }
 import net.hearthstats.util.Coordinate
 import org.apache.commons.lang3.StringUtils
-
+import net.hearthstats.core.HeroClass
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -38,7 +38,7 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
     }
 
     // Combine the two lists, using the card with the larger count if the same card appears in both lists
-    val cards = (cards1 ++ cards2).groupBy(_.id).map(c => c._2.head.copy(count = c._2.foldLeft(0)((i,s) => i max s.count))).toList
+    val cards = (cards1 ++ cards2).groupBy(_.id).map(c => c._2.head.copy(count = c._2.foldLeft(0)((i, s) => i max s.count))).toList
 
     cards.foreach(c => debug(s"Identified card ${c.count} ${c.name}"))
 
@@ -53,14 +53,11 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
       case None => ""
     }
 
-    Some(new Deck(cards = cards, name = deckName, hero = heroClass))
+    Some(new Deck(cards = cards, name = deckName, hero = HeroClass.byName(heroClass)))
   }
-
-
 
   private def identifyCards(img: BufferedImage): List[Card] = {
     val cards = new ListBuffer[Card]
-
 
     for (i <- 0 until DeckAnalyser.CardsVisibleOnScreen) {
 
@@ -79,9 +76,8 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
     }
 
     // Group multiple cards together (golden and normal cards would otherwise be separate in the list)
-    cards.groupBy(_.id).map(c => c._2.head.copy(count = c._2.foldLeft(0)((i,s) => i + s.count))).toList
+    cards.groupBy(_.id).map(c => c._2.head.copy(count = c._2.foldLeft(0)((i, s) => i + s.count))).toList
   }
-
 
   private def extractCardImage(img: BufferedImage, cardNo: Int): BufferedImage = {
     val yoffset = (133f + (45.5f * cardNo.toFloat)).toInt
@@ -95,7 +91,6 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
       bottomRight.x - topLeft.x, bottomRight.y - topLeft.y)
   }
 
-
   private def identifyCard(roughName: String): Option[Card] = {
     val bestCard = cardList.maxBy(c => StringUtils.getJaroWinklerDistance(roughName, c.name))
 
@@ -106,7 +101,6 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
       None
     }
   }
-
 
   private def identifyCount(img: BufferedImage, cardNo: Int): Int = {
     val yoffset = (45.5f * cardNo.toFloat).toInt
@@ -119,7 +113,6 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
     }
   }
 
-
   private def isCountTwo(img: BufferedImage, offset: Int): Boolean = {
     checkPixelIsYellow(img, 1492, 150 + offset) &&
       checkPixelIsYellow(img, 1490, 142 + offset) &&
@@ -127,7 +120,6 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
       !checkPixelIsYellow(img, 1486, 137 + offset) &&
       !checkPixelIsYellow(img, 1501, 148 + offset)
   }
-
 
   private def checkPixelIsYellow(img: BufferedImage, x: Int, y: Int): Boolean = {
     val pixel = getCoordinate(x, y)
@@ -140,13 +132,11 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
     red > 166 && red < 230 && green > 148 && green < 210 && blue < 20
   }
 
-
   private def identifyClassPixel(image: BufferedImage, pixelRules: Iterable[(Array[UniquePixel], String)]): Option[String] =
     (for {
       (pixels, result) <- pixelRules
       if individualPixelAnalyser.testAllPixelsMatch(image, pixels)
     } yield result).headOption
-
 
   private def identifyClass(img: BufferedImage): Option[String] =
     identifyClassPixel(img, Seq(
@@ -158,9 +148,7 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
       Array(DECK_ROGUE_1, DECK_ROGUE_2) -> "Rogue",
       Array(DECK_SHAMAN_1, DECK_SHAMAN_2) -> "Shaman",
       Array(DECK_WARLOCK_1, DECK_WARLOCK_2) -> "Warlock",
-      Array(DECK_WARRIOR_1, DECK_WARRIOR_2) -> "Warrior")
-    )
-
+      Array(DECK_WARRIOR_1, DECK_WARRIOR_2) -> "Warrior"))
 
   /**
    * Calculates the correct pixel position for a given coordinate at the current image size.
