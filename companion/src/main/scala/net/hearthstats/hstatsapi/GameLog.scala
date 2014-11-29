@@ -14,8 +14,6 @@ case class GameLog(
 
   import GameLog._
 
-  def previousTurn = turns.headOption
-
   def addEvent(event: GameEvent): GameLog =
     event match {
       case MatchStart(_) => copy(turns = Turn() :: Nil)
@@ -24,7 +22,11 @@ case class GameLog(
       case PlayerName(_, id) if firstPlayer != Some(id) =>
         copy(secondPlayer = Some(id))
       case TurnPassedEvent =>
-        copy(Turn() :: turns)
+        turns match {
+          case previous :: others =>
+            val (drawn, turn) = previous.extractLastDraw
+            copy(Turn(List(drawn)) :: turn :: others)
+        }
       case e => turns match {
         case Nil => this
         case previous :: others => copy(turns = previous.addEvent(e, 0) :: others)
@@ -39,7 +41,7 @@ case class GameLog(
     } yield action.cardId -> cardName).toMap
 
     val updatedWithNames = turns.map { turn =>
-      turn.copy(actions = turn.actions.map { action =>
+      turn.copy(actions = turn.actions.reverse.map { action =>
         if (action.card.isDefined) action
         else action.copy(card = cardNames.get(action.cardId))
       })
@@ -55,12 +57,18 @@ object GameLog {
 
 case class Action(time: Int, action: String, card: Option[String], cardId: Int, player: Int)
 
+//actions are also in reverse order
 case class Turn(actions: List[Action] = Nil) {
   def addEvent(ge: GameEvent, time: Int): Turn = ge match {
     case e @ CardEvent(cardCode, cardId, eventType, player) =>
       val name = if (cardCode == "") None else Some(e.cardName)
-      copy(actions = actions ::: List(Action(time, eventType.toString, name, cardId, player)))
+      copy(actions = Action(time, eventType.toString, name, cardId, player) :: actions)
     case _ => this
+  }
+
+  //the first card drawn is associated with the previous turn
+  def extractLastDraw: (Action, Turn) = actions match {
+    case previous :: others => (previous, copy(actions = others))
   }
 }
 
