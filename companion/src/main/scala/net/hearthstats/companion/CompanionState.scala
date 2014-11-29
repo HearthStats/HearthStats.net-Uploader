@@ -1,14 +1,13 @@
 package net.hearthstats.companion
 
-import grizzled.slf4j.Logging
-import net.hearthstats.core.GameMode
-import net.hearthstats.core.Rank
-import net.hearthstats.game.Screen
-import net.hearthstats.modules.video.OngoingVideo
-import net.hearthstats.modules.video.TimedImage
-import scala.collection.mutable.Buffer
 import java.awt.image.BufferedImage
-import net.hearthstats.modules.video.TimedImage
+
+import scala.collection.mutable.Buffer
+
+import grizzled.slf4j.Logging
+import net.hearthstats.core.{GameMode, Rank}
+import net.hearthstats.game.Screen
+import net.hearthstats.modules.video.{OngoingVideo, TimedImage}
 
 /**
  * Current perception of HearthStone game by the companion.
@@ -30,8 +29,9 @@ class CompanionState extends Logging {
 
   var matchStartedAt: Long = 0
 
-  def currentDurationMs: Long =
-    timeMs - matchStartedAt
+ 
+  def currentDurationMs: Int =
+    (timeMs - matchStartedAt).toInt
 
   //this is deliberately called twice :
   //once on game log start (to clear duration and avoid double submit)
@@ -42,6 +42,7 @@ class CompanionState extends Logging {
     info(s"start match at $matchStartedAt ms")
   }
 
+ 
   def timeMs = System.nanoTime / 1000000
 
   var iterationsSinceScreenMatched = 0

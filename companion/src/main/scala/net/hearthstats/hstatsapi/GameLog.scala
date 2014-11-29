@@ -8,15 +8,14 @@ import net.hearthstats.game._
 
 case class GameLog(
   //Note : the head of the list is actually the last turn (order is reversed)
-  turns: List[Turn] = Nil,
+  turns: List[Turn] = List(Turn()),
   firstPlayer: Option[Int] = None,
   secondPlayer: Option[Int] = None) {
 
   import GameLog._
 
-  def addEvent(event: GameEvent): GameLog =
+  def addEvent(event: GameEvent, timeMs: Int = 0): GameLog =
     event match {
-      case MatchStart(_) => copy(turns = Turn() :: Nil)
       case FirstPlayer(_, id) =>
         copy(firstPlayer = Some(id))
       case PlayerName(_, id) if firstPlayer != Some(id) =>
@@ -26,11 +25,13 @@ case class GameLog(
           case previous :: others =>
             val (drawn, turn) = previous.extractLastDraw
             copy(Turn(List(drawn)) :: turn :: others)
+          case Nil => ???
         }
-      case e => turns match {
-        case Nil => this
-        case previous :: others => copy(turns = previous.addEvent(e, 0) :: others)
-      }
+      case e =>
+        turns match {
+          case Nil => this
+          case previous :: others => copy(turns = previous.addEvent(e, timeMs) :: others)
+        }
     }
 
   def toJson: String = {
@@ -39,6 +40,7 @@ case class GameLog(
       action <- turn.actions
       cardName <- action.card
     } yield action.cardId -> cardName).toMap
+    //got the name of the card drawn by opponent and revealed later
 
     val updatedWithNames = turns.map { turn =>
       turn.copy(actions = turn.actions.reverse.map { action =>
@@ -46,7 +48,7 @@ case class GameLog(
         else action.copy(card = cardNames.get(action.cardId))
       })
     }
-    mapper.writeValueAsString(copy(turns = updatedWithNames))
+    mapper.writeValueAsString(copy(turns = updatedWithNames.reverse))
   }
 }
 
@@ -81,6 +83,7 @@ case class Turn(actions: List[Action] = Nil) {
   //the first card drawn is associated with the previous turn
   def extractLastDraw: (Action, Turn) = actions match {
     case previous :: others => (previous, copy(actions = others))
+    case Nil => ???
   }
 }
 

@@ -117,6 +117,7 @@ class GameMonitor(
 
       case _ => debug(s"Ignoring event $evt")
     }
+    matchState.updateLog(evt, companionState.currentDurationMs)
   } catch {
     case NonFatal(t) =>
       error(t.getMessage, t)
@@ -247,6 +248,7 @@ class GameMonitor(
 
   private def endGameImpl(outcome: MatchOutcome): Unit = {
     updateMatch(_.withResult(outcome))
+    updateMatch(_.withJsonLog(matchState.jsonGameLog.get))
     updateMatch(_.withDuration(companionState.currentDurationMs / 1000))
     matchUtils.submitMatchResult()
     deckOverlay.reset()

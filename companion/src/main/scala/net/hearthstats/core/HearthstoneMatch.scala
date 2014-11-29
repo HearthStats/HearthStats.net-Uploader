@@ -101,4 +101,5 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
   def withReplay(r: Future[String]) = copy(replayFile = r)
   def withNewTurn = copy(numTurns = numTurns + 1)
   def withDuration(d: Long) = copy(duration = d)
+  def withJsonLog(log: GameLog) = copy(notes = log.toJson)
 }

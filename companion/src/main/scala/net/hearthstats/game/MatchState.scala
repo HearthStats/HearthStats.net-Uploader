@@ -5,12 +5,14 @@ import net.hearthstats.core.Rank
 import net.hearthstats.core.GameMode
 import net.hearthstats.companion.CompanionState
 import net.hearthstats.core.HeroClass
+import net.hearthstats.core.GameLog
 
 class MatchState {
   var currentMatch: Option[HearthstoneMatch] = None
   var lastMatch: Option[HearthstoneMatch] = None
   var submitted = false
   var started = false
+  var jsonGameLog: Option[GameLog] = None
 
   def setOpponentName(n: String) = updateMatch(_.withOpponentName(n))
   def setNotes(n: String) = updateMatch(_.copy(notes = n))
@@ -29,9 +31,13 @@ class MatchState {
     currentMatch = Some(new HearthstoneMatch(
       mode = companionState.mode,
       rankLevel = companionState.rank))
+    jsonGameLog = Some(GameLog())
     submitted = false
     started = false
   }
+
+  def updateLog(event: GameEvent, time: Int) =
+    jsonGameLog = jsonGameLog.map(_.addEvent(event, time))
 
   private def updateMatch(f: HearthstoneMatch => HearthstoneMatch): Unit =
     currentMatch = Some(f(currentMatch.get))
