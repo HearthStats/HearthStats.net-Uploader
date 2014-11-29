@@ -46,7 +46,7 @@ case class GameLog(
         else action.copy(card = cardNames.get(action.cardId))
       })
     }
-    mapper.writeValueAsString(updatedWithNames.reverse)
+    mapper.writeValueAsString(copy(turns = updatedWithNames))
   }
 }
 
@@ -57,12 +57,24 @@ object GameLog {
 
 case class Action(time: Int, action: String, card: Option[String], cardId: Int, player: Int)
 
+object Action {
+  val HERO_POWER = "HERO_POWER"
+}
+
+import Action._
+
 //actions are also in reverse order
 case class Turn(actions: List[Action] = Nil) {
   def addEvent(ge: GameEvent, time: Int): Turn = ge match {
     case e @ CardEvent(cardCode, cardId, eventType, player) =>
       val name = if (cardCode == "") None else Some(e.cardName)
       copy(actions = Action(time, eventType.toString, name, cardId, player) :: actions)
+    case e @ HeroPowerEvent(cardCode, player) if e.isValid =>
+      val name = Some(e.cardName)
+      val powerUsed = Action(time, HERO_POWER, name, -1, player)
+      // hero power appears twice in the logs
+      if (actions.contains(powerUsed)) this
+      else copy(actions = powerUsed :: actions)
     case _ => this
   }
 
