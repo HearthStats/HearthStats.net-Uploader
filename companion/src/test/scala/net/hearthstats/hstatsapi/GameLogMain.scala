@@ -3,7 +3,7 @@ package net.hearthstats.hstatsapi
 import net.hearthstats.game.LogParser
 import net.hearthstats.game.TurnPassedEvent
 import net.hearthstats.game.CardEvent
-import net.hearthstats.core.GameLog._
+import net.hearthstats.core._
 import net.hearthstats.game.CardEvent
 import net.hearthstats.game.StartupEvent
 
@@ -17,15 +17,9 @@ object GameLogMain extends App {
     _ = println(r)
   } yield r
 
-  val gameLog = events.foldLeft(List.empty[Turn]) {
-    case (Nil, StartupEvent) => List(Turn(0, Nil))
-    case (t :: turns, TurnPassedEvent) =>
-      val drawn = t.actions.last
-      val rest = t.actions.dropRight(1)
-      List(Turn(0, List(drawn))) ::: t.copy(actions = rest) :: turns
-    case (t :: turns, e: CardEvent) => t.addEvent(e, 0) :: turns
-    case (turns, _) => turns
+  val gameLog = events.foldLeft(GameLog()) {
+    case (log, e) => log.addEvent(e)
   }
 
-  println(gameLogToString(gameLog))
+  println(gameLog.toJson)
 }
