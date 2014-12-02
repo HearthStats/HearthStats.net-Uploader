@@ -12,6 +12,7 @@ import org.scalatest.mock.MockitoSugar
 import net.hearthstats.core.HeroClass._
 import net.hearthstats.core.GameMode
 import net.hearthstats.core.Deck
+import net.hearthstats.core.GameLog
 
 @RunWith(classOf[JUnitRunner])
 class APISpec extends FlatSpec with Matchers with MockitoSugar {
@@ -22,14 +23,29 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
   val api = wire[API]
   val cardUtils = wire[CardUtils]
 
-  "The API" should "return some cards" in {
+  it should "return some cards" in {
     val cards = cardUtils.cards
     cards.size should be > 400
   }
 
+  it should "create a match" in {
+    val matc = new HearthstoneMatch(GameMode.CASUAL,
+      WARLOCK,
+      DRUID,
+      Some(false),
+      Some(MatchOutcome.VICTORY),
+      Some(Deck(id = 1, activeSlot = Some(1))),
+      "unkownopp",
+      Some(Rank.RANK_1),
+      1,
+      1,
+      "")
+    api.createMatch(matc.withJsonLog(GameLog())).isDefined shouldBe true
+  }
+
   //TODO :move exception handling out of API class so it can be tested here.
 
-  "The API" should "create an Arena run" in {
+  it should "create an Arena run" in {
     val arena = new ArenaRun
     arena.setUserClass("warlock")
     api.createArenaRun(arena).isDefined shouldBe true

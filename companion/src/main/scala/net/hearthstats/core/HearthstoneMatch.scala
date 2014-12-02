@@ -20,6 +20,7 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
   numTurns: Int = -1,
   duration: Long = -1, // in seconds
   notes: String = null,
+  jsonLog: String = null,
   replayFile: Future[String] = Promise[String].future,
   id: Int = -1) extends Logging {
 
@@ -45,6 +46,7 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
       "coin" -> coin.toString,
       "result" -> describeResult,
       "notes" -> notes,
+      "log" -> jsonLog,
       "numturns" -> numTurns,
       "duration" -> duration)
 
@@ -101,5 +103,5 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
   def withReplay(r: Future[String]) = copy(replayFile = r)
   def withNewTurn = copy(numTurns = numTurns + 1)
   def withDuration(d: Long) = copy(duration = d)
-  def withJsonLog(log: GameLog) = copy(notes = log.toJson)
+  def withJsonLog(log: GameLog) = copy(jsonLog = log.toJson)
 }

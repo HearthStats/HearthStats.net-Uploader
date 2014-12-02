@@ -23,8 +23,8 @@ class AwsUploader extends FileUploader with Logging {
   }
 
   def uploadFile(f: File, gameId: String, config: UserConfig, api: API): Future[Unit] = {
-    val bucketName = config.awsBucket.get
-    val prefix = config.awsVideoPrefix.get
+    val bucketName = config.awsBucket
+    val prefix = config.awsVideoPrefix
     val user = api.premiumUserId.get
     val folder = s"$prefix/$user"
     info(s"uploading ${f.getName} to $bucketName in $folder")

@@ -98,17 +98,17 @@ class API(config: UserConfig) extends Logging {
 
   //can return JSONObject or JSONArray
   private def _get(method: String): Option[AnyRef] = {
-    val baseUrl = config.apiBaseUrl.get + method + "?userkey="
+    val baseUrl = config.apiBaseUrl + method + "?userkey="
     debug(s"API get $baseUrl********")
     try {
-      val timeout = config.apiTimeoutMs.get
+      val timeout = config.apiTimeoutMs
       val url = new URL(baseUrl + config.userKey.get)
       val conn = url.openConnection()
       conn.setConnectTimeout(timeout)
       conn.setReadTimeout(timeout)
       val inputStream = conn.getInputStream()
       val resultString = io.Source.fromInputStream(inputStream)("UTF-8").getLines.mkString("\n")
-      debug(s"API get result = $resultString")
+      info(s"API get result = $resultString")
       _parseResult(resultString)
     } catch {
       case e: IOException =>
@@ -160,9 +160,9 @@ class API(config: UserConfig) extends Logging {
   }
 
   private def _post(method: String, jsonData: JSONObject): Option[JSONObject] = {
-    val baseUrl = config.apiBaseUrl.get + method + "?userkey="
+    val baseUrl = config.apiBaseUrl + method + "?userkey="
     debug(s"API post $baseUrl********")
-    debug("API post data = " + jsonData.toJSONString)
+    info("API post data = " + jsonData.toJSONString)
     val url = new URL(baseUrl + config.userKey.get)
     try {
       val httpcon = (url.openConnection()).asInstanceOf[HttpURLConnection]
@@ -170,14 +170,14 @@ class API(config: UserConfig) extends Logging {
       httpcon.setRequestProperty("Content-Type", "application/json")
       httpcon.setRequestProperty("Accept", "application/json")
       httpcon.setRequestMethod("POST")
-      httpcon.setReadTimeout(config.apiTimeoutMs.get)
+      httpcon.setReadTimeout(config.apiTimeoutMs)
       httpcon.connect()
       val outputBytes = jsonData.toJSONString.getBytes("UTF-8")
       val os = httpcon.getOutputStream
       os.write(outputBytes)
       os.close()
       val resultString = io.Source.fromInputStream(httpcon.getInputStream).getLines.mkString("\n")
-      debug("API post result = " + resultString)
+      info("API post result = " + resultString)
       _parseResult(resultString).map(_.asInstanceOf[JSONObject])
     } catch {
       case e: Exception =>

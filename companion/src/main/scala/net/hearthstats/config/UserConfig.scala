@@ -45,13 +45,19 @@ class UserConfig extends Logging {
 
   val uploadVideo = config("video.upload", true)
 
+  val gameLanguage = enumConfig("option.gamelanguage", SupportedGameLanguage.EN)
+  /** Translation for the cards of the game, based on the language option for the game.*/
+  //TODO : how to cache this when the gameLanguage has not changed
+  def gameCardsTranslation = new Translation(TranslationConfig("net.hearthstats.resources.card.Card", gameLanguage.get.toString))
+
   //private options, no need to be displayed
-  val apiBaseUrl = config("api.baseurl", "http://hearthstats.net/api/v1/")
-  val apiTimeoutMs = config("api.timeout", 5000)
+  val apiBaseUrl = "http://hearthstats.net/api/v1/"
+  val apiTimeoutMs = 15000
 
-  val awsBucket = config("video.awsBucket", "hearthstats")
-  val awsVideoPrefix = config("video.awsVideoPrefix", "prem-videos")
+  val awsBucket = "hearthstats"
+  val awsVideoPrefix = "prem-videos"
 
+  //special options, updated automatically, no need to be displayed
   val windowX = config("ui.window.x", 0)
   val windowY = config("ui.window.y", 0)
   val windowHeight = config("ui.window.height", 700)
@@ -61,11 +67,6 @@ class UserConfig extends Logging {
   val deckY = config("ui.deck.y", 0)
   val deckHeight = config("ui.deck.height", 600)
   val deckWidth = config("ui.deck.width", 485)
-
-  val gameLanguage = enumConfig("option.gamelanguage", SupportedGameLanguage.EN)
-  /** Translation for the cards of the game, based on the language option for the game.*/
-  //TODO : how to cache this when the gameLanguage has not changed
-  def gameCardsTranslation = new Translation(TranslationConfig("net.hearthstats.resources.card.Card", gameLanguage.get.toString))
 
   implicit def configToValue[T](configValue: ConfigValue[T]): T = configValue.get
 
