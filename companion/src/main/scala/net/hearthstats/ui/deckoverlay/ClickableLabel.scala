@@ -42,7 +42,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   val imgDstW = 113
   val imgDstH = 35
   def imgSrcX = 81 * cardImage.getIconWidth / pictureSize.getWidth.toInt
-  def imgSrcY: Int = 62 * cardImage.getIconHeight / pictureSize.getHeight.toInt
+  def imgSrcY: Int = 82 * cardImage.getIconHeight / pictureSize.getHeight.toInt
   def imgSrcW: Int = 130 * cardImage.getIconWidth / pictureSize.getWidth.toInt
   def imgSrcH: Int = 40 * cardImage.getIconHeight / pictureSize.getHeight.toInt
 

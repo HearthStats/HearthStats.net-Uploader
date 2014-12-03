@@ -18,8 +18,10 @@ import net.hearthstats.game.imageanalysis.{ Casual, LobbyAnalyser, Ranked }
 import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
 import net.hearthstats.modules.VideoEncoderFactory
 import net.hearthstats.ui.HearthstatsPresenter
+import net.hearthstats.ui.notification.NotificationQueue
 import net.hearthstats.ui.log.Log
 import net.hearthstats.core.Rank
+import net.hearthstats.ui.notification.DialogNotification
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -34,7 +36,8 @@ class GameMonitor(
   videoEncoderFactory: VideoEncoderFactory,
   uiLog: Log,
   hsPresenter: HearthstatsPresenter,
-  deckOverlay: DeckOverlayModule) extends Logging {
+  deckOverlay: DeckOverlayModule,
+  notifier: NotificationQueue) extends Logging {
 
   import config._
   import lobbyAnalyser._
@@ -168,7 +171,7 @@ class GameMonitor(
       updateMatch(_.withUserClass(newClass))
       hsPresenter.setYourClass(newClass)
       uiLog.info(s"Your class detected : $newClass")
-      deckOverlay.startMonitoringCards(heroChosen.player)
+      if (enableDeckOverlay) deckOverlay.startMonitoringCards(heroChosen.player)
     }
     for {
       slot <- companionState.deckSlot
@@ -276,8 +279,17 @@ class GameMonitor(
       if Some(deckSlot) != companionState.deckSlot
     } {
       uiLog.info(s"deck slot $deckSlot detected")
+      
       companionState.deckSlot = Some(deckSlot)
-      deckUtils.getDeckFromSlot(deckSlot) foreach deckOverlay.show
+      if (enableDeckOverlay) {
+        deckUtils.getDeckFromSlot(deckSlot) match {
+          case Some(deck) =>
+	          if (notifier != null) notifier.add(s"Deck Detected", s"$deck", false)
+	          deckOverlay.show(deck)
+          case None =>
+            if (notifier != null) notifier.add(s"Could not find deck in slot $deckSlot", "", false)
+        }
+      }
     }
 
   private def handlePlayLobby(evt: ScreenEvent): Unit = {

@@ -8,6 +8,8 @@ target/
 .idea
 .project
 .cache
+.metadata
+.DS_store
 config.ini
 log.txt
 dependency-reduced-pom.xml
