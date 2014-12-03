@@ -8,6 +8,8 @@ public enum CardEventType {
 	RETURNED,
   PUT_IN_PLAY,
   RECEIVED,
+  REVEALED, // secret
+  SETASIDE, // Hex
   DESTROYED,
   DISCARDED_FROM_DECK,
 	DISCARDED;

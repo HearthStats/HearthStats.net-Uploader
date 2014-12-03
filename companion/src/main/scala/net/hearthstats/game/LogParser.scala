@@ -90,11 +90,11 @@ class LogParser extends Logging {
         CardDiscarded(cardId, id, player)
       case ("FRIENDLY PLAY", "FRIENDLY GRAVEYARD") |
         ("FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") |
-        ("FRIENDLY SECRET", "FRIENDLY GRAVEYARD") |
         ("OPPOSING PLAY", "OPPOSING GRAVEYARD") |
-        ("OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") |
-        ("OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
+        ("OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") =>
         CardDestroyed(cardId, id, player)
+      case ("FRIENDLY SECRET", "FRIENDLY GRAVEYARD") | ("OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
+        CardRevealed(cardId, id, player)
       case ("FRIENDLY PLAY (Hero)", "FRIENDLY GRAVEYARD") =>
         HeroDestroyedEvent(false)
       case ("OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
@@ -102,6 +102,11 @@ class LogParser extends Logging {
       case ("OPPOSING DECK", "OPPOSING GRAVEYARD") |
         ("FRIENDLY DECK", "FRIENDLY GRAVEYARD") =>
         CardDiscardedFromDeck(cardId, id, player)
+    }
+
+    def analyseSetasideZone: ZoneToEvent = _ match {
+      case ("OPPOSING PLAY", "") | ("FRIENDLY PLAY", "") =>
+        CardSetAside(cardId, id, player)
     }
 
     def analyseDeckZone: ZoneToEvent = _ match {
@@ -112,15 +117,20 @@ class LogParser extends Logging {
     }
 
     def analyseSecretZone: ZoneToEvent = _ match {
+      case ("OPPOSING HAND", "OPPOSING SECRET") | ("FRIENDLY HAND", "FRIENDLY SECRET") =>
+        CardPlayed(cardId, id, player)
       case ("OPPOSING DECK", "OPPOSING SECRET") =>
         CardPutInPlay(cardId, id, player)
+      case ("", "OPPOSING SECRET") | ("", "FRIENDLY SECRET") =>
+        CardRevealed(cardId, id, player)
     }
 
     val zoneToEvent: ZoneToEvent = cardZone match {
       case "DECK" => analyseDeckZone
       case "HAND" => analyseHandZone
       case "PLAY" => analysePlayZone
-      case "GRAVEYARD" | "SETASIDE" => analyseGraveyardZone //TODO: handle cleanly Hex
+      case "GRAVEYARD" => analyseGraveyardZone
+      case "SETASIDE" => analyseSetasideZone
       case "SECRET" => analyseSecretZone
     }
     zoneToEvent.lift(fromZone, toZone) match {
