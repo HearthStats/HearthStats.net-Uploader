@@ -22,6 +22,7 @@ import net.hearthstats.ui.notification.NotificationQueue
 import net.hearthstats.ui.log.Log
 import net.hearthstats.core.Rank
 import net.hearthstats.ui.notification.DialogNotification
+import net.hearthstats.core.GameMode
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -171,7 +172,7 @@ class GameMonitor(
       updateMatch(_.withUserClass(newClass))
       hsPresenter.setYourClass(newClass)
       uiLog.info(s"Your class detected : $newClass")
-      if (enableDeckOverlay) deckOverlay.startMonitoringCards(heroChosen.player)
+      if (enableDeckOverlay && companionState.mode != GameMode.ARENA) deckOverlay.startMonitoringCards(heroChosen.player)
     }
     for {
       slot <- companionState.deckSlot
@@ -279,13 +280,13 @@ class GameMonitor(
       if Some(deckSlot) != companionState.deckSlot
     } {
       uiLog.info(s"deck slot $deckSlot detected")
-      
+
       companionState.deckSlot = Some(deckSlot)
       if (enableDeckOverlay) {
         deckUtils.getDeckFromSlot(deckSlot) match {
           case Some(deck) =>
-	          if (notifier != null) notifier.add(s"Deck Detected", s"$deck", false)
-	          deckOverlay.show(deck)
+            if (notifier != null) notifier.add(s"Deck Detected", s"$deck", false)
+            deckOverlay.show(deck)
           case None =>
             if (notifier != null) notifier.add(s"Could not find deck in slot $deckSlot", "", false)
         }

@@ -242,11 +242,8 @@ class MatchEndPopup(
       if (hsMatch.userClass == HeroClass.UNDETECTED) {
         result += t("match.popup.error.yourclass")
       }
-      if (hsMatch.deck.isEmpty) {
+      if (hsMatch.deck.isEmpty && GameMode.ARENA != hsMatch.mode) {
         result += t("match.popup.error.deck")
-      }
-      if (StringUtils.isBlank(hsMatch.opponentName)) {
-        result += t("match.popup.error.opponentname")
       }
       if (hsMatch.opponentClass == HeroClass.UNDETECTED) {
         result += t("match.popup.error.opponentclass")

@@ -25,14 +25,18 @@ class DeckOverlayModule(
     presenter.showDeck(deck)
   }
 
-  def startMonitoringCards(playerId: Int): Unit = {
-    info(s"monitoring cards for player $playerId")
+  def clearAll() {
     reset()
     for (a <- monitoringActors) {
       a ! PoisonPill
       logMonitor.removeObserver(a)
     }
     monitoringActors.clear()
+  }
+
+  def startMonitoringCards(playerId: Int): Unit = {
+    info(s"monitoring cards for player $playerId")
+    clearAll()
     implicit val actorSystem = logMonitor.system
     count += 1
     val monitoringActor = actor(s"DeckOverlay$count")(new Act {

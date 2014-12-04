@@ -82,7 +82,6 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
     result.isDefined &&
       userClass != HeroClass.UNDETECTED &&
       opponentClass != HeroClass.UNDETECTED &&
-      StringUtils.isNotBlank(opponentName) &&
       mode != GameMode.UNDETECTED
 
   def editUrl: String = {
