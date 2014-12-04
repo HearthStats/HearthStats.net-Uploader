@@ -7,6 +7,7 @@ import net.hearthstats.core.HeroClass
 import net.hearthstats.core.GameMode
 import net.hearthstats.core.CardData
 import net.hearthstats.core.MatchOutcome
+import scala.util.Try
 
 sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
@@ -41,7 +42,7 @@ trait NamedCard {
 
   lazy val cardName =
     if (cardCode == "") "Unknown card"
-    else CardData.byId(cardCode).name
+    else Try(CardData.byId(cardCode).name).getOrElse("Unknown card")
 }
 
 object CardEvents {
