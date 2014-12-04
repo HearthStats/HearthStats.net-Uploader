@@ -110,7 +110,7 @@ class GameMonitor(
         handleGameStart(hero)
       case TurnPassedEvent =>
         handleTurnChanged()
-      case CardEvent(_, _, CardEventType.RECEIVED, player) =>
+      case e @ CardEvent(_, _, CardEventType.RECEIVED, player) if e.cardName == "The Coin" =>
         handleCoin(player)
       case FirstPlayer(name, id) =>
         handlePlayerName(name, true)
