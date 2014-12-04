@@ -426,7 +426,13 @@ public class ProgramHelperOsx extends ProgramHelper {
 //      final CFArrayRef descriptionArray = CoreGraphicsLibrary.INSTANCE.CGWindowListCreateDescriptionFromArray(windowArray);
 //      long count = CoreFoundationLibrary.INSTANCE.CFArrayGetCount(descriptionArray);
 
+      if (_pid == 0) {
+        _pid = findProgramPid(_bundleIdentifier);
+      }
 
+      if (_windowId == 0) {
+        _windowId = findWindow(_pid);
+      }
       // Instead, obtain a dictionary of all on-screen windows from Quartz Window Services, which will include all running applications.
       CFArrayRef originalArray = CoreGraphicsLibrary.INSTANCE.CGWindowListCopyWindowInfo(CGWindow.kCGWindowListExcludeDesktopElements | CGWindow.kCGWindowListOptionOnScreenOnly, 0);
 

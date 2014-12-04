@@ -26,16 +26,11 @@ class UserConfig extends Logging {
   val enableUpdateCheck = config("enable.updatecheck", true)
 
   val matchPopup = enumConfig("option.matchpopup", MatchPopup.getDefault)
-  val monitoringMethod = enumConfig("option.monitoringmethod", MonitoringMethod.getDefault)
   val notificationType = enumConfig("option.notificationtype", NotificationType.HEARTHSTATS)
 
   val notifyOverall = config("notify.overall", true)
   val notifyHsFound = config("notify.hsfound", true)
-  val notifyHsClosed = config("notify.hsclosed", true)
-  val notifyScreen = config("notify.screen", true)
-  val notifyMode = config("notify.mode", true)
   val notifyDeck = config("notify.deck", true)
-  val notifyTurn = config("notify.turn", true)
 
   val recordVideo = config("video.record", true)
   val recordedVideoFolder = config("video.folder", System.getenv("HOME") + "/hearthstats/videos")

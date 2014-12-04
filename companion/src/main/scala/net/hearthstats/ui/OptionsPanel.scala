@@ -34,16 +34,6 @@ class OptionsPanel(
   var userKeyField: JTextField = new StringOptionTextField(userKey)
   add(userKeyField, "wrap")
 
-  // Monitoring Method
-  addLabel(t("options.label.monitoring") + " ")
-  addComboBox[MonitoringMethod](
-    Array(t("options.label.monitoring.screen"), t("options.label.monitoring.log")),
-    monitoringMethod, "")
-
-  val monitoringHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Monitoring",
-    "Help on monitoring options")
-  add(monitoringHelpIcon, "wrap")
-
   // Game Language
   addLabel(t("options.label.game.language"))
   addComboBox[SupportedGameLanguage](Array(t("options.label.game.language.eu"), t("options.label.game.language.fr"), t("options.label.game.language.ru")),
@@ -80,30 +70,10 @@ class OptionsPanel(
   private val showHsFoundField =
     addCheckBox(t("options.notification.hs_found"), notifyHsFound, notifyHsFound.set)
 
-  // Hearthstone Closed Notification
-  addLabel()
-  private val showHsClosedField =
-    addCheckBox(t("options.notification.hs_closed"), notifyHsClosed, notifyHsClosed.set)
-
-  // Game Screen Changed Notification
-  addLabel()
-  private val showScreenNotificationField =
-    addCheckBox(t("options.notification.screen"), notifyScreen, notifyScreen.set)
-
-  // Game Mode Changed Notification
-  addLabel()
-  private val showModeNotificationField =
-    addCheckBox(t("options.notification.mode"), notifyMode, notifyMode.set)
-
   // Deck Changed Notification
   addLabel()
   private val showDeckNotificationField =
     addCheckBox(t("options.notification.deck"), notifyDeck, notifyDeck.set)
-
-  // Your Turn Notification
-  addLabel()
-  private val showYourTurnNotificationField =
-    addCheckBox(t("options.notification.turn"), notifyTurn, notifyTurn.set)
 
   // Now that all the notification fields have been created, enable or disable them as appropriate
   updateNotificationCheckboxes(notificationsEnabledField.isSelected)
@@ -127,6 +97,9 @@ class OptionsPanel(
   add(matchPopupHelpIcon, "wrap")
 
   // Video
+  addLabel(t("options.label.video.record") + " ")
+  addCheckBox(t("options.ui.video.record"), recordVideo, recordVideo.set)
+  
   addLabel(t("options.label.video.delay") + " ")
   add(new IntOptionTextField(pollingDelayMs), "wrap")
 
@@ -175,9 +148,6 @@ class OptionsPanel(
       notificationsFormat.setEnabled(isEnabled)
     }
     showHsFoundField.setEnabled(isEnabled)
-    showHsClosedField.setEnabled(isEnabled)
-    showScreenNotificationField.setEnabled(isEnabled)
-    showModeNotificationField.setEnabled(isEnabled)
     showDeckNotificationField.setEnabled(isEnabled)
   }
 

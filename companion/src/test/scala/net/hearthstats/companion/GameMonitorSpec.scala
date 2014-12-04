@@ -17,7 +17,9 @@ import net.hearthstats.game.imageanalysis.{ Casual, IndividualPixelAnalyser, Lob
 import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
 import net.hearthstats.modules.{ ReplayHandler, VideoEncoderFactory }
 import net.hearthstats.ui.HearthstatsPresenter
+import net.hearthstats.ui.CompanionFrame
 import net.hearthstats.ui.log.Log
+import net.hearthstats.ui.notification.NotificationQueue
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
@@ -43,7 +45,7 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val companionEvents = wire[ScreenEvents]
   val logMonitor = mock[HearthstoneLogMonitor]
   val monitor = wire[GameMonitor]
-
+  val notificationQueue = mock[NotificationQueue]
   val rank8Lobby = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)
   val newArenaRun = new BufferedImage(100, 10, BufferedImage.TYPE_INT_RGB)
 

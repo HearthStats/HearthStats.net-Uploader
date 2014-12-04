@@ -48,9 +48,6 @@ class DeckOverlaySwing(
         card.originalName -> cardLabel
       }).toMap
 
-    val cardCheckBox = new JCheckBox("Display full card image")
-    cardCheckBox.addChangeListener(ChangeListener(_ => imageLabel.setVisible(cardCheckBox.isSelected)))
-    content.add(cardCheckBox, BorderLayout.NORTH)
     content.add(box, BorderLayout.CENTER)
     content.add(imageLabel, BorderLayout.EAST)
     imageLabel.setVisible(false)

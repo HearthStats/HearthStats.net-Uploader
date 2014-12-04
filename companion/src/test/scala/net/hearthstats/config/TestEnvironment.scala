@@ -45,15 +45,10 @@ object TestConfig extends UserConfig {
   override val enableMinToTray: ConfigValue[Boolean] = true
   override val enableUpdateCheck: ConfigValue[Boolean] = false
   override val matchPopup: ConfigValue[MatchPopup] = MatchPopup.INCOMPLETE
-  override val monitoringMethod: ConfigValue[MonitoringMethod] = MonitoringMethod.SCREEN
   override val notificationType: ConfigValue[NotificationType] = NotificationType.HEARTHSTATS
-  override val notifyOverall: ConfigValue[Boolean] = true
+  override val notifyOverall: ConfigValue[Boolean] = false
   override val notifyHsFound: ConfigValue[Boolean] = true
-  override val notifyHsClosed: ConfigValue[Boolean] = true
-  override val notifyScreen: ConfigValue[Boolean] = true
-  override val notifyMode: ConfigValue[Boolean] = true
   override val notifyDeck: ConfigValue[Boolean] = true
-  override val notifyTurn: ConfigValue[Boolean] = true
   override val windowX: ConfigValue[Int] = 0
   override val windowY: ConfigValue[Int] = 0
   override val windowHeight: ConfigValue[Int] = 700
