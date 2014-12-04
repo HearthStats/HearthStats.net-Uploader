@@ -100,27 +100,43 @@ class GameMonitor(
     case e: GameEvent => handleLogEvent(e)
   }, Some("LogFileMonitor"))
 
+  type EventHandler = PartialFunction[GameEvent, Unit]
+
+  val spectator: EventHandler = {
+    case EndSpectatorEvent =>
+      uiLog.info("Spectator mode ends")
+      become(normal)
+  }
+
+  val normal: EventHandler = {
+    case BeginSpectatorEvent =>
+      uiLog.info("Spectator mode")
+      become(spectator)
+    case GameOver(outcome) =>
+      uiLog.info(s"Result $outcome detected in log file")
+      endGameImpl(outcome)
+    case MatchStart(hero) =>
+      handleGameStart(hero)
+    case TurnPassedEvent =>
+      handleTurnChanged()
+    case e @ CardEvent(_, _, CardEventType.RECEIVED, player) if e.cardName == "The Coin" =>
+      handleCoin(player)
+    case FirstPlayer(name, id) =>
+      handlePlayerName(name, true)
+    case PlayerName(name, id) =>
+      handlePlayerName(name, false)
+    case LegendRank(rank) =>
+      handleLegendRank(rank)
+  }
+
+  var eventHandler: EventHandler = normal
+
+  private def become(handler: EventHandler): Unit =
+    eventHandler = handler
+
   private def handleLogEvent(evt: GameEvent): Unit = try {
     info(evt)
-    evt match {
-      case GameOver(outcome) =>
-        uiLog.info(s"Result $outcome detected in log file")
-        endGameImpl(outcome)
-      case MatchStart(hero) =>
-        handleGameStart(hero)
-      case TurnPassedEvent =>
-        handleTurnChanged()
-      case e @ CardEvent(_, _, CardEventType.RECEIVED, player) if e.cardName == "The Coin" =>
-        handleCoin(player)
-      case FirstPlayer(name, id) =>
-        handlePlayerName(name, true)
-      case PlayerName(name, id) =>
-        handlePlayerName(name, false)
-      case LegendRank(rank) =>
-        handleLegendRank(rank)
-
-      case _ => debug(s"Ignoring event $evt")
-    }
+    eventHandler.lift(evt).getOrElse(debug(s"Ignoring event $evt"))
     matchState.updateLog(evt, companionState.currentDurationMs)
   } catch {
     case NonFatal(t) =>

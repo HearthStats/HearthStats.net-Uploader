@@ -12,6 +12,10 @@ class LogParser extends Logging {
     line match {
       case STARTUP_REGEX() =>
         Some(StartupEvent)
+      case BEGIN_SPECTATOR_REGEX() =>
+        Some(BeginSpectatorEvent)
+      case END_SPECTATOR_REGEX() =>
+        Some(EndSpectatorEvent)
       case GAME_OVER_REGEX(result) =>
         Some(GameOver(if (result == "victory") MatchOutcome.VICTORY else MatchOutcome.DEFEAT))
       case RANKED_MODE_REGEX() =>
@@ -152,6 +156,8 @@ class LogParser extends Logging {
   val RANKED_MODE_REGEX = ".*name=rank_window.*".r
   val LEGEND_RANK_REGEX = """\[Bob\] legend rank (\d*)""".r
   val STARTUP_REGEX = """^Initialize engine version.*""".r
+  val BEGIN_SPECTATOR_REGEX = """\[Power\] .* Begin Spectating .*""".r
+  val END_SPECTATOR_REGEX = """\[Power\] .* End Spectator Mode .*""".r
 
   import GameMode._
   val GAME_MODES = Map("RegisterScreenPractice" -> PRACTICE,

@@ -13,6 +13,8 @@ sealed trait GameEvent
 sealed trait HeroEvent extends GameEvent
 
 case object StartupEvent extends GameEvent
+case object BeginSpectatorEvent extends GameEvent
+case object EndSpectatorEvent extends GameEvent
 
 case class GameModeDetected(mode: GameMode) extends GameEvent
 
