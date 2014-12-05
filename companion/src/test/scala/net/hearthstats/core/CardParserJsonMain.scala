@@ -27,4 +27,10 @@ class LogMonitorSpec extends FlatSpec with Matchers {
   it should "contain Acidic Swamp Ooze" in {
     CardData.byId("EX1_066").name shouldBe "Acidic Swamp Ooze"
   }
+
+  it should "contain GvG (Annoy-o-Tron)" in {
+    CardData.byId("GVG_085").name shouldBe "Annoy-o-Tron"
+  }
+
 }
+
