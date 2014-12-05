@@ -44,7 +44,7 @@ trait GeneralUI extends JFrame with Logging {
   def showConfirmDialog(message: Any, title: String, optionType: Int): Int =
     JOptionPane.showConfirmDialog(this, message, title, optionType)
 
-  def showOptionDialog(message: Any, title: String, optionType: Int, values: Array[AnyRef]) =
+  def showOptionDialog(message: Any, title: String, optionType: Int, values: Array[AnyRef]): Int =
     JOptionPane.showOptionDialog(
       this,
       message,

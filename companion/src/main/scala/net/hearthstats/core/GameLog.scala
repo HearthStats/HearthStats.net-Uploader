@@ -10,17 +10,21 @@ case class GameLog(
   //Note : the head of the list is actually the last turn (order is reversed)
   turns: List[Turn] = List(Turn()),
   firstPlayer: Option[Int] = None,
-  secondPlayer: Option[Int] = None) {
+  secondPlayer: Option[Int] = None,
+  firstPlayerName: Option[String] = None,
+  secondPlayerName: Option[String] = None) {
 
   import GameLog._
 
   def addEvent(event: GameEvent, timeMs: Int = 0): GameLog =
     event match {
-      case FirstPlayer(_, id) =>
+      case FirstPlayer(name) =>
+        copy(firstPlayerName = Some(name))
+      case PlayerName(name, id) if firstPlayerName == Some(name) =>
         copy(firstPlayer = Some(id))
-      case PlayerName(_, id) if firstPlayer != Some(id) =>
-        copy(secondPlayer = Some(id))
-      case TurnPassedEvent =>
+      case PlayerName(name, id) if firstPlayerName != Some(name) =>
+        copy(secondPlayer = Some(id), secondPlayerName = Some(name))
+      case TurnCount(t) if t > 1 =>
         turns match {
           case previous :: others =>
             val (drawn, turn) = previous.extractLastDraw

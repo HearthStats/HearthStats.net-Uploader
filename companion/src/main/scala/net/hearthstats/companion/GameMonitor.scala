@@ -23,6 +23,8 @@ import net.hearthstats.ui.log.Log
 import net.hearthstats.core.Rank
 import net.hearthstats.ui.notification.DialogNotification
 import net.hearthstats.core.GameMode
+import net.hearthstats.ui.GeneralUI
+import javax.swing.JOptionPane
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -36,7 +38,7 @@ class GameMonitor(
   lobbyAnalyser: LobbyAnalyser,
   videoEncoderFactory: VideoEncoderFactory,
   uiLog: Log,
-  hsPresenter: HearthstatsPresenter,
+  hsPresenter: HearthstatsPresenter with GeneralUI,
   deckOverlay: DeckOverlayModule,
   notifier: NotificationQueue) extends Logging {
 
@@ -112,16 +114,16 @@ class GameMonitor(
     case BeginSpectatorEvent =>
       uiLog.info("Spectator mode")
       become(spectator)
-    case GameOver(outcome) =>
-      uiLog.info(s"Result $outcome detected in log file")
-      endGameImpl(outcome)
+    case GameOver(playerName, outcome) if playerName == userName.get =>
+      uiLog.info(s"Result $outcome detected in log file for $playerName")
+      endGameImpl(playerName, outcome)
     case MatchStart(hero) =>
       handleGameStart(hero)
-    case TurnPassedEvent =>
-      handleTurnChanged()
-    case e @ CardEvent(_, _, CardEventType.RECEIVED, player) if e.cardName == "The Coin" =>
-      handleCoin(player)
-    case FirstPlayer(name, id) =>
+    case TurnCount(turn) =>
+      handleTurnChanged(turn)
+    case TurnStart(player, _) =>
+      uiLog.info(s"$player's turn")
+    case FirstPlayer(name) =>
       handlePlayerName(name, true)
     case PlayerName(name, id) =>
       handlePlayerName(name, false)
@@ -168,15 +170,6 @@ class GameMonitor(
     }
 
   private def handleGameStart(heroChosen: HeroChosen): Unit = {
-    val matchStart = // this is the first time the method is called for this match
-      (heroChosen.opponent && companionState.playerId1.isEmpty) ||
-        (!heroChosen.opponent && companionState.opponentId1.isEmpty)
-    if (matchStart) {
-      companionState.startMatch()
-      uiLog.info(s"Match start detected in log file")
-      uiLog.divider()
-      matchState.nextMatch(companionState)
-    }
     val newClass = heroChosen.heroClass
     if (heroChosen.opponent) {
       companionState.opponentId1 = Some(heroChosen.player)
@@ -200,11 +193,43 @@ class GameMonitor(
 
   // we need to store the first player name (the user) to differentiate it from the opponent
   private def handlePlayerName(name: String, first: Boolean): Unit = {
-    if (first) {
-      companionState.firstPlayerName = Some(name)
-    } else if (companionState.firstPlayerName != Some(name)) {
-      companionState.otherPlayerName = Some(name)
+    import companionState._
+    val matchStart = // this is the first time the method is called for this match
+      firstPlayerName.isEmpty && otherPlayerName.isEmpty
+    if (matchStart) {
+      companionState.startMatch()
+      uiLog.info(s"Match start detected in log file")
+      uiLog.divider()
+      matchState.nextMatch(companionState)
     }
+
+    val newName = if (first) {
+      firstPlayerName = Some(name)
+      true
+    } else if (firstPlayerName != Some(name)) {
+      otherPlayerName = Some(name)
+      true
+    } else false
+
+    (newName, firstPlayerName, otherPlayerName) match {
+      case (true, Some(firstName), Some(otherName)) =>
+        val coin = if (otherName == userName.get) true
+        else if (firstName == userName.get) false
+        else chooseUserName(otherName, firstName) == 0
+        playerHasCoinAtStart(coin)
+      case _ => // wait for the other name to be defined, or ignore duplicate info
+    }
+  }
+
+  private def chooseUserName(n1: String, n2: String): Int = {
+    val choices = Array(n1, n2)
+    val choice = hsPresenter.showOptionDialog(
+      "Who are you ? \n(We only need to ask this once)",
+      "Confirm your login",
+      JOptionPane.DEFAULT_OPTION,
+      choices.toArray[AnyRef])
+    userName.set(choices(choice))
+    choice
   }
 
   private def handleOpponentName(name: String): Unit = {
@@ -214,22 +239,7 @@ class GameMonitor(
 
   }
 
-  private def handleCoin(playerId: Int): Unit = {
-    if (hsMatch.numTurns < 0) {
-      // the coin can only be received before the first turn of the game
-      // afterwards it can be wild growth => excess mana for instance
-      if (companionState.playerId1 == Some(playerId)) {
-        playerHasCoinAtStart(true)
-      } else if (companionState.opponentId1 == Some(playerId)) {
-        playerHasCoinAtStart(false)
-      } else {
-        uiLog.warn(s"Coin detection failed : unexpected playerId $playerId")
-      }
-    }
-  }
-
   private def playerHasCoinAtStart(coin: Boolean): Unit = {
-    companionState.isYourTurn = coin // turn changes before first turn
     updateMatch(_.withCoin(coin))
     hsPresenter.setCoin(coin)
     val oppName = if (coin) {
@@ -266,28 +276,22 @@ class GameMonitor(
     detectDeck(image)
   }
 
-  private def endGameImpl(outcome: MatchOutcome): Unit = {
-    updateMatch(_.withResult(outcome))
-    updateMatch(_.withJsonLog(matchState.jsonGameLog.get))
-    updateMatch(_.withDuration(companionState.currentDurationMs / 1000))
-    matchUtils.submitMatchResult()
-    deckOverlay.reset()
-    companionState.reset()
-    VideoEncoder.stop()
-  }
+  private def endGameImpl(playerName: String, outcome: MatchOutcome): Unit =
+    if (hsMatch.opponentName != playerName) {
+      updateMatch(_.withResult(outcome))
+      updateMatch(_.withJsonLog(matchState.jsonGameLog.get))
+      updateMatch(_.withDuration(companionState.currentDurationMs / 1000))
+      matchUtils.submitMatchResult()
+      deckOverlay.reset()
+      companionState.reset()
+      VideoEncoder.stop()
+    }
 
   private def victoryOrDefeatDetected =
     matchState.currentMatch.flatMap(_.result).isDefined
 
-  private def handleTurnChanged() {
-    import companionState._
-    if (isYourTurn) {
-      updateMatch(_.withNewTurn)
-      uiLog.info("Opponent turn")
-    } else {
-      uiLog.info("Your turn")
-    }
-    isYourTurn = !isYourTurn
+  private def handleTurnChanged(turn: Int) {
+    updateMatch(_.copy(numTurns = turn))
   }
 
   private def detectDeck(image: BufferedImage): Unit =

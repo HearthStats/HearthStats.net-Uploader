@@ -47,7 +47,7 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
       "result" -> describeResult,
       "notes" -> notes,
       "log" -> jsonLog,
-      "numturns" -> numTurns,
+      "numturns" -> numTurns / 2,
       "duration" -> duration)
 
     if (mode == GameMode.RANKED) {
@@ -100,7 +100,6 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
   def withOpponentClass(c: HeroClass) = copy(opponentClass = c)
   def withUserClass(c: HeroClass) = copy(userClass = c)
   def withReplay(r: Future[String]) = copy(replayFile = r)
-  def withNewTurn = copy(numTurns = numTurns + 1)
   def withDuration(d: Long) = copy(duration = d)
   def withJsonLog(log: GameLog) = copy(jsonLog = log.toJson)
 }

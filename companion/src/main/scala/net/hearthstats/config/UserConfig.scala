@@ -16,6 +16,7 @@ class UserConfig extends Logging {
 
   //public options, can be exposed via OptionsTab
   val userKey = config("api.userkey", "your_userkey_here")
+  val userName = config("hearthstone.login", "")
 
   val pollingDelayMs = config("polling.delay.ms", 1000 / 25)
 

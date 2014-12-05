@@ -16,8 +16,6 @@ class LogParser extends Logging {
         Some(BeginSpectatorEvent)
       case END_SPECTATOR_REGEX() =>
         Some(EndSpectatorEvent)
-      case GAME_OVER_REGEX(result) =>
-        Some(GameOver(if (result == "victory") MatchOutcome.VICTORY else MatchOutcome.DEFEAT))
       case RANKED_MODE_REGEX() =>
         Some(GameModeDetected(GameMode.RANKED))
       case GAME_MODE_REGEX(mode) =>
@@ -25,19 +23,24 @@ class LogParser extends Logging {
         GAME_MODES.get(mode) map GameModeDetected
       case LEGEND_RANK_REGEX(rank) => // TODO : test this on a legend log file ...
         Some(LegendRank(rank.toInt))
-      case FIRST_PLAYER_REGEX(id, name) =>
-        Some(FirstPlayer(name, id.toInt))
-      case PLAYER_NAME_REGEX(id, name, _) =>
+      case POWER_TAG_CHANGE_REGEX(name, "PLAYER_ID", id) =>
         Some(PlayerName(name, id.toInt))
+      case POWER_TAG_CHANGE_REGEX(name, "FIRST_PLAYER", "1") =>
+        Some(FirstPlayer(name))
+      case POWER_TAG_CHANGE_REGEX(player, "PLAYSTATE", "WON") =>
+        Some(GameOver(player, MatchOutcome.VICTORY))
+      case POWER_TAG_CHANGE_REGEX(player, "PLAYSTATE", "LOST") =>
+        Some(GameOver(player, MatchOutcome.DEFEAT))
+      case POWER_TAG_CHANGE_REGEX(player, "TURN_START", time) if player != "GameEntity" =>
+        Some(TurnStart(player, time.toInt))
+      case POWER_TAG_CHANGE_REGEX(_, "TURN", turn) =>
+        Some(TurnCount(turn.toInt))
       case ZONE_PROCESSCHANGES_REGEX(zoneId, local, card, id, cardZone, zonePos, cardId, player, fromZone, toZone) =>
         debug(s"zoneId=$zoneId local=$local cardName=$card id=$id cardZone=$cardZone zonePos=$zonePos cardId=$cardId player=$player fromZone=$fromZone toZone=$toZone")
         analyseCard(cardZone, fromZone, toZone, card, cardId, player.toInt, id.toInt)
       case HIDDEN_REGEX(zoneId, local, id, cardId, _, cardZone, zonePos, player, fromZone, toZone) =>
         debug(s"uiLog: zoneId=$zoneId local=$local cardName=HIDDEN id=$id cardZone=$cardZone zonePos=$zonePos cardId=$cardId player=$player fromZone=$fromZone toZone=$toZone")
         analyseCard(cardZone, fromZone, toZone, "", cardId, player.toInt, id.toInt)
-      case TURN_CHANGE_REGEX() =>
-        debug("turn passed")
-        Some(TurnPassedEvent)
       case HERO_POWER_USE_REGEX(cardId, player) =>
         debug("Hero Power")
         Some(HeroPowerEvent(cardId, player.toInt))
@@ -145,14 +148,11 @@ class LogParser extends Logging {
     }
   }
 
-  val PLAYER_NAME_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=\d* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=(\d*) cardId= name=(.*)\] tag=(CURRENT_PLAYER|NUM_TURNS_LEFT) value=\d*\] complete=\w*\] entity=.*""".r
-  val FIRST_PLAYER_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=\d* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=(\d*) cardId= name=(.*)\] tag=FIRST_PLAYER value=\d*\] complete=\w*\] entity=.*""".r
+  val POWER_TAG_CHANGE_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=(.*) tag=(.*) value=(.*)""".r
   val ZONE_PROCESSCHANGES_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
-  val TURN_CHANGE_REGEX = """\[Zone\] ZoneChangeList.ProcessChanges\(\) - processing index=.* change=powerTask=\[power=\[type=TAG_CHANGE entity=\[id=.* cardId= name=GameEntity\] tag=NEXT_STEP value=MAIN_ACTION\] complete=False\] entity=GameEntity srcZoneTag=INVALID srcPos= dstZoneTag=INVALID dstPos=""".r
   val HERO_POWER_USE_REGEX = """\[Power\].*cardId=(\w+).*player=(\d+).*""".r
   val GAME_MODE_REGEX = """\[Bob\] ---(\w+)---""".r
-  val GAME_OVER_REGEX = """\[Asset\].*name=(victory|defeat)_screen_start.*""".r
   val RANKED_MODE_REGEX = ".*name=rank_window.*".r
   val LEGEND_RANK_REGEX = """\[Bob\] legend rank (\d*)""".r
   val STARTUP_REGEX = """^Initialize engine version.*""".r

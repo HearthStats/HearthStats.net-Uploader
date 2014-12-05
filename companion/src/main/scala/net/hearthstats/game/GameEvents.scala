@@ -18,10 +18,12 @@ case object EndSpectatorEvent extends GameEvent
 
 case class GameModeDetected(mode: GameMode) extends GameEvent
 
-case class FirstPlayer(name: String, id: Int) extends GameEvent
+case class FirstPlayer(name: String) extends GameEvent
 case class PlayerName(name: String, id: Int) extends GameEvent
 
-case object TurnPassedEvent extends GameEvent
+case class TurnStart(player: String, timeMs: Int) extends GameEvent
+case class TurnCount(turn: Int) extends GameEvent
+
 case class HeroPowerEvent(cardCode: String, hero: Int) extends GameEvent with NamedCard {
   override def toString =
     if (isValid) s"hero $hero uses: $cardName"
@@ -66,7 +68,7 @@ case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent
 case class HeroChosen(hero: String, heroClass: HeroClass, opponent: Boolean, player: Int) extends HeroEvent
 
 case class MatchStart(heroChosen: HeroChosen) extends GameEvent
-case class GameOver(outcome: MatchOutcome) extends GameEvent
+case class GameOver(playerName: String, outcome: MatchOutcome) extends GameEvent
 case class LegendRank(rank: Int) extends GameEvent
 
 case class ScreenEvent(screen: HsScreen, image: BufferedImage) extends GameEvent {

@@ -5,9 +5,9 @@ import java.awt.image.BufferedImage
 import scala.collection.mutable.Buffer
 
 import grizzled.slf4j.Logging
-import net.hearthstats.core.{GameMode, Rank}
+import net.hearthstats.core.{ GameMode, Rank }
 import net.hearthstats.game.Screen
-import net.hearthstats.modules.video.{OngoingVideo, TimedImage}
+import net.hearthstats.modules.video.{ OngoingVideo, TimedImage }
 
 /**
  * Current perception of HearthStone game by the companion.
@@ -19,7 +19,6 @@ class CompanionState extends Logging {
   var deckSlot: Option[Int] = None
   var rank: Option[Rank] = None
   var isNewArenaRun = false
-  var isYourTurn = false
   var firstPlayerName: Option[String] = None
   var otherPlayerName: Option[String] = None
 
@@ -29,7 +28,6 @@ class CompanionState extends Logging {
 
   var matchStartedAt: Long = 0
 
- 
   def currentDurationMs: Int =
     (timeMs - matchStartedAt).toInt
 
@@ -42,7 +40,6 @@ class CompanionState extends Logging {
     info(s"start match at $matchStartedAt ms")
   }
 
- 
   def timeMs = System.nanoTime / 1000000
 
   var iterationsSinceScreenMatched = 0

@@ -1,11 +1,7 @@
 package net.hearthstats.hstatsapi
 
 import net.hearthstats.game.LogParser
-import net.hearthstats.game.TurnPassedEvent
-import net.hearthstats.game.CardEvent
-import net.hearthstats.core._
-import net.hearthstats.game.CardEvent
-import net.hearthstats.game.StartupEvent
+import net.hearthstats.core.GameLog
 
 object GameLogMain extends App {
   val p = new LogParser
@@ -15,12 +11,14 @@ object GameLogMain extends App {
   val events = for {
     l <- lines
     r <- p.analyseLine(l)
-    _ = println(r)
-  } yield r
+  } yield {
+    println(r)
+    r
+  }
 
   val gameLog = events.foldLeft(GameLog()) {
     case (log, e) => log.addEvent(e)
   }
 
-  //  println(gameLog.toJson)
+  println(gameLog.toJson)
 }
