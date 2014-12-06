@@ -25,6 +25,8 @@
 	<logger name="net.hearthstats.video" level="INFO"></logger>
 
 
+    <logger name="net.hearthstats.companion.ScreenEvents" level="DEBUG"></logger>
+    <logger name="net.hearthstats.companion.GameMonitor" level="DEBUG"></logger>
 
 	<root level="INFO">
 		<appender-ref ref="FILE" />

@@ -53,7 +53,7 @@
 		<profile>
 			<id>video</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
 			</activation>
 			<dependencies>
 				<!-- optional dependency. If present video replays will be generated. -->

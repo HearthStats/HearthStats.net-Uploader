@@ -1,30 +1,27 @@
 package net.hearthstats.companion
 
 import java.awt.image.BufferedImage
-import java.util.concurrent.{ ScheduledThreadPoolExecutor, TimeUnit }
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.DurationInt
-import scala.util.control.NonFatal
-import akka.actor.{ ActorSystem, Cancellable, actorRef2Scala }
-import akka.actor.ActorDSL.{ Act, actor }
+import java.util.concurrent.{ScheduledFuture, ScheduledThreadPoolExecutor, TimeUnit}
+import javax.swing.JOptionPane
+
+import akka.actor.{ActorSystem, actorRef2Scala}
 import akka.event.LoggingReceive
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 import net.hearthstats.config.UserConfig
-import net.hearthstats.core.{ HearthstoneMatch, MatchOutcome }
 import net.hearthstats.core.GameMode._
+import net.hearthstats.core.{GameMode, HearthstoneMatch, MatchOutcome, Rank}
 import net.hearthstats.game._
-import net.hearthstats.game.imageanalysis.{ Casual, LobbyAnalyser, Ranked }
-import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
+import net.hearthstats.game.imageanalysis.{Casual, LobbyAnalyser, Ranked}
+import net.hearthstats.hstatsapi.{DeckUtils, MatchUtils}
 import net.hearthstats.modules.VideoEncoderFactory
-import net.hearthstats.ui.HearthstatsPresenter
-import net.hearthstats.ui.notification.NotificationQueue
 import net.hearthstats.ui.log.Log
-import net.hearthstats.core.Rank
-import net.hearthstats.ui.notification.DialogNotification
-import net.hearthstats.core.GameMode
-import net.hearthstats.ui.GeneralUI
-import javax.swing.JOptionPane
+import net.hearthstats.ui.notification.NotificationQueue
+import net.hearthstats.ui.{GeneralUI, HearthstatsPresenter}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
+import scala.util.control.NonFatal
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -47,7 +44,9 @@ class GameMonitor(
 
   implicit val system = ActorSystem("companion")
 
-  val delay = config.pollingDelayMs.get
+  // Videos need more frequent polling; when videos aren't in use then reduce the polling speed
+  val normalDelay = 200
+  val videoDelay = config.pollingDelayMs.get
 
   var programFoundIterations = 0
   var lastFound = false
@@ -55,25 +54,43 @@ class GameMonitor(
 
   var notFoundCount = 1
 
-  var checkIfRunning: Option[Cancellable] = None
+  var scheduledRun: Option[ScheduledFuture[_]] = None
   val executor = new ScheduledThreadPoolExecutor(1)
 
   def start() {
-    val checkIfRunning = Some(executor.scheduleAtFixedRate(new Runnable {
-      def run() = handleProgramFound(programHelper.foundProgram)
-    }, 0, delay, TimeUnit.MILLISECONDS))
-    info("started")
+    schedule(normalDelay)
+    info("HearthStats Companion started")
   }
 
   def stop(): Unit = {
-    checkIfRunning.map(_.cancel())
+    scheduledRun.map(_.cancel(true))
     VideoEncoder.stop()
-    info("stopped")
+    info("HearthStats Companion stopped")
+  }
+
+  /**
+   * Runs the monitor at the given schedule.
+   * Can be called at any time, even while already running, to allow the monitoring speed to be adjusted as needed.
+   * @param delay The delay between each iteration of screen capture and analysis
+   */
+  def schedule(delay: Int) {
+    debug(s"Scheduling GameMonitor to run every ${delay}ms")
+    // If already running then delay the initial run to keep the interval consistent, otherwise start immediately
+    val initialDelay = scheduledRun match {
+      case Some(sr) =>
+        val remaining = sr.getDelay(TimeUnit.MILLISECONDS)
+        sr.cancel(false)
+        if (remaining > 0) remaining else 0
+      case _ => 0
+    }
+    scheduledRun = Some(executor.scheduleAtFixedRate(new Runnable {
+      def run() = handleProgramFound(programHelper.foundProgram, delay)
+    }, initialDelay, delay, TimeUnit.MILLISECONDS))
   }
 
   import akka.actor.ActorDSL._
 
-  private def handleProgramFound(found: Boolean): Unit = {
+  private def handleProgramFound(found: Boolean, delay: Int): Unit = {
     if (!found && notFoundCount == 1) {
       uiLog.warn("Hearthstone not detected")
       logMonitor.stop()
@@ -163,11 +180,13 @@ class GameMonitor(
       uiLog.error(t.getMessage, t)
   }
 
-  private def handleGameStartScreen() =
-    if (companionState.ongoingVideo.isEmpty) {
-      companionState.startMatch()
+  private def handleGameStartScreen() = {
+    companionState.startMatch()
+    if (VideoEncoder.canStartVideo()) {
+      schedule(videoDelay)
       VideoEncoder.start()
     }
+  }
 
   private def handleGameStart(heroChosen: HeroChosen): Unit = {
     val newClass = heroChosen.heroClass
@@ -285,6 +304,7 @@ class GameMonitor(
       deckOverlay.reset()
       companionState.reset()
       VideoEncoder.stop()
+      schedule(normalDelay)
     }
 
   private def victoryOrDefeatDetected =
@@ -354,21 +374,29 @@ class GameMonitor(
   }
 
   object VideoEncoder {
-    def start(): Unit = {
-      info("start recording video")
-      val videoEncoder = videoEncoderFactory.newInstance(!recordVideo)
-      companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
-      videoEncoderActor ! EncodeAfter(0)
-    }
+    def start(): Unit = if (recordVideo) {
+        info("Video recording started")
+        val videoEncoder = videoEncoderFactory.newInstance(false)
+        companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
+        videoEncoderActor ! EncodeAfter(0)
+      } else {
+        info("Video recording is disabled")
+      }
 
     def stop(): Unit =
       videoEncoderActor ! StopRecording
+
+    /**
+     * @return true if a video can be started, false if a video is already being recorded or videos are disabled
+     */
+    def canStartVideo() =
+      recordVideo && companionState.ongoingVideo.isEmpty
 
     val videoEncoderActor = actor(new Act {
       val encoding: Receive = LoggingReceive {
         case StopRecording =>
           become(stopped)
-          info("stop recording video")
+          info("Video recording has stopped")
         case EncodeAfter(timeMs) =>
           companionState.ongoingVideo match {
             case Some(video) =>
@@ -379,9 +407,9 @@ class GameMonitor(
                   case time: Long => self ! EncodeAfter(time)
                 }
               } else { // we are faster to encode, no screenshots ready yet
-                system.scheduler.scheduleOnce(delay.millis, self, EncodeAfter(timeMs))
+                system.scheduler.scheduleOnce(videoDelay.millis, self, EncodeAfter(timeMs))
               }
-            case None => system.scheduler.scheduleOnce(delay.millis, self, EncodeAfter(timeMs))
+            case None => system.scheduler.scheduleOnce(videoDelay.millis, self, EncodeAfter(timeMs))
             // video not started yet, try again soon
           }
       }
