@@ -2,10 +2,10 @@ package net.hearthstats.modules
 
 import java.util.ServiceLoader
 
+import grizzled.slf4j.Logging
+
 import scala.collection.JavaConversions.asScalaIterator
 import scala.util.control.NonFatal
-
-import grizzled.slf4j.Logging
 
 /**
  * Checks if module is defined in the SPI, either uses it or a dummy implementation.
@@ -30,13 +30,23 @@ abstract class ModuleFactory[M](
       } catch {
         case NonFatal(e) =>
           if (INITIAL == status) {
-            warn(s"module $name could not be loaded : " + e.getMessage, e)
+            warn(s"module $name could not be loaded: ${e.getMessage}")
             status = FAILURE
           }
           status = FAILURE
           dummyImpl
       }
     }
+
+  def isAvailable(): Boolean = try {
+    val inst = moduleImpl
+    debug(s"module $name is available")
+    true
+  } catch {
+    case NonFatal(e) =>
+      debug(s"module $name is not available")
+      false
+  }
 
   lazy val moduleImpl: M = {
     info(s"Instantiation $moduleInterface from SPI")

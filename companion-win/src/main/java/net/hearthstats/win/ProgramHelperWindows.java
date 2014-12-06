@@ -43,11 +43,12 @@ public class ProgramHelperWindows extends ProgramHelper {
   private HWND windowHandle = null;
   private String windowHandleId = null;
   private String lastKnownWindowHandleId = null;
-  private boolean isFullscreen = false;
+  private boolean isFullscreenFlag = false;
   private boolean isMinimised = false;
   private int minimisedCount = 0;
   private long lastWindowsHandleCheck = 0;
   private String hearthstoneProcessFolder = null;
+  private Robot robot;
 
   protected char[] baseNameBuffer = new char[STRING_BUFFER_LENGTH * 2];
   protected char[] classNameBuffer = new char[STRING_BUFFER_LENGTH * 2];
@@ -57,15 +58,24 @@ public class ProgramHelperWindows extends ProgramHelper {
 
   public ProgramHelperWindows() {
     debugLog.debug("Initialising ProgramHelperWindows with {}", processName);
+    try {
+      robot = new Robot();
+    } catch (AWTException e) {
+      debugLog.warn("Unable to create Robot for screenshots");
+    }
   }
 
 
   @Override
-  public BufferedImage getScreenCaptureNative() {
-    if (foundProgram()) {
+  public BufferedImage getScreenCapture() {
+    Rectangle bounds = getHSWindowBounds();
+    if (isFullScreen(bounds)) {
+      return robot.createScreenCapture(bounds);
+    } else if (foundProgram()) {
       return _getScreenCaptureWindows(windowHandle);
+    } else {
+      return null;
     }
-    return null;
   }
 
 
@@ -190,9 +200,9 @@ public class ProgramHelperWindows extends ProgramHelper {
       }
 
       if (isFullScreen(bounds.toRectangle())) {
-        if (!isFullscreen) {
+        if (!isFullscreenFlag) {
           _notifyObserversOfChangeTo("Hearthstone running in fullscreen");
-          isFullscreen = true;
+          isFullscreenFlag = true;
         }
         return null;
       } else {

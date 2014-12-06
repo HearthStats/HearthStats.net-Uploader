@@ -40,8 +40,8 @@ public class ProgramHelperOsx extends ProgramHelper {
     }
 
 
-    @Override
-    public BufferedImage getScreenCaptureNative() {
+  @Override
+  public BufferedImage getScreenCapture() {
         final NSAutoreleasePool pool = NSAutoreleasePool.new_();
         try {
 
@@ -92,76 +92,71 @@ public class ProgramHelperOsx extends ProgramHelper {
      * @return An image of the window, or null if the window doesn't exist or is too small to be an active window.
      */
     private BufferedImage getWindowImage(int windowId) {
-        final NSAutoreleasePool pool = NSAutoreleasePool.new_();
-        try {
-            // Create a CGRect with zero boundaries so that OS X automatically picks the correct size
-            CoreGraphicsLibrary.CGRect bounds = new CoreGraphicsLibrary.CGRect.CGRectByValue();
-            bounds.origin = new CoreGraphicsLibrary.CGPoint();
-            bounds.origin.x = 0;
-            bounds.origin.y = 0;
-            bounds.size = new CoreGraphicsLibrary.CGSize();
-            bounds.size.width = 0;
-            bounds.size.height = 0;
+        // Create a CGRect with zero boundaries so that OS X automatically picks the correct size
+        CoreGraphicsLibrary.CGRect bounds = new CoreGraphicsLibrary.CGRect.CGRectByValue();
+        bounds.origin = new CoreGraphicsLibrary.CGPoint();
+        bounds.origin.x = 0;
+        bounds.origin.y = 0;
+        bounds.size = new CoreGraphicsLibrary.CGSize();
+        bounds.size.width = 0;
+        bounds.size.height = 0;
 
-            // Take a screenshot of the program window
-            ID imageRef = CoreGraphicsLibrary.INSTANCE.CGWindowListCreateImage(bounds, CoreGraphicsLibrary.kCGWindowListOptionIncludingWindow | CoreGraphicsLibrary.kCGWindowListExcludeDesktopElements, windowId, CoreGraphicsLibrary.kCGWindowImageBoundsIgnoreFraming | CoreGraphicsLibrary.kCGWindowImageNominalResolution);
+        // Take a screenshot of the program window
+        ID imageRef = CoreGraphicsLibrary.INSTANCE.CGWindowListCreateImage(bounds, CoreGraphicsLibrary.kCGWindowListOptionIncludingWindow | CoreGraphicsLibrary.kCGWindowListExcludeDesktopElements, windowId, CoreGraphicsLibrary.kCGWindowImageBoundsIgnoreFraming | CoreGraphicsLibrary.kCGWindowImageNominalResolution);
 
-            // Convert the screenshot into a more useful ImageRep object, and retain the object so that it isn't lost before we extract the image data
-            NSBitmapImageRep imageRep = NSBitmapImageRep.CLASS.alloc().initWithCGImage(imageRef).initWithCGImage(imageRef);
-            imageRep.retain();
+        // Convert the screenshot into a more useful ImageRep object, and retain the object so that it isn't lost before we extract the image data
+        NSBitmapImageRep imageRep = NSBitmapImageRep.CLASS.alloc().initWithCGImage(imageRef).initWithCGImage(imageRef);
+        imageRep.retain();
 
-            int width = imageRep.pixelsWide();
-            int height = imageRep.pixelsHigh();
+        int width = imageRep.pixelsWide();
+        int height = imageRep.pixelsHigh();
 
-            int windowTitleHeight = determineWindowTitleHeight(height, width);
+        int windowTitleHeight = determineWindowTitleHeight(height, width);
 
-            if (debugLog.isTraceEnabled()) {
-                debugLog.trace("    Window height={} width={} titleHeight={}", new Object[] { height, width, windowTitleHeight});
-            }
+        if (debugLog.isTraceEnabled()) {
+            debugLog.trace("    Window height={} width={} titleHeight={}", new Object[] { height, width, windowTitleHeight});
+        }
 
-            int heightWithoutTitle = height - windowTitleHeight;
+        int heightWithoutTitle = height - windowTitleHeight;
 
-            Pointer bitmapPointer = imageRep.bitmapData();
-            if (bitmapPointer == null || bitmapPointer == Pointer.NULL) {
+        Pointer bitmapPointer = imageRep.bitmapData();
+        if (bitmapPointer == null || bitmapPointer == Pointer.NULL) {
+            imageRep.release();
+            return null;
+
+        } else {
+            int[] data = bitmapPointer.getIntArray(0, width * height);
+
+            if (heightWithoutTitle > 512) {
+                BufferedImage image = new BufferedImage(width, heightWithoutTitle, BufferedImage.TYPE_INT_RGB);
+
+                // Start on row windowTitleHeight to exclude the window titlebar
+                int idx = windowTitleHeight * width;
+
+                // Manually write each pixel to the raster because OS X generates ARGB screenshots but BufferedImage expects RGB data.
+                WritableRaster raster = image.getRaster();
+                for (int y = 0; y < heightWithoutTitle; y++) {
+
+                    for (int x = 0; x < width; x++) {
+                        int pixel = data[idx++];
+                        raster.setSample(x, y, 0, pixel >> 8 & 0xFF);   // Red is the second byte
+                        raster.setSample(x, y, 1, pixel >> 16 & 0xFF);  // Green is the third byte
+                        raster.setSample(x, y, 2, pixel >> 24 & 0xFF);  // Blue is the fourth byte
+                    }
+                }
+
+                // Now that we have a copy of the image in a Java object it's safe to release the native pointers
+                Foundation.cfRelease(imageRef);
                 imageRep.release();
-                return null;
+
+                return image;
 
             } else {
-                int[] data = bitmapPointer.getIntArray(0, width * height);
-
-                if (heightWithoutTitle > 512) {
-                    BufferedImage image = new BufferedImage(width, heightWithoutTitle, BufferedImage.TYPE_INT_RGB);
-
-                    // Start on row windowTitleHeight to exclude the window titlebar
-                    int idx = windowTitleHeight * width;
-
-                    // Manually write each pixel to the raster because OS X generates ARGB screenshots but BufferedImage expects RGB data.
-                    WritableRaster raster = image.getRaster();
-                    for (int y = 0; y < heightWithoutTitle; y++) {
-
-                        for (int x = 0; x < width; x++) {
-                            int pixel = data[idx++];
-                            raster.setSample(x, y, 0, pixel >> 8 & 0xFF);   // Red is the second byte
-                            raster.setSample(x, y, 1, pixel >> 16 & 0xFF);  // Green is the third byte
-                            raster.setSample(x, y, 2, pixel >> 24 & 0xFF);  // Blue is the fourth byte
-                        }
-                    }
-
-                    // Now that we have a copy of the image in a Java object it's safe to release the native pointers
-                    Foundation.cfRelease(imageRef);
-                    imageRep.release();
-
-                    return image;
-
-                } else {
-                    // The window is too small to generate an image
-                    return null;
-                }
+                // The window is too small to generate an image
+                return null;
             }
-
-        } finally {
-            pool.drain();
         }
+
     }
 
 

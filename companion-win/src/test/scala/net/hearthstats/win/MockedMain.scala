@@ -38,7 +38,7 @@ object MockedMain extends TesseractSetup with App with Logging {
   class MockProgramHelper(var files: List[(String, Int)]) extends ProgramHelper {
     def foundProgram = files.nonEmpty
 
-    def getScreenCaptureNative = {
+    def getScreenCapture = {
       val (f, c) :: t = files
       files = if (c > 1 || t == Nil)
         (f, c - 1) :: t
