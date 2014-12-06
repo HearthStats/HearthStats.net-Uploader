@@ -1,24 +1,17 @@
 package net.hearthstats
 
-import grizzled.slf4j.Logging
-import net.hearthstats.ui.log.Log
-import net.hearthstats.config.Environment
-import net.hearthstats.util.Translation
-import net.hearthstats.config.Application
-import net.hearthstats.config.OS
-import net.hearthstats.config.UserConfig
-import net.hearthstats.util.Updater
-import net.hearthstats.ui.CompanionFrame
+import java.util.concurrent.{Executors, TimeUnit}
 import javax.swing.JOptionPane._
-import javax.swing.JLabel
-import javax.swing.JPanel
-import net.hearthstats.util.Updater
+import javax.swing.{JLabel, JPanel}
+
+import grizzled.slf4j.Logging
+import net.hearthstats.config.{Application, Environment, OS, UserConfig}
+import net.hearthstats.game.ocr.BackgroundImageSave
+import net.hearthstats.ui.CompanionFrame
+import net.hearthstats.ui.log.Log
+import net.hearthstats.util.{Tracker, Translation, Updater}
+
 import scala.swing.Swing
-import net.hearthstats.util.AnalyticsTrackerFactory
-import net.hearthstats.config.UserConfig
-import net.hearthstats.util.Tracker
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.Executors
 
 class Startup(
   translation: Translation,
@@ -29,15 +22,16 @@ class Startup(
   config: UserConfig,
   companionFrame: CompanionFrame) extends Logging {
 
-  import translation.t
   import config._
   import companionFrame._
+  import translation.t
 
   def start(): Unit = {
     showWelcomeLog()
     analytics.trackEvent("app", "AppStart")
     Swing.onEDT(checkForUpdates())
     startAutoGc()
+    BackgroundImageSave.setSaveFolder(environment.extractionFolder)
   }
 
   // It seems that the native libraries for screen capture have memory leak which are fixed this way
