@@ -11,6 +11,9 @@ import net.hearthstats.game.Screen._
 class ScreenAnalyserSpec extends FlatSpec with Matchers {
   val analyser = new ScreenAnalyser
 
+  "The main menu screen" should "be detected" in
+    checkScreen("main_menu_glowing", MAIN)
+
   "The play lobby screen" should "be detected" in
     checkScreen("play_lobby", PLAY_LOBBY)
 
