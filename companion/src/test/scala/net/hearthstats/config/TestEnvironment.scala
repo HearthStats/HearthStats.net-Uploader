@@ -28,7 +28,7 @@ object TestEnvironment extends Environment {
 object TestProgramHelper extends ProgramHelper {
   def foundProgram = true
   def getHSWindowBounds = new Rectangle(10, 10)
-  def getScreenCaptureNative = img("/net/hearthstats/game/imageanalysis/play_lobby.png")
+  def getScreenCapture = img("/net/hearthstats/game/imageanalysis/play_lobby.png")
   def bringWindowToForeground = false
   //  override def createConfig(environment: Environment) = false
 
