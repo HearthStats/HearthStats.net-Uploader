@@ -154,7 +154,7 @@ class GameMonitor(
     eventHandler = handler
 
   private def handleLogEvent(evt: GameEvent): Unit = try {
-    info(evt)
+    debug(evt)
     eventHandler.lift(evt).getOrElse(debug(s"Ignoring event $evt"))
     matchState.updateLog(evt, companionState.currentDurationMs)
   } catch {
