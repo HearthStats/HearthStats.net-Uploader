@@ -194,12 +194,12 @@ class GameMonitor(
       companionState.opponentId1 = Some(heroChosen.player)
       updateMatch(_.withOpponentClass(newClass))
       hsPresenter.setOpponentClass(newClass)
-      uiLog.info(s"Opponent class detected : $newClass")
+      uiLog.info(s"Opponent class detected: $newClass")
     } else {
       companionState.playerId1 = Some(heroChosen.player)
       updateMatch(_.withUserClass(newClass))
       hsPresenter.setYourClass(newClass)
-      uiLog.info(s"Your class detected : $newClass")
+      uiLog.info(s"Your class detected: $newClass")
       if (enableDeckOverlay && companionState.mode != GameMode.ARENA) deckOverlay.startMonitoringCards(heroChosen.player)
     }
     for {
@@ -254,7 +254,7 @@ class GameMonitor(
   private def handleOpponentName(name: String): Unit = {
     updateMatch(_.withOpponentName(name))
     hsPresenter.setOpponentName(name)
-    uiLog.info(s"Opponent name : $name")
+    uiLog.info(s"Opponent name: $name")
 
   }
 
