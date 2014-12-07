@@ -18,8 +18,9 @@ class LogParser extends Logging {
         Some(EndSpectatorEvent)
       case RANKED_MODE_REGEX() =>
         Some(GameModeDetected(GameMode.RANKED))
+      case ARENA_MODE_REGEX() =>
+        Some(GameModeDetected(GameMode.ARENA))
       case GAME_MODE_REGEX(mode) =>
-        debug(s"$mode detected")
         GAME_MODES.get(mode) map GameModeDetected
       case LEGEND_RANK_REGEX(rank) => // TODO : test this on a legend log file ...
         Some(LegendRank(rank.toInt))
@@ -153,6 +154,7 @@ class LogParser extends Logging {
   val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val HERO_POWER_USE_REGEX = """\[Power\].*cardId=(\w+).*player=(\d+).*""".r
   val GAME_MODE_REGEX = """\[Bob\] ---(\w+)---""".r
+  val ARENA_MODE_REGEX = """\[LoadingScreen\]  LoadingScreen.OnSceneLoaded\(\) - prevMode=.* currMode=DRAFT""".r
   val RANKED_MODE_REGEX = ".*name=rank_window.*".r
   val LEGEND_RANK_REGEX = """\[Bob\] legend rank (\d*)""".r
   val STARTUP_REGEX = """^Initialize engine version.*""".r
