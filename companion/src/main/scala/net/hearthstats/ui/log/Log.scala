@@ -168,8 +168,7 @@ class Log extends Logging {
       val cssClass = level match {
         case ERROR => "error"
         case WARN => "warn"
-        case null | INFO => "log"
-        case _ => marker.toString
+        case _ => marker.toString.toLowerCase
       }
       if (marker != lastMarker) {
         sb.append("<div class=\"break\">&nbsp;</div>")

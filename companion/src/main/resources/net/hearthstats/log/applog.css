@@ -11,7 +11,7 @@ hr {
     margin: 0 0;
 }
 
-.log, .break, .help, .warn, .error {
+.std, .break, .help, .warn, .error {
     margin-left: 10px;
 }
 
