@@ -5,6 +5,8 @@ import java.awt.{ Dimension, Font }
 import javax.swing._
 import javax.swing.event.{ DocumentEvent, DocumentListener }
 import net.hearthstats.config._
+import net.hearthstats.modules.VideoEncoderFactory
+import net.hearthstats.modules.video.{OngoingVideo, VideoEncoder}
 import net.hearthstats.ui.notification.NotificationType
 import net.hearthstats.util.Translation
 import net.miginfocom.swing.MigLayout
@@ -97,17 +99,19 @@ class OptionsPanel(
   add(matchPopupHelpIcon, "wrap")
 
   // Video
-  addLabel(t("options.label.video.record") + " ")
-  addCheckBox(t("options.ui.video.record"), recordVideo, recordVideo.set)
-  
-  addLabel(t("options.label.video.delay") + " ")
-  add(new IntOptionTextField(pollingDelayMs), "wrap")
+  if (new VideoEncoderFactory().isAvailable()) {
+    addLabel(t("options.label.video.record") + " ")
+    addCheckBox(t("options.ui.video.record"), recordVideo, recordVideo.set)
 
-  addLabel(t("options.label.video.width") + " ")
-  add(new IntOptionTextField(videoWidth), "wrap")
+    addLabel(t("options.label.video.delay") + " ")
+    add(new IntOptionTextField(pollingDelayMs), "wrap")
 
-  addLabel(t("options.label.video.height") + " ")
-  add(new IntOptionTextField(videoHeight), "wrap")
+    addLabel(t("options.label.video.width") + " ")
+    add(new IntOptionTextField(videoWidth), "wrap")
+
+    addLabel(t("options.label.video.height") + " ")
+    add(new IntOptionTextField(videoHeight), "wrap")
+  }
 
   // Minimize to System Tray
   addLabel("Interface: ")
