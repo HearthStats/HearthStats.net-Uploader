@@ -8,7 +8,7 @@
 	<groupId>net.hearthstats</groupId>
 	<artifactId>companion-parent</artifactId>
 	<name>HearthStats Companion</name>
-	<version>0.20.3-SNAPSHOT</version>
+	<version>0.21.0</version>
 	<packaging>pom</packaging>
 
 	<properties>
