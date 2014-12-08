@@ -41,6 +41,11 @@ case class CardEvent(cardCode: String, cardId: Int, eventType: CardEventType, pl
     s"player$player : $eventType $cardName"
 }
 
+case class DamageApplied(cardCode: String, cardId: Int, player: Int, total: Int) extends GameEvent with NamedCard {
+  override def toString =
+    s"player$player : $cardName has now received $total total damage"
+}
+
 trait NamedCard {
   def cardCode: String
 

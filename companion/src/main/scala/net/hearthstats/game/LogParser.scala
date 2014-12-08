@@ -28,6 +28,8 @@ class LogParser extends Logging {
         Some(PlayerName(name, id.toInt))
       case POWER_TAG_CHANGE_REGEX(name, "FIRST_PLAYER", "1") =>
         Some(FirstPlayer(name))
+      case DAMAGE_REGEX(id, cardId, player, amount) =>
+        Some(DamageApplied(cardId, id.toInt, player.toInt, amount.toInt))
       case POWER_TAG_CHANGE_REGEX(player, "PLAYSTATE", "WON") =>
         Some(GameOver(player, MatchOutcome.VICTORY))
       case POWER_TAG_CHANGE_REGEX(player, "PLAYSTATE", "LOST") =>
@@ -43,7 +45,6 @@ class LogParser extends Logging {
         debug(s"uiLog: zoneId=$zoneId local=$local cardName=HIDDEN id=$id cardZone=$cardZone zonePos=$zonePos cardId=$cardId player=$player fromZone=$fromZone toZone=$toZone")
         analyseCard(cardZone, fromZone, toZone, "", cardId, player.toInt, id.toInt)
       case HERO_POWER_USE_REGEX(cardId, player) =>
-        debug("Hero Power")
         Some(HeroPowerEvent(cardId, player.toInt))
       // Note : emitted at game start + several times at each use, need to filter !
       case _ =>
@@ -99,10 +100,10 @@ class LogParser extends Logging {
       case ("FRIENDLY PLAY", "FRIENDLY GRAVEYARD") |
         ("FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") |
         ("OPPOSING PLAY", "OPPOSING GRAVEYARD") |
-        ("OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") =>
+        ("OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") |
+        ("FRIENDLY SECRET", "FRIENDLY GRAVEYARD") |
+        ("OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
         CardDestroyed(cardId, id, player)
-      case ("FRIENDLY SECRET", "FRIENDLY GRAVEYARD") | ("OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
-        CardRevealed(cardId, id, player)
       case ("FRIENDLY PLAY (Hero)", "FRIENDLY GRAVEYARD") =>
         HeroDestroyedEvent(false)
       case ("OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
@@ -129,7 +130,7 @@ class LogParser extends Logging {
         CardPlayed(cardId, id, player)
       case ("OPPOSING DECK", "OPPOSING SECRET") =>
         CardPutInPlay(cardId, id, player)
-      case ("", "OPPOSING SECRET") | ("", "FRIENDLY SECRET") =>
+      case ("OPPOSING SECRET", "") | ("FRIENDLY SECRET", "") =>
         CardRevealed(cardId, id, player)
     }
 
@@ -149,10 +150,11 @@ class LogParser extends Logging {
     }
   }
 
+  val DAMAGE_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=\[name=.* id=(\d*) zone=PLAY .* cardId=(.*) player=(\d)\] tag=DAMAGE value=(.*)""".r
   val POWER_TAG_CHANGE_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=(.*) tag=(.*) value=(.*)""".r
   val ZONE_PROCESSCHANGES_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
-  val HERO_POWER_USE_REGEX = """\[Power\].*cardId=(\w+).*player=(\d+).*""".r
+  val HERO_POWER_USE_REGEX = """\[Power\] GameState.DebugPrintPower\(\).*TAG_CHANGE Entity=\[name=.* id=.* zone=PLAY zonePos=0 cardId=(.*) player=(\d)\] tag=EXHAUSTED value=1""".r
   val GAME_MODE_REGEX = """\[Bob\] ---(\w+)---""".r
   val ARENA_MODE_REGEX = """\[LoadingScreen\]  LoadingScreen.OnSceneLoaded\(\) - prevMode=.* currMode=DRAFT""".r
   val RANKED_MODE_REGEX = ".*name=rank_window.*".r
