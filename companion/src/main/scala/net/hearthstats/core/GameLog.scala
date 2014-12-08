@@ -56,10 +56,17 @@ object GameLog {
   mapper.registerModule(DefaultScalaModule)
 }
 
-case class Action(time: Int, action: String, card: Option[String], cardId: Int, player: Int)
+case class Action(
+  time: Int,
+  action: String,
+  card: Option[String],
+  cardId: Int,
+  player: Int,
+  target: Option[Int] = None)
 
 object Action {
   val HERO_POWER = "HERO_POWER"
+  val TARGET = "TARGET"
 }
 
 import Action._
@@ -76,6 +83,9 @@ case class Turn(actions: List[Action] = Nil) {
       // hero power appears twice in the logs
       if (actions.contains(powerUsed)) this
       else copy(actions = powerUsed :: actions)
+    case e @ TargetEvent(cardCode, cardId, player, target) =>
+      val name = if (cardCode == "") None else Some(e.cardName)
+      copy(actions = Action(time, TARGET, name, cardId, player, Some(target)) :: actions)
     case _ => this
   }
 }

@@ -34,6 +34,8 @@ class LogParser extends Logging {
         Some(CardAttacking(cardId, id.toInt, player.toInt))
       case POWER_TAG_ENTITY_REGEX(id, cardId, player, "DEFENDING", "1") =>
         Some(CardAttacked(cardId, id.toInt, player.toInt))
+      case POWER_TAG_ENTITY_REGEX(id, cardId, player, "CARD_TARGET", target) =>
+        Some(TargetEvent(cardId, id.toInt, player.toInt, target.toInt))
       case POWER_TAG_CHANGE_REGEX(player, "PLAYSTATE", "WON") =>
         Some(GameOver(player, MatchOutcome.VICTORY))
       case POWER_TAG_CHANGE_REGEX(player, "PLAYSTATE", "LOST") =>
@@ -154,7 +156,7 @@ class LogParser extends Logging {
     }
   }
 
-  val POWER_TAG_ENTITY_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=\[name=.* id=(\d*) zone=PLAY .* cardId=(.*) player=(\d)\] tag=(.*) value=(.*)""".r
+  val POWER_TAG_ENTITY_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=\[.*id=(\d*).* cardId=(.*) player=(\d)\] tag=(.*) value=(.*)""".r
   val POWER_TAG_CHANGE_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=(.*) tag=(.*) value=(.*)""".r
   val ZONE_PROCESSCHANGES_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
