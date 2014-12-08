@@ -12,5 +12,7 @@ public enum CardEventType {
   SETASIDE, // Hex
   DESTROYED,
   DISCARDED_FROM_DECK,
+  ATTACKING,
+  ATTACKED,
 	DISCARDED;
 }
