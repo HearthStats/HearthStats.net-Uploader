@@ -24,13 +24,8 @@ case class GameLog(
         copy(firstPlayer = Some(id))
       case PlayerName(name, id) if firstPlayerName != Some(name) =>
         copy(secondPlayer = Some(id), secondPlayerName = Some(name))
-      case TurnCount(t) if t > 1 =>
-        turns match {
-          case previous :: others =>
-            val (drawn, turn) = previous.extractLastDraw
-            copy(Turn(List(drawn)) :: turn :: others)
-          case Nil => ???
-        }
+      case TurnCount(c) if c > 1 =>
+        copy(turns = Turn() :: turns)
       case e =>
         turns match {
           case Nil => this
@@ -82,12 +77,6 @@ case class Turn(actions: List[Action] = Nil) {
       if (actions.contains(powerUsed)) this
       else copy(actions = powerUsed :: actions)
     case _ => this
-  }
-
-  //the first card drawn is associated with the previous turn
-  def extractLastDraw: (Action, Turn) = actions match {
-    case previous :: others => (previous, copy(actions = others))
-    case Nil => ???
   }
 }
 
