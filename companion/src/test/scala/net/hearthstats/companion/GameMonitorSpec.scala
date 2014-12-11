@@ -22,6 +22,7 @@ import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.NotificationQueue
 import org.scalatest.junit.JUnitRunner
 import net.hearthstats.ui.GeneralUI
+import java.io.File
 
 @RunWith(classOf[JUnitRunner])
 class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest with BeforeAndAfter {
@@ -51,6 +52,8 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   val newArenaRun = new BufferedImage(100, 10, BufferedImage.TYPE_INT_RGB)
 
   val sleep = config.pollingDelayMs.get * 4
+
+  when(logMonitor.start(any[File])).thenReturn(true)
 
   before { monitor.start() }
 

@@ -1,27 +1,26 @@
 package net.hearthstats.companion
 
 import java.awt.image.BufferedImage
-import java.util.concurrent.{ScheduledFuture, ScheduledThreadPoolExecutor, TimeUnit}
+import java.util.concurrent.{ ScheduledFuture, ScheduledThreadPoolExecutor, TimeUnit }
 import javax.swing.JOptionPane
-
-import akka.actor.{ActorSystem, actorRef2Scala}
+import akka.actor.{ ActorSystem, actorRef2Scala }
 import akka.event.LoggingReceive
 import grizzled.slf4j.Logging
 import net.hearthstats.ProgramHelper
 import net.hearthstats.config.UserConfig
 import net.hearthstats.core.GameMode._
-import net.hearthstats.core.{GameMode, HearthstoneMatch, MatchOutcome, Rank}
+import net.hearthstats.core.{ GameMode, HearthstoneMatch, MatchOutcome, Rank }
 import net.hearthstats.game._
-import net.hearthstats.game.imageanalysis.{Casual, LobbyAnalyser, Ranked}
-import net.hearthstats.hstatsapi.{DeckUtils, MatchUtils}
+import net.hearthstats.game.imageanalysis.{ Casual, LobbyAnalyser, Ranked }
+import net.hearthstats.hstatsapi.{ DeckUtils, MatchUtils }
 import net.hearthstats.modules.VideoEncoderFactory
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.NotificationQueue
-import net.hearthstats.ui.{GeneralUI, HearthstatsPresenter}
-
+import net.hearthstats.ui.{ GeneralUI, HearthstatsPresenter }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
+import java.io.File
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -90,6 +89,25 @@ class GameMonitor(
 
   import akka.actor.ActorDSL._
 
+  private def startLogMonitor() {
+    val started = logMonitor.start(new File(gameLogFile))
+    if (started) {
+      uiLog.info(s"Observing Hearthstone log file : ${gameLogFile.get}")
+    } else {
+      val msg = """Hearthstone log file not found.
+          | Hearthstats Companion cannot work without this file.
+          | Please choose the file 'output_log.txt' 
+          | in your 'Hearthstone\\Hearthstone_Data' folder""".stripMargin
+      hsPresenter.showFileDialog(msg) match {
+        case Some(f) if f.getAbsolutePath endsWith "output_log.txt" =>
+          gameLogFile.set(f.getAbsolutePath)
+        case _ =>
+      }
+      startLogMonitor()
+    }
+
+  }
+
   private def handleProgramFound(found: Boolean, delay: Int): Unit = {
     if (!found && notFoundCount == 1) {
       uiLog.warn("Hearthstone not detected")
@@ -97,7 +115,7 @@ class GameMonitor(
     }
     if (found && notFoundCount > 0) {
       uiLog.info("Hearthstone detected")
-      logMonitor.start()
+      startLogMonitor()
     }
     if (found) {
       notFoundCount = 0
@@ -375,13 +393,13 @@ class GameMonitor(
 
   object VideoEncoder {
     def start(): Unit = if (recordVideo) {
-        info("Video recording started")
-        val videoEncoder = videoEncoderFactory.newInstance(false)
-        companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
-        videoEncoderActor ! EncodeAfter(0)
-      } else {
-        info("Video recording is disabled")
-      }
+      info("Video recording started")
+      val videoEncoder = videoEncoderFactory.newInstance(false)
+      companionState.ongoingVideo = Some(videoEncoder.newVideo(videoFps, videoWidth, videoHeight))
+      videoEncoderActor ! EncodeAfter(0)
+    } else {
+      info("Video recording is disabled")
+    }
 
     def stop(): Unit =
       videoEncoderActor ! StopRecording

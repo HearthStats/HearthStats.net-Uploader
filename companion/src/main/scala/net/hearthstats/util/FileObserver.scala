@@ -8,18 +8,24 @@ import grizzled.slf4j.Logging
 import akka.actor.ActorRef
 import java.nio.charset.Charset
 
-case class FileObserver(file: File) extends ActorObservable with Logging { self =>
-  import FileObserver._
-
+class FileObserver extends ActorObservable with Logging { self =>
   val DEFAULT_DELAY_MS = 50
   var stopped = true
+  var file: File = _
 
   private var tailer: Option[Tailer] = None
 
-  def start(): Unit = {
-    tailer = Some(Tailer.create(file, new SubjectAdapter, DEFAULT_DELAY_MS, true, true))
-    info(s"observing file $file")
-    stopped = false
+  /**
+   * Returns true if the file was found and it can start.
+   */
+  def start(file: File): Boolean = {
+    this.file = file
+    if (file.exists) {
+      tailer = Some(Tailer.create(file, new SubjectAdapter, DEFAULT_DELAY_MS, true, true))
+      info(s"observing file $file")
+      stopped = false
+      true
+    } else false
   }
 
   def stop() = {

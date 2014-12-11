@@ -21,6 +21,8 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.Font
 import javax.swing.JOptionPane
+import java.io.File
+import javax.swing.JFileChooser
 
 /**
  * Defines generic UI features, non specific to HS.
@@ -43,6 +45,16 @@ trait GeneralUI extends JFrame with Logging {
 
   def showConfirmDialog(message: Any, title: String, optionType: Int): Int =
     JOptionPane.showConfirmDialog(this, message, title, optionType)
+
+  def showFileDialog(message: Any): Option[File] = {
+    JOptionPane.showMessageDialog(this, message)
+    val chooser = new JFileChooser
+    chooser.showOpenDialog(this) match {
+      case JFileChooser.APPROVE_OPTION =>
+        Some(chooser.getSelectedFile)
+      case _ => None
+    }
+  }
 
   def showOptionDialog(message: Any, title: String, optionType: Int, values: Array[AnyRef]): Int =
     JOptionPane.showOptionDialog(

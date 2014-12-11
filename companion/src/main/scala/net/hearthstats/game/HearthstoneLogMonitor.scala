@@ -1,19 +1,10 @@
 package net.hearthstats.game
 
 import java.io.File
-import com.softwaremill.macwire.MacwireMacros.wire
+
+import akka.actor.ActorDSL.{ Act, actor }
 import grizzled.slf4j.Logging
-import net.hearthstats.config.{ Environment, UserConfig }
-import net.hearthstats.hstatsapi.{ API, CardUtils }
-import net.hearthstats.ui.log.Log
-import net.hearthstats.util.FileObserver
-import akka.actor.ActorSystem
-import akka.actor.Actor
-import akka.actor.Props
-import net.hearthstats.util.ActorObservable
-import akka.actor.ActorDSL._
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.ExecutionContext.Implicits.global
+import net.hearthstats.util.{ ActorObservable, FileObserver }
 
 class HearthstoneLogMonitor(
   logParser: LogParser,
@@ -32,8 +23,8 @@ class HearthstoneLogMonitor(
     }
   }))
 
-  def start(): Unit =
-    fileObserver.start()
+  def start(file: File): Boolean =
+    fileObserver.start(file)
 
   def stop(): Unit =
     fileObserver.stop()
