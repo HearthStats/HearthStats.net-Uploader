@@ -28,6 +28,11 @@ class LogParser extends Logging {
         Some(PlayerName(name, id.toInt))
       case POWER_TAG_CHANGE_REGEX(name, "FIRST_PLAYER", "1") =>
         Some(FirstPlayer(name))
+      case POWER_TAG_CREATE_REGEX(id, cardId) =>
+        debug(s"uiLog: opening card, id=$id cardId=$cardId")
+        Some(CardOpenedWith(cardId, id.toInt, 1))
+      case POWER_TAG_CHOOSE_REGEX(name, id, cardId, player) =>
+        Some(CardChoice(cardId, id.toInt, player.toInt))
       case POWER_TAG_ENTITY_REGEX(id, cardId, player, "DAMAGE", amount) =>
         Some(DamageApplied(cardId, id.toInt, player.toInt, amount.toInt))
       case POWER_TAG_ENTITY_REGEX(id, cardId, player, "ATTACKING", "1") =>
@@ -69,7 +74,7 @@ class LogParser extends Logging {
     cardId: String,
     player: Int,
     id: Int): Option[GameEvent] = {
-
+    
     def analyseHandZone: ZoneToEvent = _ match {
       case ("", "FRIENDLY HAND") | ("", "OPPOSING HAND") =>
         CardReceived(cardId, id, player)
@@ -77,12 +82,12 @@ class LogParser extends Logging {
         CardDrawn(cardId, id, player)
       case ("FRIENDLY HAND", _) =>
         CardPlayed(cardId, id, player)
-      case ("FRIENDLY PLAY", "FRIENDLY HAND") =>
+      case ("OPPOSING PLAY", "OPPOSING HAND") | ("FRIENDLY PLAY", "FRIENDLY HAND") =>
         CardReturned(cardId, id, player)
     }
 
     def analysePlayZone: ZoneToEvent = _ match {
-      case ("", "FRIENDLY PLAY") | ("", "FRIENDLY PLAY (Weapon)") | ("", "OPPOSING PLAY") | ("", "OPPOSING PLAY (Weapon)") =>
+      case ("", "FRIENDLY PLAY") | ("", "FRIENDLY PLAY (Weapon)") | ("", "OPPOSING PLAY") | ("", "OPPOSING PLAY (Weapon)") | ("FRIENDLY HAND", "FRIENDLY PLAY") =>
         CardPutInPlay(cardId, id, player)
       case ("", "FRIENDLY PLAY (Hero)") =>
         HERO_CLASSES.get(cardId) match {
@@ -98,6 +103,8 @@ class LogParser extends Logging {
         HeroPowerDeclared(cardId, player)
       case ("OPPOSING HAND", _) =>
         CardPlayed(cardId, id, player)
+      case ("OPPOSING DECK", "OPPOSING Play") | ("FRIENDLY DECK", "FRIENDLY Play") =>
+        CardDiscardedFromDeck(cardId, id, player)
     }
 
     def analyseGraveyardZone: ZoneToEvent = _ match {
@@ -122,6 +129,8 @@ class LogParser extends Logging {
     def analyseSetasideZone: ZoneToEvent = _ match {
       case ("OPPOSING PLAY", "") | ("FRIENDLY PLAY", "") =>
         CardSetAside(cardId, id, player)
+      case ("FRIENDLY DECK", "") =>
+        CardDiscardedFromDeck(cardId, id, player)
     }
 
     def analyseDeckZone: ZoneToEvent = _ match {
@@ -138,6 +147,8 @@ class LogParser extends Logging {
         CardPutInPlay(cardId, id, player)
       case ("OPPOSING SECRET", "") | ("FRIENDLY SECRET", "") =>
         CardRevealed(cardId, id, player)
+      case ("OPPOSING DECK", "OPPOSING SECRET") | ("FRIENDLY DECK", "FRIENDLY SECRET") =>
+        CardPlayedFromDeck(cardId, id, player)
     }
 
     val zoneToEvent: ZoneToEvent = cardZone match {
@@ -156,8 +167,10 @@ class LogParser extends Logging {
     }
   }
 
+  val POWER_TAG_CREATE_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*FULL_ENTITY.*Creating ID=(\d*) CardID=(?!GAME)(?!HERO)(.+)""".r
   val POWER_TAG_ENTITY_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=\[.*id=(\d*).* cardId=(.*) player=(\d)\] tag=(.*) value=(.*)""".r
   val POWER_TAG_CHANGE_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=(.*) tag=(.*) value=(.*)""".r
+  val POWER_TAG_CHOOSE_REGEX = """\[Power\] GameState.SendChoices\(\) -\s*m_chosenEntities\[0\]=\[name=(.*) id=(\d*) zone=SETASIDE.*cardId=(.*) player=(\d)\]""".r
   val ZONE_PROCESSCHANGES_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val HERO_POWER_USE_REGEX = """\[Power\] GameState.DebugPrintPower\(\).*TAG_CHANGE Entity=\[name=.* id=.* zone=PLAY zonePos=0 cardId=(.*) player=(\d)\] tag=EXHAUSTED value=1""".r
