@@ -12,8 +12,8 @@ class FileObserverSpec extends FlatSpec with Matchers with OneInstancePerTest {
 
   ignore should "notify observers of content changed" in {
     val f = File.createTempFile("prefa", "aazeae")
-    val obs = FileObserver(f)
-    obs.start()
+    val obs = new FileObserver
+    obs.start(f)
     var read = ""
     obs.addReceive {
       case l: String => read = l

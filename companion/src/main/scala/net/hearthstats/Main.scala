@@ -75,7 +75,9 @@ class Main(
 
   val matchEndPopup = wire[MatchEndPopup]
 
-  val hsLogFile = new File(environment.hearthstoneLogFile)
+  if (config.gameLogFile == "") {
+    config.gameLogFile.set(environment.hearthstoneLogFile)
+  }
   val fileObserver = wire[FileObserver]
   val logParser = wire[LogParser]
   val logMonitor = wire[HearthstoneLogMonitor]
