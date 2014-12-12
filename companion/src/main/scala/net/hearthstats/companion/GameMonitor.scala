@@ -22,6 +22,7 @@ import net.hearthstats.ui.{GeneralUI, HearthstatsPresenter}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
+import scala.collection.mutable.ListBuffer
 
 class GameMonitor(
   programHelper: ProgramHelper,
@@ -146,8 +147,10 @@ class GameMonitor(
       handlePlayerName(name, false)
     case LegendRank(rank) =>
       handleLegendRank(rank)
+    case CardEvent(cardId, id, CardEventType.OPENED_WITH, player) =>
+      deckOverlay.addCardToOpeningHand(cardId)
   }
-
+  
   var eventHandler: EventHandler = normal
 
   private def become(handler: EventHandler): Unit =
@@ -302,6 +305,7 @@ class GameMonitor(
       updateMatch(_.withDuration(companionState.currentDurationMs / 1000))
       matchUtils.submitMatchResult()
       deckOverlay.reset()
+      deckOverlay.resetOpeningHand()
       companionState.reset()
       VideoEncoder.stop()
       schedule(normalDelay)

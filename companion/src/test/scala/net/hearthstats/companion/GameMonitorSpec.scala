@@ -3,7 +3,7 @@ package net.hearthstats.companion
 import java.awt.image.BufferedImage
 import org.junit.runner.RunWith
 import org.mockito.Matchers.{ any, anyString }
-import org.mockito.Mockito.{ never, verify, when }
+import org.mockito.Mockito.{ never, verify, when, doReturn }
 import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers, OneInstancePerTest }
 import org.scalatest.mock.MockitoSugar
 import com.softwaremill.macwire.MacwireMacros.wire
@@ -112,8 +112,8 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
   }
 
   def setupForPlayMode(mode: LobbyMode) {
-    when(helper.foundProgram).thenReturn(true)
-    when(helper.getScreenCapture).thenReturn(rank8Lobby)
+    doReturn(true).when(helper).foundProgram
+    doReturn(rank8Lobby).when(helper).getScreenCapture
     when(lobbyAnalyser.mode(rank8Lobby)).thenReturn(Some(mode))
     when(lobbyAnalyser.imageIdentifyDeckSlot(rank8Lobby)).thenReturn(Some(3))
     when(deckUtils.getDeckFromSlot(3)).thenReturn(Some(new Deck))
@@ -124,7 +124,7 @@ class GameMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneI
 
   def setupForArena(isNew: Boolean) {
     when(helper.foundProgram).thenReturn(true)
-    when(helper.getScreenCapture).thenReturn(newArenaRun)
+    doReturn(newArenaRun).when(helper).getScreenCapture
     when(lobbyAnalyser.isNewArenaRun(newArenaRun)).thenReturn(isNew)
     when(screenAnalyser.identifyScreen(any[BufferedImage], any[Screen])).thenReturn(Screen.ARENA_LOBBY)
     Thread.sleep(sleep)

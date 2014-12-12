@@ -20,7 +20,8 @@ class DeckOverlayModule(
 
   val monitoringActors = ListBuffer.empty[ActorRef]
   var count = 0
-
+  val openingHand = ListBuffer.empty[String]
+  
   def show(deck: Deck): Unit = {
     presenter.showDeck(deck)
   }
@@ -41,20 +42,27 @@ class DeckOverlayModule(
     count += 1
     val monitoringActor = actor(s"DeckOverlay$count")(new Act {
       become {
-        case CardEvent(cardCode, _, evtType, `playerId`) if Seq(DISCARDED_FROM_DECK, DRAWN) contains evtType =>
-          cardUtils.byCode(cardCode).map(presenter.removeCard)
-        case CardEvent(cardCode, _, REPLACED, `playerId`) =>
+        case CardEvent(cardCode, _, evtType, `playerId`) if Seq(DISCARDED_FROM_DECK, PLAYED_FROM_DECK, DRAWN) contains evtType =>
+          if (playerId == 1) cardUtils.byCode(cardCode).map(presenter.removeCard) 
+        case CardEvent(cardCode, _, evtType, `playerId`) if Seq(CHOSEN, REPLACED) contains evtType=>
           cardUtils.byCode(cardCode).map(presenter.addCard)
         case _ =>
       }
     })
     monitoringActors.append(monitoringActor)
     logMonitor.addObserver(monitoringActor)
-
+    openingHand.foreach { cardUtils.byCode(_).map(presenter.removeCard) }
   }
 
   def reset(): Unit = {
     presenter.reset()
   }
 
+  def addCardToOpeningHand(cardId: String) = {
+    openingHand += cardId
+  }
+  
+  def resetOpeningHand() = {
+    openingHand.clear()
+  }
 }
