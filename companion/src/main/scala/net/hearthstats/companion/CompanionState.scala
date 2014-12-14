@@ -52,11 +52,14 @@ class CompanionState extends Logging {
   private val lastImages = Buffer.empty[TimedImage]
 
   def addImage(bi: BufferedImage): Unit = lastImages.synchronized {
-    if (lastImages.size >= maxImages) {
-      lastImages.remove(0)
+    // Only add images during video recording
+    if (ongoingVideo.isDefined) {
+      if (lastImages.size >= maxImages) {
+        lastImages.remove(0)
+      }
+      debug(s"image captured $currentDurationMs ms after game start")
+      lastImages.append(TimedImage(bi, currentDurationMs))
     }
-    debug(s"image captured $currentDurationMs ms after game start")
-    lastImages.append(TimedImage(bi, currentDurationMs))
   }
 
   def imagesAfter(afterMs: Long): Iterable[TimedImage] = lastImages.synchronized {
