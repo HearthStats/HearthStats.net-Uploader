@@ -3,13 +3,13 @@ package net.hearthstats.game.imageanalysis
 import java.awt.image.BufferedImage
 
 import grizzled.slf4j.Logging
-import net.hearthstats.core.{ Card, Deck }
+import net.hearthstats.core.{Card, Deck, HeroClass}
 import net.hearthstats.game.imageanalysis.CoordinateCacheBase.UniquePixelIdentifier
 import net.hearthstats.game.imageanalysis.UniquePixel._
-import net.hearthstats.game.ocr.{ DeckCardOcr, DeckNameOcr }
+import net.hearthstats.game.ocr.{DeckCardOcr, DeckNameOcr}
 import net.hearthstats.util.Coordinate
 import org.apache.commons.lang3.StringUtils
-import net.hearthstats.core.HeroClass
+
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -80,9 +80,9 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
   }
 
   private def extractCardImage(img: BufferedImage, cardNo: Int): BufferedImage = {
-    val yoffset = (133f + (45.5f * cardNo.toFloat)).toInt
-
-    val topLeft = getCoordinate(1282, yoffset)
+    val yoffset = (135f + (45.0f * cardNo.toFloat)).toInt
+    
+    val topLeft = getCoordinate(1280, yoffset)
     val bottomRight = getCoordinate(1470, yoffset + 24)
 
     debug(s"Extracting ${topLeft.x}x${topLeft.y} to ${bottomRight.x}x${bottomRight.y}")
@@ -103,10 +103,10 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
   }
 
   private def identifyCount(img: BufferedImage, cardNo: Int): Int = {
-    val yoffset = (45.5f * cardNo.toFloat).toInt
+    val yoffset = (45.0f * cardNo.toFloat).toInt
 
     // Look for a yellow number two in various offset positions
-    if (isCountTwo(img, yoffset) || isCountTwo(img, yoffset + 2) || isCountTwo(img, yoffset + 4)) {
+    if (isCountTwo(img, yoffset) || isCountTwo(img, yoffset - 2) || isCountTwo(img, yoffset + 2)) {
       2
     } else {
       1
@@ -114,11 +114,11 @@ class DeckAnalyser(val cardList: List[Card], val imgWidth: Int, val imgHeight: I
   }
 
   private def isCountTwo(img: BufferedImage, offset: Int): Boolean = {
-    checkPixelIsYellow(img, 1492, 150 + offset) &&
-      checkPixelIsYellow(img, 1490, 142 + offset) &&
-      checkPixelIsYellow(img, 1497, 141 + offset) &&
-      !checkPixelIsYellow(img, 1486, 137 + offset) &&
-      !checkPixelIsYellow(img, 1501, 148 + offset)
+    checkPixelIsYellow(img, 1487, 152 + offset) &&
+      checkPixelIsYellow(img, 1485, 144 + offset) &&
+      checkPixelIsYellow(img, 1492, 143 + offset) &&
+      !checkPixelIsYellow(img, 1481, 139 + offset) &&
+      !checkPixelIsYellow(img, 1496, 150 + offset)
   }
 
   private def checkPixelIsYellow(img: BufferedImage, x: Int, y: Int): Boolean = {

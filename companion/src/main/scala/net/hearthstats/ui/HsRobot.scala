@@ -30,21 +30,15 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) extends Logging {
   }
 
   def collectionScrollAway(): Unit = {
-    var i = 0
-    click(resolution.collectionScroll)
     robot.delay(mediumDelay)
-    for (i <- 1 to 4) {
-      scrollAway()
-    }
+    click(resolution.collectionScrollTop)
+    robot.delay(mediumDelay)
   }
 
   def collectionScrollTowards(): Unit = {
-    var i = 0
-    click(resolution.collectionScroll)
     robot.delay(mediumDelay)
-    for (i <- 1 to 4) {
-      scrollTowards()
-    }
+    click(resolution.collectionScrollBottom)
+    robot.delay(mediumDelay)
   }
 
   def add(cardName: String, times: Int = 1): Unit = {
@@ -121,7 +115,8 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) extends Logging {
 
     def search = applyRatio(0.48f, 0.915f)
     def card = applyRatio(0.12f, 0.31f)
-    def collectionScroll = applyRatio(0.972f, 0.05f)
+    def collectionScrollTop = applyRatio(0.972f, 0.054f)
+    def collectionScrollBottom = applyRatio(0.972f, 0.835f)
 
     private def applyRatio(r: (Float, Float)) = {
       val (a, b) = r
@@ -132,7 +127,8 @@ case class HsRobot(hsWindow: Rectangle, delayRatio: Int = 2) extends Logging {
   sealed trait Resolution {
     def search: Coordinate
     def card: Coordinate
-    def collectionScroll: Coordinate
+    def collectionScrollTop: Coordinate
+    def collectionScrollBottom: Coordinate
   }
 
 }
