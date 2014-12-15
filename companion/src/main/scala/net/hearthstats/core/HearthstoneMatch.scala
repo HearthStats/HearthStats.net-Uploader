@@ -89,6 +89,9 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
     s"http://hearthstats.net/$m/$id/edit"
   }
 
+  def matchUrl: String = {
+    s"http://hearthstats.net/matches/$id"
+  }
   //methods to update the match (return an updated copy)
 
   def withDeck(d: Deck) = copy(deck = Some(d))

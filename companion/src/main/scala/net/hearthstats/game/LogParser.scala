@@ -29,8 +29,8 @@ class LogParser extends Logging {
       case POWER_TAG_CHANGE_REGEX(name, "FIRST_PLAYER", "1") =>
         Some(FirstPlayer(name))
       case POWER_TAG_CREATE_REGEX(id, cardId) =>
-        debug(s"uiLog: opening card, id=$id cardId=$cardId")
-        Some(CardOpenedWith(cardId, id.toInt, 1))
+        debug(s"uiLog: entity created, id=$id cardId=$cardId")
+        analyzeEntity(cardId, id.toInt, trackOpeningHand)
       case POWER_TAG_CHOOSE_REGEX(name, id, cardId, player) =>
         Some(CardChoice(cardId, id.toInt, player.toInt))
       case POWER_TAG_ENTITY_REGEX(id, cardId, player, "DAMAGE", amount) =>
@@ -42,8 +42,10 @@ class LogParser extends Logging {
       case POWER_TAG_ENTITY_REGEX(id, cardId, player, "CARD_TARGET", target) =>
         Some(TargetEvent(cardId, id.toInt, player.toInt, target.toInt))
       case POWER_TAG_CHANGE_REGEX(player, "PLAYSTATE", "WON") =>
+        trackOpeningHand = true
         Some(GameOver(player, MatchOutcome.VICTORY))
       case POWER_TAG_CHANGE_REGEX(player, "PLAYSTATE", "LOST") =>
+        trackOpeningHand = true
         Some(GameOver(player, MatchOutcome.DEFEAT))
       case POWER_TAG_CHANGE_REGEX(player, "TURN_START", time) if player != "GameEntity" =>
         Some(TurnStart(player, time.toInt))
@@ -64,6 +66,7 @@ class LogParser extends Logging {
     }
   }
 
+  var trackOpeningHand = true
   type ZoneToEvent = PartialFunction[(String, String), GameEvent]
 
   def analyseCard(
@@ -91,7 +94,9 @@ class LogParser extends Logging {
         CardPutInPlay(cardId, id, player)
       case ("", "FRIENDLY PLAY (Hero)") =>
         HERO_CLASSES.get(cardId) match {
-          case Some(hero) => MatchStart(HeroChosen(cardId, hero, opponent = false, player))
+          case Some(hero) => 
+            trackOpeningHand = false
+            MatchStart(HeroChosen(cardId, hero, opponent = false, player))
           case None => HeroChosen(cardId, HeroClass.UNDETECTED, opponent = false, player) // either Naxx computer of Jaraxxus
         }
       case ("", "OPPOSING PLAY (Hero)") =>
@@ -166,6 +171,18 @@ class LogParser extends Logging {
       case e => e
     }
   }
+  
+  def analyzeEntity(
+      cardId: String,
+      id: Int,
+      trackOpeningHand: Boolean): Option[GameEvent] = {
+    if (trackOpeningHand && !HERO_POWER_IDS.contains(cardId)) {
+      Some(CardOpenedWith(cardId, id.toInt, 1))
+    } else {
+      // track other entities being created
+      None
+    }
+  }
 
   val POWER_TAG_CREATE_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*FULL_ENTITY.*Creating ID=(\d*) CardID=(?!GAME)(?!HERO)(.+)""".r
   val POWER_TAG_ENTITY_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=\[.*id=(\d*).* cardId=(.*) player=(\d)\] tag=(.*) value=(.*)""".r
@@ -199,4 +216,15 @@ class LogParser extends Logging {
     "HERO_02" -> SHAMAN,
     "HERO_06" -> DRUID)
     .withDefaultValue(HeroClass.UNDETECTED) // to handle either Solo adventures or Lord Jarraxxus
+  
+  val HERO_POWER_IDS = List(
+      "CS2_017",  // Shapeshift
+      "DS1h_292", // Steady Shot
+      "CS2_034",  // Fireblast
+      "CS2_101",  // Reinforce
+      "CS1h_001", // Lesser Heal
+      "CS2_083b", // Dagger Mastery
+      "CS2_049",  // Totemic Call
+      "CS2_056",  // Life Tap
+      "CS2_102")  // Armor Up!
 }
