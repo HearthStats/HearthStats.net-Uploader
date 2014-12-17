@@ -165,10 +165,8 @@ class GameMonitor(
       handlePlayerName(name, false)
     case LegendRank(rank) =>
       handleLegendRank(rank)
-    case CardEvent(cardId, id, CardEventType.OPENED_WITH, player) =>
-      deckOverlay.addCardToOpeningHand(cardId)
   }
-  
+
   var eventHandler: EventHandler = normal
 
   private def become(handler: EventHandler): Unit =
@@ -221,7 +219,9 @@ class GameMonitor(
       updateMatch(_.withUserClass(newClass))
       hsPresenter.setYourClass(newClass)
       uiLog.info(s"Your class detected: $newClass")
-      if (enableDeckOverlay && companionState.mode != GameMode.ARENA) deckOverlay.startMonitoringCards(heroChosen.player)
+      if (enableDeckOverlay && companionState.mode != GameMode.ARENA) {
+        deckOverlay.startMonitoringCards(heroChosen.player)
+      }
     }
     for {
       slot <- companionState.deckSlot
@@ -323,7 +323,6 @@ class GameMonitor(
       updateMatch(_.withDuration(companionState.currentDurationMs / 1000))
       matchUtils.submitMatchResult()
       deckOverlay.reset()
-      deckOverlay.resetOpeningHand()
       companionState.reset()
       VideoEncoder.stop()
       schedule(normalDelay)

@@ -12,6 +12,8 @@ import akka.actor.PoisonPill
 import akka.actor.ActorDSL._
 import scala.collection.mutable.ListBuffer
 import akka.actor.ActorRef
+import net.hearthstats.game.TurnStart
+import net.hearthstats.game.TurnCount
 
 class DeckOverlayModule(
   presenter: DeckOverlaySwing,
@@ -20,13 +22,12 @@ class DeckOverlayModule(
 
   val monitoringActors = ListBuffer.empty[ActorRef]
   var count = 0
-  val openingHand = ListBuffer.empty[String]
-  
+
   def show(deck: Deck): Unit = {
     presenter.showDeck(deck)
   }
 
-  def clearAll() {
+  def clearAll(): Unit = {
     reset()
     for (a <- monitoringActors) {
       a ! PoisonPill
@@ -38,31 +39,47 @@ class DeckOverlayModule(
   def startMonitoringCards(playerId: Int): Unit = {
     info(s"monitoring cards for player $playerId")
     clearAll()
-    implicit val actorSystem = logMonitor.system
     count += 1
-    val monitoringActor = actor(s"DeckOverlay$count")(new Act {
-      become {
-        case CardEvent(cardCode, _, evtType, `playerId`) if Seq(DISCARDED_FROM_DECK, PLAYED_FROM_DECK, DRAWN) contains evtType =>
-          if (playerId == 1) cardUtils.byCode(cardCode).map(presenter.removeCard) 
-        case CardEvent(cardCode, _, evtType, `playerId`) if Seq(CHOSEN, REPLACED) contains evtType=>
-          cardUtils.byCode(cardCode).map(presenter.addCard)
+    val monitoringActor = newActor(playerId)
+    monitoringActors += monitoringActor
+    logMonitor.addObserver(monitoringActor)
+
+  }
+
+  def newActor(playerId: Int): ActorRef = {
+    count += 1
+    implicit val actorSystem = logMonitor.system
+    actor(s"DeckOverlay$count")(new Act {
+      val openingHand = ListBuffer.empty[String]
+
+      val initial: Receive = { // handle mulligan
+        case CardEvent(cardCode, _, RECEIVED | DRAWN, `playerId`) =>
+          openingHand += cardCode
+        case CardEvent(cardCode, _, REPLACED, `playerId`) =>
+          openingHand -= cardCode
+        case TurnCount(2) =>
+          for {
+            cardCode <- openingHand
+            card <- cardUtils.byCode(cardCode)
+          } {
+            presenter.removeCard(card)
+          }
+          become(inGame)
         case _ =>
       }
+
+      val inGame: Receive = {
+        case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN, `playerId`) =>
+          cardUtils.byCode(cardCode).map(presenter.removeCard)
+        case _ =>
+      }
+
+      become(initial)
     })
-    monitoringActors.append(monitoringActor)
-    logMonitor.addObserver(monitoringActor)
-    openingHand.foreach { cardUtils.byCode(_).map(presenter.removeCard) }
   }
 
   def reset(): Unit = {
     presenter.reset()
   }
 
-  def addCardToOpeningHand(cardId: String) = {
-    openingHand += cardId
-  }
-  
-  def resetOpeningHand() = {
-    openingHand.clear()
-  }
 }

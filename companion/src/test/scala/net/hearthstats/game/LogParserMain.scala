@@ -5,7 +5,7 @@ import scala.collection.JavaConversions._
 
 object LogParserMain extends App {
   val p = new LogParser
-  val lines = io.Source.fromFile("""C:\Utilisateurs\a518291\Dropbox\Public\hearthstats\output_log.txt""").getLines
+  val lines = io.Source.fromFile("""C:\Program Files (x86)\Hearthstone\Hearthstone_Data\output_log.txt""").getLines
 
   for {
     l <- lines

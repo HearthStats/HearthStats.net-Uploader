@@ -60,7 +60,6 @@ trait NamedCard {
 }
 
 object CardEvents {
-  def CardOpenedWith(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, OPENED_WITH, player: Int)
   def CardAddedToDeck(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, ADDED_TO_DECK, player: Int)
   def CardPlayed(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, PLAYED, player: Int)
   def CardReturned(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, RETURNED, player: Int)
@@ -76,7 +75,6 @@ object CardEvents {
   def CardAttacked(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, ATTACKED, player: Int)
   def CardDiscardedFromDeck(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, DISCARDED_FROM_DECK, player: Int)
   def CardPlayedFromDeck(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, PLAYED_FROM_DECK, player: Int)
-  def CardChoice(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, CHOSEN, player: Int)
 }
 
 case class HeroDestroyedEvent(opponent: Boolean) extends HeroEvent

@@ -16,7 +16,7 @@ class HearthstoneLogMonitor(
         debug(s"found : [$l]")
         zoneEvent(l) match {
           case Some(e) =>
-            debug(s"game event: $e")
+            info(s"game event: $e")
             observable.notify(e)
           case None =>
         }

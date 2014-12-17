@@ -28,11 +28,6 @@ class LogParser extends Logging {
         Some(PlayerName(name, id.toInt))
       case POWER_TAG_CHANGE_REGEX(name, "FIRST_PLAYER", "1") =>
         Some(FirstPlayer(name))
-      case POWER_TAG_CREATE_REGEX(id, cardId) =>
-        debug(s"uiLog: entity created, id=$id cardId=$cardId")
-        analyzeEntity(cardId, id.toInt, trackOpeningHand)
-      case POWER_TAG_CHOOSE_REGEX(name, id, cardId, player) =>
-        Some(CardChoice(cardId, id.toInt, player.toInt))
       case POWER_TAG_ENTITY_REGEX(id, cardId, player, "DAMAGE", amount) =>
         Some(DamageApplied(cardId, id.toInt, player.toInt, amount.toInt))
       case POWER_TAG_ENTITY_REGEX(id, cardId, player, "ATTACKING", "1") =>
@@ -42,10 +37,8 @@ class LogParser extends Logging {
       case POWER_TAG_ENTITY_REGEX(id, cardId, player, "CARD_TARGET", target) =>
         Some(TargetEvent(cardId, id.toInt, player.toInt, target.toInt))
       case POWER_TAG_CHANGE_REGEX(player, "PLAYSTATE", "WON") =>
-        trackOpeningHand = true
         Some(GameOver(player, MatchOutcome.VICTORY))
       case POWER_TAG_CHANGE_REGEX(player, "PLAYSTATE", "LOST") =>
-        trackOpeningHand = true
         Some(GameOver(player, MatchOutcome.DEFEAT))
       case POWER_TAG_CHANGE_REGEX(player, "TURN_START", time) if player != "GameEntity" =>
         Some(TurnStart(player, time.toInt))
@@ -66,7 +59,6 @@ class LogParser extends Logging {
     }
   }
 
-  var trackOpeningHand = true
   type ZoneToEvent = PartialFunction[(String, String), GameEvent]
 
   def analyseCard(
@@ -77,7 +69,7 @@ class LogParser extends Logging {
     cardId: String,
     player: Int,
     id: Int): Option[GameEvent] = {
-    
+
     def analyseHandZone: ZoneToEvent = _ match {
       case ("", "FRIENDLY HAND") | ("", "OPPOSING HAND") =>
         CardReceived(cardId, id, player)
@@ -94,8 +86,7 @@ class LogParser extends Logging {
         CardPutInPlay(cardId, id, player)
       case ("", "FRIENDLY PLAY (Hero)") =>
         HERO_CLASSES.get(cardId) match {
-          case Some(hero) => 
-            trackOpeningHand = false
+          case Some(hero) =>
             MatchStart(HeroChosen(cardId, hero, opponent = false, player))
           case None => HeroChosen(cardId, HeroClass.UNDETECTED, opponent = false, player) // either Naxx computer of Jaraxxus
         }
@@ -113,33 +104,29 @@ class LogParser extends Logging {
     }
 
     def analyseGraveyardZone: ZoneToEvent = _ match {
-      case ("", "FRIENDLY GRAVEYARD") | ("", "OPPOSING GRAVEYARD") | ("FRIENDLY HAND", "FRIENDLY GRAVEYARD") | ("OPPOSING HAND", "OPPOSING GRAVEYARD") =>
+      case ("", "FRIENDLY GRAVEYARD" | "OPPOSING GRAVEYARD") |
+        ("FRIENDLY HAND", "FRIENDLY GRAVEYARD") | ("OPPOSING HAND", "OPPOSING GRAVEYARD") =>
         CardDiscarded(cardId, id, player)
-      case ("FRIENDLY PLAY", "FRIENDLY GRAVEYARD") |
-        ("FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") |
-        ("OPPOSING PLAY", "OPPOSING GRAVEYARD") |
-        ("OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") |
-        ("FRIENDLY SECRET", "FRIENDLY GRAVEYARD") |
-        ("OPPOSING SECRET", "OPPOSING GRAVEYARD") =>
+      case ("FRIENDLY SECRET" | "FRIENDLY PLAY" | "FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") |
+        ("OPPOSING SECRET" | "OPPOSING PLAY" | "OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") =>
         CardDestroyed(cardId, id, player)
       case ("FRIENDLY PLAY (Hero)", "FRIENDLY GRAVEYARD") =>
         HeroDestroyedEvent(false)
       case ("OPPOSING PLAY (Hero)", "OPPOSING GRAVEYARD") =>
         HeroDestroyedEvent(true)
-      case ("OPPOSING DECK", "OPPOSING GRAVEYARD") |
-        ("FRIENDLY DECK", "FRIENDLY GRAVEYARD") =>
+      case ("OPPOSING DECK", "OPPOSING GRAVEYARD") | ("FRIENDLY DECK", "FRIENDLY GRAVEYARD") =>
         CardDiscardedFromDeck(cardId, id, player)
     }
 
     def analyseSetasideZone: ZoneToEvent = _ match {
-      case ("OPPOSING PLAY", "") | ("FRIENDLY PLAY", "") =>
+      case ("OPPOSING PLAY" | "FRIENDLY PLAY", "") =>
         CardSetAside(cardId, id, player)
       case ("FRIENDLY DECK", "") =>
         CardDiscardedFromDeck(cardId, id, player)
     }
 
     def analyseDeckZone: ZoneToEvent = _ match {
-      case ("", "FRIENDLY DECK") | ("", "OPPOSING DECK") =>
+      case ("", "FRIENDLY DECK" | "OPPOSING DECK") =>
         CardAddedToDeck(cardId, id, player)
       case ("OPPOSING HAND", "OPPOSING DECK") | ("FRIENDLY HAND", "FRIENDLY DECK") =>
         CardReplaced(cardId, id, player)
@@ -150,7 +137,7 @@ class LogParser extends Logging {
         CardPlayed(cardId, id, player)
       case ("OPPOSING DECK", "OPPOSING SECRET") =>
         CardPutInPlay(cardId, id, player)
-      case ("OPPOSING SECRET", "") | ("FRIENDLY SECRET", "") =>
+      case ("OPPOSING SECRET" | "FRIENDLY SECRET", "") =>
         CardRevealed(cardId, id, player)
       case ("OPPOSING DECK", "OPPOSING SECRET") | ("FRIENDLY DECK", "FRIENDLY SECRET") =>
         CardPlayedFromDeck(cardId, id, player)
@@ -171,23 +158,9 @@ class LogParser extends Logging {
       case e => e
     }
   }
-  
-  def analyzeEntity(
-      cardId: String,
-      id: Int,
-      trackOpeningHand: Boolean): Option[GameEvent] = {
-    if (trackOpeningHand && !HERO_POWER_IDS.contains(cardId)) {
-      Some(CardOpenedWith(cardId, id.toInt, 1))
-    } else {
-      // track other entities being created
-      None
-    }
-  }
 
-  val POWER_TAG_CREATE_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*FULL_ENTITY.*Creating ID=(\d*) CardID=(?!GAME)(?!HERO)(.+)""".r
   val POWER_TAG_ENTITY_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=\[.*id=(\d*).* cardId=(.*) player=(\d)\] tag=(.*) value=(.*)""".r
   val POWER_TAG_CHANGE_REGEX = """\[Power\] GameState.DebugPrintPower\(\) -\s*TAG_CHANGE Entity=(.*) tag=(.*) value=(.*)""".r
-  val POWER_TAG_CHOOSE_REGEX = """\[Power\] GameState.SendChoices\(\) -\s*m_chosenEntities\[0\]=\[name=(.*) id=(\d*) zone=SETASIDE.*cardId=(.*) player=(\d)\]""".r
   val ZONE_PROCESSCHANGES_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[name=(.*) id=(\d*) zone=(.*) zonePos=(\d*) cardId=(.*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val HERO_POWER_USE_REGEX = """\[Power\] GameState.DebugPrintPower\(\).*TAG_CHANGE Entity=\[name=.* id=.* zone=PLAY zonePos=0 cardId=(.*) player=(\d)\] tag=EXHAUSTED value=1""".r
@@ -216,15 +189,15 @@ class LogParser extends Logging {
     "HERO_02" -> SHAMAN,
     "HERO_06" -> DRUID)
     .withDefaultValue(HeroClass.UNDETECTED) // to handle either Solo adventures or Lord Jarraxxus
-  
+
   val HERO_POWER_IDS = List(
-      "CS2_017",  // Shapeshift
-      "DS1h_292", // Steady Shot
-      "CS2_034",  // Fireblast
-      "CS2_101",  // Reinforce
-      "CS1h_001", // Lesser Heal
-      "CS2_083b", // Dagger Mastery
-      "CS2_049",  // Totemic Call
-      "CS2_056",  // Life Tap
-      "CS2_102")  // Armor Up!
+    "CS2_017", // Shapeshift
+    "DS1h_292", // Steady Shot
+    "CS2_034", // Fireblast
+    "CS2_101", // Reinforce
+    "CS1h_001", // Lesser Heal
+    "CS2_083b", // Dagger Mastery
+    "CS2_049", // Totemic Call
+    "CS2_056", // Life Tap
+    "CS2_102") // Armor Up!
 }
