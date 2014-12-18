@@ -71,6 +71,8 @@ class Main(
   val individualPixelAnalyser = wire[IndividualPixelAnalyser]
   val lobbyAnalyser = wire[LobbyAnalyser]
   val hsMatch = wire[HearthstoneMatch]
+  val rectangle = config.deckOverlay
+
   val deckOverlay = wire[DeckOverlaySwing]
 
   val matchEndPopup = wire[MatchEndPopup]

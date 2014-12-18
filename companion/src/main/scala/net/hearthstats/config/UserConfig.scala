@@ -11,7 +11,7 @@ import net.hearthstats.util.TranslationConfig
  * Stores and retrieves configuration for the current user by using the Java 7 Preferences API.
  * Config changes made are immediately stored by the operating system for the current user.
  */
-class UserConfig extends Logging {
+class UserConfig extends Logging with Implicits {
   import ConfigUtil._
 
   //public options, can be exposed via OptionsTab
@@ -60,12 +60,11 @@ class UserConfig extends Logging {
   val windowHeight = config("ui.window.height", 700)
   val windowWidth = config("ui.window.width", 600)
 
-  val deckX = config("ui.deck.x", 0)
-  val deckY = config("ui.deck.y", 0)
-  val deckHeight = config("ui.deck.height", 600)
-  val deckWidth = config("ui.deck.width", 485)
-
-  implicit def configToValue[T](configValue: ConfigValue[T]): T = configValue.get
+  val deckOverlay = RectangleConfig(
+    config("ui.deck.x", 0),
+    config("ui.deck.y", 0),
+    config("ui.deck.width", 485),
+    config("ui.deck.height", 600))
 
   object ConfigUtil {
     private val PreferencesRoot = "/net/hearthstats/companion"
@@ -153,11 +152,20 @@ class UserConfig extends Logging {
   }
 }
 
-object UserConfig {
+object UserConfig extends Implicits
 
-}
+case class RectangleConfig(
+  x: ConfigValue[Int],
+  y: ConfigValue[Int],
+  width: ConfigValue[Int],
+  height: ConfigValue[Int])
 
 trait ConfigValue[T] {
   def get: T
   def set(value: T): Unit
+}
+
+trait Implicits {
+  implicit def configToValue[T](configValue: ConfigValue[T]): T = configValue.get
+
 }

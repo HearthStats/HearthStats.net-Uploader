@@ -53,10 +53,7 @@ object TestConfig extends UserConfig {
   override val windowY: ConfigValue[Int] = 0
   override val windowHeight: ConfigValue[Int] = 700
   override val windowWidth: ConfigValue[Int] = 600
-  override val deckX: ConfigValue[Int] = 0
-  override val deckY: ConfigValue[Int] = 0
-  override val deckHeight: ConfigValue[Int] = 600
-  override val deckWidth: ConfigValue[Int] = 485
+  override val deckOverlay = RectangleConfig(0, 0, 485, 600)
 
   implicit def readOnlyConfig[T](value: T): ConfigValue[T] =
     new ConfigValue[T] {

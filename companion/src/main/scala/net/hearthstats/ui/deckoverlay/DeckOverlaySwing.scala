@@ -4,21 +4,21 @@ import java.awt.event.{ MouseAdapter, MouseEvent }
 import java.awt.{ BorderLayout, Dimension }
 import javax.swing.Box.createVerticalBox
 import javax.swing.{ ImageIcon, JCheckBox, JFrame, JLabel, WindowConstants }
-
 import net.hearthstats.config.{ Environment, UserConfig }
 import net.hearthstats.core.{ Card, Deck }
 import net.hearthstats.hstatsapi.CardUtils
 import net.hearthstats.ui.log.Log
-
 import scala.swing.Swing.{ ChangeListener, onEDT }
+import net.hearthstats.config.RectangleConfig
+import UserConfig._
+import net.hearthstats.util.Translation
 
 class DeckOverlaySwing(
-  config: UserConfig,
+  rectangleConfig: RectangleConfig,
+  cardsTranslation: Translation,
   cardUtils: CardUtils,
   environment: Environment,
   uiLog: Log) extends JFrame with DeckOverlayPresenter {
-
-  import config._
 
   var cardLabels: Map[String, ClickableLabel] = Map.empty
 
@@ -28,7 +28,7 @@ class DeckOverlaySwing(
     val richCards = for {
       c <- deck.cards
       card = cardUtils.withLocalFile(c)
-      localName = gameCardsTranslation.opt(card.originalName)
+      localName = cardsTranslation.opt(card.originalName)
       richCard = card.copy(localizedName = localName)
     } yield richCard
 
@@ -56,8 +56,8 @@ class DeckOverlaySwing(
     setFocusableWindowState(true)
     setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 
-    setLocation(deckX, deckY)
-    setSize(deckWidth, deckHeight)
+    setLocation(rectangleConfig.x, rectangleConfig.y)
+    setSize(rectangleConfig.width, rectangleConfig.height)
     repaint()
     setVisible(true)
 
@@ -69,11 +69,11 @@ class DeckOverlaySwing(
       // Save the location of the window, if it is visible (it won't be visible if the selected deck is invalid)
       if (isVisible) {
         val p = getLocationOnScreen
-        deckX.set(p.x)
-        deckY.set(p.y)
-        val rect = getSize()
-        deckWidth.set(rect.getWidth.toInt)
-        deckHeight.set(rect.getHeight.toInt)
+        rectangleConfig.x.set(p.x)
+        rectangleConfig.y.set(p.y)
+        val rect = getSize
+        rectangleConfig.width.set(rect.getWidth.toInt)
+        rectangleConfig.height.set(rect.getHeight.toInt)
       }
     } catch {
       case e: Exception =>

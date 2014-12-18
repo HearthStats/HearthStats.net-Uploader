@@ -30,6 +30,7 @@ object LogMonitorDeckOverlayMain extends App {
   val cardUtils = wire[CardUtils]
   val deckUtils: DeckUtils = wire[DeckUtils]
 
+  val rectangle = config.deckOverlay
   val presenter = wire[DeckOverlaySwing]
   val tempLogFile = File.createTempFile("hssample", "log")
   val fileObserver = wire[FileObserver]
