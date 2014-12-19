@@ -1,8 +1,8 @@
 package net.hearthstats.ui.deckoverlay
 
-import com.softwaremill.macwire.Tagging.{@@ => @@}
+import com.softwaremill.macwire.Tagging.{ @@ => @@ }
 
-import net.hearthstats.config.{Environment, RectangleConfig}
+import net.hearthstats.config.{ Environment, RectangleConfig }
 import net.hearthstats.core.Card
 import net.hearthstats.hstatsapi.CardUtils
 import net.hearthstats.ui.log.Log
@@ -26,7 +26,10 @@ class OpponentOverlaySwing(
    * When a card is revealed by opponent.
    */
   def addCard(card: Card): Unit = {
-    showDeck(deck.copy(cards = card :: deck.cards))
+    dispose()
+    val c = deck.cards.find(_.id == card.id).getOrElse(card).addOne
+    val cards = c :: deck.cards.filter(_.id != c.id)
+    showDeck(deck.copy(cards = cards.sorted))
   }
 
 }

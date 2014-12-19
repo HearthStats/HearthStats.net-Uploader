@@ -1,18 +1,18 @@
 package net.hearthstats.ui.deckoverlay
 
-import java.awt.{AlphaComposite, Color}
-import java.awt.{Dimension, Font}
-import java.awt.{Graphics, Graphics2D}
-import java.awt.Color.{BLACK, WHITE}
-import java.awt.Font.{BOLD, SANS_SERIF}
-import java.awt.event.{MouseAdapter, MouseEvent}
+import java.awt.{ AlphaComposite, Color }
+import java.awt.{ Dimension, Font }
+import java.awt.{ Graphics, Graphics2D }
+import java.awt.Color.{ BLACK, WHITE }
+import java.awt.Font.{ BOLD, SANS_SERIF }
+import java.awt.event.{ MouseAdapter, MouseEvent }
 import java.awt.geom.AffineTransform
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.swing.Swing.onEDT
 
-import javax.swing.{BorderFactory, ImageIcon, JLabel}
+import javax.swing.{ BorderFactory, ImageIcon, JLabel }
 import net.hearthstats.core.Card
 
 class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
@@ -46,9 +46,9 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   def imgSrcW: Int = 130 * cardImage.getIconWidth / pictureSize.getWidth.toInt
   def imgSrcH: Int = 40 * cardImage.getIconHeight / pictureSize.getHeight.toInt
 
-  setMaximumSize(backgroundSize * 2)
-  setPreferredSize(backgroundSize * 1)
-  setMinimumSize(backgroundSize * 0.5)
+  setMaximumSize(backgroundSize * 1.2)
+  setPreferredSize(backgroundSize)
+  setMinimumSize(backgroundSize)
 
   implicit class DimensionOps(d: Dimension) {
     def *(r: Double) = new Dimension((d.getWidth * r).toInt, (d.getHeight * r).toInt)

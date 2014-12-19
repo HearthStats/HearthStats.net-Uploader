@@ -72,6 +72,8 @@ class DeckOverlayModule(
           cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | PLAYED | REVEALED, p) if p != playerId =>
           cardUtils.byCode(cardCode).map(opponentPresenter.addCard)
+        case CardEvent(cardCode, _, RETURNED, p) if p != playerId =>
+          cardUtils.byCode(cardCode).map(opponentPresenter.decreaseCardCount)
         case _ =>
       }
 

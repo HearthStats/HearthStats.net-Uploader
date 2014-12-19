@@ -21,6 +21,8 @@ case class Card(
     case None => originalName
   }
 
+  def addOne: Card = copy(count = count + 1)
+
   val isLegendary: Boolean = rarity == LEGENDARY
 
   val dashes = "[ :']+"
