@@ -1,19 +1,19 @@
 package net.hearthstats.ui.deckoverlay
 
-import java.awt.{ AlphaComposite, Color }
-import java.awt.{ Dimension, Font }
-import java.awt.{ Graphics, Graphics2D }
-import java.awt.Color.{ BLACK, WHITE }
-import java.awt.Font.{ BOLD, SANS_SERIF }
-import java.awt.event.{ MouseAdapter, MouseEvent }
+import java.awt.{AlphaComposite, Color}
+import java.awt.{Dimension, Font}
+import java.awt.{Graphics, Graphics2D}
+import java.awt.Color.{BLACK, WHITE}
+import java.awt.Font.{BOLD, SANS_SERIF}
+import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.geom.AffineTransform
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.swing.Swing.onEDT
-import javax.swing.{ BorderFactory, ImageIcon, JLabel }
+
+import javax.swing.{BorderFactory, ImageIcon, JLabel}
 import net.hearthstats.core.Card
-import javax.swing.JToolTip
-import java.awt.BorderLayout
 
 class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   import ClickableLabel._
@@ -58,7 +58,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   updateRemaining()
 
   val src = card.localFile.get.toURI.toURL
-  setToolTipText(s"<html><img src='$src'> $name")
+  setToolTipText(s"""<html><img src="$src"> $name""")
 
   addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent) {
@@ -66,7 +66,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
     }
   })
 
-  protected override def paintComponent(g: Graphics) : Unit = {
+  protected override def paintComponent(g: Graphics): Unit = {
     val g2 = g.asInstanceOf[Graphics2D]
     val original = g2.getTransform
     val composite = g2.getComposite

@@ -1,22 +1,20 @@
 package net.hearthstats.companion
 
+import scala.collection.mutable.ListBuffer
+
+import akka.actor.{ ActorRef, PoisonPill, actorRef2Scala }
+import akka.actor.ActorDSL.{ Act, actor }
+import grizzled.slf4j.Logging
 import net.hearthstats.core.Deck
+import net.hearthstats.game.{ HearthstoneLogMonitor, TurnCount }
 import net.hearthstats.game.CardEvent
 import net.hearthstats.game.CardEventType._
-import net.hearthstats.game.HearthstoneLogMonitor
 import net.hearthstats.hstatsapi.CardUtils
-import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
-import grizzled.slf4j.Logging
-import net.hearthstats.game.GameOver
-import akka.actor.PoisonPill
-import akka.actor.ActorDSL._
-import scala.collection.mutable.ListBuffer
-import akka.actor.ActorRef
-import net.hearthstats.game.TurnStart
-import net.hearthstats.game.TurnCount
+import net.hearthstats.ui.deckoverlay.{ OpponentOverlaySwing, UserOverlaySwing }
 
 class DeckOverlayModule(
-  presenter: DeckOverlaySwing,
+  userPresenter: UserOverlaySwing,
+  opponentPresenter: OpponentOverlaySwing,
   cardUtils: CardUtils,
   logMonitor: HearthstoneLogMonitor) extends Logging {
 
@@ -24,7 +22,8 @@ class DeckOverlayModule(
   var count = 0
 
   def show(deck: Deck): Unit = {
-    presenter.showDeck(deck)
+    userPresenter.showDeck(deck)
+    opponentPresenter.showDeck(Deck())
   }
 
   def clearAll(): Unit = {
@@ -62,7 +61,7 @@ class DeckOverlayModule(
             cardCode <- openingHand
             card <- cardUtils.byCode(cardCode)
           } {
-            presenter.decreaseCardCount(card)
+            userPresenter.decreaseCardCount(card)
           }
           become(inGame)
         case _ =>
@@ -70,7 +69,9 @@ class DeckOverlayModule(
 
       val inGame: Receive = {
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN, `playerId`) =>
-          cardUtils.byCode(cardCode).map(presenter.decreaseCardCount)
+          cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
+        case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | PLAYED | REVEALED, p) if p != playerId =>
+          cardUtils.byCode(cardCode).map(opponentPresenter.addCard)
         case _ =>
       }
 
@@ -79,7 +80,7 @@ class DeckOverlayModule(
   }
 
   def reset(): Unit = {
-    presenter.reset()
+    userPresenter.reset()
   }
 
 }

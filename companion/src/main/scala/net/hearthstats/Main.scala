@@ -2,47 +2,27 @@ package net.hearthstats
 
 import java.awt.Component
 import java.io.File
-import javax.swing.{ JFrame, JOptionPane, WindowConstants }
-import com.softwaremill.macwire.MacwireMacros._
+
+import scala.util.control.NonFatal
+
+import com.softwaremill.macwire.MacwireMacros.wire
+import com.softwaremill.macwire.Tagging.Tagging
+
 import grizzled.slf4j.Logging
-import net.hearthstats.companion.{ CompanionState, DeckOverlayModule, GameMonitor }
+import javax.swing.{ JFrame, JOptionPane, WindowConstants }
+import net.hearthstats.companion.{ CompanionState, DeckOverlayModule, GameMonitor, ScreenEvents }
 import net.hearthstats.config.{ Application, Environment, UserConfig }
 import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.game.{ HearthstoneLogMonitor, MatchState }
+import net.hearthstats.game.{ HearthstoneLogMonitor, LogParser, MatchState }
 import net.hearthstats.game.imageanalysis.{ IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser }
 import net.hearthstats.hstatsapi.{ API, CardUtils, DeckUtils, MatchUtils }
-import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
+import net.hearthstats.modules.{ FileUploaderFactory, ReplayHandler, VideoEncoderFactory }
+import net.hearthstats.ui.{ CompanionFrame, ExportDeckBox, MatchEndPopup }
+import net.hearthstats.ui.deckoverlay._
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.DialogNotification
-import net.hearthstats.ui.{ CompanionFrame, ExportDeckBox, MatchEndPopup }
 import net.hearthstats.util.{ AnalyticsTrackerFactory, FileObserver, Translation, TranslationConfig, Updater }
 import net.sourceforge.tess4j.Tesseract
-import net.hearthstats.config.UserConfig
-import net.hearthstats.util.Updater
-import net.hearthstats.ui.CompanionFrame
-import net.hearthstats.companion.CompanionState
-import net.hearthstats.game.MatchState
-import net.hearthstats.hstatsapi.API
-import net.hearthstats.hstatsapi.DeckUtils
-import net.hearthstats.hstatsapi.CardUtils
-import net.hearthstats.game.imageanalysis.IndividualPixelAnalyser
-import net.hearthstats.companion.GameMonitor
-import net.hearthstats.game.imageanalysis.LobbyAnalyser
-import net.hearthstats.game.imageanalysis.ScreenAnalyser
-import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
-import net.hearthstats.hstatsapi.MatchUtils
-import net.hearthstats.util.AnalyticsTrackerFactory
-import net.hearthstats.util.FileObserver
-import net.hearthstats.game.HearthstoneLogMonitor
-import net.hearthstats.companion.DeckOverlayModule
-import net.hearthstats.ui.MatchEndPopup
-import net.hearthstats.modules.VideoEncoderFactory
-import net.hearthstats.modules.ReplayHandler
-import net.hearthstats.modules.FileUploaderFactory
-import net.hearthstats.companion.ScreenEvents
-import net.hearthstats.game.LogParser
-import scala.util.control.NonFatal
 
 class Main(
   environment: Environment,
@@ -71,9 +51,11 @@ class Main(
   val individualPixelAnalyser = wire[IndividualPixelAnalyser]
   val lobbyAnalyser = wire[LobbyAnalyser]
   val hsMatch = wire[HearthstoneMatch]
-  val rectangle = config.deckOverlay
 
-  val deckOverlay = wire[DeckOverlaySwing]
+  val rectangleConfig = config.deckOverlay.taggedWith[UserDeckOverlayRectangle]
+  val deckOverlay = wire[UserOverlaySwing]
+  val opponentConfig = config.opponentOverlay.taggedWith[OpponentDeckOverlayRectangle]
+  val opponentOverlay = wire[OpponentOverlaySwing]
 
   val matchEndPopup = wire[MatchEndPopup]
 
