@@ -90,10 +90,10 @@ class DeckOverlaySwing(
       }
     } else None
 
-  def removeCard(card: Card): Unit =
+  def decreaseCardCount(card: Card): Unit =
     findLabel(card) map (_.decreaseRemaining())
 
-  def addCard(card: Card): Unit =
+  def increaseCardCount(card: Card): Unit =
     findLabel(card) map (_.increaseRemaining())
 
   def reset(): Unit =
@@ -110,12 +110,12 @@ trait DeckOverlayPresenter {
   /**
    * When a card is drawn.
    */
-  def removeCard(card: Card)
+  def decreaseCardCount(card: Card)
 
   /**
    * When a card is replaced (ie mulligan).
    */
-  def addCard(card: Card)
+  def increaseCardCount(card: Card)
   /**
    * Reset the overlay without changing the deck
    */
