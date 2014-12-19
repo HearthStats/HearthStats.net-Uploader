@@ -29,7 +29,7 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
   }
 
   it should "create a match" in {
-    val matc = new HearthstoneMatch(GameMode.CASUAL,
+    val matc = HearthstoneMatch(GameMode.CASUAL,
       WARLOCK,
       DRUID,
       Some(false),
@@ -50,7 +50,7 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
     arena.setUserClass("warlock")
     api.createArenaRun(arena).isDefined shouldBe true
     api.getLastArenaRun should not be null
-    api.createMatch(new HearthstoneMatch(GameMode.ARENA,
+    val m = HearthstoneMatch(GameMode.ARENA,
       WARLOCK,
       DRUID,
       Some(false),
@@ -60,7 +60,8 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
       Some(Rank.RANK_1),
       1,
       1,
-      "")).isDefined shouldBe true
+      "")
+    api.createMatch(m.withJsonLog(GameLog())).isDefined shouldBe true
     api.endCurrentArenaRun.isDefined shouldBe true
   }
 }
