@@ -44,7 +44,6 @@ class DeckOverlaySwing(
         cardLabel = new ClickableLabel(card, imagesReady)
       } yield {
         box.add(cardLabel)
-        cardLabel.addMouseListener(new MouseHandler(card, imageLabel))
         card.originalName -> cardLabel
       }).toMap
 
@@ -64,7 +63,6 @@ class DeckOverlaySwing(
   }
 
   override def dispose(): Unit = {
-    //    connection.unsubscribe()
     try {
       // Save the location of the window, if it is visible (it won't be visible if the selected deck is invalid)
       if (isVisible) {
@@ -101,12 +99,6 @@ class DeckOverlaySwing(
   def reset(): Unit =
     cardLabels.foreach { keyVal => keyVal._2.reset() }
 
-  case class MouseHandler(card: Card, imageLabel: JLabel) extends MouseAdapter {
-    override def mouseEntered(e: MouseEvent) {
-      val localFile = environment.imageCacheFile(card.fileName).getAbsolutePath
-      onEDT(imageLabel.setIcon(new ImageIcon(localFile)))
-    }
-  }
 }
 
 trait DeckOverlayPresenter {

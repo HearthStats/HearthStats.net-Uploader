@@ -7,13 +7,13 @@ import java.awt.Color.{ BLACK, WHITE }
 import java.awt.Font.{ BOLD, SANS_SERIF }
 import java.awt.event.{ MouseAdapter, MouseEvent }
 import java.awt.geom.AffineTransform
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.swing.Swing.onEDT
-
 import javax.swing.{ BorderFactory, ImageIcon, JLabel }
 import net.hearthstats.core.Card
+import javax.swing.JToolTip
+import java.awt.BorderLayout
 
 class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   import ClickableLabel._
@@ -56,6 +56,9 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   setBorder(BorderFactory.createEmptyBorder)
 
   updateRemaining()
+
+  val src = card.localFile.get.toURI.toURL
+  setToolTipText(s"<html><img src='$src'> $name")
 
   addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent) {
@@ -116,9 +119,9 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
     remaining += 1
     updateRemaining()
   }
-  
-  def reset(): Unit =  {
-    while ( remaining < card.count ) {
+
+  def reset(): Unit = {
+    while (remaining < card.count) {
       remaining += 1
     }
     updateRemaining()
@@ -131,6 +134,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
       else cardBack
     repaint()
   }
+
 }
 
 object ClickableLabel {

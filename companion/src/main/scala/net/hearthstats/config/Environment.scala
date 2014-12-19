@@ -29,7 +29,7 @@ abstract class Environment {
   val imageCacheFolder: String
 
   def imageCacheFile(fileName: String) =
-    new File(imageCacheFolder, fileName)
+    new File(imageCacheFolder, fileName + ".png")
 
   /**
    * The location of the Hearthstone log.config file.
