@@ -62,7 +62,7 @@ class DeckOverlayModule(
             cardCode <- openingHand
             card <- cardUtils.byCode(cardCode)
           } {
-            presenter.removeCard(card)
+            presenter.decreaseCardCount(card)
           }
           become(inGame)
         case _ =>
@@ -70,7 +70,7 @@ class DeckOverlayModule(
 
       val inGame: Receive = {
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN, `playerId`) =>
-          cardUtils.byCode(cardCode).map(presenter.removeCard)
+          cardUtils.byCode(cardCode).map(presenter.decreaseCardCount)
         case _ =>
       }
 

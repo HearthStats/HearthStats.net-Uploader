@@ -66,7 +66,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
     }
   })
 
-  protected override def paintComponent(g: Graphics) {
+  protected override def paintComponent(g: Graphics) : Unit = {
     val g2 = g.asInstanceOf[Graphics2D]
     val original = g2.getTransform
     val composite = g2.getComposite
@@ -121,13 +121,11 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   }
 
   def reset(): Unit = {
-    while (remaining < card.count) {
-      remaining += 1
-    }
+    remaining = card.count
     updateRemaining()
   }
 
-  private def updateRemaining() {
+  private def updateRemaining(): Unit = {
     currentBack =
       if (remaining > 1) cardBack2
       else if (card.isLegendary && remaining >= 1) cardBackL
