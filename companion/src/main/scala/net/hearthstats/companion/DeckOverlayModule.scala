@@ -23,6 +23,9 @@ class DeckOverlayModule(
 
   def show(deck: Deck): Unit = {
     userPresenter.showDeck(deck)
+  }
+
+  def showOpponentDeck(): Unit = {
     opponentPresenter.showDeck(Deck())
   }
 
@@ -71,9 +74,13 @@ class DeckOverlayModule(
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN, `playerId`) =>
           cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | PLAYED | REVEALED, p) if p != playerId =>
-          cardUtils.byCode(cardCode).map(opponentPresenter.addCard)
+          for (c <- cardUtils.byCode(cardCode) if c.collectible) {
+            opponentPresenter.addCard(c)
+          }
         case CardEvent(cardCode, _, RETURNED, p) if p != playerId =>
-          cardUtils.byCode(cardCode).map(opponentPresenter.decreaseCardCount)
+          for (c <- cardUtils.byCode(cardCode) if c.collectible) {
+            opponentPresenter.decreaseCardCount(c)
+          }
         case _ =>
       }
 
