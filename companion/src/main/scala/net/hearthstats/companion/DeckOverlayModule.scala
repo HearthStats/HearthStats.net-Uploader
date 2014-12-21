@@ -25,8 +25,8 @@ class DeckOverlayModule(
     userPresenter.showDeck(deck)
   }
 
-  def showOpponentDeck(): Unit = {
-    opponentPresenter.showDeck(Deck())
+  def showOpponentDeck(opponentName: String): Unit = {
+    opponentPresenter.showDeck(Deck(name = opponentName))
   }
 
   def clearAll(): Unit = {
@@ -66,13 +66,17 @@ class DeckOverlayModule(
           } {
             userPresenter.decreaseCardCount(card)
           }
-          become(inGame)
+          become(handleOppCards orElse inGame)
         case _ =>
       }
 
       val inGame: Receive = {
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN, `playerId`) =>
           cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
+        case _ =>
+      }
+
+      val handleOppCards: Receive = {
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | PLAYED | REVEALED, p) if p != playerId =>
           for (c <- cardUtils.byCode(cardCode) if c.collectible) {
             opponentPresenter.addCard(c)
@@ -81,10 +85,9 @@ class DeckOverlayModule(
           for (c <- cardUtils.byCode(cardCode) if c.collectible) {
             opponentPresenter.decreaseCardCount(c)
           }
-        case _ =>
       }
 
-      become(initial)
+      become(handleOppCards orElse initial)
     })
   }
 

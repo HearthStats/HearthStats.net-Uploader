@@ -1,12 +1,12 @@
 package net.hearthstats.ui.deckoverlay
 
-import java.awt.{BorderLayout, Dimension}
+import java.awt.{ BorderLayout, Dimension }
 
-import javax.swing.{JFrame, JLabel, WindowConstants}
+import javax.swing.{ JFrame, JLabel, WindowConstants }
 import javax.swing.Box.createVerticalBox
-import net.hearthstats.config.{Environment, RectangleConfig}
+import net.hearthstats.config.{ Environment, RectangleConfig }
 import net.hearthstats.config.UserConfig.configToValue
-import net.hearthstats.core.{Card, Deck}
+import net.hearthstats.core.{ Card, Deck }
 import net.hearthstats.hstatsapi.CardUtils
 import net.hearthstats.ui.log.Log
 import net.hearthstats.util.Translation
@@ -23,6 +23,7 @@ abstract class DeckOverlaySwing(
 
   def showDeck(deck: Deck) {
     this.deck = deck
+    setTitle(deck.name)
     val imagesReady = cardUtils.downloadImages(deck.cards)
 
     val richCards = for {
