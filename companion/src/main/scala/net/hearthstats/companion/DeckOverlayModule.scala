@@ -71,7 +71,7 @@ class DeckOverlayModule(
       }
 
       val inGame: Receive = {
-        case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN, `playerId`) =>
+        case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN | DISCARDED, `playerId`) =>
           cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
         case _ =>
       }
