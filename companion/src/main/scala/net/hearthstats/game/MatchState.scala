@@ -22,7 +22,7 @@ class MatchState {
 
   def lastMatchUrl: Option[String] =
     for (m <- lastMatch) yield {
-      if ("Arena" == m.mode) "http://hearthstats.net/arenas/new"
+      if (GameMode.ARENA == m.mode) "http://hearthstats.net/arenas/new"
       else m.editUrl
     }
 
