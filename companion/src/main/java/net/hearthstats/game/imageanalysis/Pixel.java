@@ -79,9 +79,9 @@ public enum Pixel {
     ARENA_LOBBY_Q           (Q,  60,  50,  76,  80,  70,  96),
 
     PLAY_LOBBY_C            (C,   0,   0,   0,  10,  10,  10),
-    PLAY_LOBBY_E            (E,  56,   9,   3,  76,  29,  23),
-    PLAY_LOBBY_F            (F, 117,  24,  10, 214,  84,  58),
-    PLAY_LOBBY_H            (H,  57,  12,   6, 109,  38,  34),
+    PLAY_LOBBY_E            (E,  51,   4,   3,  81,  34,  28),
+    PLAY_LOBBY_F            (F, 108,  14,   5, 200,  64,  50),
+    PLAY_LOBBY_H            (H,  48,   8,   4, 109,  38,  34),
     PLAY_LOBBY_I            (I,  33,   3,   3,  96,  75,  47),
     PLAY_LOBBY_P            (P, 102,  70,  40, 122,  90,  60),
     PLAY_LOBBY_Q            (Q,  97,  71,  47, 117,  91,  67),

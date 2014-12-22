@@ -165,7 +165,7 @@ class LogParser extends Logging {
   val HIDDEN_REGEX = """\[Zone\] ZoneChangeList\.ProcessChanges\(\) - id=(\d*) local=(.*) \[id=(\d*) cardId=(.*) type=(.*) zone=(.*) zonePos=(\d*) player=(\d*)\] zone from (.*) -> (.*)""".r
   val HERO_POWER_USE_REGEX = """\[Power\] GameState.DebugPrintPower\(\).*TAG_CHANGE Entity=\[name=.* id=.* zone=PLAY zonePos=0 cardId=(.*) player=(\d)\] tag=EXHAUSTED value=1""".r
   val GAME_MODE_REGEX = """\[Bob\] ---(\w+)---""".r
-  val ARENA_MODE_REGEX = """\[LoadingScreen\]  LoadingScreen.OnSceneLoaded\(\) - prevMode=.* currMode=DRAFT""".r
+  val ARENA_MODE_REGEX = """\[LoadingScreen\] LoadingScreen.OnSceneLoaded\(\) - prevMode=.* currMode=DRAFT""".r
   val RANKED_MODE_REGEX = ".*name=rank_window.*".r
   val LEGEND_RANK_REGEX = """\[Bob\] legend rank (\d*)""".r
   val STARTUP_REGEX = """^Initialize engine version.*""".r
