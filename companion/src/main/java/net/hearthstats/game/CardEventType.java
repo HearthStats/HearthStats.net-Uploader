@@ -15,5 +15,6 @@ public enum CardEventType {
   PLAYED_FROM_DECK,  // mad scientist, deathlord
   ATTACKING,
   ATTACKED,
+  IGNORED, // card discarded from play (after a spell is played)
 	DISCARDED;
 }

@@ -7,13 +7,13 @@ import java.awt.Color.{ BLACK, WHITE }
 import java.awt.Font.{ BOLD, SANS_SERIF }
 import java.awt.event.{ MouseAdapter, MouseEvent }
 import java.awt.geom.AffineTransform
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.swing.Swing.onEDT
+
 import javax.swing.{ BorderFactory, ImageIcon, JLabel }
 import net.hearthstats.core.Card
-import javax.swing.JToolTip
-import java.awt.BorderLayout
 
 class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   import ClickableLabel._
@@ -46,9 +46,9 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   def imgSrcW: Int = 130 * cardImage.getIconWidth / pictureSize.getWidth.toInt
   def imgSrcH: Int = 40 * cardImage.getIconHeight / pictureSize.getHeight.toInt
 
-  setMaximumSize(backgroundSize * 2)
-  setPreferredSize(backgroundSize * 1)
-  setMinimumSize(backgroundSize * 0.5)
+  setMaximumSize(backgroundSize * 1.2)
+  setPreferredSize(backgroundSize)
+  setMinimumSize(backgroundSize)
 
   implicit class DimensionOps(d: Dimension) {
     def *(r: Double) = new Dimension((d.getWidth * r).toInt, (d.getHeight * r).toInt)
@@ -58,7 +58,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   updateRemaining()
 
   val src = card.localFile.get.toURI.toURL
-  setToolTipText(s"<html><img src='$src'> $name")
+  setToolTipText(s"""<html><img src="$src"> $name""")
 
   addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent) {
@@ -66,7 +66,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
     }
   })
 
-  protected override def paintComponent(g: Graphics) {
+  protected override def paintComponent(g: Graphics): Unit = {
     val g2 = g.asInstanceOf[Graphics2D]
     val original = g2.getTransform
     val composite = g2.getComposite
@@ -121,13 +121,11 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   }
 
   def reset(): Unit = {
-    while (remaining < card.count) {
-      remaining += 1
-    }
+    remaining = card.count
     updateRemaining()
   }
 
-  private def updateRemaining() {
+  private def updateRemaining(): Unit = {
     currentBack =
       if (remaining > 1) cardBack2
       else if (card.isLegendary && remaining >= 1) cardBackL

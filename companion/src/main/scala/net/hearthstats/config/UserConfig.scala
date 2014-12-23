@@ -3,9 +3,8 @@ package net.hearthstats.config
 import java.util.prefs.Preferences
 
 import grizzled.slf4j.Logging
-import net.hearthstats.ui.notification.NotificationType;
-import net.hearthstats.util.Translation
-import net.hearthstats.util.TranslationConfig
+import net.hearthstats.ui.notification.NotificationType
+import net.hearthstats.util.{Translation, TranslationConfig}
 
 /**
  * Stores and retrieves configuration for the current user by using the Java 7 Preferences API.
@@ -65,6 +64,12 @@ class UserConfig extends Logging with Implicits {
     config("ui.deck.y", 0),
     config("ui.deck.width", 485),
     config("ui.deck.height", 600))
+
+  val opponentOverlay = RectangleConfig(
+    config("ui.deckOpp.x", 100),
+    config("ui.deckOpp.y", 0),
+    config("ui.deckOpp.width", 485),
+    config("ui.deckOpp.height", 600))
 
   object ConfigUtil {
     private val PreferencesRoot = "/net/hearthstats/companion"

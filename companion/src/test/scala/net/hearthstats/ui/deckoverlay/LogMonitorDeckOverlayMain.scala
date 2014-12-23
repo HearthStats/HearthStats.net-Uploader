@@ -1,22 +1,16 @@
 package net.hearthstats.ui.deckoverlay
 
-import java.io.{ BufferedWriter, File, FileWriter }
+import java.io.{BufferedWriter, File, FileWriter}
+
 import com.softwaremill.macwire.MacwireMacros._
-import net.hearthstats.config.UserConfig
-import net.hearthstats.companion.CompanionState
-import net.hearthstats.game.MatchState
-import net.hearthstats.hstatsapi.DeckUtils
-import net.hearthstats.util.Translation
-import net.hearthstats.util.TranslationConfig
-import net.hearthstats.hstatsapi.CardUtils
-import net.hearthstats.util.Updater
-import net.hearthstats.hstatsapi.API
-import net.hearthstats.ui.log.Log
-import net.hearthstats.config.TestEnvironment
+import com.softwaremill.macwire.Tagging._
+
 import net.hearthstats.companion.DeckOverlayModule
-import net.hearthstats.game.HearthstoneLogMonitor
-import net.hearthstats.util.FileObserver
-import net.hearthstats.game.LogParser
+import net.hearthstats.config.{TestEnvironment, UserConfig}
+import net.hearthstats.game.{HearthstoneLogMonitor, LogParser}
+import net.hearthstats.hstatsapi.{API, CardUtils, DeckUtils}
+import net.hearthstats.ui.log.Log
+import net.hearthstats.util.{FileObserver, Translation, TranslationConfig}
 
 object LogMonitorDeckOverlayMain extends App {
   val translationConfig = TranslationConfig("net.hearthstats.resources.Main", "en")
@@ -30,8 +24,10 @@ object LogMonitorDeckOverlayMain extends App {
   val cardUtils = wire[CardUtils]
   val deckUtils: DeckUtils = wire[DeckUtils]
 
-  val rectangle = config.deckOverlay
-  val presenter = wire[DeckOverlaySwing]
+  val rectangleConfig = config.deckOverlay.taggedWith[UserDeckOverlayRectangle]
+  val deckPresenter = wire[UserOverlaySwing]
+  val opponentConfig = config.opponentOverlay.taggedWith[OpponentDeckOverlayRectangle]
+  val opponentPresenter = wire[OpponentOverlaySwing]
   val tempLogFile = File.createTempFile("hssample", "log")
   val fileObserver = wire[FileObserver]
   val logParser = wire[LogParser]

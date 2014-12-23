@@ -1,19 +1,17 @@
 package net.hearthstats.ui.deckoverlay
 
-import java.awt.event.{ MouseAdapter, MouseEvent }
 import java.awt.{ BorderLayout, Dimension }
+
+import javax.swing.{ JFrame, JLabel, WindowConstants }
 import javax.swing.Box.createVerticalBox
-import javax.swing.{ ImageIcon, JCheckBox, JFrame, JLabel, WindowConstants }
-import net.hearthstats.config.{ Environment, UserConfig }
+import net.hearthstats.config.{ Environment, RectangleConfig }
+import net.hearthstats.config.UserConfig.configToValue
 import net.hearthstats.core.{ Card, Deck }
 import net.hearthstats.hstatsapi.CardUtils
 import net.hearthstats.ui.log.Log
-import scala.swing.Swing.{ ChangeListener, onEDT }
-import net.hearthstats.config.RectangleConfig
-import UserConfig._
 import net.hearthstats.util.Translation
 
-class DeckOverlaySwing(
+abstract class DeckOverlaySwing(
   rectangleConfig: RectangleConfig,
   cardsTranslation: Translation,
   cardUtils: CardUtils,
@@ -21,8 +19,11 @@ class DeckOverlaySwing(
   uiLog: Log) extends JFrame with DeckOverlayPresenter {
 
   var cardLabels: Map[String, ClickableLabel] = Map.empty
+  var deck: Deck = Deck()
 
   def showDeck(deck: Deck) {
+    this.deck = deck
+    setTitle(deck.name)
     val imagesReady = cardUtils.downloadImages(deck.cards)
 
     val richCards = for {
@@ -59,7 +60,6 @@ class DeckOverlaySwing(
     setSize(rectangleConfig.width, rectangleConfig.height)
     repaint()
     setVisible(true)
-
   }
 
   override def dispose(): Unit = {
@@ -90,10 +90,10 @@ class DeckOverlaySwing(
       }
     } else None
 
-  def removeCard(card: Card): Unit =
+  def decreaseCardCount(card: Card): Unit =
     findLabel(card) map (_.decreaseRemaining())
 
-  def addCard(card: Card): Unit =
+  def increaseCardCount(card: Card): Unit =
     findLabel(card) map (_.increaseRemaining())
 
   def reset(): Unit =
@@ -110,12 +110,12 @@ trait DeckOverlayPresenter {
   /**
    * When a card is drawn.
    */
-  def removeCard(card: Card)
+  def decreaseCardCount(card: Card)
 
   /**
    * When a card is replaced (ie mulligan).
    */
-  def addCard(card: Card)
+  def increaseCardCount(card: Card)
   /**
    * Reset the overlay without changing the deck
    */

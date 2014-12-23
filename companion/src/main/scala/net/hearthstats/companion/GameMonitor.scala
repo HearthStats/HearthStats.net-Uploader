@@ -214,12 +214,15 @@ class GameMonitor(
       updateMatch(_.withOpponentClass(newClass))
       hsPresenter.setOpponentClass(newClass)
       uiLog.info(s"Opponent class detected: $newClass")
+      if (enableDeckOverlay) {
+        deckOverlay.showOpponentDeck(hsMatch.opponentName)
+      }
     } else {
       companionState.playerId1 = Some(heroChosen.player)
       updateMatch(_.withUserClass(newClass))
       hsPresenter.setYourClass(newClass)
       uiLog.info(s"Your class detected: $newClass")
-      if (enableDeckOverlay && companionState.mode != GameMode.ARENA) {
+      if (enableDeckOverlay) {
         deckOverlay.startMonitoringCards(heroChosen.player)
       }
     }

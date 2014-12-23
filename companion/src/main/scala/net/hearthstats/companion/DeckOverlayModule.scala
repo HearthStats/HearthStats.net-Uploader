@@ -1,22 +1,20 @@
 package net.hearthstats.companion
 
+import scala.collection.mutable.ListBuffer
+
+import akka.actor.{ ActorRef, PoisonPill, actorRef2Scala }
+import akka.actor.ActorDSL.{ Act, actor }
+import grizzled.slf4j.Logging
 import net.hearthstats.core.Deck
+import net.hearthstats.game.{ HearthstoneLogMonitor, TurnCount }
 import net.hearthstats.game.CardEvent
 import net.hearthstats.game.CardEventType._
-import net.hearthstats.game.HearthstoneLogMonitor
 import net.hearthstats.hstatsapi.CardUtils
-import net.hearthstats.ui.deckoverlay.DeckOverlaySwing
-import grizzled.slf4j.Logging
-import net.hearthstats.game.GameOver
-import akka.actor.PoisonPill
-import akka.actor.ActorDSL._
-import scala.collection.mutable.ListBuffer
-import akka.actor.ActorRef
-import net.hearthstats.game.TurnStart
-import net.hearthstats.game.TurnCount
+import net.hearthstats.ui.deckoverlay.{ OpponentOverlaySwing, UserOverlaySwing }
 
 class DeckOverlayModule(
-  presenter: DeckOverlaySwing,
+  userPresenter: UserOverlaySwing,
+  opponentPresenter: OpponentOverlaySwing,
   cardUtils: CardUtils,
   logMonitor: HearthstoneLogMonitor) extends Logging {
 
@@ -24,7 +22,11 @@ class DeckOverlayModule(
   var count = 0
 
   def show(deck: Deck): Unit = {
-    presenter.showDeck(deck)
+    userPresenter.showDeck(deck)
+  }
+
+  def showOpponentDeck(opponentName: String): Unit = {
+    opponentPresenter.showDeck(Deck(name = opponentName))
   }
 
   def clearAll(): Unit = {
@@ -62,24 +64,35 @@ class DeckOverlayModule(
             cardCode <- openingHand
             card <- cardUtils.byCode(cardCode)
           } {
-            presenter.removeCard(card)
+            userPresenter.decreaseCardCount(card)
           }
-          become(inGame)
+          become(handleOppCards orElse inGame)
         case _ =>
       }
 
       val inGame: Receive = {
-        case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN, `playerId`) =>
-          cardUtils.byCode(cardCode).map(presenter.removeCard)
+        case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN | DISCARDED, `playerId`) =>
+          cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
         case _ =>
       }
 
-      become(initial)
+      val handleOppCards: Receive = {
+        case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | PLAYED | REVEALED, p) if p != playerId =>
+          for (c <- cardUtils.byCode(cardCode) if c.collectible) {
+            opponentPresenter.addCard(c)
+          }
+        case CardEvent(cardCode, _, RETURNED, p) if p != playerId =>
+          for (c <- cardUtils.byCode(cardCode) if c.collectible) {
+            opponentPresenter.decreaseCardCount(c)
+          }
+      }
+
+      become(handleOppCards orElse initial)
     })
   }
 
   def reset(): Unit = {
-    presenter.reset()
+    userPresenter.reset()
   }
 
 }
