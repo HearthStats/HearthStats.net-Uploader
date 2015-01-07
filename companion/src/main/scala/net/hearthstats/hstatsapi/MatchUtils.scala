@@ -118,6 +118,8 @@ class MatchUtils(
       case Some(id) =>
         matchState.submitted = true
         val submittedMatch = hsMatch.copy(id = id)
+        matchState.currentMatch = Some(submittedMatch)
+        
         uiLog.info(s"Success. <a href='${submittedMatch.matchUrl}'>Review match on HearthStats.net</a>")
         hsPresenter.matchSubmitted(submittedMatch, describeMatch(submittedMatch))
         Some(submittedMatch)

@@ -84,10 +84,7 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
       opponentClass != HeroClass.UNDETECTED &&
       mode != GameMode.UNDETECTED
 
-  def editUrl: String = {
-    val m = if (mode == GameMode.ARENA) "arenas" else "constructeds"
-    s"http://hearthstats.net/$m/$id/edit"
-  }
+  
 
   def matchUrl: String = {
     s"http://hearthstats.net/matches/$id"
