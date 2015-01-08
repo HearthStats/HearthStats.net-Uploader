@@ -5,7 +5,7 @@ import org.scalatest.{ FlatSpec, Matchers }
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class LogMonitorSpec extends FlatSpec with Matchers {
+class CardParserJsonSpec extends FlatSpec with Matchers {
 
   it should "parse correctly collectible cards" in {
     val ambusher = CardData.collectible

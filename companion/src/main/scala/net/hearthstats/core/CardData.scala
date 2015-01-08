@@ -1,7 +1,7 @@
 package net.hearthstats.core
 
 import java.util.NoSuchElementException
-import rapture.json.jsonBackends.jackson._
+import rapture.json.jsonBackends.jawn._
 import rapture.json._
 import rapture._
 import java.io.InputStreamReader
@@ -21,7 +21,7 @@ case class CardData(
 
 object CardData {
   val is = getClass.getResourceAsStream("AllSets.json")
-  lazy val json = Json.parse(io.Source.fromInputStream(is).getLines.mkString("\n")).as[Map[String, List[CardData]]]
+  lazy val json = Json.parse(io.Source.fromInputStream(is, "UTF-8").getLines.mkString).as[Map[String, List[CardData]]]
 
   lazy val allCards: List[CardData] =
     json.values.flatten.toList

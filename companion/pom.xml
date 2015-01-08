@@ -202,7 +202,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.propensive</groupId>
-			<artifactId>rapture-json-jackson_2.11</artifactId>
+			<artifactId>rapture-json-jawn_2.11</artifactId>
 			<version>1.1.0</version>
 		</dependency>
 	</dependencies>
