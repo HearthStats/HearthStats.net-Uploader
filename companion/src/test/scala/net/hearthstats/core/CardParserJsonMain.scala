@@ -11,7 +11,7 @@ class LogMonitorSpec extends FlatSpec with Matchers {
   it should "parse correctly collectible cards" in {
     val ambusher = CardData.collectible
       .filter {
-        case c => c.playerClass == Some("Rogue") && Option(c.mechanics).getOrElse(Nil).contains("Deathrattle")
+        case c => c.playerClass == Some("Rogue") && c.mechanics.getOrElse(Nil).contains("Deathrattle")
       }.head
     ambusher.name shouldBe "Anub'ar Ambusher"
   }
@@ -21,7 +21,7 @@ class LogMonitorSpec extends FlatSpec with Matchers {
       .filter {
         case c => c.playerClass == Some("Hunter")
       }.head
-    steadyShot.cost shouldBe 2
+    steadyShot.cost shouldBe Some(2)
   }
 
   it should "contain Acidic Swamp Ooze" in {
