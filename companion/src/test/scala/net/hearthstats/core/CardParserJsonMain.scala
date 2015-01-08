@@ -2,7 +2,6 @@ package net.hearthstats.core
 
 import org.junit.runner.RunWith
 import org.scalatest.{ FlatSpec, Matchers }
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])

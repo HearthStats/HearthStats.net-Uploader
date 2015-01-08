@@ -1,8 +1,8 @@
 package net.hearthstats.core
 
-import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import rapture.json.jsonBackends.jackson._
+import rapture.json._
+import rapture._
 import java.util.NoSuchElementException
 import net.hearthstats.game._
 
@@ -47,13 +47,10 @@ case class GameLog(
         else action.copy(card = cardNames.get(action.cardId))
       })
     }
-    mapper.writeValueAsString(copy(turns = updatedWithNames.reverse))
+    val inOrder = copy(turns = updatedWithNames.reverse)
+    val j = Json(inOrder)
+    j.toString
   }
-}
-
-object GameLog {
-  val mapper = new ObjectMapper with ScalaObjectMapper
-  mapper.registerModule(DefaultScalaModule)
 }
 
 case class Action(
