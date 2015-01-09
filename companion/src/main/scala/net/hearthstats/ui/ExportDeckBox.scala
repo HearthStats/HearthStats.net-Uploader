@@ -5,7 +5,6 @@ import scala.collection.JavaConversions.mutableMapAsJavaMap
 import scala.swing.{ BoxPanel, Frame, Label, Orientation, ScrollPane, TextArea, TextField }
 import scala.swing.event.ButtonClicked
 import scala.util.control.NonFatal
-import org.json.simple.JSONObject
 import grizzled.slf4j.Logging
 import javax.imageio.ImageIO
 import javax.swing.ImageIcon
@@ -21,6 +20,10 @@ import net.hearthstats.util.Translation
 import scala.swing.ComboBox
 import net.hearthstats.game.HearthstoneLogMonitor
 import net.hearthstats.companion.ScreenEvents
+import rapture.json._
+import rapture.json.jsonBackends.jawn._
+import scala.util.Success
+import scala.util.Failure
 
 class ExportDeckBox(
   screenEvents: ScreenEvents,
@@ -313,14 +316,13 @@ class ExportDeckBox(
           hero = HeroClass.byName(panel.classComboBox.selection.item))
 
         if (deck.isValid) {
-          val jsonDeck = new JSONObject(collection.mutable.Map("deck" -> deck.toJsonObject))
-          hsAPI.createDeck(jsonDeck) match {
-            case true =>
-              // Deck was loaded onto HearthStats.net successfully
+          val jsonDeck = Map("deck" -> deck.toJsonObject)
+          hsAPI.createDeck(Json(jsonDeck)) match {
+            case Success(_) =>
               Main.showMessageDialog(peer, s"Deck ${deck.name} was exported to HearthStats.net successfully")
               closeCurrent()
-            case false =>
-              // An error occurred loading the deck onto HearthStats.net
+            case Failure(e) =>
+              uiLog.error("Could not export deck to hearthstats.net", e)
               setStatus(t("export.status.error"), t("export.instructions.error"))
               peer.toFront()
           }

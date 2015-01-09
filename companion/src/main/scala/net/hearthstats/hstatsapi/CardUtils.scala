@@ -10,6 +10,8 @@ import scala.concurrent._
 import scala.util.{ Failure, Success }
 import net.hearthstats.core.CardData
 import net.hearthstats.core.Card
+import rapture.json._
+import rapture.json.jsonBackends.jawn._
 
 class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Logging {
 
@@ -19,22 +21,27 @@ class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Loggin
     if (code == "") None
     else byName(CardData.byId(code).name)
 
-  lazy val cards: Map[Int, Card] =
+  lazy val cards: Map[Int, Card] = {
+    val cardsList = hsAPI.get("cards").get.data.as[List[Json]]
     (for {
-      json <- hsAPI.getCards
-      id = Integer.parseInt(json.get("id").toString)
-      cost = Integer.parseInt(json.get("mana").toString)
-      typeId = Integer.parseInt(json.get("type_id").toString)
-      rarityString = json.get("rarity_id")
-      rarity = if (rarityString == null) 0 else Integer.parseInt(rarityString.toString)
-      collectible = json.get("collectible")
-    } yield id -> Card(
-      rarity = rarity,
-      id = id,
-      cost = cost,
-      typeId = typeId,
-      originalName = json.get("name").toString,
-      collectible = collectible != null && collectible.toString.toBoolean)).toMap
+      card <- cardsList
+      json""" { 
+      	"id" : $id, 
+      	"mana" : $cost, 
+      	"type_id" : $typeId, 
+      	"rarity_id" : $rarity, 
+      	"collectible" : $collectible,
+      	"name" : $originalName
+      	} """ = card
+      idInt = id.as[Int]
+    } yield idInt -> Card(
+      rarity = rarity.as[Int],
+      id = idInt,
+      cost = cost.as[Int],
+      typeId = typeId.as[Int],
+      originalName = originalName.as[String],
+      collectible = collectible.as[Option[Boolean]].getOrElse(false))).toMap
+  }
 
   def withLocalFile(c: Card) =
     c.copy(localFile = Some(
