@@ -5,17 +5,20 @@ import java.io.IOException
 import net.hearthstats.core.{ Card, Deck, HeroClass }
 import net.hearthstats.ui.log.Log
 import org.apache.commons.lang3.StringUtils
-import org.json.simple.JSONObject
 
 import scala.collection.JavaConversions.seqAsJavaList
+import rapture.json._
+import rapture.json.jsonBackends.jawn._
 
 class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
 
-  private var _decks: List[JSONObject] = _
+  private var _decks: List[Deck] = _
 
   def updateDecks() {
     try {
-      _decks = api.getDecks
+
+      //TODO : fix error handling (.get)
+      _decks = api.get("decks/show").get.as[List[Json]].map(fromJson)
       if (_decks.isEmpty) {
         uiLog.warn("no deck were returned from Hearthstats.net. Either you have not created a deck or the site is down")
       }
@@ -24,48 +27,44 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
     }
   }
 
-  def getDeckFromSlot(slotNum: java.lang.Integer): Option[Deck] = {
-    getDecks
-    for (
-      i <- 0 until _decks.size if _decks.get(i).get("slot") != null &&
-        _decks.get(i).get("slot").toString == slotNum.toString
-    ) return Some(fromJson(_decks.get(i)))
-    None
-  }
+  def getDeckFromSlot(slotNum: Int): Option[Deck] =
+    getDecks.find(_.activeSlot == Some(slotNum))
 
-  def getDecks: List[JSONObject] = {
+  def getDecks: List[Deck] = {
     if (_decks == null) updateDecks()
     _decks
   }
 
-  def getDeckLists: List[Deck] =
-    for (deck <- getDecks)
-      yield fromJson(deck)
-
   def getDeck(id: Int): Deck =
-    getDeckLists.find(_.id == id) match {
+    getDecks.find(_.id == id) match {
       case Some(d) => d
       case None => throw new IllegalArgumentException("No deck found for id " + id)
     }
 
-  def fromJson(json: JSONObject): Deck = {
-    val id = Integer.parseInt(json.get("id").toString)
+  def fromJson(data: Json): Deck = {
+    val json""" {
+    	"id" = $id,
+    	"cardstring" = $cardstring,
+    	"klass_id" = $klassId,
+    	"slug" = $slug,
+    	"name" = $name,
+    	"slot" = $slot
+    } """ = data
     val cardList: List[Card] =
-      Option(json.get("cardstring")) match {
+      cardstring.as[Option[String]] match {
         case Some(cs) if StringUtils.isNotBlank(cs.toString) =>
           parseCardString(cs.toString.trim)
         case _ => Nil
       }
 
-    val klassId = json.get("klass_id")
-    val heroString = if (klassId == null) "" else HeroClass.stringWithId(klassId.toString.toInt)
+    val heroClass = klassId.as[Option[Int]].map(HeroClass.stringWithId).map(HeroClass.byName)
 
-    Deck(id = id,
-      slug = json.get("slug").toString,
-      name = json.get("name").toString,
+    Deck(id = id.as[Int],
+      slug = slug.as[String],
+      name = name.as[String],
       cards = cardList,
-      hero = HeroClass.byName(heroString),
-      activeSlot = Option(json.get("slot")).map(_.toString.toInt))
+      hero = heroClass.getOrElse(HeroClass.UNDETECTED),
+      activeSlot = slot.as[Option[Int]])
   }
 
   def parseCardString(ds: String): List[Card] = {

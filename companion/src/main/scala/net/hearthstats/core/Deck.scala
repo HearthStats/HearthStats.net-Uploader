@@ -11,6 +11,7 @@ case class Deck(
   hero: HeroClass = HeroClass.UNDETECTED,
   activeSlot: Option[Int] = None) {
 
+  //TODO : also check if all cards belong to the class
   lazy val isValid: Boolean =
     cards != null && 30 == cardCount
 

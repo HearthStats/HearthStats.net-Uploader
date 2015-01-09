@@ -13,6 +13,7 @@ import net.hearthstats.core.HeroClass._
 import net.hearthstats.core.GameMode
 import net.hearthstats.core.Deck
 import net.hearthstats.core.GameLog
+import net.hearthstats.core.CreateArenaRun
 
 @RunWith(classOf[JUnitRunner])
 class APISpec extends FlatSpec with Matchers with MockitoSugar {
@@ -40,15 +41,14 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
       1,
       1,
       "")
-    api.createMatch(matc.withJsonLog(GameLog())).isDefined shouldBe true
+    api.createMatch(matc.withJsonLog(GameLog())).isSuccess shouldBe true
   }
 
   //TODO :move exception handling out of API class so it can be tested here.
 
   it should "create an Arena run" in {
-    val arena = new ArenaRun
-    arena.setUserClass("warlock")
-    api.createArenaRun(arena).isDefined shouldBe true
+    val arena = CreateArenaRun("warlock")
+    api.createArenaRun(arena).isSuccess shouldBe true
     api.getLastArenaRun should not be null
     val m = HearthstoneMatch(GameMode.ARENA,
       WARLOCK,
@@ -61,7 +61,7 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
       1,
       1,
       "")
-    api.createMatch(m.withJsonLog(GameLog())).isDefined shouldBe true
-    api.endCurrentArenaRun.isDefined shouldBe true
+    api.createMatch(m.withJsonLog(GameLog())).isSuccess shouldBe true
+    api.endCurrentArenaRun.isSuccess shouldBe true
   }
 }

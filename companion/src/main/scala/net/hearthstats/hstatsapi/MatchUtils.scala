@@ -11,6 +11,9 @@ import net.hearthstats.util.{ Tracker, Translation }
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.modules.ReplayHandler
+import scala.util.Success
+import scala.util.Failure
+import net.hearthstats.core.CreateArenaRun
 
 class MatchUtils(
   matchState: MatchState,
@@ -115,16 +118,16 @@ class MatchUtils(
     analytics.trackEvent("app", "Submit" + hsMatch.mode + "Match")
     uiLog.matchResult(header + ": " + message)
     api.createMatch(hsMatch) match {
-      case Some(id) =>
+      case Success(id) =>
         matchState.submitted = true
         val submittedMatch = hsMatch.copy(id = id)
         matchState.currentMatch = Some(submittedMatch)
-        
+
         uiLog.info(s"Success. <a href='${submittedMatch.matchUrl}'>Review match on HearthStats.net</a>")
         hsPresenter.matchSubmitted(submittedMatch, describeMatch(submittedMatch))
         Some(submittedMatch)
-      case None =>
-        uiLog.warn("Could not submit the match to Hearthstats.net, API error")
+      case Failure(e) =>
+        uiLog.warn("Could not submit the match to Hearthstats.net, API error", e)
         None
     }
   }
@@ -132,9 +135,8 @@ class MatchUtils(
   private def createArenaRun(): Unit = {
     val hsMatch = matchState.currentMatch.get
     if (companionState.isNewArenaRun) {
-      val run = new ArenaRun()
-      run.setUserClass(hsMatch.userClass.toString)
-      uiLog.info("Creating new " + run.getUserClass + " arena run")
+      val run = CreateArenaRun(hsMatch.userClass.toString)
+      uiLog.info("Creating new " + run.`class` + " arena run")
       api.createArenaRun(run)
       companionState.isNewArenaRun = false
     }
