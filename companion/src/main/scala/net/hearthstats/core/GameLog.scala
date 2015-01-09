@@ -2,7 +2,6 @@ package net.hearthstats.core
 
 import rapture.json.jsonBackends.jawn._
 import rapture.json._
-import rapture._
 import java.util.NoSuchElementException
 import net.hearthstats.game._
 

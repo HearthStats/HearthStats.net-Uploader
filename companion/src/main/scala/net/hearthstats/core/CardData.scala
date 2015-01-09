@@ -3,7 +3,6 @@ package net.hearthstats.core
 import java.util.NoSuchElementException
 import rapture.json.jsonBackends.jawn._
 import rapture.json._
-import rapture._
 import java.io.InputStreamReader
 
 case class CardData(
