@@ -1,24 +1,24 @@
 package net.hearthstats.hstatsapi
 
 import java.io.IOException
-
 import net.hearthstats.core.{ Card, Deck, HeroClass }
 import net.hearthstats.ui.log.Log
 import org.apache.commons.lang3.StringUtils
-
 import scala.collection.JavaConversions.seqAsJavaList
 import rapture.json._
 import rapture.json.jsonBackends.jawn._
+import scala.util.Success
 
 class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
 
-  private var _decks: List[Deck] = _
+  private var _decks: List[Deck] = Nil
 
   def updateDecks() {
     try {
-
-      //TODO : fix error handling (.get)
-      _decks = api.get("decks/show").get.as[List[Json]].map(fromJson)
+      _decks = api.get("decks/show") match {
+        case Success(d) => d.data.as[List[Json]].map(fromJson)
+        case _ => Nil
+      }
       if (_decks.isEmpty) {
         uiLog.warn("no deck were returned from Hearthstats.net. Either you have not created a deck or the site is down")
       }
@@ -43,12 +43,12 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
 
   def fromJson(data: Json): Deck = {
     val json""" {
-    	"id" = $id,
-    	"cardstring" = $cardstring,
-    	"klass_id" = $klassId,
-    	"slug" = $slug,
-    	"name" = $name,
-    	"slot" = $slot
+    	"id" : $id,
+    	"cardstring" : $cardstring,
+    	"klass_id" : $klassId,
+    	"slug" : $slug,
+    	"name" : $name,
+    	"slot" : $slot
     } """ = data
     val cardList: List[Card] =
       cardstring.as[Option[String]] match {

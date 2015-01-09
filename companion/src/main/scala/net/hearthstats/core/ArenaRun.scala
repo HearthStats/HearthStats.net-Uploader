@@ -1,5 +1,4 @@
 package net.hearthstats.core
 
-case class CreateArenaRun(`class`: String)
+case class ArenaRun(`class`: String)
 
-case class ArenaRun(userclass: String)

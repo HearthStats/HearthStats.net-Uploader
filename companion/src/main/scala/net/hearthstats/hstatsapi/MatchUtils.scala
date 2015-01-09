@@ -13,7 +13,6 @@ import net.hearthstats.core.HearthstoneMatch
 import net.hearthstats.modules.ReplayHandler
 import scala.util.Success
 import scala.util.Failure
-import net.hearthstats.core.CreateArenaRun
 
 class MatchUtils(
   matchState: MatchState,
@@ -135,7 +134,7 @@ class MatchUtils(
   private def createArenaRun(): Unit = {
     val hsMatch = matchState.currentMatch.get
     if (companionState.isNewArenaRun) {
-      val run = CreateArenaRun(hsMatch.userClass.toString)
+      val run = ArenaRun(hsMatch.userClass.toString)
       uiLog.info("Creating new " + run.`class` + " arena run")
       api.createArenaRun(run)
       companionState.isNewArenaRun = false

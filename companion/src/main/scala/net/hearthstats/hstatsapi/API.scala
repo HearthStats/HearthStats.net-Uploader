@@ -10,15 +10,10 @@ import rapture.json._
 import rapture.json.jsonBackends.jawn._
 import scala.util._
 import net.hearthstats.core.ArenaRun
-import net.hearthstats.core.CreateArenaRun
 import net.hearthstats.core.Card
 import net.hearthstats.core.Deck
 
 class API(config: UserConfig) extends Logging {
-
-  var lastMatchId = -1
-  var message = ""
-
   lazy val awsKeys: Seq[String] = get("users/premium") match {
     case Success(json""" { "aws_access_key": $access, "aws_secret_key": $secret }""") =>
       Seq(access.as[String], secret.as[String])
@@ -29,30 +24,30 @@ class API(config: UserConfig) extends Logging {
 
   lazy val premiumUserId: Option[String] = get("users/premium") match {
     case Success(data) =>
-      Some(data.user.id.as[String])
-    case _ =>
-      info("You are not a premium user")
+      Some(data.user.id.as[Int].toString)
+    case Failure(e) =>
+      warn("You are not a premium user", e)
       None
   }
 
-  def endCurrentArenaRun(): Try[ArenaRun] =
+  def endCurrentArenaRun(): Try[Unit] =
     for (data <- get("arena_runs/end")) yield {
-      val arenaRun = data.as[ArenaRun]
-      info("Ended " + arenaRun.userclass + " arena run")
-      arenaRun
+      val arenaRunId = data.data.id.as[Int]
+      info(s"Ended arena run $arenaRunId")
     }
 
-  def createArenaRun(arenaRun: CreateArenaRun): Try[ArenaRun] =
+  def createArenaRun(arenaRun: ArenaRun): Try[Unit] =
     for (data <- post("arena_runs/new", Json(arenaRun))) yield {
-      val arenaRun = data.as[ArenaRun]
-      info(arenaRun.userclass + " arena run created")
-      arenaRun
+      info(arenaRun.`class` + " arena run created")
     }
 
-  def setDeckSlots(slots: Iterable[Option[Int]]): Unit = {
+  /**
+   * Returns the message from the API.
+   */
+  def setDeckSlots(slots: Iterable[Option[Int]]): Try[String] = {
     val data = (for ((d, i) <- slots.zipWithIndex)
       yield "slot_" + (i + 1) -> d).toMap
-    _post("decks/slots", Json(data))
+    for (data <- post("decks/slots", Json(data))) yield data.message.as[String]
   }
 
   def createDeck(jsonDeck: Json): Try[String] =
@@ -63,11 +58,11 @@ class API(config: UserConfig) extends Logging {
    */
   def createMatch(hsMatch: HearthstoneMatch): Try[Int] = for {
     result <- post("matches/new", hsMatch.toJsonObject)
-  } yield result.id.as[Long].toInt
+  } yield result.data.id.as[Long].toInt
 
   def getLastArenaRun: Try[ArenaRun] =
     for (res <- get("arena_runs/show"))
-      yield res.as[ArenaRun]
+      yield res.data.as[ArenaRun]
 
   def get(method: String): Try[Json] = for {
     resString <- call(method)
@@ -94,10 +89,11 @@ class API(config: UserConfig) extends Logging {
   }
 
   private def _parseResult(resultString: String): Try[Json] = {
-    val result = Json(resultString)
-    if (result.status.as[String] == "success")
-      Success(result.data)
-    else {
+    debug(s"parsing $resultString")
+    val result = Json.parse(resultString)
+    if (result.status.as[String] == "success") {
+      Success(result)
+    } else {
       val message = result.message.as[String]
       Failure(new Exception(s"API error : $message"))
     }

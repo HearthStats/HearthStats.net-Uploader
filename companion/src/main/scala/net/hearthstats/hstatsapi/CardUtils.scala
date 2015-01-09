@@ -22,16 +22,16 @@ class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Loggin
     else byName(CardData.byId(code).name)
 
   lazy val cards: Map[Int, Card] = {
-    val cardsList = hsAPI.get("cards").get.as[List[Json]]
+    val cardsList = hsAPI.get("cards").get.data.as[List[Json]]
     (for {
       card <- cardsList
       json""" { 
-      	"id" = $id, 
-      	"mana" = $cost, 
-      	"type_id" = $typeId, 
-      	"rarity_id" = $rarity, 
-      	"collectible" = $collectible,
-      	"name" = $originalName
+      	"id" : $id, 
+      	"mana" : $cost, 
+      	"type_id" : $typeId, 
+      	"rarity_id" : $rarity, 
+      	"collectible" : $collectible,
+      	"name" : $originalName
       	} """ = card
       idInt = id.as[Int]
     } yield idInt -> Card(
@@ -40,7 +40,7 @@ class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Loggin
       cost = cost.as[Int],
       typeId = typeId.as[Int],
       originalName = originalName.as[String],
-      collectible = collectible.as[Boolean])).toMap
+      collectible = collectible.as[Option[Boolean]].getOrElse(false))).toMap
   }
 
   def withLocalFile(c: Card) =

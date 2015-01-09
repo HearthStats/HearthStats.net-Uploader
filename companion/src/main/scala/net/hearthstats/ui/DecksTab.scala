@@ -3,15 +3,15 @@ package net.hearthstats.ui
 import java.awt.BorderLayout
 import java.io.IOException
 import javax.swing.{ JButton, JComboBox, JLabel, JOptionPane, JPanel }
-
 import net.hearthstats._
 import net.hearthstats.core.{ Deck, HeroClass }
 import net.hearthstats.hstatsapi.HearthStatsUrls._
 import net.hearthstats.hstatsapi.{ API, DeckUtils }
 import net.hearthstats.util.{ Browse, Translation }
 import net.miginfocom.swing.MigLayout
-
 import scala.swing.Swing._
+import scala.util.Failure
+import scala.util.Success
 
 class DecksTab(
   translation: Translation,
@@ -80,14 +80,12 @@ class DecksTab(
   }
 
   private def saveDeckSlots() {
-    try {
-      val slots = deckSlotComboBoxes map (_.selectedDeckId)
-      api.setDeckSlots(slots)
-      //TODO : replace this by a return value
-      Main.showMessageDialog(this, api.message)
-      updateDecks()
-    } catch {
-      case e: Exception => Main.showErrorDialog("Error saving deck slots", e)
+    val slots = deckSlotComboBoxes map (_.selectedDeckId)
+    api.setDeckSlots(slots) match {
+      case Success(m) =>
+        Main.showMessageDialog(this, m)
+        updateDecks()
+      case Failure(e) => Main.showErrorDialog("Error saving deck slots", e)
     }
   }
 
