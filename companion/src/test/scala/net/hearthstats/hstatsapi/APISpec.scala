@@ -28,7 +28,7 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
     cards.size should be > 400
   }
 
-  it should "create a match" in {
+  it should "create a casual match" in {
     val matc = HearthstoneMatch(GameMode.CASUAL,
       WARLOCK,
       DRUID,
@@ -36,11 +36,25 @@ class APISpec extends FlatSpec with Matchers with MockitoSugar {
       Some(MatchOutcome.VICTORY),
       Some(Deck(id = 1, activeSlot = Some(1))),
       "unkownopp",
-      Some(Rank.RANK_1),
+      None,
       1,
       1,
       "")
     api.createMatch(matc.withJsonLog(GameLog())).isSuccess shouldBe true
+  }
+
+  it should "create a ranked match" in {
+    val matc = HearthstoneMatch(GameMode.RANKED,
+      WARLOCK,
+      DRUID,
+      Some(true),
+      Some(MatchOutcome.DEFEAT),
+      Some(Deck(id = 1, activeSlot = Some(1))),
+      "unkownopp",
+      Some(Rank.RANK_11),
+      1,
+      1)
+    api.createMatch(matc.withJsonLog(GameLog.sample)).isSuccess shouldBe true
   }
 
   it should "create an Arena run" in {

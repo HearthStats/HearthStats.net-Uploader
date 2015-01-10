@@ -86,3 +86,8 @@ case class Turn(actions: List[Action] = Nil) {
   }
 }
 
+object GameLog {
+  def sample = GameLog(
+    List(Turn(List(Action(1, "DRAW", Some("Ironbeak Owl"), 3, 2)))),
+    Some(1), Some(2), Some("oter"), Some("tst"))
+}

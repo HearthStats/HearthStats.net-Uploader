@@ -19,8 +19,8 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
   rankLevel: Option[Rank] = None,
   numTurns: Int = -1,
   duration: Long = -1, // in seconds
-  notes: String = null,
-  jsonLog: String = null,
+  notes: String = "",
+  jsonLog: String = "",
   replayFile: Future[String] = Promise[String].future,
   id: Int = -1) extends Logging {
 
@@ -38,13 +38,14 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
 
   def toJsonObject: Json = {
     val slot = deckSlot.getOrElse(-1)
+    val c = coin.getOrElse(false).toString
     val main = json""" {
       "mode" : ${mode.toString},
       "slot" : $slot,
       "class" : ${userClass.toString},
       "oppclass" : ${opponentClass.toString},
       "oppname" : $opponentName,
-      "coin" : ${coin.getOrElse(false).toString},
+      "coin" : $c,
       "result" : $describeResult,
       "notes" : $notes,
       "log" : $jsonLog,
@@ -54,8 +55,8 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
     val ranks =
       if (mode == GameMode.RANKED) {
         val (lvl, legend) =
-          if (Rank.LEGEND == rankLevel) (26, true)
-          else (rankLevel.get.number, false)
+          if (Some(Rank.LEGEND) == rankLevel) (26, true)
+          else (rankLevel.map(_.number).getOrElse(0), false)
         json""" {"ranklvl" :$lvl, "legend" : $legend } """
       } else Json.empty
 
