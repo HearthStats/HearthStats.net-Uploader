@@ -31,7 +31,7 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
     getDecks.find(_.activeSlot == Some(slotNum))
 
   def getDecks: List[Deck] = {
-    if (_decks == null) updateDecks()
+    if (_decks.isEmpty) updateDecks()
     _decks
   }
 

@@ -18,7 +18,7 @@ import net.hearthstats.core.GameLog
 class APISpec extends FlatSpec with Matchers with MockitoSugar {
   val config: UserConfig = TestConfig
   val uiLog = mock[Log]
-  val environment = TestEnvironment
+  val environment = new TestEnvironment
 
   val api = wire[API]
   val cardUtils = wire[CardUtils]

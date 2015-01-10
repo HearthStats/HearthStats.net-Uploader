@@ -4,8 +4,8 @@ import javax.imageio.ImageIO
 
 import com.softwaremill.macwire.MacwireMacros._
 import grizzled.slf4j.Logging
-import net.hearthstats.config.{UserConfig, TestEnvironment}
-import net.hearthstats.hstatsapi.{CardUtils, API}
+import net.hearthstats.config.{ UserConfig, TestEnvironment }
+import net.hearthstats.hstatsapi.{ CardUtils, API }
 import net.hearthstats.ui.log.Log
 
 /**
@@ -13,7 +13,7 @@ import net.hearthstats.ui.log.Log
  */
 object DeckAnalyserMain extends App with Logging {
 
-  val environment = TestEnvironment
+  val environment = new TestEnvironment
   val uiLog = wire[Log]
   val config = wire[UserConfig]
   val api = wire[API]
@@ -27,6 +27,5 @@ object DeckAnalyserMain extends App with Logging {
   val deck = deckAnalyser.identifyDeck(img, img)
 
   debug(deck.get.toJsonObject)
-
 
 }

@@ -10,7 +10,7 @@ import java.awt.Rectangle
 /**
  * Implementation which can be injected in test scenario.
  */
-object TestEnvironment extends Environment {
+class TestEnvironment extends Environment {
   val hearthstoneLogFile = File.createTempFile("log", ".txt").getAbsolutePath
 
   val os: OS = OS.WINDOWS

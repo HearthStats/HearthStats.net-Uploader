@@ -11,16 +11,18 @@ import net.hearthstats.core.CardData
 import math._
 
 object DeckMain extends App {
-  val config: UserConfig = TestConfig
   val uiLog = Mockito.mock(classOf[Log])
-  val environment = TestEnvironment
+  val config = new UserConfig
+  val environment = new TestEnvironment {
+    override val config = new UserConfig
+  }
 
   val api = wire[API]
   val cardUtils = wire[CardUtils]
   val deckUtils: DeckUtils = wire[DeckUtils]
 
   val decks = for {
-    deck <- deckUtils.getDeckLists if deck.isValid
+    deck <- deckUtils.getDecks if deck.isValid
     cards = deck.cards
     totalCost = score(deck) //cards.filter(_.).map(c => c.count * score(c.cost)).sum
   } yield deck -> totalCost

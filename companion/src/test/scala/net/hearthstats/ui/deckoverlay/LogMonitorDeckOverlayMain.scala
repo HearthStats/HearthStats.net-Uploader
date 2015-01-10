@@ -1,16 +1,16 @@
 package net.hearthstats.ui.deckoverlay
 
-import java.io.{BufferedWriter, File, FileWriter}
+import java.io.{ BufferedWriter, File, FileWriter }
 
 import com.softwaremill.macwire.MacwireMacros._
 import com.softwaremill.macwire.Tagging._
 
 import net.hearthstats.companion.DeckOverlayModule
-import net.hearthstats.config.{TestEnvironment, UserConfig}
-import net.hearthstats.game.{HearthstoneLogMonitor, LogParser}
-import net.hearthstats.hstatsapi.{API, CardUtils, DeckUtils}
+import net.hearthstats.config.{ TestEnvironment, UserConfig }
+import net.hearthstats.game.{ HearthstoneLogMonitor, LogParser }
+import net.hearthstats.hstatsapi.{ API, CardUtils, DeckUtils }
 import net.hearthstats.ui.log.Log
-import net.hearthstats.util.{FileObserver, Translation, TranslationConfig}
+import net.hearthstats.util.{ FileObserver, Translation, TranslationConfig }
 
 object LogMonitorDeckOverlayMain extends App {
   val translationConfig = TranslationConfig("net.hearthstats.resources.Main", "en")
@@ -20,7 +20,7 @@ object LogMonitorDeckOverlayMain extends App {
 
   val api = wire[API]
 
-  val environment = TestEnvironment
+  val environment = new TestEnvironment
   val cardUtils = wire[CardUtils]
   val deckUtils: DeckUtils = wire[DeckUtils]
 
