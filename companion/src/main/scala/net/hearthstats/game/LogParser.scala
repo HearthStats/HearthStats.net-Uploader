@@ -99,7 +99,7 @@ class LogParser extends Logging {
         HeroPowerDeclared(cardId, player)
       case ("OPPOSING HAND", _) =>
         CardPlayed(cardId, id, player)
-      case ("OPPOSING DECK", "OPPOSING Play") | ("FRIENDLY DECK", "FRIENDLY Play") =>
+      case ("OPPOSING DECK", "OPPOSING PLAY") | ("FRIENDLY DECK", "FRIENDLY PLAY") =>
         CardDiscardedFromDeck(cardId, id, player)
     }
 
