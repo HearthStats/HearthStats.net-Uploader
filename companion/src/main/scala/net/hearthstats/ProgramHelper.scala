@@ -96,6 +96,10 @@ abstract class ProgramHelper extends Observable with Logging {
       |[Power]
       |LogLevel=1
       |ConsolePrinting=true
+      | 
+      |[HealthyGaming]
+      |LogLevel=1
+      |ConsolePrinting=true
     """.stripMargin
 
 }
