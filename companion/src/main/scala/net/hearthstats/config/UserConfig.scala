@@ -15,6 +15,8 @@ class UserConfig extends Logging with Implicits {
 
   //public options, can be exposed via OptionsTab
   val userKey = config("api.userkey", "your_userkey_here")
+  val email = config("api,email","your_email_here")
+  val password = config("api.password","you_password_here")
   val userName = config("hearthstone.login", "")
   val gameLogFile = config("hearthstone.gameLogFile", "")
 

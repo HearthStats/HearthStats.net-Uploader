@@ -8,6 +8,7 @@ import net.hearthstats.core.{ ArenaRun, HearthstoneMatch }
 import scala.collection.JavaConversions.{ asScalaBuffer, mapAsJavaMap }
 import rapture.json._
 import rapture.json.jsonBackends.jawn._
+import rapture._
 import scala.util._
 import net.hearthstats.core.ArenaRun
 import net.hearthstats.core.Card
@@ -69,6 +70,17 @@ class API(config: UserConfig) extends Logging {
     data <- _parseResult(resString)
   } yield data
 
+  def login(email:String, password:String): Boolean =
+  {
+    val result = post("users/sign_in",json"""{"user_login":{"email":$email,"password":$password}}""")
+    result match {
+      case Success(raw_json) =>
+          raw_json.userkey.as[String]
+          true
+      case Failure(e) =>
+          false
+    }
+  }
   private def call(method: String): Try[String] = Try {
     val inputStream = buildConnection(method).getInputStream
     val resultString = io.Source.fromInputStream(inputStream)("UTF-8").getLines.mkString
@@ -87,6 +99,8 @@ class API(config: UserConfig) extends Logging {
     conn.setReadTimeout(timeout)
     conn.asInstanceOf[HttpURLConnection]
   }
+  
+ 
 
   private def _parseResult(resultString: String): Try[Json] = {
     debug(s"parsing $resultString")
@@ -121,5 +135,6 @@ class API(config: UserConfig) extends Logging {
     info("API post result = " + resultString)
     resultString
   }
+
 
 }

@@ -44,12 +44,13 @@ class CompanionFrame(val environment: Environment,
   val tabbedPane = new JTabbedPane
   val optionsPanel: OptionsPanel = wire[OptionsPanel]
   val aboutPanel: AboutPanel = wire[AboutPanel]
-  val landingPanel: LandingPanel = wire[LandingPanel]
   val matchPanel: MatchPanel = wire[MatchPanel]
   val decksTab: DecksTab = wire[DecksTab]
-
+  val landingFrame: LandingFrame = wire[LandingFrame]
+  
   def createAndShowGui() {
     debug("Creating GUI")
+    landingFrame.createAndShowGui()
     val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
     setIconImage(icon)
     setLocation(windowX, windowY)
@@ -60,7 +61,6 @@ class CompanionFrame(val environment: Environment,
     tabbedPane.add(decksTab, t("tab.decks"))
     tabbedPane.add(optionsPanel, t("tab.options"))
     tabbedPane.add(aboutPanel, t("tab.about"))
-    tabbedPane.add(landingPanel,t("tab.landing"))
     matchPanel.updateCurrentMatchUi()
     enableMinimizeToTray()
     setMinimumSize(new Dimension(500, 600))
