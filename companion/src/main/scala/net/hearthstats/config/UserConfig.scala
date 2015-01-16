@@ -15,7 +15,8 @@ class UserConfig extends Logging with Implicits {
 
   //public options, can be exposed via OptionsTab
   val userKey = config("api.userkey", "your_userkey_here")
-  val email = config("api,email","your_email_here")
+  val auth_token = config("api.auth_token","your_auth_token_here")
+  val email = config("api.email","your_email_here")
   val password = config("api.password","you_password_here")
   val userName = config("hearthstone.login", "")
   val gameLogFile = config("hearthstone.gameLogFile", "")
@@ -49,7 +50,8 @@ class UserConfig extends Logging with Implicits {
   def gameCardsTranslation = new Translation(TranslationConfig("net.hearthstats.resources.card.Card", gameLanguage.get.toString))
 
   //private options, no need to be displayed
-  val apiBaseUrl = "http://hearthstats.net/api/v1/"
+  val apiBaseUrl = "http://192.237.249.9/api/v1/"
+  val apiBaseUrlV2 = "http://192.237.249.9/api/v2/"
   val apiTimeoutMs = 15000
 
   val awsBucket = "hearthstats"

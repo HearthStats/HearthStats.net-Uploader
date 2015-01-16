@@ -169,6 +169,7 @@ class OptionsPanel(
 
   def setUserKey(userkey: String) {
     userKeyField.setText(userkey)
+    add(new JLabel(userkey))
   }
 
   def addLabel(label: String = ""): JLabel = {

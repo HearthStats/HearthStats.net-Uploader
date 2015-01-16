@@ -17,7 +17,7 @@ import net.hearthstats.game.{ HearthstoneLogMonitor, LogParser, MatchState }
 import net.hearthstats.game.imageanalysis.{ IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser }
 import net.hearthstats.hstatsapi.{ API, CardUtils, DeckUtils, MatchUtils }
 import net.hearthstats.modules.{ FileUploaderFactory, ReplayHandler, VideoEncoderFactory }
-import net.hearthstats.ui.{ CompanionFrame, LandingFrame, ExportDeckBox, MatchEndPopup }
+import net.hearthstats.ui.{ CompanionFrame, ExportDeckBox, MatchEndPopup }
 import net.hearthstats.ui.deckoverlay._
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.DialogNotification
