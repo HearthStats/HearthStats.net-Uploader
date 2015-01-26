@@ -17,7 +17,7 @@ import net.hearthstats.game.{ HearthstoneLogMonitor, LogParser, MatchState }
 import net.hearthstats.game.imageanalysis.{ IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser }
 import net.hearthstats.hstatsapi.{ API, CardUtils, DeckUtils, MatchUtils }
 import net.hearthstats.modules.{ FileUploaderFactory, ReplayHandler, VideoEncoderFactory }
-import net.hearthstats.ui.{ CompanionFrame, ExportDeckBox, MatchEndPopup }
+import net.hearthstats.ui.{ CompanionFrame,LandingFrame,ExportDeckBox, MatchEndPopup }
 import net.hearthstats.ui.deckoverlay._
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.DialogNotification
@@ -74,8 +74,9 @@ class Main(
   val mainFrame: CompanionFrame = wire[CompanionFrame]
   val replayHandler = wire[ReplayHandler]
   val startup: Startup = wire[Startup]
-  val matchUtils = wire[MatchUtils]
-
+  val matchUtils: MatchUtils = wire[MatchUtils]
+ 
+  
   val monitor: GameMonitor = wire[GameMonitor]
 
   def start(): Unit = {
@@ -84,6 +85,7 @@ class Main(
     logSystemInformation()
     updater.cleanUp()
     cleanupDebugFiles()
+    
     mainFrame.createAndShowGui()
     loadingNotification.close()
     programHelper.createConfig(environment, uiLog)

@@ -186,7 +186,6 @@ class API(config: UserConfig) extends Logging {
     os.write(outputBytes)
     os.close()
     val resultString = io.Source.fromInputStream(httpconV2.getInputStream).getLines.mkString("\n")
-    println("API2 post result = " + resultString)
     resultString
     
   }

@@ -11,11 +11,11 @@ import net.hearthstats.ui.util.StringOptionTextField
 import net.hearthstats.util.{Browse, Translation}
 import java.awt.image.BufferedImage;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
+import java.io.File
+import java.io.IOException
+import java.util.logging.Level
+import java.util.logging.Logger
+import javax.imageio.ImageIO
 
 
 class LandingPanel(translation: Translation, uiLog: Log,config: UserConfig, api:API) extends JPanel {
@@ -79,9 +79,7 @@ class LandingPanel(translation: Translation, uiLog: Log,config: UserConfig, api:
     if (api.login(enteredEmail, enteredPassword)){
       add(new JLabel("password corrected"))}      
     else{
-      add(new JLabel("Email or password is incorrect"))
-      
-      
+      add(new JLabel("Email or password is incorrect"))      
     }
   
   }
