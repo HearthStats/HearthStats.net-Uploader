@@ -76,11 +76,10 @@ class LandingPanel(translation: Translation, uiLog: Log,config: UserConfig, api:
  
 
    def checkForPassword{    
-    if (api.login(enteredEmail, enteredPassword) == true){
+    if (api.login(enteredEmail, enteredPassword)){
       add(new JLabel("password corrected"))}      
     else{
-      add(new JLabel("Email or password is incorrect, entered Email is: " 
-          + enteredEmail + " " + enteredPassword))
+      add(new JLabel("Email or password is incorrect"))
       
       
     }

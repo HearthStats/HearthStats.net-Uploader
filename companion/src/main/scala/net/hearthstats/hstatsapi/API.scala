@@ -75,10 +75,11 @@ class API(config: UserConfig) extends Logging {
     debug("post sent")
     val result = postV2("users/sign_in",json"""{"user_login":{"email":$email,"password":$password}}""")
     result match {
-      case Success(raw_json) =>
-          config.auth_token.set(raw_json.auth_token.as[String])
-          config.userKey.set(raw_json.userkey.as[String])
-          debug("userKey set")
+      case Success(result) =>
+          Some(result.auth_token.as[String])
+          config.auth_token.set(result.auth_token.as[String])
+          config.userKey.set(result.userkey.as[String])
+          println(config.auth_token.set(result.auth_token.as[String]))
           true
       case Failure(e) =>
           false
@@ -102,11 +103,12 @@ class API(config: UserConfig) extends Logging {
     conn.setReadTimeout(timeout)
     conn.asInstanceOf[HttpURLConnection]
   }
+  
   def buildConnectionToV2(method: String): HttpURLConnection = {
-    val baseUrlV2 = config.apiBaseUrlV2 + method + "?auth_token="
+    val baseUrlV2 = config.apiBaseUrlV2 + method
     debug(s"API get $baseUrlV2********")
     val timeout = config.apiTimeoutMs
-    val urlV2 = new URL(baseUrlV2 + config.auth_token.get)
+    val urlV2 = new URL(baseUrlV2)
     val connV2 = urlV2.openConnection()
     connV2.setConnectTimeout(timeout)
     connV2.setReadTimeout(timeout)
@@ -120,11 +122,27 @@ class API(config: UserConfig) extends Logging {
     val result = Json.parse(resultString)
     if (result.status.as[String] == "success") {
       Success(result)
+      
     } else {
       val message = result.message.as[String]
       Failure(new Exception(s"API error : $message"))
     }
   }
+
+  
+    private def _parseResultV2(resultString: String): Try[Json] = {
+    debug(s"parsing $resultString")
+    val result = Json.parse(resultString)
+    if (result.success.as[Boolean] == true) {
+      Success(result)      
+    } else { 
+      val message = result.message.as[String]
+      Failure(new Exception(s"API error: $message"))
+    }
+  }
+  
+  
+  
 
   private def post(method: String, jsonData: Json): Try[Json] = {
     for {
@@ -136,7 +154,7 @@ class API(config: UserConfig) extends Logging {
   private def postV2(method: String, jsonData: Json): Try[Json] = {
     for {
       resString <- _postV2(method, jsonData)
-      data <- _parseResult(resString)
+      data <- _parseResultV2(resString)
     } yield data
   }
   
@@ -168,8 +186,9 @@ class API(config: UserConfig) extends Logging {
     os.write(outputBytes)
     os.close()
     val resultString = io.Source.fromInputStream(httpconV2.getInputStream).getLines.mkString("\n")
-    info("API post result = " + resultString)
+    println("API2 post result = " + resultString)
     resultString
+    
   }
 
 }
