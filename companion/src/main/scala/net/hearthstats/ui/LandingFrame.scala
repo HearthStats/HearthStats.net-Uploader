@@ -8,7 +8,7 @@ import net.hearthstats.ui.util.OptionTextField
 import net.hearthstats.ui.util.StringOptionTextField
 import net.hearthstats.ui.notification.NotificationQueue
 
-import java.awt.event.{ ActionEvent, ActionListener, WindowEvent }
+import java.awt.event.{ ActionEvent, ActionListener }
 import java.awt.{ Dimension, Font, Graphics, Color }
 import java.io.File
 import java.awt.image.BufferedImage
@@ -30,15 +30,13 @@ class LandingFrame(translation: Translation,
     private val signInButton = new JButton("Sign In")
     private val registerButton = new JButton("Register")
     private val registerUrl:String = "http://hearthstats.net/users/sign_up"
-    private val enteredEmail:String = null
-    private val enteredPassword:String = null
    
 
     def createLandingPage(){
       val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
       val titleLabel = new JLabel("Hearthstats Uploader")
       titleLabel.setFont(new Font("Ariel",Font.BOLD,24))
-      setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE)
+      setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE)
       setIconImage(icon)
       setLocation(windowX, windowY)
       setSize(windowWidth, windowHeight)
@@ -59,15 +57,13 @@ class LandingFrame(translation: Translation,
       add(new JLabel(t("LandingPanel.label.userId") + " "), "")
       var userEmailField: JTextField = new StringOptionTextField(config.email)
       add(userEmailField, "wrap")
-      val enteredEmail = userEmailField.getText()
-      config.email.set(enteredEmail)
+      config.email.set(userEmailField.getText())
         
       //entering user Password  
       add(new JLabel(t("LandingPanel.label.password") + " "), "")
       var passwordField: JTextField = new StringOptionTextField(config.password)
       add(passwordField, "wrap")
-      val enteredPassword = passwordField.getText()
-      config.password.set(enteredPassword)
+      config.password.set(passwordField.getText())
         
         
       add(new JLabel(" "), "wrap")
@@ -100,21 +96,25 @@ class LandingFrame(translation: Translation,
       setTitle(title)
     }  
     
+    //close login page
     def closeLandingPage
     {
       val closed = true
-      this.setVisible(false)
-      dispose()
     }
     
     //check if password and email matched
-    def checkForPassword() {    
-      if (api.login(enteredEmail, enteredPassword)){
+    def checkForPassword{ 
+      try{      
+      if (api.login(config.email.get, config.password.get)){        
         closeLandingPage
         }      
       else{
         add(new JLabel("Email or password is incorrect")) 
         }
+      }
+      catch{
+        case(e) => println("entered nothing")
+      }
   
     }   
 }

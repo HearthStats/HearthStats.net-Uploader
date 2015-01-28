@@ -1,9 +1,11 @@
 package net.hearthstats
 
+
 import java.awt.Component
 import java.io.File
 
 import scala.util.control.NonFatal
+import scala.util.{Success,Failure}
 
 import com.softwaremill.macwire.MacwireMacros.wire
 import com.softwaremill.macwire.Tagging.Tagging
@@ -79,22 +81,28 @@ class Main(
  
   
   val monitor: GameMonitor = wire[GameMonitor]
-
+  
   def start(): Unit = {
-    landingFrame.createLandingPage()
-    if(landingFrame.closed)
-    {
-      val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")    
-      loadingNotification.show()
-      logSystemInformation()
-      updater.cleanUp()
-      cleanupDebugFiles()      
-      mainFrame.createAndShowGui()
-      loadingNotification.close()
-      programHelper.createConfig(environment, uiLog)
-      startup.start()
-      monitor.start()
-    }
+      landingFrame.createLandingPage()
+      
+      
+      if(landingFrame.closed == true){
+       
+        landingFrame.dispose()
+        println("landingFrame closed")
+        val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")    
+        loadingNotification.show()
+        logSystemInformation()
+        updater.cleanUp()
+        cleanupDebugFiles()  
+        mainFrame.setVisible(true)
+        mainFrame.createAndShowGui()
+        loadingNotification.close()
+        programHelper.createConfig(environment, uiLog)
+        startup.start()
+        monitor.start()
+
+        }
   }
 
   private def logSystemInformation(): Unit = {

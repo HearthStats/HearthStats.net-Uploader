@@ -79,7 +79,6 @@ class API(config: UserConfig) extends Logging {
           Some(result.auth_token.as[String])
           config.auth_token.set(result.auth_token.as[String])
           config.userKey.set(result.userkey.as[String])
-          println(config.auth_token.set(result.auth_token.as[String]))
           true
       case Failure(e) =>
           false
