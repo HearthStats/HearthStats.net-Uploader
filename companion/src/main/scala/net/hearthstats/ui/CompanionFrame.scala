@@ -46,7 +46,6 @@ class CompanionFrame(val environment: Environment,
   val aboutPanel: AboutPanel = wire[AboutPanel]
   val matchPanel: MatchPanel = wire[MatchPanel]
   val decksTab: DecksTab = wire[DecksTab]
-  val landingPanel: LandingPanel = wire[LandingPanel]
   
   def createAndShowGui() {
     debug("Creating GUI")
@@ -61,7 +60,6 @@ class CompanionFrame(val environment: Environment,
     tabbedPane.add(decksTab, t("tab.decks"))
     tabbedPane.add(optionsPanel, t("tab.options"))
     tabbedPane.add(aboutPanel, t("tab.about"))
-    tabbedPane.add(landingPanel,t("tab.landing"))
 
     matchPanel.updateCurrentMatchUi()
     enableMinimizeToTray()

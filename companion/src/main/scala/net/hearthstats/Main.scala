@@ -72,6 +72,7 @@ class Main(
   val companionEvents = wire[ScreenEvents]
   val exportDeckBox = wire[ExportDeckBox]
   val mainFrame: CompanionFrame = wire[CompanionFrame]
+  val landingFrame: LandingFrame = wire[LandingFrame]
   val replayHandler = wire[ReplayHandler]
   val startup: Startup = wire[Startup]
   val matchUtils: MatchUtils = wire[MatchUtils]
@@ -80,17 +81,20 @@ class Main(
   val monitor: GameMonitor = wire[GameMonitor]
 
   def start(): Unit = {
-    val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")
-    loadingNotification.show()
-    logSystemInformation()
-    updater.cleanUp()
-    cleanupDebugFiles()
-    
-    mainFrame.createAndShowGui()
-    loadingNotification.close()
-    programHelper.createConfig(environment, uiLog)
-    startup.start()
-    monitor.start()
+    landingFrame.createLandingPage()
+    if(landingFrame.closed)
+    {
+      val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")    
+      loadingNotification.show()
+      logSystemInformation()
+      updater.cleanUp()
+      cleanupDebugFiles()      
+      mainFrame.createAndShowGui()
+      loadingNotification.close()
+      programHelper.createConfig(environment, uiLog)
+      startup.start()
+      monitor.start()
+    }
   }
 
   private def logSystemInformation(): Unit = {
