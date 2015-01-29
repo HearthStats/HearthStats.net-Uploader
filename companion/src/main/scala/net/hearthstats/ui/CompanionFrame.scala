@@ -109,6 +109,7 @@ class CompanionFrame(val environment: Environment,
   def checkForUserKey(): Boolean = {
     val userKeySet = !userKey.equalsIgnoreCase("your_userkey_here")
     if (userKeySet) {
+      println("userkey checked, no entering")
       true
     } else {
       uiLog.warn(t("error.userkey_not_entered"))

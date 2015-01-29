@@ -83,25 +83,35 @@ class Main(
   val monitor: GameMonitor = wire[GameMonitor]
   
   def start(): Unit = {
+      config.closedLandingPage.set(false)
       landingFrame.createLandingPage()
+      config.quitLoadingMainFrame.set(false)
+      val userKeySet = config.userKey.get
+      println("userkey before while loop = " + userKeySet)
       
+      while(!config.quitLoadingMainFrame.get){ 
+        val userKeySet = config.userKey.get
+        println("userkey in the while loop = " + userKeySet)
+        if(config.closedLandingPage){
+          mainFrame.decksTab.updateDecks()
+          landingFrame.dispose()
+          val userKeySet = config.userKey.get
+          println("userkey = " + userKeySet)
+          config.userKey.set(userKeySet)
+          val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")    
+          loadingNotification.show()
+          logSystemInformation()
+          updater.cleanUp()
+          cleanupDebugFiles()  
+          
+          mainFrame.createAndShowGui()
+          loadingNotification.close()
+          programHelper.createConfig(environment, uiLog)
+          startup.start()
+          monitor.start()
+          config.quitLoadingMainFrame.set(true)
+          }
       
-      if(landingFrame.closed == true){
-       
-        landingFrame.dispose()
-        println("landingFrame closed")
-        val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")    
-        loadingNotification.show()
-        logSystemInformation()
-        updater.cleanUp()
-        cleanupDebugFiles()  
-        mainFrame.setVisible(true)
-        mainFrame.createAndShowGui()
-        loadingNotification.close()
-        programHelper.createConfig(environment, uiLog)
-        startup.start()
-        monitor.start()
-
         }
   }
 

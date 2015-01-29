@@ -26,7 +26,6 @@ class LandingFrame(translation: Translation,
   import translation.t
   import config._
     
-    val closed = false
     private val signInButton = new JButton("Sign In")
     private val registerButton = new JButton("Register")
     private val registerUrl:String = "http://hearthstats.net/users/sign_up"
@@ -36,7 +35,7 @@ class LandingFrame(translation: Translation,
       val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
       val titleLabel = new JLabel("Hearthstats Uploader")
       titleLabel.setFont(new Font("Ariel",Font.BOLD,24))
-      setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE)
+      setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE)
       setIconImage(icon)
       setLocation(windowX, windowY)
       setSize(windowWidth, windowHeight)
@@ -86,6 +85,7 @@ class LandingFrame(translation: Translation,
       val firstTimeHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Game-Language",
        "First time tutorial")
       add(firstTimeHelpIcon, "")
+      add(new JLabel(" "), "wrap")
     
     }
     
@@ -99,7 +99,7 @@ class LandingFrame(translation: Translation,
     //close login page
     def closeLandingPage
     {
-      val closed = true
+      config.closedLandingPage.set(true)
     }
     
     //check if password and email matched
@@ -110,6 +110,7 @@ class LandingFrame(translation: Translation,
         }      
       else{
         add(new JLabel("Email or password is incorrect")) 
+        println("invalid password or email")
         }
       }
       catch{

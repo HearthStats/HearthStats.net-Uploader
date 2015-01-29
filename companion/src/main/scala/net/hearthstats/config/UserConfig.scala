@@ -43,6 +43,9 @@ class UserConfig extends Logging with Implicits {
   val videoHeight = config("video.fps", 2000)
 
   val uploadVideo = config("video.upload", true)
+  
+  val closedLandingPage = config("landingFrame.closed",false)
+  val quitLoadingMainFrame = config("mainFrame.loading",false)
 
   val gameLanguage = enumConfig("option.gamelanguage", SupportedGameLanguage.EN)
   /** Translation for the cards of the game, based on the language option for the game.*/
