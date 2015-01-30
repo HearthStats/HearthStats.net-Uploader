@@ -9,7 +9,7 @@ import net.hearthstats.ui.util.StringOptionTextField
 import net.hearthstats.ui.notification.NotificationQueue
 
 import java.awt.event.{ ActionEvent, ActionListener }
-import java.awt.{ Dimension, Font, Graphics, Color }
+import java.awt.{ Dimension, Font, Graphics, Color, Cursor }
 import java.io.File
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
@@ -26,15 +26,27 @@ class LandingFrame(translation: Translation,
   import translation.t
   import config._
     
-    private val signInButton = new JButton("Sign In")
+    private val signInButton = new JButton(new ImageIcon(ImageIO.read(getClass.getResource("/images/Sign_in_Button.png"))))
+    //signInButton.setBackground(new ImageIcon(ImageIO.read(getClass.getResource("/images/Sign_in_Button.png"))))
+    signInButton.setBorder(null)
+    signInButton.setBorderPainted(false)
+    signInButton.setContentAreaFilled(false)
+    signInButton.setOpaque(false)
+    //signInButton.setPressedIcon(new ImageIcon(startButtonActive));
+    //signInButton.setRolloverIcon(new ImageIcon(ImageIO.read(getClass.getResource("/images/Hearthstats_icon.png"))));
+    signInButton.setFocusable(false)
+    signInButton.setCursor(new Cursor(Cursor.HAND_CURSOR))
     private val registerButton = new JButton("Register")
+    registerButton.setOpaque(false)
+    registerButton.setContentAreaFilled(false)
+    registerButton.setBorderPainted(false)
     private val registerUrl:String = "http://hearthstats.net/users/sign_up"
-   
+    
 
     def createLandingPage(){
       val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
-      val titleLabel = new JLabel("Hearthstats Uploader")
-      titleLabel.setFont(new Font("Ariel",Font.BOLD,24))
+      val titleLabel = new JLabel("Uploader")
+      titleLabel.setFont(new Font("Ariel",Font.BOLD,36))
       setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE)
       setIconImage(icon)
       setLocation(windowX, windowY)
@@ -42,50 +54,66 @@ class LandingFrame(translation: Translation,
       setMinimumSize(new Dimension(500, 600))
       setVisible(true)
       updateTitle
-      
+
       setLayout(new MigLayout)
-      setBackground(Color.WHITE)
+      getContentPane().setBackground(Color.WHITE)
+      getRootPane().setBorder(BorderFactory.createMatteBorder(4, 4, 4, 4, Color.WHITE));
       
-      add(new JLabel(" "), "wrap")      
-      add(new JLabel(new ImageIcon(ImageIO.read(getClass.getResource("/images/icon.png")))))
       
-      add(titleLabel, "wrap")
+      add(new JLabel(" "), "wrap")    
+      add(new JLabel(" "), "wrap")
+      add(new JLabel(" "), "wrap")
+      add(new JLabel("  "), "")
+      add(new JLabel(new ImageIcon(ImageIO.read(getClass.getResource("/images/Hearthstats_icon.png")))),"right")
+      add(new JLabel(new ImageIcon(ImageIO.read(getClass.getResource("/images/Hearthstats_title.png")))),"right")
+      add(new JLabel("       "),"right")
+      
       add(new JLabel(" "),"wrap")
-        
+      add(new JLabel(" "),"wrap")
+      add(new JLabel(" "),"wrap")
+      add(new JLabel(" "),"wrap")
+      add(new JLabel("  "), "")  
       //entering userID
-      add(new JLabel(t("LandingPanel.label.userId") + " "), "")
+      add(new JLabel(t("LandingPanel.label.userId") + "    "), "right")
       var userEmailField: JTextField = new StringOptionTextField(config.email)
-      add(userEmailField, "wrap")
+      
+      add(userEmailField, "center,wrap")
       config.email.set(userEmailField.getText())
         
+      
+      add(new JLabel(" "), "wrap")
+      add(new JLabel("  "), "") 
       //entering user Password  
-      add(new JLabel(t("LandingPanel.label.password") + " "), "")
+      add(new JLabel(t("LandingPanel.label.password") + " "), "right")
       var passwordField: JTextField = new StringOptionTextField(config.password)
-      add(passwordField, "wrap")
+      passwordField.setOpaque(false)
+      passwordField.setBackground(new Color(0,0,0,0))
+      
+      add(passwordField, "center,wrap")
       config.password.set(passwordField.getText())
         
         
       add(new JLabel(" "), "wrap")
-        
+      add(new JLabel(" "), "wrap")
+      add(new JLabel("  "), "")  
       //add a sign in button
       signInButton.addActionListener(new ActionListener {
         override def actionPerformed(arg0: ActionEvent) {
          checkForPassword   
         }})
-      add(signInButton, "")
+      add(signInButton, "right")
       
       //add a register button 
       registerButton.addActionListener(new ActionListener {
         override def actionPerformed(arg0: ActionEvent) {
           Browse(registerUrl)
         }})
-      add(registerButton, "")
+      add(registerButton, "center")
         
       //add a first time help link  
       val firstTimeHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Game-Language",
        "First time tutorial")
-      add(firstTimeHelpIcon, "")
-      add(new JLabel(" "), "wrap")
+      add(firstTimeHelpIcon, "left")
     
     }
     
@@ -107,9 +135,10 @@ class LandingFrame(translation: Translation,
       try{      
       if (api.login(config.email.get, config.password.get)){        
         closeLandingPage
+        JOptionPane.showMessageDialog(null,"Password correct")
         }      
       else{
-        add(new JLabel("Email or password is incorrect")) 
+        JOptionPane.showMessageDialog(null,"Invalid Email or Password")
         println("invalid password or email")
         }
       }
@@ -119,3 +148,5 @@ class LandingFrame(translation: Translation,
   
     }   
 }
+
+

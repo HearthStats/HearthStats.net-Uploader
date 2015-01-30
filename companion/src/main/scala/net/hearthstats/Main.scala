@@ -26,6 +26,7 @@ import net.hearthstats.ui.notification.DialogNotification
 import net.hearthstats.util.{ AnalyticsTrackerFactory, FileObserver, Translation, TranslationConfig, Updater }
 import net.sourceforge.tess4j.Tesseract
 
+
 class Main(
   environment: Environment,
   config: UserConfig,
@@ -87,17 +88,15 @@ class Main(
       landingFrame.createLandingPage()
       config.quitLoadingMainFrame.set(false)
       val userKeySet = config.userKey.get
-      println("userkey before while loop = " + userKeySet)
       
-      while(!config.quitLoadingMainFrame.get){ 
-        val userKeySet = config.userKey.get
-        println("userkey in the while loop = " + userKeySet)
+
+
+      while(!config.quitLoadingMainFrame.get){
         if(config.closedLandingPage){
           mainFrame.decksTab.updateDecks()
           landingFrame.dispose()
-          val userKeySet = config.userKey.get
-          println("userkey = " + userKeySet)
-          config.userKey.set(userKeySet)
+          val password = config.password.get
+          println("password" + password)
           val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")    
           loadingNotification.show()
           logSystemInformation()
