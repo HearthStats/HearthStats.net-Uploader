@@ -15,92 +15,68 @@
 	<name>HearthStone common</name>
 	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
 
-
-
 	<dependencies>
+		<dependency>
+			<artifactId>scala-library</artifactId>
+			<groupId>org.scala-lang</groupId>
+			<version>${scala.version}</version>
+		</dependency>
 
 
-	<dependency>
-		<artifactId>scala-library</artifactId>
-		<groupId>org.scala-lang</groupId>
-		<version>${scala.version}</version>
-	</dependency>
+		<dependency>
+			<groupId>com.softwaremill.macwire</groupId>
+			<artifactId>macros_2.11</artifactId>
+			<version>0.8.0</version>
+		</dependency>
 
+		<dependency>
+			<groupId>com.github.nscala-time</groupId>
+			<artifactId>nscala-time_2.11</artifactId>
+			<version>1.4.0</version>
+		</dependency>
 
-	<dependency>
-		<groupId>com.softwaremill.macwire</groupId>
-		<artifactId>macros_2.11</artifactId>
-		<version>0.8.0</version>
-	</dependency>
+		<!-- logs -->
+		<dependency>
+			<groupId>org.clapper</groupId>
+			<artifactId>grizzled-slf4j_2.11</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.2</version>
+		</dependency>
 
-	<dependency>
-		<groupId>com.typesafe.akka</groupId>
-		<artifactId>akka-actor_2.11</artifactId>
-	</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.6</version>
+		</dependency>
 
-	<dependency>
-		<groupId>com.github.nscala-time</groupId>
-		<artifactId>nscala-time_2.11</artifactId>
-		<version>1.4.0</version>
-	</dependency>
-
-	<!-- logs -->
-	<dependency>
-		<groupId>org.clapper</groupId>
-		<artifactId>grizzled-slf4j_2.11</artifactId>
-		<version>1.0.2</version>
-	</dependency>
-	<dependency>
-		<groupId>ch.qos.logback</groupId>
-		<artifactId>logback-classic</artifactId>
-		<version>1.1.2</version>
-	</dependency>
-
-	<dependency>
-		<groupId>org.apache.commons</groupId>
-		<artifactId>commons-lang3</artifactId>
-		<version>3.3.1</version>
-	</dependency>
-	<dependency>
-		<groupId>commons-io</groupId>
-		<artifactId>commons-io</artifactId>
-		<version>2.4</version>
-	</dependency>
-	<dependency>
-		<groupId>net.java.dev.jna</groupId>
-		<artifactId>jna-platform</artifactId>
-		<version>4.0.0</version>
-	</dependency>
-	<dependency>
-		<groupId>org.slf4j</groupId>
-		<artifactId>slf4j-api</artifactId>
-		<version>1.7.6</version>
-	</dependency>
-
-	<dependency>
-		<groupId>org.scalatest</groupId>
-		<artifactId>scalatest_2.11</artifactId>
-		<version>2.2.2</version>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<artifactId>junit</artifactId>
-		<groupId>junit</groupId>
-		<version>4.10</version>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.powermock</groupId>
-		<artifactId>powermock-api-mockito</artifactId>
-		<version>1.5.5</version>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>com.propensive</groupId>
-		<artifactId>rapture-json-jawn_2.11</artifactId>
-		<version>1.1.0</version>
-	</dependency>
-</dependencies>
+		<dependency>
+			<groupId>org.scalatest</groupId>
+			<artifactId>scalatest_2.11</artifactId>
+			<version>2.2.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<artifactId>junit</artifactId>
+			<groupId>junit</groupId>
+			<version>4.10</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito</artifactId>
+			<version>1.5.5</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.propensive</groupId>
+			<artifactId>rapture-json-jawn_2.11</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -133,19 +109,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-		        <version>2.3.2</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
-	
+
 	</build>
 </project>

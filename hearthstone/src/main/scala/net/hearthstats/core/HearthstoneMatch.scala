@@ -1,6 +1,5 @@
 package net.hearthstats.core
 
-import org.apache.commons.lang3.StringUtils
 import rapture.json.jsonBackends.jawn._
 import rapture.json._
 import com.github.nscala_time.time.Imports.DateTime
