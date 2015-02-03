@@ -172,6 +172,7 @@ class LogParser extends Logging {
   val STARTUP_REGEX = """^Initialize engine version.*""".r
   val BEGIN_SPECTATOR_REGEX = """\[Power\] .* Begin Spectating .*""".r
   val END_SPECTATOR_REGEX = """\[Power\] .* End Spectator Mode .*""".r
+  val HEALTHY_GAMING_REGEX = """\[HealthyGaming\] .* Accout Country: ([A-Z]+).*""".r
 
   import GameMode._
   val GAME_MODES = Map("RegisterScreenPractice" -> PRACTICE,
