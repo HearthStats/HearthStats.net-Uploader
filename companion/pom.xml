@@ -68,7 +68,7 @@
 	<dependency>
 		<groupId>com.softwaremill.macwire</groupId>
 		<artifactId>macros_2.11</artifactId>
-		<version>0.7.3</version>
+		<version>0.8.0</version>
 	</dependency>
 
 	<dependency>
@@ -257,7 +257,7 @@
 			<dependency>
 				<groupId>org.scala-lang</groupId>
 				<artifactId>scala-reflect</artifactId>
-				<version>2.11.4</version>
+				<version>${scala.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

@@ -6,7 +6,7 @@ import java.io.File
 import scala.util.control.NonFatal
 
 import com.softwaremill.macwire.MacwireMacros.wire
-import com.softwaremill.macwire.Tagging.Tagging
+import com.softwaremill.macwire.Tagging._
 
 import grizzled.slf4j.Logging
 import javax.swing.{ JFrame, JOptionPane, WindowConstants }
@@ -50,7 +50,7 @@ class Main(
   val screenAnalyser = wire[ScreenAnalyser]
   val individualPixelAnalyser = wire[IndividualPixelAnalyser]
   val lobbyAnalyser = wire[LobbyAnalyser]
-  val hsMatch = wire[HearthstoneMatch]
+  val hsMatch = new HearthstoneMatch
 
   val rectangleConfig = config.deckOverlay.taggedWith[UserDeckOverlayRectangle]
   val deckOverlay = wire[UserOverlaySwing]
