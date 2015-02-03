@@ -9,66 +9,23 @@
 		<version>0.21.1</version>
 		<artifactId>companion-parent</artifactId>
 	</parent>
-	<artifactId>companion</artifactId>
+	<artifactId>hearthstone</artifactId>
 
 	<packaging>jar</packaging>
-	<name>HearthStats Companion Core</name>
+	<name>HearthStone common</name>
 	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
 
-	<properties>
-		<product.name>HearthStats Companion (common)</product.name>
-	</properties>
 
-	<repositories>
-		<repository>
-			<id>local-repository</id>
-			<name>Local repository for jai_imageio</name>
-			<url>file://${project.basedir}/lib</url>
-		</repository>
-		<repository>
-			<id>org.ghost4j.repository.releases</id>
-			<name>Ghost4J releases</name>
-			<url>http://repo.ghost4j.org/maven2/releases</url>
-		</repository>
-		<repository>
-			<releases />
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>mygrid-repository</id>
-			<name>myGrid Repository</name>
-			<url>http://www.mygrid.org.uk/maven/repository</url>
-		</repository>
-	</repositories>
 
 	<dependencies>
-		<dependency>
-			<groupId>net.hearthstats</groupId>
-			<artifactId>hearthstone</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.hearthstats</groupId>
-			<artifactId>updater</artifactId>
-			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.googlecode.json-simple</groupId>
-					<artifactId>json-simple</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+
 
 	<dependency>
 		<artifactId>scala-library</artifactId>
 		<groupId>org.scala-lang</groupId>
 		<version>${scala.version}</version>
 	</dependency>
-	<dependency>
-		<groupId>org.scala-lang.modules</groupId>
-		<artifactId>scala-swing_2.11</artifactId>
-		<version>1.0.1</version>
-	</dependency>
+
 
 	<dependency>
 		<groupId>com.softwaremill.macwire</groupId>
@@ -113,56 +70,6 @@
 		<groupId>net.java.dev.jna</groupId>
 		<artifactId>jna-platform</artifactId>
 		<version>4.0.0</version>
-	</dependency>
-	<dependency>
-		<groupId>org.ini4j</groupId>
-		<artifactId>ini4j</artifactId>
-		<version>0.5.2</version>
-	</dependency>
-	<dependency>
-		<groupId>javax.media</groupId>
-		<artifactId>jai_imageio</artifactId>
-		<version>1.1</version>
-	</dependency>
-	<dependency>
-		<groupId>net.sourceforge.javaocr</groupId>
-		<artifactId>javaocr-core</artifactId>
-		<version>1.0</version>
-	</dependency>
-	<dependency>
-		<groupId>net.sourceforge.javaocr.plugins</groupId>
-		<artifactId>javaocr-plugin-awt</artifactId>
-		<version>1.0</version>
-	</dependency>
-	<dependency>
-		<groupId>net.sourceforge.javaocr.plugins</groupId>
-		<artifactId>javaocr-plugin-cluster</artifactId>
-		<version>1.0</version>
-	</dependency>
-	<dependency>
-		<groupId>net.sourceforge.javaocr.plugins</groupId>
-		<artifactId>javaocr-plugin-fir</artifactId>
-		<version>1.0</version>
-	</dependency>
-	<dependency>
-		<groupId>net.sourceforge.javaocr.plugins</groupId>
-		<artifactId>javaocr-plugin-moment</artifactId>
-		<version>1.0</version>
-	</dependency>
-	<dependency>
-		<groupId>net.sourceforge.javaocr.plugins</groupId>
-		<artifactId>javaocr-plugin-morphology</artifactId>
-		<version>1.0</version>
-	</dependency>
-	<dependency>
-		<groupId>com.miglayout</groupId>
-		<artifactId>miglayout-swing</artifactId>
-		<version>4.2</version>
-	</dependency>
-	<dependency>
-		<groupId>com.dmurph</groupId>
-		<artifactId>JGoogleAnalyticsTracker</artifactId>
-		<version>1.2.0</version>
 	</dependency>
 	<dependency>
 		<groupId>org.slf4j</groupId>
@@ -239,21 +146,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-				<includes>
-					<include>version</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>false</filtering>
-				<excludes>
-					<exclude>version</exclude>
-				</excludes>
-			</resource>
-		</resources>
+	
 	</build>
 </project>

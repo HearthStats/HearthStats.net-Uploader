@@ -32,6 +32,7 @@
 
 	<modules>
 		<module>updater</module>
+		<module>hearthstone</module>
 		<module>companion</module>
 	</modules>
 
