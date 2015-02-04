@@ -27,7 +27,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   var currentBack = cardBack
   var initialPosibilities = 100*(math floor(remaining.toDouble / 30.0d)*10000)/10000
   var posibilities = initialPosibilities
-  var cardsLeft = 31
+  var cardsLeft = 30
   
   val newPosibilities:Future[Double] = Future{
     posibilities
@@ -143,7 +143,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   
   def updateDecreaseCardsLeft():Unit = {
     cardsLeft -= 1
-    println(card.originalName + "cardsLeft decreased" + "cardsLeft = " + cardsLeft)
+    println("updateDecreasedCardsLeft: " + cardsLeft)
     updatePosibilities()
   }
   
