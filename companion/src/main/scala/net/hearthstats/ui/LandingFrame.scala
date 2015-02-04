@@ -29,9 +29,7 @@ class LandingFrame(translation: Translation,
     private val signInButton = new JButton(new ImageIcon(ImageIO.read(getClass.getResource("/images/Sign_in_Button.png"))))
     //signInButton.setBackground(new ImageIcon(ImageIO.read(getClass.getResource("/images/Sign_in_Button.png"))))
     signInButton.setBorder(null)
-    signInButton.setBorderPainted(false)
-    signInButton.setContentAreaFilled(false)
-    signInButton.setOpaque(false)
+
     //signInButton.setPressedIcon(new ImageIcon(startButtonActive));
     //signInButton.setRolloverIcon(new ImageIcon(ImageIO.read(getClass.getResource("/images/Hearthstats_icon.png"))));
     signInButton.setFocusable(false)

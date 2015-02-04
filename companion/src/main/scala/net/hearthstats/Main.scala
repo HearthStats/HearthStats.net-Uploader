@@ -87,16 +87,11 @@ class Main(
       config.closedLandingPage.set(false)
       landingFrame.createLandingPage()
       config.quitLoadingMainFrame.set(false)
-      val userKeySet = config.userKey.get
-      
-
 
       while(!config.quitLoadingMainFrame.get){
         if(config.closedLandingPage){
           mainFrame.decksTab.updateDecks()
           landingFrame.dispose()
-          val password = config.password.get
-          println("password" + password)
           val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")    
           loadingNotification.show()
           logSystemInformation()

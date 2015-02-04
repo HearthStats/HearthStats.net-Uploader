@@ -25,14 +25,27 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
 
   var remaining = card.count
   var currentBack = cardBack
-
+  var initialPosibilities = 100*(math floor(remaining.toDouble / 30.0d)*10000)/10000
+  var posibilities = initialPosibilities
+  var cardsLeft = 31
+  
+  val newPosibilities:Future[Double] = Future{
+    posibilities
+  }
+  
+  newPosibilities.onSuccess{
+    case newPosibilities =>
+      var posibilities = newPosibilities
+      revalidate()
+      repaint()
+  }
+  
   imagesReady.onSuccess {
     case _ =>
       cardImage = new ImageIcon(card.localFile.get.getAbsolutePath)
       revalidate()
       repaint()
   }
-
   var cardImage = cardBack
 
   val cost = card.cost.toString
@@ -45,7 +58,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   def imgSrcY: Int = 82 * cardImage.getIconHeight / pictureSize.getHeight.toInt
   def imgSrcW: Int = 130 * cardImage.getIconWidth / pictureSize.getWidth.toInt
   def imgSrcH: Int = 40 * cardImage.getIconHeight / pictureSize.getHeight.toInt
-
+ 
   setMaximumSize(backgroundSize * 1.2)
   setPreferredSize(backgroundSize)
   setMinimumSize(backgroundSize)
@@ -56,7 +69,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   setBorder(BorderFactory.createEmptyBorder)
 
   updateRemaining()
-
+  
   val src = card.localFile.get.toURI.toURL
   setToolTipText(s"""<html><img src="$src"> $name""")
 
@@ -88,9 +101,11 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
       outlineText(g2, cost, 5, 25, BLACK, WHITE)
     g2.setFont(Font.decode(SANS_SERIF).deriveFont(14))
     outlineText(g2, name, 35, 23, BLACK, WHITE)
+    g2.drawString("Posibilities: " + posibilities + "%", 25,10)
     g2.setTransform(original)
     g2.setComposite(composite)
 
+    
     super.paintComponent(g2)
   }
 
@@ -119,10 +134,31 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
     remaining += 1
     updateRemaining()
   }
-
+  
+  def updateIncreaseCardsLeft():Unit = {
+    cardsLeft += 1
+    println(card.originalName + "cardsLeft increased")
+    updatePosibilities()
+  }
+  
+  def updateDecreaseCardsLeft():Unit = {
+    cardsLeft -= 1
+    println(card.originalName + "cardsLeft decreased" + "cardsLeft = " + cardsLeft)
+    updatePosibilities()
+  }
+  
   def reset(): Unit = {
     remaining = card.count
+    cardsLeft = 30
+    updatePosibilities()
     updateRemaining()
+  }
+  
+  
+  
+  def updatePosibilities(): Unit = {
+    posibilities = calPosibilities()
+    repaint()
   }
 
   private def updateRemaining(): Unit = {
@@ -132,6 +168,9 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
       else cardBack
     repaint()
   }
+  
+    def calPosibilities(): Double = 
+      100*(math floor(remaining.toDouble/cardsLeft.toDouble)*10000)/10000
 
 }
 
