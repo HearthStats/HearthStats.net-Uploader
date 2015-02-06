@@ -34,7 +34,8 @@ class CardUtils(hsAPI: API, uiLog: Log, environment: Environment) extends Loggin
       	"name" : $originalName
       	} """ = card
       idInt = id.as[Int]
-    } yield idInt -> Card(
+    } yield 
+      idInt -> Card(
       rarity = rarity.as[Int],
       id = idInt,
       cost = cost.as[Int],

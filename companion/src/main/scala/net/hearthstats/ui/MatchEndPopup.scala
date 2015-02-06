@@ -35,10 +35,10 @@ class MatchEndPopup(
   def showPopup(parentComponent: Component, hsMatch: HearthstoneMatch): Option[HearthstoneMatch] = {
     val popup = new MatchEndPopupImpl(hsMatch)
     val submit = new JButton("Submit")
-    if(popup.errorMessages !=null)
-    {
-      submit.setEnabled(false)
-    }
+    //if(popup.errorMessages !=null)
+    //{
+     // submit.setEnabled(false)
+    //}
     val cancel = new JButton("Cancel")
     val value = JOptionPane.showOptionDialog(parentComponent, 
         popup, 
