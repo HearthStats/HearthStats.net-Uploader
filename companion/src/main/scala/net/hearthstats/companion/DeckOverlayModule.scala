@@ -64,6 +64,7 @@ class DeckOverlayModule(
             println(cardCode + " decreased ")}
         case CardEvent(cardCode, _, REPLACED, `playerId`) =>
           openingHand -= cardCode
+          userPresenter.increaseCardsLeft()
         case TurnCount(2) =>
           for {
             cardCode <- openingHand
@@ -79,6 +80,8 @@ class DeckOverlayModule(
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN | DISCARDED, `playerId`) =>
           cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
           if(cardCode != "GAME_005")userPresenter.decreaseCardsLeft()
+        case CardEvent(cardCode,_,ADDED_TO_DECK,`playerId`) =>
+          if(cardCode == "GVG_036")userPresenter.increaseCardsLeft()
         case _ =>
       }
 

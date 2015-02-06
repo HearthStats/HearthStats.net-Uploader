@@ -29,16 +29,10 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   var posibilities = initialPosibilities
   var cardsLeft = 30
   
-  val newPosibilities:Future[Double] = Future{
-    posibilities
-  }
+ // val newPosibilities:Future[Double] = Future{
+ //   posibilities
+ // }
   
-  newPosibilities.onSuccess{
-    case newPosibilities =>
-      var posibilities = newPosibilities
-      revalidate()
-      repaint()
-  }
   
   imagesReady.onSuccess {
     case _ =>

@@ -34,8 +34,20 @@ class MatchEndPopup(
    */
   def showPopup(parentComponent: Component, hsMatch: HearthstoneMatch): Option[HearthstoneMatch] = {
     val popup = new MatchEndPopupImpl(hsMatch)
-    val value = JOptionPane.showOptionDialog(parentComponent, popup, "Incomplete match detected", JOptionPane.INFORMATION_MESSAGE,
-      JOptionPane.YES_NO_OPTION, null, Array("Submit", "Cancel"), "Submit")
+    val submit = new JButton("Submit")
+    if(popup.errorMessages !=null)
+    {
+      submit.setEnabled(false)
+    }
+    val cancel = new JButton("Cancel")
+    val value = JOptionPane.showOptionDialog(parentComponent, 
+        popup, 
+        "Incomplete match detected", 
+        JOptionPane.INFORMATION_MESSAGE,
+        JOptionPane.YES_NO_OPTION, 
+        null, 
+        Array(submit,cancel),
+        submit)
     value match {
       case 0 => Some(popup.hsMatch)
       case _ => None

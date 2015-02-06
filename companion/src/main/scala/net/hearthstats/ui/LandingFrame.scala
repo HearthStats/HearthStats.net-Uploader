@@ -26,15 +26,17 @@ class LandingFrame(translation: Translation,
   import translation.t
   import config._
     
-    private val signInButton = new JButton(new ImageIcon(ImageIO.read(getClass.getResource("/images/Sign_in_Button.png"))))
-    //signInButton.setBackground(new ImageIcon(ImageIO.read(getClass.getResource("/images/Sign_in_Button.png"))))
+    private val signInButton = new JButton("Sign In")
     signInButton.setBorder(null)
-
-    //signInButton.setPressedIcon(new ImageIcon(startButtonActive));
-    //signInButton.setRolloverIcon(new ImageIcon(ImageIO.read(getClass.getResource("/images/Hearthstats_icon.png"))));
     signInButton.setFocusable(false)
     signInButton.setCursor(new Cursor(Cursor.HAND_CURSOR))
+    signInButton.setOpaque(false)
+    signInButton.setContentAreaFilled(false)
+    signInButton.setBorderPainted(false)
     private val registerButton = new JButton("Register")
+    registerButton.setBorder(null)
+    registerButton.setFocusable(false)
+    registerButton.setCursor(new Cursor(Cursor.HAND_CURSOR))
     registerButton.setOpaque(false)
     registerButton.setContentAreaFilled(false)
     registerButton.setBorderPainted(false)
@@ -118,7 +120,7 @@ class LandingFrame(translation: Translation,
     //update title
     def updateTitle
     {
-      var title = "HearthStats Companion"
+      var title = "HearthStats Companion Login Page"
       setTitle(title)
     }  
     
@@ -140,9 +142,9 @@ class LandingFrame(translation: Translation,
         println("invalid password or email")
         }
       }
-      catch{
-        case(e) => println("entered nothing")
-      }
+      catch {
+        case e => throw new Exception("entered nothing", e) 
+        }
   
     }   
 }
