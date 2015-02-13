@@ -9,8 +9,15 @@ language: java
 jdk:
   - oraclejdk7
 
-install: mvn install -DskipTests -Ptravis
-script: mvn package -Ptravis
+install: 
+  - mvn install -DskipTests -Ptravis
+
+script: 
+  - mvn package -Ptravis
+  # Tricks to avoid useless S3 cache updates
+  - mkdir /tmp/cache-trick
+  - mv $HOME/.m2/repository/net/hearthstats /tmp/cache-trick/
+
 after_success:
   - mvn test cobertura:cobertura coveralls:cobertura -Pcoverall
 
