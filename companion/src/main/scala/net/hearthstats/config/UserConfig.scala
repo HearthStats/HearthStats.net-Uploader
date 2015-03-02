@@ -53,8 +53,8 @@ class UserConfig extends Logging with Implicits {
   def gameCardsTranslation = new Translation(TranslationConfig("net.hearthstats.resources.card.Card", gameLanguage.get.toString))
 
   //private options, no need to be displayed
-  val apiBaseUrl = "http://192.237.249.9/api/v1/"
-  val apiBaseUrlV2 = "http://192.237.249.9/api/v2/"
+  val apiBaseUrl = "http://hearthstats.net/api/v1/"
+  val apiBaseUrlV2 = "http://hearthstats.net/api/v2/"
   val apiTimeoutMs = 15000
 
   val awsBucket = "hearthstats"

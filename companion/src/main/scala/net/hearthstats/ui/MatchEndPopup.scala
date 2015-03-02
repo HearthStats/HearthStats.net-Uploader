@@ -16,6 +16,9 @@ import scala.swing.Swing
 import net.hearthstats.core.Deck
 import net.hearthstats.core.HearthstoneMatch
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+
 /**
  * A popup to display at the end of the match that allows the match details to
  * be edited.
@@ -35,18 +38,23 @@ class MatchEndPopup(
   def showPopup(parentComponent: Component, hsMatch: HearthstoneMatch): Option[HearthstoneMatch] = {
     val popup = new MatchEndPopupImpl(hsMatch)
     val submit = new JButton("Submit")
-    //if(popup.errorMessages !=null)
-    //{
-     // submit.setEnabled(false)
-    //}
+    if(popup.errorMessages !=null)
+    {
+      submit.setEnabled(false)
+    }
+    else
+    {
+      submit.setEnabled(true)
+    }
     val cancel = new JButton("Cancel")
+    val submitButton = Future{submit}
     val value = JOptionPane.showOptionDialog(parentComponent, 
         popup, 
         "Incomplete match detected", 
         JOptionPane.INFORMATION_MESSAGE,
         JOptionPane.YES_NO_OPTION, 
         null, 
-        Array(submit,cancel),
+        Array(submitButton,cancel),
         submit)
     value match {
       case 0 => Some(popup.hsMatch)
@@ -89,6 +97,7 @@ class MatchEndPopup(
     gameModeComboBox.addActionListener(() => {
       hsMatch = hsMatch.withMode(gameModeComboBox.getItemAt(gameModeComboBox.getSelectedIndex))
       updateGameMode()
+      repaint()
     })
     add(gameModeComboBox, "span")
 
@@ -99,6 +108,7 @@ class MatchEndPopup(
       hsMatch = hsMatch.withRankLevel(rankComboBox.getSelectedItem.asInstanceOf[Rank]))
     if (hsMatch.rankLevel.isDefined) {
       rankComboBox.setSelectedItem(hsMatch.rankLevel.get)
+      repaint()
     }
 
     add(rankPanel, "")
@@ -109,6 +119,7 @@ class MatchEndPopup(
     opponentNameField.addKeyListener(new KeyAdapter {
       override def keyReleased(e: KeyEvent) {
         hsMatch = hsMatch.withOpponentName(opponentNameField.getText.trim)
+        repaint()
       }
     })
     add(opponentNameField, "wrap")
@@ -119,14 +130,18 @@ class MatchEndPopup(
     yourClassComboBox.setSelectedItem(hsMatch.userClass)
     yourClassComboBox.addActionListener(() =>
       hsMatch = hsMatch.withUserClass(HeroClass.values()(yourClassComboBox.getSelectedIndex)))
+      
     add(yourClassComboBox, "")
 
     add(new JLabel(t("match.label.opponents_class")), "right")
     val opponentClassComboBox = new JComboBox(HeroClass.values)
     setDefaultSize(opponentClassComboBox)
     opponentClassComboBox.setSelectedItem(hsMatch.opponentClass)
-    opponentClassComboBox.addActionListener(() =>
-      hsMatch = hsMatch.withOpponentClass(HeroClass.values()(opponentClassComboBox.getSelectedIndex)))
+    opponentClassComboBox.addActionListener(() =>{
+      hsMatch = hsMatch.withOpponentClass(HeroClass.values()(opponentClassComboBox.getSelectedIndex))
+      repaint()
+      revalidate()
+    })
     add(opponentClassComboBox, "wrap")
 
     add(new JLabel(t("match.label.your_deck")), "right")
@@ -146,6 +161,7 @@ class MatchEndPopup(
     yourDeckComboBox.addActionListener(() => {
       val d = Deck(activeSlot = Some(yourDeckComboBox.getSelectedIndex))
       hsMatch = hsMatch.withDeck(d)
+      repaint()
     })
     add(deckPanel, "wrap")
 
@@ -162,6 +178,7 @@ class MatchEndPopup(
     resultVictory.setMargin(new Insets(0, 0, 0, 10))
     if (hsMatch.result == Some(MatchOutcome.VICTORY)) {
       resultVictory.setSelected(true)
+      repaint()
     }
     resultVictory.addActionListener(() =>
       if (resultVictory.isSelected) { hsMatch = hsMatch.withResult(MatchOutcome.VICTORY) })
@@ -171,6 +188,7 @@ class MatchEndPopup(
     resultDefeat.setMargin(new Insets(0, 0, 0, 10))
     if (Some(MatchOutcome.DEFEAT) == hsMatch.result) {
       resultDefeat.setSelected(true)
+      repaint()
     }
     resultDefeat.addActionListener(() =>
       if (resultDefeat.isSelected) { hsMatch = hsMatch.withResult(MatchOutcome.DEFEAT) })
@@ -180,6 +198,7 @@ class MatchEndPopup(
     resultDraw.setMargin(new Insets(0, 0, 0, 10))
     if ("Draw" == hsMatch.result) {
       resultDraw.setSelected(true)
+      
     }
     resultDraw.addActionListener(() =>
       if (resultDraw.isSelected) { hsMatch = hsMatch.withResult(MatchOutcome.DRAW) })
@@ -203,6 +222,7 @@ class MatchEndPopup(
     notesTextArea.addKeyListener(new KeyAdapter {
       override def keyReleased(e: KeyEvent) {
         hsMatch = hsMatch.copy(notes = notesTextArea.getText)
+        repaint()
       }
     })
     add(notesTextArea, "span 3, wrap")
