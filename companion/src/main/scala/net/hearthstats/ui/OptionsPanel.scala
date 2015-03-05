@@ -111,6 +111,9 @@ class OptionsPanel(
 
     addLabel(t("options.label.video.height") + " ")
     add(new IntOptionTextField(videoHeight), "wrap")
+	
+    addLabel(t("options.label.upload.disable") + " ")
+    addCheckBox(t("options.ui.upload.disable"), disableUpload, disableUpload.set)
   }
 
   // Minimize to System Tray
