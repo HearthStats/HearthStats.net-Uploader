@@ -38,7 +38,7 @@ class UserConfig extends Logging with Implicits {
   val recordedVideoFolder = config("video.folder", System.getenv("HOME") + "/hearthstats/videos")
   def videoFps = 1000.0 / pollingDelayMs
   val videoWidth = config("video.width", 2000)
-  val videoHeight = config("video.fps", 2000)
+  val videoHeight = config("video.height", 2000)
 
   val uploadVideo = config("video.upload", true)
 
