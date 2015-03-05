@@ -18,7 +18,7 @@ import net.hearthstats.core.Card
 class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   import ClickableLabel._
 
-  val backgroundSize = new Dimension(218, 35)
+  val backgroundSize = new Dimension(218 + 40, 35)
   val pictureSize = new Dimension(275, 384)
 
   def displaySize = getSize()
@@ -46,7 +46,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   val name = card.name
   val imgDstX = 100
   val imgDstY = 0
-  val imgDstW = 113
+  val imgDstW = 113 + 20
   val imgDstH = 35
   def imgSrcX = 81 * cardImage.getIconWidth / pictureSize.getWidth.toInt
   def imgSrcY: Int = 82 * cardImage.getIconHeight / pictureSize.getHeight.toInt
@@ -88,6 +88,8 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
     }
     g2.drawImage(cardImage.getImage, imgDstX, imgDstY, imgDstX + imgDstW, imgDstY + imgDstH, imgSrcX, imgSrcY, imgSrcX + imgSrcW, imgSrcY + imgSrcH, null)
     g2.drawImage(currentBack.getImage, 0, 0, null)
+    g2.drawRect(imgDstX + imgDstW - 15, imgDstY, 45, imgDstH )
+    g2.fillRect(imgDstX + imgDstW - 17, imgDstY, 45, imgDstH)
     g2.setFont(Font.decode(SANS_SERIF).deriveFont(BOLD, 18))
     if (card.cost < 10)
       outlineText(g2, cost, 9, 25, BLACK, WHITE)
@@ -95,7 +97,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
       outlineText(g2, cost, 5, 25, BLACK, WHITE)
     g2.setFont(Font.decode(SANS_SERIF).deriveFont(14))
     outlineText(g2, name, 35, 23, BLACK, WHITE)
-    g2.drawString("Posibilities: " + posibilities + "%", 25,10)
+    outlineText(g2, posibilities + "%", 222,25,BLACK, WHITE)
     g2.setTransform(original)
     g2.setComposite(composite)
 
