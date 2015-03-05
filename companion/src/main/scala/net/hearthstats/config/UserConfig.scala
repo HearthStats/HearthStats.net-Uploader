@@ -39,7 +39,8 @@ class UserConfig extends Logging with Implicits {
   def videoFps = 1000.0 / pollingDelayMs
   val videoWidth = config("video.width", 1920)
   val videoHeight = config("video.height", 1080)
-
+  
+  val disableUpload = config("upload.disable", false)
   val uploadVideo = config("video.upload", true)
 
   val gameLanguage = enumConfig("option.gamelanguage", SupportedGameLanguage.EN)
