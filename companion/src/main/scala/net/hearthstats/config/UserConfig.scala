@@ -24,10 +24,11 @@ class UserConfig extends Logging with Implicits {
   val pollingDelayMs = config("polling.delay.ms", 1000 / 25)
 
   val enableAnalytics = config("enable.analytics", true)
-  val enableDeckOverlay = config("enable.deckoverlay", false)
+  val enableDeckOverlay = config("enable.deckoverlay", true)
   val enableStartMin = config("enable.startmin", false)
   val enableMinToTray = config("enable.mintotray", true)
   val enableUpdateCheck = config("enable.updatecheck", true)
+  
 
   val matchPopup = enumConfig("option.matchpopup", MatchPopup.getDefault)
   val notificationType = enumConfig("option.notificationtype", NotificationType.HEARTHSTATS)
@@ -36,13 +37,14 @@ class UserConfig extends Logging with Implicits {
   val notifyHsFound = config("notify.hsfound", true)
   val notifyDeck = config("notify.deck", true)
 
-  val recordVideo = config("video.record", true)
+  val recordVideo = config("video.record", false)
   val recordedVideoFolder = config("video.folder", System.getenv("HOME") + "/hearthstats/videos")
   def videoFps = 1000.0 / pollingDelayMs
   val videoWidth = config("video.width", 2000)
   val videoHeight = config("video.fps", 2000)
 
-  val uploadVideo = config("video.upload", true)
+  val uploadVideo = config("video.upload", false)
+  val autoUploadVideo = config("video.autoUpload",false)
   
   val closedLandingPage = config("landingFrame.closed",false)
   val quitLoadingMainFrame = config("mainFrame.loading",false)
