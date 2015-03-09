@@ -40,14 +40,17 @@ class UserConfig extends Logging with Implicits {
   val recordVideo = config("video.record", false)
   val recordedVideoFolder = config("video.folder", System.getenv("HOME") + "/hearthstats/videos")
   def videoFps = 1000.0 / pollingDelayMs
-  val videoWidth = config("video.width", 2000)
-  val videoHeight = config("video.fps", 2000)
 
   val uploadVideo = config("video.upload", false)
   val autoUploadVideo = config("video.autoUpload",false)
   
   val closedLandingPage = config("landingFrame.closed",false)
   val quitLoadingMainFrame = config("mainFrame.loading",false)
+
+  val videoWidth = config("video.width", 1680)
+  val videoHeight = config("video.height", 1050)
+  
+  val disableUpload = config("upload.disable", false)
 
   val gameLanguage = enumConfig("option.gamelanguage", SupportedGameLanguage.EN)
   /** Translation for the cards of the game, based on the language option for the game.*/

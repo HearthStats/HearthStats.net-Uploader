@@ -25,15 +25,12 @@ class ReplayHandler(
   }
 
   def reallyUpload = uploadVideo && api.premiumUserId.isDefined
-  def auto = autoUploadVideo
   val videoUploader = fileUploaderFactory.newInstance(!reallyUpload)
 
   def handleNewReplay(fileName: String, lastMatch: HearthstoneMatch): Future[String] = {
     import lastMatch._
     val gameDesc = s"$userClass ${result.get} VS $opponentClass ($opponentName)"
-    val auto = false
-    val choice = null
-    
+
     val f = new File(fileName)
     val now = System.currentTimeMillis
     val dateFile = DateTimeFormat.forPattern("dd_HH'h'mm").print(now)
@@ -49,22 +46,20 @@ class ReplayHandler(
       uiLog.info(s"Video replay of your match is saved in <a href='$u'>$p</a>")
     } else throw new IllegalArgumentException(s"Could not rename $f to $newFile")
 
-    if(!auto)
-    {
-      val msg = s"""Do you want to upload $gameDesc ?
-                  | You need to keep HearthStats Companion window 
-                  | open during the upload""".stripMargin
-    
-    
-      val choice = ui.showConfirmDialog(msg, "Upload last game ?", YES_NO_OPTION)
-    }
-    
-    if ( (auto && reallyUpload) || (YES_OPTION == choice && reallyUpload))
+    if (reallyUpload && confirmUpload(gameDesc)) {
       videoUploader.uploadFile(newFile, lastMatch.id.toString, config, api).map {
         case () =>
           uiLog.info(s"$newName was uploaded to hearthstats.net")
           newName
       }
-    else Promise[String].future
+    } else Promise[String].future
+  }
+
+  def confirmUpload(gameDesc: String): Boolean = autoUploadVideo || {
+    val msg = s"""Do you want to upload $gameDesc ?
+                  | You need to keep HearthStats Companion window 
+                  | open during the upload""".stripMargin
+
+    YES_OPTION == ui.showConfirmDialog(msg, "Upload last game ?", YES_NO_OPTION)
   }
 }
