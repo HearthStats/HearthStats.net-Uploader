@@ -6,11 +6,12 @@ import javax.swing.event.DocumentListener
 import javax.swing.event.DocumentEvent
 import scala.swing.Swing
 import java.awt.Dimension
+import javax.swing.JPasswordField
 
-class OptionTextField[T](
-  config: ConfigValue[T],
-  converter: String => T)
-  extends JTextField {
+trait OptionTextField[T] { self: JTextField =>
+
+  def config: ConfigValue[T]
+  def converter: String => T
 
   setText(config.get.toString)
   val s = new Dimension(280, 28)
@@ -30,12 +31,21 @@ class OptionTextField[T](
   })
 }
 
-class StringOptionTextField(config: ConfigValue[String])
-  extends OptionTextField[String](
-    config: ConfigValue[String],
-    identity)
+class StringOptionTextField(val config: ConfigValue[String])
+  extends JTextField with OptionTextField[String] {
 
-class IntOptionTextField(config: ConfigValue[Int])
-  extends OptionTextField[Int](
-    config: ConfigValue[Int],
-    Integer.parseInt)
+  def converter = identity
+}
+
+class PasswordOptionTextField(val config: ConfigValue[String])
+  extends JPasswordField with OptionTextField[String] {
+
+  def converter = identity
+}
+
+
+class IntOptionTextField(val config: ConfigValue[Int])
+  extends JTextField with OptionTextField[Int] {
+  
+  def converter = Integer.parseInt
+}
