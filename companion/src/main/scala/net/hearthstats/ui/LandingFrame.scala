@@ -32,6 +32,8 @@ class LandingFrame(translation: Translation,
   signInButton.setOpaque(false)
   signInButton.setContentAreaFilled(false)
   signInButton.setBorderPainted(false)
+  getRootPane.setDefaultButton(signInButton)
+
   private val registerButton = new JButton("Register")
   registerButton.setBorder(null)
   registerButton.setFocusable(false)
@@ -72,7 +74,7 @@ class LandingFrame(translation: Translation,
     add(new JLabel("  "), "")
     //entering userID
     add(new JLabel(t("LandingPanel.label.userId") + "    "), "right")
-    var userEmailField = new StringOptionTextField(config.email)
+    val userEmailField = new StringOptionTextField(config.email)
 
     add(userEmailField, "center,wrap")
     config.email.set(userEmailField.getText)
@@ -81,7 +83,7 @@ class LandingFrame(translation: Translation,
     add(new JLabel("  "), "")
     //entering user Password  
     add(new JLabel(t("LandingPanel.label.password") + " "), "right")
-    var passwordField = new PasswordOptionTextField(config.password)
+    val passwordField = new PasswordOptionTextField(config.password)
     passwordField.setOpaque(false)
     passwordField.setBackground(new Color(0, 0, 0, 0))
 
