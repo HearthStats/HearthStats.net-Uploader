@@ -10,7 +10,8 @@ import net.hearthstats.game.{ HearthstoneLogMonitor, TurnCount }
 import net.hearthstats.game.CardEvent
 import net.hearthstats.game.CardEventType._
 import net.hearthstats.hstatsapi.CardUtils
-import net.hearthstats.ui.deckoverlay.{ OpponentOverlaySwing, UserOverlaySwing }
+import net.hearthstats.ui.deckoverlay.{ OpponentOverlaySwing, UserOverlaySwing, ClickableLabel }
+
 
 class DeckOverlayModule(
   userPresenter: UserOverlaySwing,
@@ -20,8 +21,9 @@ class DeckOverlayModule(
 
   val monitoringActors = ListBuffer.empty[ActorRef]
   var count = 0
-
-  def show(deck: Deck): Unit = {
+  
+  
+  def show(deck: Deck): Unit = {    
     userPresenter.showDeck(deck)
   }
 
@@ -53,12 +55,16 @@ class DeckOverlayModule(
     implicit val actorSystem = logMonitor.system
     actor(s"DeckOverlay$count")(new Act {
       val openingHand = ListBuffer.empty[String]
-
+      
       val initial: Receive = { // handle mulligan
         case CardEvent(cardCode, _, RECEIVED | DRAWN, `playerId`) =>
           openingHand += cardCode
+          if(cardCode != "GAME_005"){
+            userPresenter.decreaseCardsLeft()  
+            println(cardCode + " decreased ")}
         case CardEvent(cardCode, _, REPLACED, `playerId`) =>
           openingHand -= cardCode
+          userPresenter.increaseCardsLeft()
         case TurnCount(2) =>
           for {
             cardCode <- openingHand
@@ -73,6 +79,9 @@ class DeckOverlayModule(
       val inGame: Receive = {
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN | DISCARDED, `playerId`) =>
           cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
+          if(cardCode != "GAME_005")userPresenter.decreaseCardsLeft()
+        case CardEvent(cardCode,_,ADDED_TO_DECK,`playerId`) =>
+          if(cardCode == "GVG_036")userPresenter.increaseCardsLeft()
         case _ =>
       }
 
@@ -93,6 +102,12 @@ class DeckOverlayModule(
 
   def reset(): Unit = {
     userPresenter.reset()
+  }
+  
+  def dispose()
+  {
+    userPresenter.dispose()
+    opponentPresenter.dispose()
   }
 
 }
