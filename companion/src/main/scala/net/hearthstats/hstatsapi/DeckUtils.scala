@@ -16,7 +16,7 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
   def updateDecks() {
     try {
       _decks = api.get("decks/show") match {
-        case Success(d) => d.data.as[List[Json]].map(fromJson)
+        case Success(d) => d.data.as[List[Json]].map(fromJson)          
         case _ => Nil
       }
       if (_decks.isEmpty) {

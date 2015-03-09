@@ -12,7 +12,6 @@ import net.hearthstats.util.Translation
 import net.miginfocom.swing.MigLayout
 import scala.swing.Swing._
 import net.hearthstats.ui.util.OptionTextField
-import net.hearthstats.ui.util.OptionTextField
 import net.hearthstats.ui.util.StringOptionTextField
 import net.hearthstats.ui.util.IntOptionTextField
 
@@ -170,6 +169,7 @@ class OptionsPanel(
 
   def setUserKey(userkey: String) {
     userKeyField.setText(userkey)
+    add(new JLabel(userkey))
   }
 
   def addLabel(label: String = ""): JLabel = {

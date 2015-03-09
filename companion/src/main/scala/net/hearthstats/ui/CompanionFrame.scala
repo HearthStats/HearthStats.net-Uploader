@@ -46,9 +46,10 @@ class CompanionFrame(val environment: Environment,
   val aboutPanel: AboutPanel = wire[AboutPanel]
   val matchPanel: MatchPanel = wire[MatchPanel]
   val decksTab: DecksTab = wire[DecksTab]
-
+  
   def createAndShowGui() {
     debug("Creating GUI")
+    //landingFrame.createAndShowGui()
     val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
     setIconImage(icon)
     setLocation(windowX, windowY)
@@ -59,6 +60,7 @@ class CompanionFrame(val environment: Environment,
     tabbedPane.add(decksTab, t("tab.decks"))
     tabbedPane.add(optionsPanel, t("tab.options"))
     tabbedPane.add(aboutPanel, t("tab.about"))
+
     matchPanel.updateCurrentMatchUi()
     enableMinimizeToTray()
     setMinimumSize(new Dimension(500, 600))
@@ -107,6 +109,7 @@ class CompanionFrame(val environment: Environment,
   def checkForUserKey(): Boolean = {
     val userKeySet = !userKey.equalsIgnoreCase("your_userkey_here")
     if (userKeySet) {
+      println("userkey checked, no entering")
       true
     } else {
       uiLog.warn(t("error.userkey_not_entered"))

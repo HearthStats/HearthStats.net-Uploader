@@ -8,6 +8,7 @@ import net.hearthstats.core.{ ArenaRun, HearthstoneMatch }
 import scala.collection.JavaConversions.{ asScalaBuffer, mapAsJavaMap }
 import rapture.json._
 import rapture.json.jsonBackends.jawn._
+import rapture._
 import scala.util._
 import net.hearthstats.core.ArenaRun
 import net.hearthstats.core.Card
@@ -69,6 +70,20 @@ class API(config: UserConfig) extends Logging {
     data <- _parseResult(resString)
   } yield data
 
+  def login(email:String, password:String): Boolean =
+  {
+    debug("post sent")
+    val result = postV2("users/sign_in",json"""{"user_login":{"email":$email,"password":$password}}""")
+    result match {
+      case Success(result) =>
+          Some(result.auth_token.as[String])
+          config.auth_token.set(result.auth_token.as[String])
+          config.userKey.set(result.userkey.as[String])
+          true
+      case Failure(e) =>
+          false
+    }
+  }
   private def call(method: String): Try[String] = Try {
     val inputStream = buildConnection(method).getInputStream
     val resultString = io.Source.fromInputStream(inputStream)("UTF-8").getLines.mkString
@@ -87,17 +102,46 @@ class API(config: UserConfig) extends Logging {
     conn.setReadTimeout(timeout)
     conn.asInstanceOf[HttpURLConnection]
   }
+  
+  def buildConnectionToV2(method: String): HttpURLConnection = {
+    val baseUrlV2 = config.apiBaseUrlV2 + method
+    debug(s"API get $baseUrlV2********")
+    val timeout = config.apiTimeoutMs
+    val urlV2 = new URL(baseUrlV2)
+    val connV2 = urlV2.openConnection()
+    connV2.setConnectTimeout(timeout)
+    connV2.setReadTimeout(timeout)
+    connV2.asInstanceOf[HttpURLConnection]
+  }
+  
+ 
 
   private def _parseResult(resultString: String): Try[Json] = {
     debug(s"parsing $resultString")
     val result = Json.parse(resultString)
     if (result.status.as[String] == "success") {
       Success(result)
+      
     } else {
       val message = result.message.as[String]
       Failure(new Exception(s"API error : $message"))
     }
   }
+
+  
+    private def _parseResultV2(resultString: String): Try[Json] = {
+    debug(s"parsing $resultString")
+    val result = Json.parse(resultString)
+    if (result.success.as[Boolean] == true) {
+      Success(result)      
+    } else { 
+      val message = result.message.as[String]
+      Failure(new Exception(s"API error: $message"))
+    }
+  }
+  
+  
+  
 
   private def post(method: String, jsonData: Json): Try[Json] = {
     for {
@@ -105,7 +149,14 @@ class API(config: UserConfig) extends Logging {
       data <- _parseResult(resString)
     } yield data
   }
-
+  
+  private def postV2(method: String, jsonData: Json): Try[Json] = {
+    for {
+      resString <- _postV2(method, jsonData)
+      data <- _parseResultV2(resString)
+    } yield data
+  }
+  
   private def _post(method: String, jsonData: Json): Try[String] = Try {
     val httpcon = buildConnection(method)
     httpcon.setDoOutput(true)
@@ -120,6 +171,22 @@ class API(config: UserConfig) extends Logging {
     val resultString = io.Source.fromInputStream(httpcon.getInputStream).getLines.mkString("\n")
     info("API post result = " + resultString)
     resultString
+  }
+
+  private def _postV2(method: String,jsonData: Json): Try[String] = Try{
+    val httpconV2 = buildConnectionToV2(method)
+    httpconV2.setDoOutput(true)
+    httpconV2.setRequestProperty("Content-Type", "application/json")
+    httpconV2.setRequestProperty("Accept", "application/json")
+    httpconV2.setRequestMethod("POST")
+    httpconV2.connect()
+    val outputBytes = jsonData.toString.getBytes("UTF-8")
+    val os = httpconV2.getOutputStream
+    os.write(outputBytes)
+    os.close()
+    val resultString = io.Source.fromInputStream(httpconV2.getInputStream).getLines.mkString("\n")
+    resultString
+    
   }
 
 }

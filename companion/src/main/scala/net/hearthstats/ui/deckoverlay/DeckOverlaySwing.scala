@@ -20,7 +20,7 @@ abstract class DeckOverlaySwing(
 
   var cardLabels: Map[String, ClickableLabel] = Map.empty
   var deck: Deck = Deck()
-
+  
   def showDeck(deck: Deck) {
     this.deck = deck
     setTitle(deck.name)
@@ -44,7 +44,7 @@ abstract class DeckOverlaySwing(
         card <- richCards
         cardLabel = new ClickableLabel(card, imagesReady)
       } yield {
-        box.add(cardLabel)
+        box.add(cardLabel)        
         card.originalName -> cardLabel
       }).toMap
 
@@ -92,12 +92,34 @@ abstract class DeckOverlaySwing(
 
   def decreaseCardCount(card: Card): Unit =
     findLabel(card) map (_.decreaseRemaining())
+    
 
   def increaseCardCount(card: Card): Unit =
     findLabel(card) map (_.increaseRemaining())
+    
+  def increaseCardsLeft():Unit = 
+  {      
+      for{card <- deck.cards}
+      yield{
+      increaseCardsLeftPosibilities(card)}
+  }
+  
+  def decreaseCardsLeft():Unit = 
+  {
+      for{card <- deck.cards}
+      yield{
+      decreaseCardsLeftPosibilities(card)}
+  }
 
+  def increaseCardsLeftPosibilities(card:Card):Unit= 
+    findLabel(card) map (_.updateIncreaseCardsLeft)
+  
+  def decreaseCardsLeftPosibilities(card:Card):Unit= 
+    findLabel(card) map (_.updateDecreaseCardsLeft)  
+  
   def reset(): Unit =
     cardLabels.foreach { keyVal => keyVal._2.reset() }
+  
 
 }
 
@@ -121,3 +143,5 @@ trait DeckOverlayPresenter {
    */
   def reset
 }
+
+

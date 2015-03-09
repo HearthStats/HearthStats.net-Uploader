@@ -55,7 +55,7 @@ public class ProgramHelperWindows extends ProgramHelper {
   protected char[] processFileNameBuffer = new char[STRING_BUFFER_LENGTH * 2];
   protected int[] lpdwSize = new int[]{STRING_BUFFER_LENGTH};
 
-
+  
   public ProgramHelperWindows() {
     debugLog.debug("Initialising ProgramHelperWindows with {}", processName);
     try {
