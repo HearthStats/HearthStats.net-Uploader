@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.*;
 
 import net.hearthstats.ui.HyperLinkHandler;
+import net.hearthstats.ui.util.FontHelper;
 
 public class DialogNotification {
 
@@ -19,7 +20,7 @@ public class DialogNotification {
 	}
 	public DialogNotification(String header, String message, boolean allowFocus) {
 		frame.setSize(250, message == "" ? 40 : 100);
-		frame.setFont(new Font("Arial",Font.PLAIN,14));
+		frame.setFont(FontHelper.bodyFont());
 		frame.setLayout(new GridBagLayout());
 		frame.setBackground(Color.LIGHT_GRAY);
 		GridBagConstraints constraints = new GridBagConstraints();

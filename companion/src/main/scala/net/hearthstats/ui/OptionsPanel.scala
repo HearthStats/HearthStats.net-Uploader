@@ -1,19 +1,17 @@
 package net.hearthstats.ui
 
-import java.awt.event.{ ActionEvent, ActionListener }
-import java.awt.{ Dimension, Font }
+import java.awt.Font
+import java.awt.event.{ActionEvent, ActionListener}
 import javax.swing._
-import javax.swing.event.{ DocumentEvent, DocumentListener }
+
 import net.hearthstats.config._
 import net.hearthstats.modules.VideoEncoderFactory
-import net.hearthstats.modules.video.{OngoingVideo, VideoEncoder}
 import net.hearthstats.ui.notification.NotificationType
+import net.hearthstats.ui.util.{IntOptionTextField, StringOptionTextField}
 import net.hearthstats.util.Translation
 import net.miginfocom.swing.MigLayout
+
 import scala.swing.Swing._
-import net.hearthstats.ui.util.OptionTextField
-import net.hearthstats.ui.util.StringOptionTextField
-import net.hearthstats.ui.util.IntOptionTextField
 
 class OptionsPanel(
   translation: Translation,
@@ -32,7 +30,7 @@ class OptionsPanel(
 
   // User Key
   addLabel(t("options.label.userkey") + " ")
-  var userKeyField: JTextField = new StringOptionTextField(userKey)
+  var userKeyField: JTextField = new StringOptionTextField(userKey).peer
   add(userKeyField, "wrap")
 
   // Game Language
@@ -41,7 +39,7 @@ class OptionsPanel(
     gameLanguage, "")
 
   val gameLanguageHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Game-Language",
-    "Help on game language options")
+    "Help on game language options").peer
   add(gameLanguageHelpIcon, "wrap")
 
   // Check for Updates
@@ -62,7 +60,7 @@ class OptionsPanel(
       Array(t("options.label.notifyformat.hearthstats"), t("options.label.notifyformat.osx")),
       notificationType, "")
     val osxNotificationsHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-OS-X-Notifications",
-      "Help on notification style options")
+      "Help on notification style options").peer
     add(osxNotificationsHelpIcon, "wrap")
   }
 
@@ -84,7 +82,7 @@ class OptionsPanel(
   addCheckBox(t("options.ui.deckoverlay"), enableDeckOverlay, enableDeckOverlay.set, "")
 
   val deckOverlayHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Deck-Overlay",
-    "Help on the show deck overlay option")
+    "Help on the show deck overlay option").peer
   add(deckOverlayHelpIcon, "wrap")
 
   // Match Popup
@@ -94,7 +92,7 @@ class OptionsPanel(
     matchPopup, "")
 
   val matchPopupHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Match-Popup",
-    "Help on the match popup options")
+    "Help on the match popup options").peer
   add(matchPopupHelpIcon, "wrap")
 
   // Video
@@ -103,13 +101,13 @@ class OptionsPanel(
     addCheckBox(t("options.ui.video.record"), recordVideo, recordVideo.set)
 
     addLabel(t("options.label.video.delay") + " ")
-    add(new IntOptionTextField(pollingDelayMs), "wrap")
+    add(new IntOptionTextField(pollingDelayMs).peer, "wrap")
 
     addLabel(t("options.label.video.width") + " ")
-    add(new IntOptionTextField(videoWidth), "wrap")
+    add(new IntOptionTextField(videoWidth).peer, "wrap")
 
     addLabel(t("options.label.video.height") + " ")
-    add(new IntOptionTextField(videoHeight), "wrap")
+    add(new IntOptionTextField(videoHeight).peer, "wrap")
 	
     addLabel(t("options.label.upload.disable") + " ")
     addCheckBox(t("options.ui.upload.disable"), disableUpload, disableUpload.set)

@@ -1,51 +1,51 @@
 package net.hearthstats.ui.util
 
-import javax.swing.JTextField
-import net.hearthstats.config.ConfigValue
-import javax.swing.event.DocumentListener
-import javax.swing.event.DocumentEvent
-import scala.swing.Swing
 import java.awt.Dimension
-import javax.swing.JPasswordField
+import javax.swing.event.{DocumentEvent, DocumentListener}
 
-trait OptionTextField[T] { self: JTextField =>
+import net.hearthstats.config.ConfigValue
+
+import scala.swing.{PasswordField, Swing, TextField}
+
+trait OptionTextField[T] { self: TextField =>
 
   def config: ConfigValue[T]
   def converter: String => T
 
-  setText(config.get.toString)
-  val s = new Dimension(280, 28)
-  setMinimumSize(s)
-  setPreferredSize(s)
+  peer.setText(config.get.toString)
 
-  getDocument.addDocumentListener(new DocumentListener {
+  val s = new Dimension(280, 28)
+  minimumSize = s
+  preferredSize = s
+
+  peer.getDocument.addDocumentListener(new DocumentListener {
     def insertUpdate(e: DocumentEvent): Unit = handleChange
     def changedUpdate(e: DocumentEvent): Unit = handleChange
     def removeUpdate(e: DocumentEvent): Unit = handleChange
 
     def handleChange = Swing.onEDT({
-      if (config.get != getText) {
-        config.set(converter(getText))
+      if (config.get != peer.getText) {
+        config.set(converter(peer.getText))
       }
     })
   })
 }
 
 class StringOptionTextField(val config: ConfigValue[String])
-  extends JTextField with OptionTextField[String] {
+  extends TextField with OptionTextField[String] {
 
   def converter = identity
 }
 
 class PasswordOptionTextField(val config: ConfigValue[String])
-  extends JPasswordField with OptionTextField[String] {
+  extends PasswordField with OptionTextField[String] {
 
   def converter = identity
 }
 
 
 class IntOptionTextField(val config: ConfigValue[Int])
-  extends JTextField with OptionTextField[Int] {
+  extends TextField with OptionTextField[Int] {
   
   def converter = Integer.parseInt
 }
