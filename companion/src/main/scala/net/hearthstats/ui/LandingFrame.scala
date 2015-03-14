@@ -138,7 +138,7 @@ class LandingFrame(translation: Translation,
         println("invalid password or email")
       }
     } catch {
-      case e => throw new Exception("entered nothing", e)
+      case e: Throwable => throw new Exception("entered nothing", e)
     }
 
   }
