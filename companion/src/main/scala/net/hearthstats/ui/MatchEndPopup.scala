@@ -1,7 +1,7 @@
 package net.hearthstats.ui
 
-import java.awt.{ Color, Component, Dimension, FlowLayout, Font, Insets }
-import java.awt.event.{ ActionEvent, KeyAdapter, KeyEvent }
+import java.awt.{ Color, Component, Dimension, FlowLayout, Font, Insets}
+import java.awt.event.{ ActionEvent, KeyAdapter, KeyEvent, ActionListener }
 import scala.collection.JavaConversions.seqAsJavaList
 import scala.collection.mutable.ListBuffer
 import org.apache.commons.lang3.StringUtils
@@ -16,8 +16,6 @@ import scala.swing.Swing
 import net.hearthstats.core.Deck
 import net.hearthstats.core.HearthstoneMatch
 
-import scala.concurrent._
-import ExecutionContext.Implicits.global
 
 /**
  * A popup to display at the end of the match that allows the match details to
@@ -35,30 +33,41 @@ class MatchEndPopup(
   /**
    * Returns None if the user did not confirm, the updated match otherwise.
    */
-  def showPopup(parentComponent: Component, hsMatch: HearthstoneMatch): Option[HearthstoneMatch] = {
+  def showPopup(parentComponent: Component, hsMatch: HearthstoneMatch): Option[HearthstoneMatch] = {    
     val popup = new MatchEndPopupImpl(hsMatch)
-    
-    val cancel = new JButton("Cancel")
+    popup.submitButton.addActionListener(new ActionListener() {
+        override def actionPerformed(e: ActionEvent) {
+            val pane = getOptionPane(e.getSource.asInstanceOf[JComponent])
+             pane.setValue(popup.submitButton)
+        } 
+      })
     val submit = popup.submitButton
     val value = JOptionPane.showOptionDialog(parentComponent, 
-        popup, 
-        "Incomplete match detected", 
-        JOptionPane.INFORMATION_MESSAGE,
-        JOptionPane.YES_NO_OPTION, 
-        null, 
-        Array("Submit","Cancel"),
-        "Submit")
+          popup, 
+          "Incomplete match detected", 
+          JOptionPane.INFORMATION_MESSAGE,
+          JOptionPane.YES_NO_OPTION, 
+          null, 
+          Array(submit, "Cancel"),
+          "Cancel")
     value match {
       case 0 => Some(popup.hsMatch)
       case _ => None
     }
   }
-
+  
+  protected def getOptionPane(parent: JComponent): JOptionPane = {
+    var pane: JOptionPane = null
+    pane = if (!(parent.isInstanceOf[JOptionPane])) getOptionPane(parent.getParent.asInstanceOf[JComponent]) else parent.asInstanceOf[JOptionPane]
+    pane
+  }
+  
   private def setDefaultSize(c: Component) {
     c.setMinimumSize(new Dimension(180, 27))
     c.setPreferredSize(new Dimension(200, 28))
   }
 
+  
   class MatchEndPopupImpl(var hsMatch: HearthstoneMatch)
     extends JPanel {
 
@@ -68,6 +77,7 @@ class MatchEndPopup(
     val undetectedLabel = "- " + t("undetected") + " -"
     val errorMessages = determineErrors(hsMatch)
     val submitButton = new JButton("Submit")
+
     
     val preferredHeight = 380 + (30 * errorMessages.size)
     setMinimumSize(new Dimension(660, 380))
@@ -241,29 +251,6 @@ class MatchEndPopup(
     Swing.onEDT(updateGameMode())
     Swing.onEDT(updateSubmitButton(hsMatch))
 
-    private def updateSubmitButton(hsMatch:HearthstoneMatch)
-    {
-      submitButton.setEnabled(true)
-      if (hsMatch.mode == GameMode.UNDETECTED) {
-        submitButton.setEnabled(false)
-      }
-      if (hsMatch.rankLevel.isEmpty && GameMode.RANKED == hsMatch.mode) {
-        submitButton.setEnabled(false)
-      }
-      if (hsMatch.userClass == HeroClass.UNDETECTED) {
-        submitButton.setEnabled(false)
-      }
-      if (hsMatch.deck.isEmpty && GameMode.ARENA != hsMatch.mode) {
-        submitButton.setEnabled(false)
-      }
-      if (hsMatch.opponentClass == HeroClass.UNDETECTED) {
-        submitButton.setEnabled(false)
-      }
-      if (hsMatch.result.isEmpty) {
-        submitButton.setEnabled(false)
-      }
-    }
-    
     private def updateGameMode() {
       val isRanked = hsMatch.mode == GameMode.RANKED
       rankPanel.removeAll()
@@ -298,6 +285,30 @@ class MatchEndPopup(
       repaint()
     }
 
+    
+    def updateSubmitButton(hsMatch:HearthstoneMatch)
+    {
+      submitButton.setEnabled(true)
+      if (hsMatch.mode == GameMode.UNDETECTED) {
+        submitButton.setEnabled(false)
+      }
+      if (hsMatch.rankLevel.isEmpty && GameMode.RANKED == hsMatch.mode) {
+        submitButton.setEnabled(false)
+      }
+      if (hsMatch.userClass == HeroClass.UNDETECTED) {
+        submitButton.setEnabled(false)
+      }
+      if (hsMatch.deck.isEmpty && GameMode.ARENA != hsMatch.mode) {
+        submitButton.setEnabled(false)
+      }
+      if (hsMatch.opponentClass == HeroClass.UNDETECTED) {
+        submitButton.setEnabled(false)
+      }
+      if (hsMatch.result.isEmpty) {
+        submitButton.setEnabled(false)
+      }
+    }
+    
     private def determineErrors(hsMatch: HearthstoneMatch) = {
       val result = ListBuffer.empty[String]
       if (hsMatch.mode == GameMode.UNDETECTED) {
