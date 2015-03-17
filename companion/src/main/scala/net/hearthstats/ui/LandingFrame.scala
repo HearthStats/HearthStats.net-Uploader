@@ -111,7 +111,7 @@ class LandingFrame(translation: Translation,
       add(registerButton, "center")
         
       //add a first time help link  
-      val firstTimeHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Game-Language",
+      val firstTimeHelpIcon = new HelpIcon("http://hearthstats.net/uploader?locale=en",
        "First time tutorial")
       add(firstTimeHelpIcon, "left")
     
