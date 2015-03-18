@@ -15,7 +15,7 @@ import net.hearthstats.companion.ScreenEvents
  */
 object ExportDeckBoxMain extends App with MockitoSugar {
 
-  val environment = TestEnvironment
+  val environment = new TestEnvironment
 
   val translationConfig = TranslationConfig("net.hearthstats.resources.Main", "en")
   val translation = wire[Translation]

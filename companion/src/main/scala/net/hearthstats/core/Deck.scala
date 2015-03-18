@@ -1,8 +1,7 @@
 package net.hearthstats.core
 
-import org.json.simple.JSONObject
-
-import scala.collection.JavaConversions._
+import rapture.json.jsonBackends.jawn._
+import rapture.json._
 
 case class Deck(
   id: Int = -1,
@@ -12,6 +11,7 @@ case class Deck(
   hero: HeroClass = HeroClass.UNDETECTED,
   activeSlot: Option[Int] = None) {
 
+  //TODO : also check if all cards belong to the class
   lazy val isValid: Boolean =
     cards != null && 30 == cardCount
 
@@ -29,12 +29,11 @@ case class Deck(
     (for (c <- cards.sortBy(card => (card.cost, -card.typeId, card.name)))
       yield s"${c.count} ${c.originalName}").mkString("\n")
 
-  def toJsonObject: JSONObject =
-    new JSONObject(collection.mutable.Map(
-      "klass_id" -> klassId,
-      "name" -> name,
-      "notes" -> "",
-      "cardstring" -> cardString))
+  def toJsonObject: Json =
+    json"""{ 
+      "klass_id": $klassId, 
+      "name":$name , 
+      "cardstring":$cardString  }"""
 
   override def toString = s"$hero: $name"
 }

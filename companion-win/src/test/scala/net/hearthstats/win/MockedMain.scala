@@ -12,7 +12,7 @@ import net.hearthstats.game.imageanalysis.ImageAnalyser
 import java.awt.Rectangle
 
 object MockedMain extends TesseractSetup with App with Logging {
-  val environment = TestEnvironment
+  val environment = new TestEnvironment
   val config = TestConfig
 
   def game(players: String, result: String) =

@@ -1,37 +1,32 @@
 package net.hearthstats.core
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import java.util.NoSuchElementException
+import rapture.json.jsonBackends.jawn._
+import rapture.json._
+import java.io.InputStreamReader
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 case class CardData(
   id: String,
-  `type`: String,
-  cost: Int,
-  attack: Int,
-  health: Int,
-  collectible: Boolean,
-  text: String,
-  playerClass: Option[String],
-  flavor: String,
-  rarity: String,
   name: String,
-  mechanics: List[String])
+  `type`: String,
+  rarity: Option[String],
+  cost: Option[Int],
+  attack: Option[Int],
+  health: Option[Int],
+  text: Option[String],
+  collectible: Option[Boolean],
+  playerClass: Option[String],
+  mechanics: Option[List[String]])
 
 object CardData {
-  val mapper = new ObjectMapper with ScalaObjectMapper
-  mapper.registerModule(DefaultScalaModule)
-
-  lazy val json = mapper.readValue[Map[String, List[CardData]]](getClass.getResourceAsStream("AllSets.json"))
+  val is = getClass.getResourceAsStream("AllSets.json")
+  lazy val json = Json.parse(io.Source.fromInputStream(is, "UTF-8").getLines.mkString).as[Map[String, List[CardData]]]
 
   lazy val allCards: List[CardData] =
     json.values.flatten.toList
 
   lazy val collectible: List[CardData] =
-    allCards.filter(_.collectible == true)
+    allCards.filter(_.collectible == Some(true))
 
   lazy val heroPowers: List[CardData] =
     allCards.filter(_.`type` == "Hero Power")

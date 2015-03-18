@@ -7,48 +7,55 @@ import java.awt.Color.{ BLACK, WHITE }
 import java.awt.Font.{ BOLD, SANS_SERIF }
 import java.awt.event.{ MouseAdapter, MouseEvent }
 import java.awt.geom.AffineTransform
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.swing.Swing.onEDT
+
 import javax.swing.{ BorderFactory, ImageIcon, JLabel }
 import net.hearthstats.core.Card
-import javax.swing.JToolTip
-import java.awt.BorderLayout
 
 class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   import ClickableLabel._
 
-  val backgroundSize = new Dimension(218, 35)
+  val backgroundSize = new Dimension(218 + 40, 35)
   val pictureSize = new Dimension(275, 384)
 
   def displaySize = getSize()
 
   var remaining = card.count
   var currentBack = cardBack
-
+  var initialPosibilities = 100*(math floor(remaining.toDouble / 30.0d)*10000)/10000
+  var posibilities = initialPosibilities
+  var cardsLeft = 30
+  
+ // val newPosibilities:Future[Double] = Future{
+ //   posibilities
+ // }
+  
+  
   imagesReady.onSuccess {
     case _ =>
       cardImage = new ImageIcon(card.localFile.get.getAbsolutePath)
       revalidate()
       repaint()
   }
-
   var cardImage = cardBack
 
   val cost = card.cost.toString
   val name = card.name
   val imgDstX = 100
   val imgDstY = 0
-  val imgDstW = 113
+  val imgDstW = 113 + 20
   val imgDstH = 35
   def imgSrcX = 81 * cardImage.getIconWidth / pictureSize.getWidth.toInt
   def imgSrcY: Int = 82 * cardImage.getIconHeight / pictureSize.getHeight.toInt
   def imgSrcW: Int = 130 * cardImage.getIconWidth / pictureSize.getWidth.toInt
   def imgSrcH: Int = 40 * cardImage.getIconHeight / pictureSize.getHeight.toInt
-
-  setMaximumSize(backgroundSize * 2)
-  setPreferredSize(backgroundSize * 1)
-  setMinimumSize(backgroundSize * 0.5)
+ 
+  setMaximumSize(backgroundSize * 1.2)
+  setPreferredSize(backgroundSize)
+  setMinimumSize(backgroundSize)
 
   implicit class DimensionOps(d: Dimension) {
     def *(r: Double) = new Dimension((d.getWidth * r).toInt, (d.getHeight * r).toInt)
@@ -56,9 +63,9 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   setBorder(BorderFactory.createEmptyBorder)
 
   updateRemaining()
-
+  
   val src = card.localFile.get.toURI.toURL
-  setToolTipText(s"<html><img src='$src'> $name")
+  setToolTipText(s"""<html><img src="$src"> $name""")
 
   addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent) {
@@ -66,7 +73,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
     }
   })
 
-  protected override def paintComponent(g: Graphics) : Unit = {
+  protected override def paintComponent(g: Graphics): Unit = {
     val g2 = g.asInstanceOf[Graphics2D]
     val original = g2.getTransform
     val composite = g2.getComposite
@@ -81,6 +88,8 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
     }
     g2.drawImage(cardImage.getImage, imgDstX, imgDstY, imgDstX + imgDstW, imgDstY + imgDstH, imgSrcX, imgSrcY, imgSrcX + imgSrcW, imgSrcY + imgSrcH, null)
     g2.drawImage(currentBack.getImage, 0, 0, null)
+    g2.drawRect(imgDstX + imgDstW - 15, imgDstY, 45, imgDstH )
+    g2.fillRect(imgDstX + imgDstW - 17, imgDstY, 45, imgDstH)
     g2.setFont(Font.decode(SANS_SERIF).deriveFont(BOLD, 18))
     if (card.cost < 10)
       outlineText(g2, cost, 9, 25, BLACK, WHITE)
@@ -88,9 +97,11 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
       outlineText(g2, cost, 5, 25, BLACK, WHITE)
     g2.setFont(Font.decode(SANS_SERIF).deriveFont(14))
     outlineText(g2, name, 35, 23, BLACK, WHITE)
+    outlineText(g2, posibilities + "%", 222,25,BLACK, WHITE)
     g2.setTransform(original)
     g2.setComposite(composite)
 
+    
     super.paintComponent(g2)
   }
 
@@ -119,10 +130,29 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
     remaining += 1
     updateRemaining()
   }
-
+  
+  def updateIncreaseCardsLeft():Unit = {
+    cardsLeft += 1
+    updatePosibilities()
+  }
+  
+  def updateDecreaseCardsLeft():Unit = {
+    cardsLeft -= 1
+    updatePosibilities()
+  }
+  
   def reset(): Unit = {
     remaining = card.count
+    cardsLeft = 30
+    updatePosibilities()
     updateRemaining()
+  }
+  
+  
+  
+  def updatePosibilities(): Unit = {
+    posibilities = calPosibilities()
+    repaint()
   }
 
   private def updateRemaining(): Unit = {
@@ -132,6 +162,9 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
       else cardBack
     repaint()
   }
+  
+    def calPosibilities(): Double = 
+      100*(math floor(remaining.toDouble/cardsLeft.toDouble)*10000)/10000
 
 }
 

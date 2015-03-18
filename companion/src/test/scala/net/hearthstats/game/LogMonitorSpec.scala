@@ -17,7 +17,7 @@ import java.io.File
 
 @RunWith(classOf[JUnitRunner])
 class LogMonitorSpec extends FlatSpec with Matchers with MockitoSugar with OneInstancePerTest with Logging {
-  val environment = TestEnvironment
+  val environment = new TestEnvironment
   val uiLog = mock[Log]
   val tempFile = File.createTempFile("unused", "unused")
   val fileObserver = wire[FileObserver]

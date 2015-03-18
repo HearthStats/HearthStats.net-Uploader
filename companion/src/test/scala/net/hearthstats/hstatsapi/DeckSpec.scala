@@ -15,7 +15,7 @@ import com.softwaremill.macwire.MacwireMacros.wire
 class DeckSpec extends FlatSpec with Matchers with MockitoSugar {
   val config: UserConfig = TestConfig
   val uiLog = mock[Log]
-  val environment = TestEnvironment
+  val environment = new TestEnvironment
 
   val api = wire[API]
   val cardUtils = wire[CardUtils]

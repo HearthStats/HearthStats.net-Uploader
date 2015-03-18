@@ -1,8 +1,7 @@
 package net.hearthstats.core
 
-import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import rapture.json.jsonBackends.jawn._
+import rapture.json._
 import java.util.NoSuchElementException
 import net.hearthstats.game._
 
@@ -47,13 +46,10 @@ case class GameLog(
         else action.copy(card = cardNames.get(action.cardId))
       })
     }
-    mapper.writeValueAsString(copy(turns = updatedWithNames.reverse))
+    val inOrder = copy(turns = updatedWithNames.reverse)
+    val j = Json(inOrder)
+    j.toString
   }
-}
-
-object GameLog {
-  val mapper = new ObjectMapper with ScalaObjectMapper
-  mapper.registerModule(DefaultScalaModule)
 }
 
 case class Action(
@@ -90,3 +86,8 @@ case class Turn(actions: List[Action] = Nil) {
   }
 }
 
+object GameLog {
+  def sample = GameLog(
+    List(Turn(List(Action(1, "DRAW", Some("Ironbeak Owl"), 3, 2)))),
+    Some(1), Some(2), Some("oter"), Some("tst"))
+}

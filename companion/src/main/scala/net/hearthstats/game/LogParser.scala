@@ -104,9 +104,10 @@ class LogParser extends Logging {
     }
 
     def analyseGraveyardZone: ZoneToEvent = _ match {
-      case ("", "FRIENDLY GRAVEYARD" | "OPPOSING GRAVEYARD") |
-        ("FRIENDLY HAND", "FRIENDLY GRAVEYARD") | ("OPPOSING HAND", "OPPOSING GRAVEYARD") =>
+      case ("FRIENDLY HAND", "FRIENDLY GRAVEYARD") | ("OPPOSING HAND", "OPPOSING GRAVEYARD") =>
         CardDiscarded(cardId, id, player)
+      case ("", "FRIENDLY GRAVEYARD" | "OPPOSING GRAVEYARD") =>
+        CardIgnored(cardId, id, player)
       case ("FRIENDLY SECRET" | "FRIENDLY PLAY" | "FRIENDLY PLAY (Weapon)", "FRIENDLY GRAVEYARD") |
         ("OPPOSING SECRET" | "OPPOSING PLAY" | "OPPOSING PLAY (Weapon)", "OPPOSING GRAVEYARD") =>
         CardDestroyed(cardId, id, player)

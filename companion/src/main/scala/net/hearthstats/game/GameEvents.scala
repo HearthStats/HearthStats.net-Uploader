@@ -66,6 +66,7 @@ object CardEvents {
   def CardDrawn(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, DRAWN, player: Int)
   def CardReplaced(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, REPLACED, player: Int)
   def CardDiscarded(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, DISCARDED, player: Int)
+  def CardIgnored(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, IGNORED, player: Int)
   def CardPutInPlay(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, PUT_IN_PLAY, player: Int)
   def CardReceived(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, RECEIVED, player: Int)
   def CardRevealed(card: String, cardId: Int, player: Int) = CardEvent(card, cardId, REVEALED, player: Int)

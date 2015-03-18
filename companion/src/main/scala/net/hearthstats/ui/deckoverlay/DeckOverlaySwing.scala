@@ -1,19 +1,17 @@
 package net.hearthstats.ui.deckoverlay
 
-import java.awt.event.{ MouseAdapter, MouseEvent }
 import java.awt.{ BorderLayout, Dimension }
+
+import javax.swing.{ JFrame, JLabel, WindowConstants }
 import javax.swing.Box.createVerticalBox
-import javax.swing.{ ImageIcon, JCheckBox, JFrame, JLabel, WindowConstants }
-import net.hearthstats.config.{ Environment, UserConfig }
+import net.hearthstats.config.{ Environment, RectangleConfig }
+import net.hearthstats.config.UserConfig.configToValue
 import net.hearthstats.core.{ Card, Deck }
 import net.hearthstats.hstatsapi.CardUtils
 import net.hearthstats.ui.log.Log
-import scala.swing.Swing.{ ChangeListener, onEDT }
-import net.hearthstats.config.RectangleConfig
-import UserConfig._
 import net.hearthstats.util.Translation
 
-class DeckOverlaySwing(
+abstract class DeckOverlaySwing(
   rectangleConfig: RectangleConfig,
   cardsTranslation: Translation,
   cardUtils: CardUtils,
@@ -21,8 +19,11 @@ class DeckOverlaySwing(
   uiLog: Log) extends JFrame with DeckOverlayPresenter {
 
   var cardLabels: Map[String, ClickableLabel] = Map.empty
-
+  var deck: Deck = Deck()
+  
   def showDeck(deck: Deck) {
+    this.deck = deck
+    setTitle(deck.name)
     val imagesReady = cardUtils.downloadImages(deck.cards)
 
     val richCards = for {
@@ -43,7 +44,7 @@ class DeckOverlaySwing(
         card <- richCards
         cardLabel = new ClickableLabel(card, imagesReady)
       } yield {
-        box.add(cardLabel)
+        box.add(cardLabel)        
         card.originalName -> cardLabel
       }).toMap
 
@@ -59,7 +60,6 @@ class DeckOverlaySwing(
     setSize(rectangleConfig.width, rectangleConfig.height)
     repaint()
     setVisible(true)
-
   }
 
   override def dispose(): Unit = {
@@ -92,12 +92,34 @@ class DeckOverlaySwing(
 
   def decreaseCardCount(card: Card): Unit =
     findLabel(card) map (_.decreaseRemaining())
+    
 
   def increaseCardCount(card: Card): Unit =
     findLabel(card) map (_.increaseRemaining())
+    
+  def increaseCardsLeft():Unit = 
+  {      
+      for{card <- deck.cards}
+      yield{
+      increaseCardsLeftPosibilities(card)}
+  }
+  
+  def decreaseCardsLeft():Unit = 
+  {
+      for{card <- deck.cards}
+      yield{
+      decreaseCardsLeftPosibilities(card)}
+  }
 
+  def increaseCardsLeftPosibilities(card:Card):Unit= 
+    findLabel(card) map (_.updateIncreaseCardsLeft)
+  
+  def decreaseCardsLeftPosibilities(card:Card):Unit= 
+    findLabel(card) map (_.updateDecreaseCardsLeft)  
+  
   def reset(): Unit =
     cardLabels.foreach { keyVal => keyVal._2.reset() }
+  
 
 }
 
@@ -121,3 +143,5 @@ trait DeckOverlayPresenter {
    */
   def reset
 }
+
+

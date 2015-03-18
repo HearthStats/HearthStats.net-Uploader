@@ -12,7 +12,6 @@ import net.hearthstats.util.Translation
 import net.miginfocom.swing.MigLayout
 import scala.swing.Swing._
 import net.hearthstats.ui.util.OptionTextField
-import net.hearthstats.ui.util.OptionTextField
 import net.hearthstats.ui.util.StringOptionTextField
 import net.hearthstats.ui.util.IntOptionTextField
 
@@ -30,7 +29,6 @@ class OptionsPanel(
   setLayout(new MigLayout)
 
   add(new JLabel(" "), "wrap")
-
   // User Key
   addLabel(t("options.label.userkey") + " ")
   var userKeyField: JTextField = new StringOptionTextField(userKey)
@@ -86,8 +84,8 @@ class OptionsPanel(
 
   val deckOverlayHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Deck-Overlay",
     "Help on the show deck overlay option")
-  add(deckOverlayHelpIcon, "wrap")
-
+  add(deckOverlayHelpIcon, "wrap")  
+  
   // Match Popup
   addLabel(t("options.label.matchpopup"))
   addComboBox[MatchPopup](
@@ -102,6 +100,9 @@ class OptionsPanel(
   if (new VideoEncoderFactory().isAvailable()) {
     addLabel(t("options.label.video.record") + " ")
     addCheckBox(t("options.ui.video.record"), recordVideo, recordVideo.set)
+    
+    add(new JLabel(""), "skip,right")
+    addCheckBox(t("options.ui.video.autoUpload"), autoUploadVideo,autoUploadVideo.set)
 
     addLabel(t("options.label.video.delay") + " ")
     add(new IntOptionTextField(pollingDelayMs), "wrap")
@@ -111,6 +112,8 @@ class OptionsPanel(
 
     addLabel(t("options.label.video.height") + " ")
     add(new IntOptionTextField(videoHeight), "wrap")
+    
+    
   }
 
   // Minimize to System Tray
@@ -170,6 +173,7 @@ class OptionsPanel(
 
   def setUserKey(userkey: String) {
     userKeyField.setText(userkey)
+    add(new JLabel(userkey))
   }
 
   def addLabel(label: String = ""): JLabel = {

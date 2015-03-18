@@ -1,8 +1,8 @@
 package net.hearthstats.core
 
-import scala.collection.JavaConversions.mutableMapAsJavaMap
 import org.apache.commons.lang3.StringUtils
-import org.json.simple.JSONObject
+import rapture.json.jsonBackends.jawn._
+import rapture.json._
 import com.github.nscala_time.time.Imports.DateTime
 import grizzled.slf4j.Logging
 import scala.concurrent.Future
@@ -19,8 +19,8 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
   rankLevel: Option[Rank] = None,
   numTurns: Int = -1,
   duration: Long = -1, // in seconds
-  notes: String = null,
-  jsonLog: String = null,
+  notes: String = "",
+  jsonLog: String = "",
   replayFile: Future[String] = Promise[String].future,
   id: Int = -1) extends Logging {
 
@@ -36,30 +36,31 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
     s <- d.activeSlot
   } yield s
 
-  def toJsonObject: JSONObject = {
-    val map = collection.mutable.Map(
-      "mode" -> mode.toString,
-      "slot" -> deckSlot.getOrElse(-1),
-      "class" -> userClass.toString,
-      "oppclass" -> opponentClass.toString,
-      "oppname" -> opponentName,
-      "coin" -> coin.getOrElse(false).toString,
-      "result" -> describeResult,
-      "notes" -> notes,
-      "log" -> jsonLog,
-      "numturns" -> numTurns / 2,
-      "duration" -> duration)
+  def toJsonObject: Json = {
+    val slot = deckSlot.getOrElse(-1)
+    val c = coin.getOrElse(false).toString
+    val main = json""" {
+      "mode" : ${mode.toString},
+      "slot" : $slot,
+      "class" : ${userClass.toString},
+      "oppclass" : ${opponentClass.toString},
+      "oppname" : $opponentName,
+      "coin" : $c,
+      "result" : $describeResult,
+      "notes" : $notes,
+      "log" : $jsonLog,
+      "numturns" : ${numTurns / 2},
+      "duration" : $duration
+      }"""
+    val ranks =
+      if (mode == GameMode.RANKED) {
+        val (lvl, legend) =
+          if (Some(Rank.LEGEND) == rankLevel) (26, true)
+          else (rankLevel.map(_.number).getOrElse(0), false)
+        json""" {"ranklvl" :$lvl, "legend" : $legend } """
+      } else Json.empty
 
-    if (mode == GameMode.RANKED) {
-      if (Rank.LEGEND == rankLevel) {
-        map += "ranklvl" -> 26
-        map += "legend" -> "true"
-      } else {
-        map += "ranklvl" -> rankLevel.get.number
-        map += "legend" -> "false"
-      }
-    }
-    new JSONObject(map)
+    Json(main ++ ranks)
   }
 
   /**
@@ -83,8 +84,6 @@ case class HearthstoneMatch(mode: GameMode = GameMode.UNDETECTED,
       userClass != HeroClass.UNDETECTED &&
       opponentClass != HeroClass.UNDETECTED &&
       mode != GameMode.UNDETECTED
-
-  
 
   def matchUrl: String = {
     s"http://hearthstats.net/matches/$id"
