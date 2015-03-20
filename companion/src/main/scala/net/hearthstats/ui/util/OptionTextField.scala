@@ -1,41 +1,51 @@
 package net.hearthstats.ui.util
 
-import javax.swing.JTextField
-import net.hearthstats.config.ConfigValue
-import javax.swing.event.DocumentListener
-import javax.swing.event.DocumentEvent
-import scala.swing.Swing
 import java.awt.Dimension
+import javax.swing.event.{DocumentEvent, DocumentListener}
 
-class OptionTextField[T](
-  config: ConfigValue[T],
-  converter: String => T)
-  extends JTextField {
+import net.hearthstats.config.ConfigValue
 
-  setText(config.get.toString)
+import scala.swing.{PasswordField, Swing, TextField}
+
+trait OptionTextField[T] { self: TextField =>
+
+  def config: ConfigValue[T]
+  def converter: String => T
+
+  peer.setText(config.get.toString)
+
   val s = new Dimension(280, 28)
-  setMinimumSize(s)
-  setPreferredSize(s)
+  minimumSize = s
+  preferredSize = s
 
-  getDocument.addDocumentListener(new DocumentListener {
+  peer.getDocument.addDocumentListener(new DocumentListener {
     def insertUpdate(e: DocumentEvent): Unit = handleChange
     def changedUpdate(e: DocumentEvent): Unit = handleChange
     def removeUpdate(e: DocumentEvent): Unit = handleChange
 
     def handleChange = Swing.onEDT({
-      if (config.get != getText) {
-        config.set(converter(getText))
+      if (config.get != peer.getText) {
+        config.set(converter(peer.getText))
       }
     })
   })
 }
 
-class StringOptionTextField(config: ConfigValue[String])
-  extends OptionTextField[String](
-    config: ConfigValue[String],
-    identity)
+class StringOptionTextField(val config: ConfigValue[String])
+  extends TextField with OptionTextField[String] {
 
-class IntOptionTextField(config: ConfigValue[Int])
-  extends OptionTextField[Int](
-    config: ConfigValue[Int],
-    Integer.parseInt)
+  def converter = identity
+}
+
+class PasswordOptionTextField(val config: ConfigValue[String])
+  extends PasswordField with OptionTextField[String] {
+
+  def converter = identity
+}
+
+
+class IntOptionTextField(val config: ConfigValue[Int])
+  extends TextField with OptionTextField[Int] {
+  
+  def converter = Integer.parseInt
+}

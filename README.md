@@ -39,7 +39,7 @@ to help test things out or just see how things are going. Check out the project'
 [milestones](https://github.com/HearthStats/HearthStats.net-Uploader/issues/milestones) 
 to see how things are progressing.
 
-* Make sure you have [Java 7](http://java.com/en/download/manual.jsp) installed
+* Make sure you have [Java 7](http://java.com/en/download/manual_java7.jsp) installed
 * Download the __[latest release](https://hearthstats.net/uploader)__ of the HearthStats Companion
 * Extract the downloaded zip file to any folder
   * On **Windows**, run HearthStats.exe in the folder where you extracted the zip file

@@ -2,6 +2,8 @@ package net.hearthstats.ui
 
 import java.awt.Frame._
 import java.awt.event.{ WindowAdapter, WindowEvent }
+import net.hearthstats.ui.util.FontHelper
+
 import scala.swing.Swing
 import grizzled.slf4j.Logging
 import javax.swing.JFrame
@@ -171,7 +173,7 @@ trait GeneralUI extends JFrame with Logging {
 
   lazy val restoreButton = {
     val button = new MenuItem("Restore")
-    button.setFont(new Font("Arial", Font.BOLD, 14))
+    button.setFont(FontHelper.actionFont)
     button.addActionListener(new ActionListener {
       def actionPerformed(e: ActionEvent) {
         setVisible(true)
@@ -189,7 +191,7 @@ trait GeneralUI extends JFrame with Logging {
     }
     val button = new MenuItem("Exit")
     button.addActionListener(exitListener)
-    button.setFont(new Font("Arial", Font.PLAIN, 14))
+    button.setFont(FontHelper.bodyFont)
     button
   }
 

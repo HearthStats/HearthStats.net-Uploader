@@ -6,7 +6,7 @@
 
 	<parent>
 		<groupId>net.hearthstats</groupId>
-		<version>0.21.1</version>
+		<version>0.22.0</version>
 		<artifactId>companion-parent</artifactId>
 	</parent>
 	<artifactId>companion</artifactId>
@@ -42,17 +42,22 @@
 	</repositories>
 
 	<dependencies>
-	<dependency>
-		<groupId>net.hearthstats</groupId>
-		<artifactId>updater</artifactId>
-		<version>${project.version}</version>
-		<exclusions>
-			<exclusion>
-				<groupId>com.googlecode.json-simple</groupId>
-				<artifactId>json-simple</artifactId>
-			</exclusion>
-		</exclusions>
-	</dependency>
+		<dependency>
+			<groupId>net.hearthstats</groupId>
+			<artifactId>hearthstone</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.hearthstats</groupId>
+			<artifactId>updater</artifactId>
+			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.googlecode.json-simple</groupId>
+					<artifactId>json-simple</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 	<dependency>
 		<artifactId>scala-library</artifactId>
@@ -68,7 +73,7 @@
 	<dependency>
 		<groupId>com.softwaremill.macwire</groupId>
 		<artifactId>macros_2.11</artifactId>
-		<version>0.7.3</version>
+		<version>0.8.0</version>
 	</dependency>
 
 	<dependency>
@@ -251,14 +256,4 @@
 			</resource>
 		</resources>
 	</build>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.scala-lang</groupId>
-				<artifactId>scala-reflect</artifactId>
-				<version>2.11.4</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 </project>

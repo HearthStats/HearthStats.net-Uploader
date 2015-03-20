@@ -8,7 +8,7 @@
 	<groupId>net.hearthstats</groupId>
 	<artifactId>companion-parent</artifactId>
 	<name>HearthStats Companion</name>
-	<version>0.21.1</version>
+	<version>0.22.0</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -17,7 +17,7 @@
 		<!-- parsedVersion will be populated automatically by the build-helper-maven-plugin -->
 		<project.longVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}</project.longVersion>
 		<java.version>1.7</java.version>
-		<scala.version>2.11.4</scala.version>
+		<scala.version>2.11.5</scala.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -32,6 +32,7 @@
 
 	<modules>
 		<module>updater</module>
+		<module>hearthstone</module>
 		<module>companion</module>
 	</modules>
 
@@ -85,7 +86,7 @@
 			<dependency>
 				<groupId>com.typesafe.akka</groupId>
 				<artifactId>akka-actor_2.11</artifactId>
-				<version>2.3.6</version>
+				<version>2.3.9</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
