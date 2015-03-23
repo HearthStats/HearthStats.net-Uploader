@@ -22,98 +22,6 @@ class LandingFrame(translation: Translation,
                    val notificationQueue: NotificationQueue,
                    val environment: Environment) extends Frame with Logging {
   import config._
-<<<<<<< HEAD
-    
-    private val signInButton = new JButton("Sign In")
-    signInButton.setBorder(null)
-    signInButton.setFocusable(false)
-    signInButton.setCursor(new Cursor(Cursor.HAND_CURSOR))
-    signInButton.setOpaque(false)
-    signInButton.setContentAreaFilled(false)
-    signInButton.setBorderPainted(false)
-    private val registerButton = new JButton("Register")
-    registerButton.setBorder(null)
-    registerButton.setFocusable(false)
-    registerButton.setCursor(new Cursor(Cursor.HAND_CURSOR))
-    registerButton.setOpaque(false)
-    registerButton.setContentAreaFilled(false)
-    registerButton.setBorderPainted(false)
-    private val registerUrl:String = "http://hearthstats.net/users/sign_up"
-    
-
-    def createLandingPage(){
-      val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
-      val titleLabel = new JLabel("Uploader")
-      titleLabel.setFont(new Font("Ariel",Font.BOLD,36))
-      setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE)
-      setIconImage(icon)
-      setLocation(windowX, windowY)
-      setSize(windowWidth, windowHeight)
-      setMinimumSize(new Dimension(500, 600))
-      setVisible(true)
-      updateTitle
-
-      setLayout(new MigLayout)
-      getContentPane().setBackground(Color.WHITE)
-      getRootPane().setBorder(BorderFactory.createMatteBorder(4, 4, 4, 4, Color.WHITE));
-      
-      
-      add(new JLabel(" "), "wrap")    
-      add(new JLabel(" "), "wrap")
-      add(new JLabel(" "), "wrap")
-      add(new JLabel("  "), "")
-      add(new JLabel(new ImageIcon(ImageIO.read(getClass.getResource("/images/Hearthstats_icon.png")))),"right")
-      add(new JLabel(new ImageIcon(ImageIO.read(getClass.getResource("/images/Hearthstats_title.png")))),"right")
-      add(new JLabel("       "),"right")
-      
-      add(new JLabel(" "),"wrap")
-      add(new JLabel(" "),"wrap")
-      add(new JLabel(" "),"wrap")
-      add(new JLabel(" "),"wrap")
-      add(new JLabel("  "), "")  
-      //entering userID
-      add(new JLabel(t("LandingPanel.label.userId") + "    "), "right")
-      var userEmailField: JTextField = new StringOptionTextField(config.email)
-      
-      add(userEmailField, "center,wrap")
-      config.email.set(userEmailField.getText())
-        
-      
-      add(new JLabel(" "), "wrap")
-      add(new JLabel("  "), "") 
-      //entering user Password  
-      add(new JLabel(t("LandingPanel.label.password") + " "), "right")
-      var passwordField: JTextField = new StringOptionTextField(config.password)
-      passwordField.setOpaque(false)
-      passwordField.setBackground(new Color(0,0,0,0))
-      
-      add(passwordField, "center,wrap")
-      config.password.set(passwordField.getText())
-        
-        
-      add(new JLabel(" "), "wrap")
-      add(new JLabel(" "), "wrap")
-      add(new JLabel("  "), "")  
-      //add a sign in button
-      signInButton.addActionListener(new ActionListener {
-        override def actionPerformed(arg0: ActionEvent) {
-         checkForPassword   
-        }})
-      add(signInButton, "right")
-      
-      //add a register button 
-      registerButton.addActionListener(new ActionListener {
-        override def actionPerformed(arg0: ActionEvent) {
-          Browse(registerUrl)
-        }})
-      add(registerButton, "center")
-        
-      //add a first time help link  
-      val firstTimeHelpIcon = new HelpIcon("http://hearthstats.net/uploader?locale=en",
-       "First time tutorial")
-      add(firstTimeHelpIcon, "left")
-    
-=======
   import translation.t
 
     val signInButton = new scala.swing.Button {
@@ -125,7 +33,6 @@ class LandingFrame(translation: Translation,
       contentAreaFilled = false
       foreground = new Color(46, 97, 140)
       borderPainted = false
->>>>>>> HearthStats/master
     }
 
     defaultButton = signInButton

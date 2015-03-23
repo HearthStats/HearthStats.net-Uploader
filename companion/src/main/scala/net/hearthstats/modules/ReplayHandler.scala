@@ -46,26 +46,10 @@ class ReplayHandler(
       uiLog.info(s"Video replay of your match is saved in <a href='$u'>$p</a>")
     } else throw new IllegalArgumentException(s"Could not rename $f to $newFile")
 
-<<<<<<< HEAD
-    if(!auto)
-    {
-      val msg = s"""Do you want to upload $gameDesc ?
-                  | You need to keep HearthStats Companion window 
-                  | open during the upload""".stripMargin
-    
-    
-      val choice = ui.showConfirmDialog(msg, "Upload last game ?", YES_NO_OPTION)
-      println("auto = " + auto)
-    }
-    
-    if ( (auto && reallyUpload) || (YES_OPTION == choice && reallyUpload))
-=======
     if (reallyUpload && confirmUpload(gameDesc)) {
->>>>>>> HearthStats/master
       videoUploader.uploadFile(newFile, lastMatch.id.toString, config, api).map {
         case () =>
           uiLog.info(s"$newName was uploaded to hearthstats.net")
-          println("upload match successfully, replayhandler")
           newName
       }
     } else Promise[String].future
