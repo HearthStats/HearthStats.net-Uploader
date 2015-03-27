@@ -81,15 +81,9 @@ class OptionsPanel(
   addCheckBox(t("options.ui.deckoverlay"), enableDeckOverlay, enableDeckOverlay.set, "")
 
   val deckOverlayHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Deck-Overlay",
-<<<<<<< HEAD
-    "Help on the show deck overlay option")
-  add(deckOverlayHelpIcon, "wrap")  
-  
-=======
     "Help on the show deck overlay option").peer
   add(deckOverlayHelpIcon, "wrap")
 
->>>>>>> HearthStats/master
   // Match Popup
   addLabel(t("options.label.matchpopup"))
   addComboBox[MatchPopup](
@@ -115,16 +109,11 @@ class OptionsPanel(
     add(new IntOptionTextField(videoWidth).peer, "wrap")
 
     addLabel(t("options.label.video.height") + " ")
-<<<<<<< HEAD
-    add(new IntOptionTextField(videoHeight), "wrap")
-    
-    
-=======
+
     add(new IntOptionTextField(videoHeight).peer, "wrap")
 	
     addLabel(t("options.label.upload.disable") + " ")
     addCheckBox(t("options.ui.upload.disable"), disableUpload, disableUpload.set)
->>>>>>> HearthStats/master
   }
 
   // Minimize to System Tray
