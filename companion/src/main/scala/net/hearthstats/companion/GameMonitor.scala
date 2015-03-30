@@ -326,7 +326,8 @@ class GameMonitor(
       updateMatch(_.withDuration(companionState.currentDurationMs / 1000))
       matchUtils.submitMatchResult()
       companionState.reset()
-      deckOverlay.dispose()      
+      deckOverlay.dispose()
+      deckOverlay.reset()
       VideoEncoder.stop()
       schedule(normalDelay)
     }
