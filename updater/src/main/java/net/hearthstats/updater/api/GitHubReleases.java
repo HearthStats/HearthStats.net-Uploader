@@ -93,7 +93,6 @@ public class GitHubReleases {
     // Releases are listed in order from newest to oldest, so the first one is the latest.
     for (Release release : releases) {
       if (release.getWindowsAsset() != null && (!release.isDraft() || includeDraftReleases)) {
-          System.out.println(releases);
         return release;
       }
     }
