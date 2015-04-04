@@ -123,6 +123,15 @@ class LandingFrame(translation: Translation,
 
     contents = panel
     background = Color.WHITE
+    
+    if(config.lastLoginOK){
+      new Thread{
+        override def run():Unit={
+          Thread.sleep(200)
+          checkForPassword()
+        }
+      }.start()
+    }
     connected.future
   }
 
@@ -136,9 +145,11 @@ class LandingFrame(translation: Translation,
     try {
       if (api.login(config.email.get, config.password.get)) {
         connected.success(())
+        config.lastLoginOK.set(true)
         info("Password correct")
       } else {
         JOptionPane.showMessageDialog(null, "Invalid Email or Password")
+        config.lastLoginOK.set(false)
         info("Invalid email or password")
       }
     } catch {

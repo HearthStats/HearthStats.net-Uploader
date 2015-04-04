@@ -49,6 +49,8 @@ class UserConfig extends Logging with Implicits {
   
   val disableUpload = config("upload.disable", false)
 
+  val lastLoginOK = config("login.succeeded", false)
+
   val gameLanguage = enumConfig("option.gamelanguage", SupportedGameLanguage.EN)
   /** Translation for the cards of the game, based on the language option for the game.*/
   //TODO : how to cache this when the gameLanguage has not changed
