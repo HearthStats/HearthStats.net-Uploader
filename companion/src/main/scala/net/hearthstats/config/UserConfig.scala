@@ -44,9 +44,6 @@ class UserConfig extends Logging with Implicits {
   val uploadVideo = config("video.upload", false)
   val autoUploadVideo = config("video.autoUpload",false)
   
-  val closedLandingPage = config("landingFrame.closed",false)
-  val quitLoadingMainFrame = config("mainFrame.loading",false)
-
   val videoWidth = config("video.width", 1680)
   val videoHeight = config("video.height", 1050)
   

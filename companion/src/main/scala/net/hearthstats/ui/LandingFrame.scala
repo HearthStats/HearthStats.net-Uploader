@@ -1,19 +1,19 @@
 package net.hearthstats.ui
 
-import java.awt.{Color, Cursor, Dimension}
+import java.awt.{ Color, Cursor, Dimension }
 import javax.imageio.ImageIO
 import javax.swing._
-
 import grizzled.slf4j.Logging
-import net.hearthstats.config.{Environment, UserConfig}
+import net.hearthstats.config.{ Environment, UserConfig }
 import net.hearthstats.hstatsapi.API
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.NotificationQueue
 import net.hearthstats.ui.util._
-import net.hearthstats.util.{Browse, Translation}
-
+import net.hearthstats.util.{ Browse, Translation }
 import scala.swing.event.ButtonClicked
-import scala.swing.{Frame, Label, Point}
+import scala.swing.{ Frame, Label, Point }
+import scala.concurrent.Future
+import scala.concurrent.Promise
 
 class LandingFrame(translation: Translation,
                    uilog: Log,
@@ -24,33 +24,34 @@ class LandingFrame(translation: Translation,
   import config._
   import translation.t
 
-    val signInButton = new scala.swing.Button {
-      text = t("landingpanel.label.login")
-      font = FontHelper.largerFont
-      border = null
-      focusable = false
-      cursor = new Cursor(Cursor.HAND_CURSOR)
-      contentAreaFilled = false
-      foreground = new Color(46, 97, 140)
-      borderPainted = false
-    }
+  val signInButton = new scala.swing.Button {
+    text = t("landingpanel.label.login")
+    font = FontHelper.largerFont
+    border = null
+    focusable = false
+    cursor = new Cursor(Cursor.HAND_CURSOR)
+    contentAreaFilled = false
+    foreground = new Color(46, 97, 140)
+    borderPainted = false
+  }
 
-    defaultButton = signInButton
+  defaultButton = signInButton
 
-    val registerButton = new swing.Button {
-      text = t("landingpanel.label.register")
-      font = FontHelper.largerFont
-      border = null
-      focusable = false
-      cursor = new Cursor(Cursor.HAND_CURSOR)
-      contentAreaFilled = false
-      foreground = new Color(46, 97, 140)
-      borderPainted = false
-    }
-    private val registerUrl = "http://hearthstats.net/users/sign_up"
+  val registerButton = new swing.Button {
+    text = t("landingpanel.label.register")
+    font = FontHelper.largerFont
+    border = null
+    focusable = false
+    cursor = new Cursor(Cursor.HAND_CURSOR)
+    contentAreaFilled = false
+    foreground = new Color(46, 97, 140)
+    borderPainted = false
+  }
+  private val registerUrl = "http://hearthstats.net/users/sign_up"
 
+  var connected = Promise[Unit]()
 
-  def createLandingPage() {
+  def createLandingPage(): Future[Unit] = {
 
     val icon = new ImageIcon(getClass.getResource("/images/icon.png")).getImage
     iconImage = icon
@@ -59,13 +60,12 @@ class LandingFrame(translation: Translation,
     minimumSize = new Dimension(500, 600)
     visible = true
 
-    updateTitle
+    updateTitle()
 
     val panel = new MigPanel(
-//    layoutConstraints = "debug",
-    colConstraints = "[]push[]10[]10[]push[]",   // Causes form to be centred
-    rowConstraints = "[]push[]20[]20[]10[]10[]20[]push[]"
-    ) {
+      //    layoutConstraints = "debug",
+      colConstraints = "[]push[]10[]10[]push[]", // Causes form to be centred
+      rowConstraints = "[]push[]20[]20[]10[]10[]20[]push[]") {
 
       background = Color.WHITE
 
@@ -76,7 +76,6 @@ class LandingFrame(translation: Translation,
       contents += (new Label {
         icon = new ImageIcon(ImageIO.read(getClass.getResource("/images/Hearthstats_title.png")))
       }, "right, wrap")
-
 
       val titleLabel = new Label {
         text = t("landingpanel.title")
@@ -124,23 +123,19 @@ class LandingFrame(translation: Translation,
 
     contents = panel
     background = Color.WHITE
+    connected.future
   }
 
   //update title
-  def updateTitle {
+  def updateTitle() {
     title = "HearthStats Companion Login Page"
   }
 
-  //close login page
-  def closeLandingPage {
-    config.closedLandingPage.set(true)
-  }
-
   //check if password and email matched
-  def checkForPassword {
+  def checkForPassword() {
     try {
       if (api.login(config.email.get, config.password.get)) {
-        closeLandingPage
+        connected.success(())
         info("Password correct")
       } else {
         JOptionPane.showMessageDialog(null, "Invalid Email or Password")

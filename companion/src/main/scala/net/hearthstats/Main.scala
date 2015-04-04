@@ -1,31 +1,26 @@
 package net.hearthstats
 
-
 import java.awt.Component
 import java.io.File
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.control.NonFatal
-import scala.util.{Success,Failure}
-
 import com.softwaremill.macwire.MacwireMacros.wire
 import com.softwaremill.macwire.Tagging._
-
 import grizzled.slf4j.Logging
-import javax.swing.{ JFrame, JOptionPane, WindowConstants }
-import net.hearthstats.companion.{ CompanionState, DeckOverlayModule, GameMonitor, ScreenEvents }
-import net.hearthstats.config.{ Application, Environment, UserConfig }
+import javax.swing.{JFrame, JOptionPane, WindowConstants}
+import net.hearthstats.companion.{CompanionState, DeckOverlayModule, GameMonitor, ScreenEvents}
+import net.hearthstats.config.{Application, Environment, UserConfig}
 import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.game.{ HearthstoneLogMonitor, LogParser, MatchState }
-import net.hearthstats.game.imageanalysis.{ IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser }
-import net.hearthstats.hstatsapi.{ API, CardUtils, DeckUtils, MatchUtils }
-import net.hearthstats.modules.{ FileUploaderFactory, ReplayHandler, VideoEncoderFactory }
-import net.hearthstats.ui.{ CompanionFrame,LandingFrame,ExportDeckBox, MatchEndPopup }
+import net.hearthstats.game.{HearthstoneLogMonitor, LogParser, MatchState}
+import net.hearthstats.game.imageanalysis.{IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser}
+import net.hearthstats.hstatsapi.{API, CardUtils, DeckUtils, MatchUtils}
+import net.hearthstats.modules.{FileUploaderFactory, ReplayHandler, VideoEncoderFactory}
+import net.hearthstats.ui.{CompanionFrame, ExportDeckBox, LandingFrame, MatchEndPopup}
 import net.hearthstats.ui.deckoverlay._
 import net.hearthstats.ui.log.Log
-import net.hearthstats.ui.notification.DialogNotification
-import net.hearthstats.util.{ AnalyticsTrackerFactory, FileObserver, Translation, TranslationConfig, Updater }
+import net.hearthstats.util.{AnalyticsTrackerFactory, FileObserver, Translation, TranslationConfig, Updater}
 import net.sourceforge.tess4j.Tesseract
-
+import net.hearthstats.ui.notification.DialogNotification
 
 class Main(
   environment: Environment,
@@ -79,34 +74,25 @@ class Main(
   val replayHandler = wire[ReplayHandler]
   val startup: Startup = wire[Startup]
   val matchUtils: MatchUtils = wire[MatchUtils]
- 
-  
-  val monitor: GameMonitor = wire[GameMonitor]
-  
-  def start(): Unit = {
-      config.closedLandingPage.set(false)
-      landingFrame.createLandingPage()
-      config.quitLoadingMainFrame.set(false)
 
-      while(!config.quitLoadingMainFrame.get){
-        if(config.closedLandingPage){
-          mainFrame.decksTab.updateDecks()
-          landingFrame.dispose()
-          val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")    
-          loadingNotification.show()
-          logSystemInformation()
-          updater.cleanUp()
-          cleanupDebugFiles()  
-          
-          mainFrame.createAndShowGui()
-          loadingNotification.close()
-          programHelper.createConfig(environment, uiLog)
-          startup.start()
-          monitor.start()
-          config.quitLoadingMainFrame.set(true)
-          }
-      
-        }
+  val monitor: GameMonitor = wire[GameMonitor]
+
+  def start(): Unit = {
+    landingFrame.createLandingPage().onSuccess{ case _ =>
+      mainFrame.decksTab.updateDecks()
+      landingFrame.dispose()
+      val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")
+      loadingNotification.show()
+      logSystemInformation()
+      updater.cleanUp()
+      cleanupDebugFiles()
+
+      mainFrame.createAndShowGui()
+      loadingNotification.close()
+      programHelper.createConfig(environment, uiLog)
+      startup.start()
+      monitor.start()
+    }
   }
 
   private def logSystemInformation(): Unit = {
