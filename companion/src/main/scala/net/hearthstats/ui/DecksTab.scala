@@ -1,5 +1,6 @@
 package net.hearthstats.ui
 
+import java.awt.BorderLayout._
 import java.awt.BorderLayout
 import java.io.IOException
 import javax.swing.{ JButton, JComboBox, JLabel, JOptionPane, JPanel }
@@ -99,6 +100,10 @@ class DecksTab(
     }
   }
 
+  private def editDeck(deck: Option[Deck]): Unit = deck.map { d =>
+    Browse(s"http://hearthstats.net/decks/${d.slug}/edit")
+  }
+
   private def createDeck(in: Option[Deck]): Unit = {
     in match {
       case Some(d) => {
@@ -106,9 +111,9 @@ class DecksTab(
           JOptionPane.showConfirmDialog(this,
             s"""${d.name} is not valid (${d.cardCount} cards). Do you want to edit it first on Hearthstats.net ?""".stripMargin) match {
               case JOptionPane.YES_OPTION =>
-                Browse(s"http://hearthstats.net/decks/${d.slug}/edit")
+                editDeck(in)
               case JOptionPane.NO_OPTION => doCreate(d)
-              case _ =>
+              case _                     =>
             }
         } else doCreate(d)
       }
@@ -127,28 +132,37 @@ class DecksTab(
 
   class DeckSlotPanel(slot: Int) extends JPanel {
     setLayout(new BorderLayout)
-    add(new JLabel(t("deck_slot.label", slot)), BorderLayout.NORTH)
+    add(new JLabel(t("deck_slot.label", slot)), NORTH)
     val comboBox = new JComboBox[Object]
-    add(comboBox, BorderLayout.CENTER)
+    add(comboBox, CENTER)
 
     val removeBtn = new JButton("x") //TODO use an icon instead
     removeBtn.setToolTipText("Remove this deck and shift next ones")
     removeBtn.addActionListener(ActionListener(_ => removeSlot(slot)))
-    add(removeBtn, BorderLayout.EAST)
+    add(removeBtn, EAST)
+    
+    val south=new JPanel(new BorderLayout)
+    add(south,  SOUTH)
 
     val createBtn = new JButton("Construct")
     createBtn.setToolTipText("""<html><b>Automatically creates this deck in Hearthstone</b><br/>
-						        (providing you have the required cards)<br/>
-						        <br/>
-						        <i>You need to be in the collection mode and select the hero yourself</i>""")
+                    (providing you have the required cards)<br/>
+                    <br/>
+                    <i>You need to be in the collection mode and select the hero yourself</i>""")
     createBtn.addActionListener(ActionListener(_ => createDeck(selectedDeck)))
 
-    add(createBtn, BorderLayout.SOUTH)
+    south.add(createBtn, WEST)
+
+    val editBtn = new JButton("Edit")
+    editBtn.setToolTipText("Edit this deck on Hearthstats.net (You will need to refresh this tab after completing the edit)")
+    editBtn.addActionListener(ActionListener(_ => editDeck(selectedDeck)))
+
+    south.add(editBtn, EAST)
 
     def selectedDeck: Option[Deck] =
       comboBox.getSelectedItem match {
         case deck: Deck => Some(deck)
-        case _ => None
+        case _          => None
       }
 
     def selectedDeckId: Option[Int] =
