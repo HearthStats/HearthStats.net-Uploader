@@ -1,26 +1,28 @@
 package net.hearthstats.ui
 
-import java.awt.{ Color, Cursor, Dimension }
-import javax.imageio.ImageIO
-import javax.swing._
+import java.awt.{Color, Cursor, Dimension}
+
+import scala.concurrent.{Future, Promise}
+import scala.swing.{Component, Container, Frame, Label, Point}
+import scala.swing.event.ButtonClicked
+import scala.util.control.NonFatal
+
 import grizzled.slf4j.Logging
-import net.hearthstats.config.{ Environment, UserConfig }
+import javax.imageio.ImageIO
+import javax.swing.{ImageIcon, JOptionPane}
+import net.hearthstats.config.{Environment, UserConfig}
 import net.hearthstats.hstatsapi.API
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.NotificationQueue
-import net.hearthstats.ui.util._
-import net.hearthstats.util.{ Browse, Translation }
-import scala.swing.event.ButtonClicked
-import scala.swing.{ Frame, Label, Point }
-import scala.concurrent.Future
-import scala.concurrent.Promise
+import net.hearthstats.ui.util.{FontHelper, MigPanel, PasswordOptionTextField, StringOptionTextField}
+import net.hearthstats.util.{Browse, Translation}
 
 class LandingFrame(translation: Translation,
                    uilog: Log,
                    config: UserConfig,
                    api: API,
-                   val notificationQueue: NotificationQueue,
-                   val environment: Environment) extends Frame with Logging {
+                   notificationQueue: NotificationQueue,
+                   environment: Environment) extends Frame with Logging {
   import config._
   import translation.t
 
@@ -50,6 +52,10 @@ class LandingFrame(translation: Translation,
   private val registerUrl = "http://hearthstats.net/users/sign_up"
 
   var connected = Promise[Unit]()
+
+  override def closeOperation(): Unit = {
+    System.exit(0)
+  }
 
   def createLandingPage(): Future[Unit] = {
 
@@ -123,11 +129,10 @@ class LandingFrame(translation: Translation,
 
     contents = panel
     background = Color.WHITE
-    
-    if(config.lastLoginOK){
-      new Thread{
-        override def run():Unit={
-          Thread.sleep(200)
+
+    if (config.lastLoginOK) {
+      new Thread {
+        override def run(): Unit = {
           checkForPassword()
         }
       }.start()
@@ -140,21 +145,40 @@ class LandingFrame(translation: Translation,
     title = "HearthStats Companion Login Page"
   }
 
+  def login(): Boolean = try {
+    setEnabled(false)
+    cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
+    api.login(config.email.get, config.password.get)
+  } finally {
+    setEnabled(true)
+    cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
+  }
+
+  def setEnabled(e: Boolean): Unit = {
+    def enable(c: Component): Unit = {
+      c.enabled = e
+      if (c.isInstanceOf[Container]) {
+        for (i <- c.asInstanceOf[Container].contents) enable(i)
+      }
+    }
+    for (c <- contents) enable(c)
+    repaint()
+  }
+
   //check if password and email matched
-  def checkForPassword() {
+  def checkForPassword(): Unit =
     try {
-      if (api.login(config.email.get, config.password.get)) {
+      if (login()) {
         connected.success(())
         config.lastLoginOK.set(true)
         info("Password correct")
+        dispose()
       } else {
-        JOptionPane.showMessageDialog(null, "Invalid Email or Password")
+        JOptionPane.showMessageDialog(peer, "Invalid Email or Password")
         config.lastLoginOK.set(false)
         info("Invalid email or password")
       }
     } catch {
-      case e: Throwable => throw new Exception("entered nothing", e)
+      case NonFatal(e) => throw new Exception("entered nothing", e)
     }
-
-  }
 }
