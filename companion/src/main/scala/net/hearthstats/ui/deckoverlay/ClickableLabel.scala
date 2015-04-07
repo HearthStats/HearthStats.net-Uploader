@@ -124,6 +124,7 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   def decreaseRemaining(): Unit = {
     remaining -= 1
     updateRemaining()
+    println("decreased remaining")
   }
 
   def increaseRemaining(): Unit = {

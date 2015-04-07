@@ -122,8 +122,8 @@ class LandingFrame(translation: Translation,
       
       reactions += {
         case ButtonClicked(`signInButton`) =>{
-          signInButton.cursor = (Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
-          contents += (new Label{icon = new ImageIcon(url)}, "center, wrap")
+          //signInButton.cursor = (Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
+          //contents += (new Label{icon = new ImageIcon(url)}, "center, wrap")
           checkForPassword
         }
         case ButtonClicked(`registerButton`) =>

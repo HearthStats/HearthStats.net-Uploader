@@ -10,6 +10,7 @@ import net.hearthstats.game.{ HearthstoneLogMonitor, TurnCount }
 import net.hearthstats.game.CardEvent
 import net.hearthstats.game.CardEventType._
 import net.hearthstats.hstatsapi.CardUtils
+import net.hearthstats.config.UserConfig
 import net.hearthstats.ui.deckoverlay.{ OpponentOverlaySwing, UserOverlaySwing, ClickableLabel }
 
 
@@ -17,18 +18,25 @@ class DeckOverlayModule(
   userPresenter: UserOverlaySwing,
   opponentPresenter: OpponentOverlaySwing,
   cardUtils: CardUtils,
-  logMonitor: HearthstoneLogMonitor) extends Logging {
+  logMonitor: HearthstoneLogMonitor,
+  config: UserConfig) extends Logging {
 
+  import config._
+  
   val monitoringActors = ListBuffer.empty[ActorRef]
   var count = 0
   
   
-  def show(deck: Deck): Unit = {    
-    userPresenter.showDeck(deck)
+  def show(deck: Deck): Unit = { 
+    if(enableUserDeckOverlay){
+      userPresenter.showDeck(deck)
+    }
   }
 
   def showOpponentDeck(opponentName: String): Unit = {
-    opponentPresenter.showDeck(Deck(name = opponentName))
+    if(enableOppDeckOverlay){
+      opponentPresenter.showDeck(Deck(name = opponentName))
+    }
   }
 
   def clearAll(): Unit = {
@@ -78,6 +86,7 @@ class DeckOverlayModule(
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN | DISCARDED, `playerId`) =>
           cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
           if(cardCode != "GAME_005")userPresenter.decreaseCardsLeft()
+          println(cardCode + "cards decreased")
         case CardEvent(cardCode,_,ADDED_TO_DECK,`playerId`) =>
           userPresenter.increaseCardsLeft()
         case _ =>
@@ -99,7 +108,7 @@ class DeckOverlayModule(
   }
 
   def reset(): Unit = {
-    userPresenter.reset()
+      userPresenter.reset()
   }
   
   def dispose()

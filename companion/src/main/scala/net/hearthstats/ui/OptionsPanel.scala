@@ -26,7 +26,6 @@ class OptionsPanel(
   // Create the UI
   setLayout(new MigLayout)
 
-  add(new JLabel(" "), "wrap")
   // User Key
   addLabel(t("options.label.userkey") + " ")
   var userKeyField: JTextField = new StringOptionTextField(userKey).peer
@@ -78,12 +77,15 @@ class OptionsPanel(
 
   // Deck Overlay
   addLabel(t("options.label.deckoverlay"))
-  addCheckBox(t("options.ui.deckoverlay"), enableDeckOverlay, enableDeckOverlay.set, "")
-
+  addCheckBox(t("options.ui.userDeckoverlay"), enableUserDeckOverlay, enableUserDeckOverlay.set, "")
+  
   val deckOverlayHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Deck-Overlay",
     "Help on the show deck overlay option").peer
   add(deckOverlayHelpIcon, "wrap")
-
+  
+  addLabel()
+  addCheckBox(t("options.ui.oppDeckoverlay"), enableOppDeckOverlay, enableOppDeckOverlay.set, "wrap") 
+  
   // Match Popup
   addLabel(t("options.label.matchpopup"))
   addComboBox[MatchPopup](
