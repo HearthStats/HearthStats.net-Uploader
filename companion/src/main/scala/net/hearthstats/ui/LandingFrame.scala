@@ -116,9 +116,9 @@ class LandingFrame(translation: Translation,
         "First time tutorial")
       contents += (firstTimeHelpIcon, "left, wrap")
 
-      val url = ImageIO.read(getClass.getResource("/images/loading-icon.gif"))
-      val imageIcon = new ImageIcon(url)
-      val label = new JLabel(imageIcon)
+     // val url = ImageIO.read(getClass.getResource("/images/loading-icon.gif"))
+     // val imageIcon = new ImageIcon(url)
+     // val label = new JLabel(imageIcon)
       
       reactions += {
         case ButtonClicked(`signInButton`) =>{

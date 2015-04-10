@@ -86,6 +86,7 @@ class DeckOverlayModule(
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN | DISCARDED, `playerId`) =>
           cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
           if(cardCode != "GAME_005")userPresenter.decreaseCardsLeft()
+          println(cardCode + " Card Decreased")
         case CardEvent(cardCode,_,ADDED_TO_DECK,`playerId`) =>
           userPresenter.increaseCardsLeft()
         case _ =>
