@@ -5,6 +5,7 @@ import net.hearthstats.companion.CompanionState
 import net.hearthstats.core.{ ArenaRun, GameMode, HearthstoneMatch }
 import net.hearthstats.game.MatchState
 import net.hearthstats.ui.log.Log
+import net.hearthstats.config.UserConfig
 import net.hearthstats.ui.notification.NotificationQueue
 import net.hearthstats.ui.{ Button, HearthstatsPresenter, MatchEndPopup }
 import net.hearthstats.util.{ Tracker, Translation }
@@ -24,9 +25,11 @@ class MatchUtils(
   hsPresenter: HearthstatsPresenter,
   replayHandler: ReplayHandler,
   analytics: Tracker,
-  uiLog: Log) {
+  uiLog: Log,
+  config: UserConfig) {
 
   import translation.t
+  import config._
 
   /**
    * Returns the submitted match if it was accepted by hs.net.
@@ -42,17 +45,42 @@ class MatchUtils(
       uiLog.info("Practice match was not submitted")
       None
     } else {
-      if (hsMatch.isDataComplete) {
-        submitMatchImpl(hsMatch)
-      } else {
+      if(config.matchPopup.get.toString() == "ALWAYS"){
         matchPopup.showPopup(hsPresenter.asInstanceOf[Component], hsMatch) match {
-          case Some(m) => submitMatchImpl(m)
-          case _ =>
-            uiLog.info(s"Match was not submitted")
-            matchState.submitted = true
-            None
+            case Some(m) => 
+              println(config.matchPopup.get + ("show popup"))
+              submitMatchImpl(m)
+            case _ =>
+              uiLog.info(s"Match was not submitted")
+              println(config.matchPopup.get)
+              matchState.submitted = true
+              None
+          }
+      }
+      else if (config.matchPopup.get.toString() == "INCOMPLETE"){
+        if (hsMatch.isDataComplete) {
+          println(config.matchPopup.get)
+          submitMatchImpl(hsMatch)
+        } else {
+          matchPopup.showPopup(hsPresenter.asInstanceOf[Component], hsMatch) match {
+            case Some(m) => 
+              println(config.matchPopup.get)
+              submitMatchImpl(m)
+            case _ =>
+              uiLog.info(s"Match was not submitted")
+              println(config.matchPopup.get)
+              matchState.submitted = true
+              None
+          }
         }
       }
+      else {
+        if(hsMatch.isDataComplete){
+          println(config.matchPopup.get + "never")
+          submitMatchImpl(hsMatch)}
+        else None
+      }
+      
     }
 
     import scala.concurrent.ExecutionContext.Implicits.global
