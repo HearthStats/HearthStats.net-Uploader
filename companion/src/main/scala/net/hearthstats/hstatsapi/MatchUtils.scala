@@ -48,36 +48,27 @@ class MatchUtils(
       if(config.matchPopup.get.toString() == "ALWAYS"){
         matchPopup.showPopup(hsPresenter.asInstanceOf[Component], hsMatch) match {
             case Some(m) => 
-              println(config.matchPopup.get + ("show popup"))
               submitMatchImpl(m)
             case _ =>
               uiLog.info(s"Match was not submitted")
-              println(config.matchPopup.get)
               matchState.submitted = true
               None
           }
       }
       else if (config.matchPopup.get.toString() == "INCOMPLETE"){
-        if (hsMatch.isDataComplete) {
-          println(config.matchPopup.get)
-          submitMatchImpl(hsMatch)
-        } else {
+        if (hsMatch.isDataComplete)submitMatchImpl(hsMatch) 
+        else {
           matchPopup.showPopup(hsPresenter.asInstanceOf[Component], hsMatch) match {
-            case Some(m) => 
-              println(config.matchPopup.get)
-              submitMatchImpl(m)
+            case Some(m) => submitMatchImpl(m)
             case _ =>
               uiLog.info(s"Match was not submitted")
-              println(config.matchPopup.get)
               matchState.submitted = true
               None
           }
         }
       }
       else {
-        if(hsMatch.isDataComplete){
-          println(config.matchPopup.get + "never")
-          submitMatchImpl(hsMatch)}
+        if(hsMatch.isDataComplete)submitMatchImpl(hsMatch)
         else None
       }
       

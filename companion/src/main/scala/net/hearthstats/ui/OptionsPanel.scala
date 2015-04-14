@@ -102,6 +102,9 @@ class OptionsPanel(
     addCheckBox(t("options.ui.video.record"), recordVideo, recordVideo.set)
     
     add(new JLabel(""), "skip,right")
+    addCheckBox(t("options.ui.video.upload"), uploadVideo, uploadVideo.set)
+    
+    add(new JLabel(""), "skip,right")
     addCheckBox(t("options.ui.video.autoUpload"), autoUploadVideo,autoUploadVideo.set)
 
     addLabel(t("options.label.video.delay") + " ")
@@ -113,9 +116,6 @@ class OptionsPanel(
     addLabel(t("options.label.video.height") + " ")
 
     add(new IntOptionTextField(videoHeight).peer, "wrap")
-	
-    addLabel(t("options.label.upload.disable") + " ")
-    addCheckBox(t("options.ui.upload.disable"), disableUpload, disableUpload.set)
   }
 
   // Minimize to System Tray

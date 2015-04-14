@@ -83,7 +83,7 @@ abstract class DeckOverlaySwing(
   private def findLabel(c: Card): Option[ClickableLabel] =
     if (c.collectible) {
       val l = cardLabels.get(c.name)
-      if (l.isDefined) l
+      if (l.isDefined) l       
       else {
         uiLog.warn(s"card ${c.name} not found in deck")
         None

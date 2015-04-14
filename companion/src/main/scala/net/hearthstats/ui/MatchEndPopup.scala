@@ -44,7 +44,7 @@ class MatchEndPopup(
     val submit = popup.submitButton
     val value = JOptionPane.showOptionDialog(parentComponent, 
           popup, 
-          "Incomplete match detected", 
+          "Match Result Detected", 
           JOptionPane.INFORMATION_MESSAGE,
           JOptionPane.YES_NO_OPTION, 
           null, 
