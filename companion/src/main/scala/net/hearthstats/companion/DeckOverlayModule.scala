@@ -67,7 +67,6 @@ class DeckOverlayModule(
       val initial: Receive = { // handle mulligan
         case CardEvent(cardCode, _, RECEIVED | DRAWN, `playerId`) =>
           openingHand += cardCode
-          println(cardCode)
           if(cardCode != "GAME_005")userPresenter.decreaseCardsLeft()
         case CardEvent(cardCode, _, REPLACED, `playerId`) =>
           openingHand -= cardCode
@@ -87,7 +86,6 @@ class DeckOverlayModule(
 
       val inGame: Receive = {
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | DRAWN | DISCARDED, `playerId`) =>
-          println(cardCode + " Card Decreased")
           cardUtils.byCode(cardCode).map(userPresenter.decreaseCardCount)
           if(cardCode != "GAME_005")userPresenter.decreaseCardsLeft()
         case CardEvent(cardCode,_,ADDED_TO_DECK,`playerId`) =>
@@ -99,12 +97,10 @@ class DeckOverlayModule(
         case CardEvent(cardCode, _, DISCARDED_FROM_DECK | PLAYED_FROM_DECK | PLAYED | REVEALED, p) if p != playerId =>
           for (c <- cardUtils.byCode(cardCode) if c.collectible) {
             opponentPresenter.addCard(c)
-            println("opponent adds cards")
           }
         case CardEvent(cardCode, _, RETURNED, p) if p != playerId =>
           for (c <- cardUtils.byCode(cardCode) if c.collectible) {
             opponentPresenter.decreaseCardCount(c)
-            println("opponent decreasedCard")
           }
       }
 
