@@ -2,25 +2,28 @@ package net.hearthstats
 
 import java.awt.Component
 import java.io.File
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.control.NonFatal
+import javax.swing.{JFrame, JOptionPane, WindowConstants}
+
 import com.softwaremill.macwire.MacwireMacros.wire
 import com.softwaremill.macwire.Tagging._
 import grizzled.slf4j.Logging
-import javax.swing.{JFrame, JOptionPane, WindowConstants}
 import net.hearthstats.companion.{CompanionState, DeckOverlayModule, GameMonitor, ScreenEvents}
 import net.hearthstats.config.{Application, Environment, UserConfig}
 import net.hearthstats.core.HearthstoneMatch
-import net.hearthstats.game.{HearthstoneLogMonitor, LogParser, MatchState}
 import net.hearthstats.game.imageanalysis.{IndividualPixelAnalyser, LobbyAnalyser, ScreenAnalyser}
+import net.hearthstats.game.{HearthstoneLogMonitor, LogParser, MatchState}
 import net.hearthstats.hstatsapi.{API, CardUtils, DeckUtils, MatchUtils}
 import net.hearthstats.modules.{FileUploaderFactory, ReplayHandler, VideoEncoderFactory}
-import net.hearthstats.ui.{CompanionFrame, ExportDeckBox, LandingFrame, MatchEndPopup}
 import net.hearthstats.ui.deckoverlay._
 import net.hearthstats.ui.log.Log
+import net.hearthstats.ui.notification.DialogNotification
+import net.hearthstats.ui.{CompanionFrame, ExportDeckBox, LandingFrame, MatchEndPopup}
 import net.hearthstats.util.{AnalyticsTrackerFactory, FileObserver, Translation, TranslationConfig, Updater}
 import net.sourceforge.tess4j.Tesseract
-import net.hearthstats.ui.notification.DialogNotification
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.swing.Swing._
+import scala.util.control.NonFatal
 
 class Main(
   environment: Environment,
@@ -78,8 +81,8 @@ class Main(
   val monitor: GameMonitor = wire[GameMonitor]
 
   def start(): Unit = {
-    landingFrame.createLandingPage().onSuccess{ case _ =>
-      mainFrame.decksTab.updateDecks()
+    landingFrame.createLandingPage().onSuccess { case _ =>
+      onEDT(mainFrame.decksTab.updateDecks())
       landingFrame.dispose()
       val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")
       loadingNotification.show()
