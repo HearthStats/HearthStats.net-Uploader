@@ -1,21 +1,21 @@
 package net.hearthstats.ui
 
 import java.awt.{Color, Cursor, Dimension}
-
-import scala.concurrent.{Future, Promise}
-import scala.swing.{Component, Container, Frame, Label, Point}
-import scala.swing.event.ButtonClicked
-import scala.util.control.NonFatal
-
-import grizzled.slf4j.Logging
 import javax.imageio.ImageIO
 import javax.swing.{ImageIcon, JOptionPane}
+
+import grizzled.slf4j.Logging
 import net.hearthstats.config.{Environment, UserConfig}
 import net.hearthstats.hstatsapi.API
 import net.hearthstats.ui.log.Log
 import net.hearthstats.ui.notification.NotificationQueue
 import net.hearthstats.ui.util.{FontHelper, MigPanel, PasswordOptionTextField, StringOptionTextField}
 import net.hearthstats.util.{Browse, Translation}
+
+import scala.concurrent.{Future, Promise}
+import scala.swing.event.ButtonClicked
+import scala.swing.{Component, Container, Frame, Label, Point}
+import scala.util.control.NonFatal
 
 class LandingFrame(translation: Translation,
                    uilog: Log,
@@ -119,16 +119,9 @@ class LandingFrame(translation: Translation,
         "First time tutorial")
       contents += (firstTimeHelpIcon, "left, wrap")
 
-     // val url = ImageIO.read(getClass.getResource("/images/loading-icon.gif"))
-     // val imageIcon = new ImageIcon(url)
-     // val label = new JLabel(imageIcon)
-      
       reactions += {
-        case ButtonClicked(`signInButton`) =>{
-          //signInButton.cursor = (Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
-          //contents += (new Label{icon = new ImageIcon(url)}, "center, wrap")
+        case ButtonClicked(`signInButton`) =>
           checkForPassword
-        }
         case ButtonClicked(`registerButton`) =>
           Browse(registerUrl)
       }
