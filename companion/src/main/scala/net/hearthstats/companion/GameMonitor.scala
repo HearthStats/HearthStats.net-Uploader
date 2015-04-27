@@ -214,7 +214,7 @@ class GameMonitor(
       updateMatch(_.withOpponentClass(newClass))
       hsPresenter.setOpponentClass(newClass)
       uiLog.info(s"Opponent class detected: $newClass")
-      if (enableDeckOverlay) {
+      if (enableOppDeckOverlay) {
         deckOverlay.showOpponentDeck(hsMatch.opponentName)
       }
     } else {
@@ -222,7 +222,7 @@ class GameMonitor(
       updateMatch(_.withUserClass(newClass))
       hsPresenter.setYourClass(newClass)
       uiLog.info(s"Your class detected: $newClass")
-      if (enableDeckOverlay) {
+      if (enableUserDeckOverlay) {
         deckOverlay.startMonitoringCards(heroChosen.player)
       }
     }
@@ -324,9 +324,10 @@ class GameMonitor(
       updateMatch(_.withResult(outcome))
       updateMatch(_.withJsonLog(matchState.jsonGameLog.get))
       updateMatch(_.withDuration(companionState.currentDurationMs / 1000))
-      matchUtils.submitMatchResult()
       deckOverlay.dispose()
+      matchUtils.submitMatchResult()      
       companionState.reset()
+      deckOverlay.reset()
       VideoEncoder.stop()
       schedule(normalDelay)
     }
@@ -346,7 +347,7 @@ class GameMonitor(
       uiLog.info(s"deck slot $deckSlot detected")
 
       companionState.deckSlot = Some(deckSlot)
-      if (enableDeckOverlay) {
+      if (enableUserDeckOverlay) {
         deckUtils.getDeckFromSlot(deckSlot) match {
           case Some(deck) =>
             if (notifier != null) notifier.add(s"Deck Detected", s"$deck", false)

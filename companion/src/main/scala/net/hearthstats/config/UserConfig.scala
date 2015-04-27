@@ -24,11 +24,12 @@ class UserConfig extends Logging with Implicits {
   val pollingDelayMs = config("polling.delay.ms", 1000 / 25)
 
   val enableAnalytics = config("enable.analytics", true)
-  val enableDeckOverlay = config("enable.deckoverlay", true)
   val enableStartMin = config("enable.startmin", false)
   val enableMinToTray = config("enable.mintotray", true)
   val enableUpdateCheck = config("enable.updatecheck", true)
   
+  val enableOppDeckOverlay = config("enable.oppDeckOverlay",false)
+  val enableUserDeckOverlay = config("enable.userDeckOverlay",false)
 
   val matchPopup = enumConfig("option.matchpopup", MatchPopup.getDefault)
   val notificationType = enumConfig("option.notificationtype", NotificationType.HEARTHSTATS)

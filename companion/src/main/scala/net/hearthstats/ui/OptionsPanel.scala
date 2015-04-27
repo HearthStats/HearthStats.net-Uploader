@@ -26,8 +26,6 @@ class OptionsPanel(
   // Create the UI
   setLayout(new MigLayout)
 
-  add(new JLabel(" "), "wrap")
-
   // User Key
   addLabel(t("options.label.userkey") + " ")
   var userKeyField: JTextField = new StringOptionTextField(userKey).peer
@@ -79,12 +77,15 @@ class OptionsPanel(
 
   // Deck Overlay
   addLabel(t("options.label.deckoverlay"))
-  addCheckBox(t("options.ui.deckoverlay"), enableDeckOverlay, enableDeckOverlay.set, "")
-
+  addCheckBox(t("options.ui.userDeckoverlay"), enableUserDeckOverlay, enableUserDeckOverlay.set, "")
+  
   val deckOverlayHelpIcon = new HelpIcon("https://github.com/HearthStats/HearthStats.net-Uploader/wiki/Options:-Deck-Overlay",
     "Help on the show deck overlay option").peer
   add(deckOverlayHelpIcon, "wrap")
-
+  
+  addLabel()
+  addCheckBox(t("options.ui.oppDeckoverlay"), enableOppDeckOverlay, enableOppDeckOverlay.set, "wrap") 
+  
   // Match Popup
   addLabel(t("options.label.matchpopup"))
   addComboBox[MatchPopup](
@@ -99,6 +100,12 @@ class OptionsPanel(
   if (new VideoEncoderFactory().isAvailable()) {
     addLabel(t("options.label.video.record") + " ")
     addCheckBox(t("options.ui.video.record"), recordVideo, recordVideo.set)
+    
+    add(new JLabel(""), "skip,right")
+    addCheckBox(t("options.ui.video.upload"), uploadVideo, uploadVideo.set)
+    
+    add(new JLabel(""), "skip,right")
+    addCheckBox(t("options.ui.video.autoUpload"), autoUploadVideo,autoUploadVideo.set)
 
     addLabel(t("options.label.video.delay") + " ")
     add(new IntOptionTextField(pollingDelayMs).peer, "wrap")
@@ -107,10 +114,8 @@ class OptionsPanel(
     add(new IntOptionTextField(videoWidth).peer, "wrap")
 
     addLabel(t("options.label.video.height") + " ")
+
     add(new IntOptionTextField(videoHeight).peer, "wrap")
-	
-    addLabel(t("options.label.upload.disable") + " ")
-    addCheckBox(t("options.ui.upload.disable"), disableUpload, disableUpload.set)
   }
 
   // Minimize to System Tray

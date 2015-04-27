@@ -110,7 +110,7 @@ class LandingFrame(translation: Translation,
       contents += (passwordField, "center, wrap")
 
       contents += (signInButton, "skip 2, right, gapright 5, wrap")
-      listenTo(signInButton);
+      listenTo(signInButton)
 
       contents += (registerButton, "skip 2, right, gapright 5")
       listenTo(registerButton)
@@ -119,9 +119,16 @@ class LandingFrame(translation: Translation,
         "First time tutorial")
       contents += (firstTimeHelpIcon, "left, wrap")
 
+     // val url = ImageIO.read(getClass.getResource("/images/loading-icon.gif"))
+     // val imageIcon = new ImageIcon(url)
+     // val label = new JLabel(imageIcon)
+      
       reactions += {
-        case ButtonClicked(`signInButton`) =>
+        case ButtonClicked(`signInButton`) =>{
+          //signInButton.cursor = (Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
+          //contents += (new Label{icon = new ImageIcon(url)}, "center, wrap")
           checkForPassword
+        }
         case ButtonClicked(`registerButton`) =>
           Browse(registerUrl)
       }
@@ -182,3 +189,4 @@ class LandingFrame(translation: Translation,
       case NonFatal(e) => throw new Exception("entered nothing", e)
     }
 }
+

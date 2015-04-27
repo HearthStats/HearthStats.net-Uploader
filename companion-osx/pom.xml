@@ -5,13 +5,12 @@
 
 	<parent>
 		<groupId>net.hearthstats</groupId>
-		<version>0.22.0</version>
+		<version>0.22.4</version>
 		<artifactId>companion-parent</artifactId>
 	</parent>
 
 	<artifactId>companion-osx</artifactId>
 
-	<packaging>jar</packaging>
 	<name>HearthStats Companion OS X</name>
 	<url>https://github.com/HearthStats/HearthStats.net-Uploader</url>
 
@@ -202,4 +201,5 @@
 	</build>
 
 
+	<version>0.22.4</version>
 </project>

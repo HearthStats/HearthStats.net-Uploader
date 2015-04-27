@@ -32,6 +32,7 @@ public class GitHubReleases {
     List<Release> releases = new ArrayList<>();
     for (JsonWrapper unparsedRelease : unparsedReleases) {
       releases.add(Release.of(unparsedRelease));
+
     }
 
     return releases;

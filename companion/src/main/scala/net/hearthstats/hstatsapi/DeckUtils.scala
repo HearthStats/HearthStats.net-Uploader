@@ -16,11 +16,13 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
   def updateDecks() {
     try {
       _decks = api.get("decks/show") match {
-        case Success(d) => d.data.as[List[Json]].map(fromJson)          
+        case Success(d) => d.data.as[List[Json]].map(fromJson)    
         case _ => Nil
       }
       if (_decks.isEmpty) {
         uiLog.warn("no deck were returned from Hearthstats.net. Either you have not created a deck or the site is down")
+      }
+      else{
       }
     } catch {
       case e: IOException => uiLog.warn("Error occurred while loading deck list from HearthStats.net", e)
@@ -74,7 +76,7 @@ class DeckUtils(api: API, uiLog: Log, cardUtils: CardUtils) {
       u = card.indexOf('_')
       count = card.substring(u + 1)
       id = Integer.parseInt(card.substring(0, u))
-      cd = cardData(id)
+      cd = cardData(id)     
     } yield cd.copy(count = Integer.parseInt(count))
     cards.sorted
   }
