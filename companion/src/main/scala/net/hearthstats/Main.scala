@@ -82,8 +82,6 @@ class Main(
 
   def start(): Unit = {
     landingFrame.createLandingPage().onSuccess { case _ =>
-      onEDT(mainFrame.decksTab.updateDecks())
-      landingFrame.dispose()
       val loadingNotification = new DialogNotification("HearthStats Companion", "Loading ...")
       loadingNotification.show()
       logSystemInformation()

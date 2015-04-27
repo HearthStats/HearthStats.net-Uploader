@@ -1,18 +1,19 @@
 package net.hearthstats.ui
 
-import java.awt.BorderLayout._
 import java.awt.BorderLayout
+import java.awt.BorderLayout._
 import java.io.IOException
-import javax.swing.{ JButton, JComboBox, JLabel, JOptionPane, JPanel }
+import javax.swing._
+
 import net.hearthstats._
-import net.hearthstats.core.{ Deck, HeroClass }
+import net.hearthstats.core.Deck
 import net.hearthstats.hstatsapi.HearthStatsUrls._
-import net.hearthstats.hstatsapi.{ API, DeckUtils }
-import net.hearthstats.util.{ Browse, Translation }
+import net.hearthstats.hstatsapi.{API, DeckUtils}
+import net.hearthstats.util.{Browse, Translation}
 import net.miginfocom.swing.MigLayout
+
 import scala.swing.Swing._
-import scala.util.Failure
-import scala.util.Success
+import scala.util.{Failure, Success}
 
 class DecksTab(
   translation: Translation,
@@ -169,13 +170,14 @@ class DecksTab(
       selectedDeck.map(_.id)
 
     def applyDecks(): Unit = {
-      comboBox.removeAllItems()
-      comboBox.addItem(t("deck_slot.empty"))
+      val decksModel = new DefaultComboBoxModel[Object]
+      decksModel.addElement(t("deck_slot.empty"))
       val decks = deckUtils.getDecks.sortBy(d => (d.hero, d.name))
       for (deck <- decks) {
-        comboBox.addItem(deck)
-        if (deck.activeSlot == Some(slot)) comboBox.setSelectedItem(deck)
+        decksModel.addElement(deck)
+        if (deck.activeSlot == Some(slot)) decksModel.setSelectedItem(deck)
       }
+      comboBox.setModel(decksModel)
     }
   }
 }
