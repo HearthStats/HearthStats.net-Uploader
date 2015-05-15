@@ -123,7 +123,7 @@ class MatchUtils(
     val describeDuration = {
       val minutes = duration / 60
       val seconds = duration % 60
-      t("match.end.duration", minutes, seconds)
+      t("match.end.duration", minutes, f"$seconds%02d")
     }
 
     s"$describeMode $describeCoin $describePlayers $describeResult $describeDeck $describeTurns $describeDuration"
