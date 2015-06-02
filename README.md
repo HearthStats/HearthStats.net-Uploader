@@ -8,6 +8,8 @@ HearthStats Companion
 
 ___We are now officially supporting HearthstoneDeckTracker as the official HearthStats uploader for Windows. You can download it here: http://www.hearthstats.net/uploader___
 
+__This means this repo is no longer maintained!__
+
 (Previously known as the 'HearthStats Uploader')
 
 This is a Java based utility designed to run in the background and automatically
