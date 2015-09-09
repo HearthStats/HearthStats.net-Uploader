@@ -31,5 +31,8 @@ class CardParserJsonSpec extends FlatSpec with Matchers {
     CardData.byId("GVG_085").name shouldBe "Annoy-o-Tron"
   }
 
+  it should "contain TGT (Ram Wrangler)" in {
+    val ram=CardData.collectible.filter { c => c.name=="Ram Wrangler" }.head
+    ram.playerClass shouldBe Some("Hunter")
+  }
 }
-
