@@ -133,13 +133,11 @@ class ClickableLabel(card: Card, imagesReady: Future[Unit]) extends JLabel {
   
   def updateIncreaseCardsLeft():Unit = {
     cardsLeft += 1
-    println(card.originalName + "cardsLeft increased")
     updatePosibilities()
   }
   
   def updateDecreaseCardsLeft():Unit = {
     cardsLeft -= 1
-    println("updateDecreasedCardsLeft: " + cardsLeft)
     updatePosibilities()
   }
   
